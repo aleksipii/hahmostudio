@@ -7,3 +7,6 @@ dist/
 .DS_Store
 .private-storage/
 dist-private/
+
+public/vision/
+.private-runtime/

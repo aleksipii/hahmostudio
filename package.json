@@ -9,13 +9,14 @@
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/prepare-vision.mjs && tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "node --experimental-strip-types --test lib/*.test.ts server/*.test.mjs",
     "start:private": "node server/private-server.mjs",
     "build:private": "VITE_BASE_PATH=/ VITE_PRIVATE_SERVER=true npm run build"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.32",
     "ag-psd": "31.0.2",
     "fflate": "0.8.3",
     "lucide-react": "1.31.0",
@@ -28,6 +29,6 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",
     "typescript": "5.9.3",
-    "vite": "8.0.13"
+    "vite": "^8.3.2"
   }
 }

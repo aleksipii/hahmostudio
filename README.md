@@ -21,7 +21,7 @@ Tunnustiedot ovat `.private-storage/owner.json`-tiedostossa. Kansiota ei viedä 
 ## Animointi
 
 1. Avaa oma PSD tai kokeile valmista tasotestiä.
-2. Valitse vasemmalta taso. Avaa **Rigi**, määritä rooli ja aseta kierron pivot-piste kuvan päälle.
+2. Valitse vasemmalta taso. Avaa **Nivelet**, määritä rooli ja aseta kiertokeskus kuvan päälle.
 3. Avaa **Animoi**. Valitse tason rata ja aikajanan ruutu.
 4. Muokkaa liikettä X/Y-suunnassa, kiertoa, skaalaa tai peittävyyttä ja paina **Lisää avainruutu**.
 5. Siirry seuraavaan ruutuun, muokkaa asentoa ja lisää seuraava avainruutu. **Toista** näyttää liikkeen silmukkana.
@@ -31,7 +31,7 @@ Tunnustiedot ovat `.private-storage/owner.json`-tiedostossa. Kansiota ei viedä 
 
 **Kumoa** ja **Tee uudelleen** toimivat avainruutujen ja aikajanan asetusten muutoksiin (40 muutosta). Asennon kenttien muokkaus on esikatselu, kunnes painat avainruudun tallennusta. Pelkkä aikajanalla siirtyminen ei tallenna uutta asentoa.
 
-Nivelet-vaiheen Liitä osaan yhdistää tasot liikehierarkiaksi. Lapsi seuraa kohteen liikettä, kiertoa, kokoa ja peittävyyttä ja voi lisäksi käyttää omia avainruutujaan. Kiertokeskus vaikuttaa kiertoon; nivelpisteet ovat apumerkkejä eikä automaattista niveltaivutusta vielä ole. Äänteisiin perustuva huulisynkronointi, kameraseuranta ja sisäkkäiset animaatioklipit ovat myöhempiä kehitysvaiheita. Tämä ei vielä vastaa Adobe Character Animatorin koko toiminnallisuutta.
+Nivelet-vaiheen Liitä osaan yhdistää tasot liikehierarkiaksi. Lapsi seuraa kohteen liikettä, kiertoa, kokoa ja peittävyyttä ja voi lisäksi käyttää omia avainruutujaan. Kiertokeskus vaikuttaa kiertoon. Kameraseuranta, kaksiosainen niveltaivutus ja paikallinen puheen suuasentotunnistus ovat nyt mukana. Sisäkkäiset animaatioklipit ja jatkuva kuvapinnan venytys puuttuvat edelleen; koko Adobe Character Animatorin toiminnallisuus ei ole toteutettu.
 
 ## Rajat
 
@@ -66,7 +66,20 @@ Node.js 22.13+ vaaditaan. Tuotannossa käytä Node.js 24:ää. PSD:n purku, mall
 Lähdekoodi on julkisessa GitHub-repositoriossa. Kirjautuminen suojaa omaa palvelinta; muut voivat edelleen kopioida julkisen lähdekoodin.
 
 ## Käyttöohje studiossa
-Yläpalkin Käyttöohje avaa kuusi ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
+Yläpalkin Käyttöohje avaa yhdeksan ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
 
 ## Kokonainen projekti, ääni ja video
-Tallenna projekti kirjoittaa .hahmo-tiedoston, joka sisältää tasokuvat, näkyvyydet, nivelmääritykset, avainruudut ja valinnaisen äänen. Avaa projekti ei tarvitse erillistä PSD:tä. Alkuperäinen Photoshop-tiedosto kannattaa säilyttää, koska projektissa on normalisoidut rasterikuvat eikä Photoshopin muokattavia maskeja. Projektin kokoraja on 128 Mt. Lisää ääni hyväksyy MP3/WAV/OGG/M4A-tiedoston enintään 25 Mt. Luo suun liike vaihtaa kahta suutasoa äänen voimakkuudesta (ei foneemien tunnistusta) ja korvaa niiden avainruudut; Kumoa palauttaa aiemmat. Vie video tuottaa enintään 30 sekunnin ja 1080 pikselin WebM-tallennuksen reaaliajassa; pidä välilehti aktiivisena. Kameraohjaus, automaattinen niveltaivutus ja foneemihuulisynkronointi ovat vielä puuttuvia ominaisuuksia.
+Tallenna projekti kirjoittaa .hahmo-tiedoston, joka sisältää tasokuvat, näkyvyydet, nivelmääritykset, avainruudut ja valinnaisen äänen. Avaa projekti ei tarvitse erillistä PSD:tä. Alkuperäinen Photoshop-tiedosto kannattaa säilyttää, koska projektissa on normalisoidut rasterikuvat eikä Photoshopin muokattavia maskeja. Projektin kokoraja on 128 Mt. Lisää ääni hyväksyy MP3/WAV/OGG/M4A-tiedoston enintään 25 Mt. Luo suun liike vaihtaa kahta suutasoa äänen voimakkuudesta (ei foneemien tunnistusta) ja korvaa niiden avainruudut; Kumoa palauttaa aiemmat. Vie video tuottaa enintään 30 sekunnin ja 1080 pikselin WebM-tallennuksen reaaliajassa; pidä välilehti aktiivisena. Katso alta uudet liikkeen tallennustoiminnot.
+
+
+## Kameraseuranta, niveltaivutus ja puheen suuasennot
+
+- **Kameraseuranta**: valitse pää ja halutessasi silmät/suu, avaa kamera, kalibroi ja tallenna liike avainruuduiksi. MediaPipe Face Landmarker toimii paikallisessa taustatyössä, noin 10 näytettä sekunnissa. Kamerakuvia ei tallenneta tai lähetetä. Kasvomalli ja WASM-koodi ladataan vain build-vaiheessa, minkä jälkeen ne tarjoillaan kirjautumisen takaa omalta palvelimelta.
+- **Niveltaivutus**: yläosan kiertokeskus olkapäähän/lonkkaan, alaosan kiertokeskus kyynärpäähän/polveen, alaosan ensimmäinen nivel ranteeseen/nilkkaan. Liitä alaosa yläosaan, valitse yläosa, paina Taivuta raajaa ja napsauta tavoite. Molemmat kierrot tallentuvat avainruuduiksi.
+- **Äänteisiin perustuva suun liike**: valitse suomi tai englanti ja kuusi eri suukuvaa A–F. G, H ja X ovat vapaaehtoisia. Rhubarb tuottaa ajoitetut suuasennot paikallisesti. Suomen kielestä riippumaton foneettinen malli voi vaatia enemmän käsinkorjausta kuin englannin puhemalli. Tuloksena ei ole tekstiä tai täydellistä äännetranskriptiota. Enimmäiskesto 60 sekuntia; vienti edelleen enintään 30 sekuntia.
+
+### Paikallisen puhemallin asennus
+
+Valmis yksityinen macOS/Apple Silicon -paketti sisältää ARM64-tunnistimen ja sen malliaineiston `.private-runtime/rhubarb/`-kansiossa. Pelkässä GitHub-lähdekoodissa ne eivät ole mukana. Asenna [Rhubarb Lip Sync 1.14.0](https://github.com/DanielSWolf/rhubarb-lip-sync/releases/tag/v1.14.0) käyttöjärjestelmäsi mukaan. Kopioi suoritettava `rhubarb` ja sen `res`-kansio `.private-runtime/rhubarb/`-kansioon. macOS:n virallinen julkaisu on Intel-versio; Apple Silicon tarvitsee ARM64-lähdekoodikäännöksen. `scripts/build-rhubarb-macos.sh` tekee tämän, kun CMake ja Xcode Command Line Tools ovat asennettuina.
+
+Kaikki uudet toiminnot on kuvattu myös studion Käyttöohjeessa. Vanhojen projektien ja JSON-tiedostojen muoto säilyy yhteensopivana.

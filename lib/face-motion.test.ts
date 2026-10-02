@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {faceSample,headPose} from './face-motion.ts';
+test('face pose calibration handles mirrored translation, roll, scale and invalid detections',()=>{assert.equal(faceSample([],[]),undefined);const b={x:.5,y:.5,width:.2,roll:0,blinkLeft:0,blinkRight:0,jaw:0};const p=headPose({...b,x:.6,y:.6,width:.3,roll:Math.PI/6},b,400,300);assert.ok(Math.abs(p.x+60)<1e-6);assert.ok(Math.abs(p.y-45)<1e-6);assert.ok(Math.abs(p.rotation+30)<1e-6);assert.ok(Math.abs(p.scale-1.5)<1e-6);});

@@ -1,7 +1,7 @@
 import {animationTransforms} from './animation-transform';
 import { type Animation, type Pose } from './animation-model';
 import { blendModes, type LayerNode, type PsdDocument } from './psd-model';
-export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?: string, animation?: Animation, frame = 0, draft?: { key: string; pose: Pose }) {
+export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?: string, animation?: Animation, frame = 0, draft?: { key: string; pose: Pose; poses?: Record<string,Pose> }) {
  const ratio = Math.min(1, 2048 / Math.max(doc.width, doc.height));
  canvas.width = Math.round(doc.width * ratio); canvas.height = Math.round(doc.height * ratio);
  const ctx = canvas.getContext('2d')!; ctx.clearRect(0, 0, canvas.width, canvas.height);
