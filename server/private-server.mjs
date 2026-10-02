@@ -21,7 +21,7 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
  const server=http.createServer(async(req,res)=>{
   const nonce=randomBytes(18).toString('base64');
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');
-  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`);
+  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`);
   const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
   try {
    const address=new URL(req.url,'http://localhost'),path=address.pathname;
@@ -67,5 +67,5 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  if(remote&&(!origin?.startsWith('https://')||!process.env.HAHMOSTUDIO_SETUP_TOKEN)){throw new Error('Remote hosting requires HTTPS origin and a setup token.');}
  const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
  const server=await createPrivateServer({distDir:resolve(root,'dist'),dataDir:process.env.HAHMOSTUDIO_DATA_DIR??resolve(root,'.private-storage'),origin,setupToken:process.env.HAHMOSTUDIO_SETUP_TOKEN,secure:!!origin?.startsWith('https://')});
- server.listen(Number(process.env.PORT??4174),host,()=>console.log(`Hahmostudio: ${origin??`http://${host}:${process.env.PORT??4174}`}`));
+ server.listen(Number(process.env.PORT??4176),host,()=>console.log(`Hahmostudio: ${origin??`http://${host}:${process.env.PORT??4176}`}`));
 }

@@ -19,3 +19,5 @@ This is a Finnish, personal-use browser animation editor. Phase 03 includes PSD 
 Current limitations: RGB/grayscale 8-bit PSD, no PSB, maximum 100 MiB input, 16 MP document, 48 MP decoded pixels, 1000 layers. Group/vector/clipping masks, adjustments and effects are flagged where unsupported. Editor state is session-only. Rig definitions and animation tracks can be saved as JSON. PNG export is capped to 300 frames, 1080 px and 128 MiB. Audio, camera capture, lip sync, automatic inverse kinematics and nested clips are future stages.
 
 Parts now support optional parentKey links with acyclic validation and stable-ID remapping. Ancestor transforms and animated opacity compose through the chain. Keep PSD draw order and visibility independent of attachment relationships. Old rigs without parentKey remain independent.
+
+Portable .hahmo project archive now contains normalized layer PNGs, visibility, animation/rig and optional audio. Validate import size, layers and PNG dimensions before decoding. Audio stays local. Volume-driven two-mouth animation is not phoneme detection. WebM capture is realtime, max 30 seconds/1080px/128MiB, and must clean up streams on abort.

@@ -12,7 +12,7 @@ npm run build:private
 npm run start:private
 ```
 
-Avaa **http://127.0.0.1:4174/**. Ensimmäisellä käyttökerralla etusivu pyytää luomaan oman käyttäjätunnuksen ja vähintään 12 merkin salasanan. Uusia käyttäjiä ei voi luoda tämän jälkeen. Palvelin kuuntelee oletuksena vain tämän koneen loopback-osoitetta.
+Avaa **http://127.0.0.1:4176/**. Ensimmäisellä käyttökerralla etusivu pyytää luomaan oman käyttäjätunnuksen ja vähintään 12 merkin salasanan. Uusia käyttäjiä ei voi luoda tämän jälkeen. Palvelin kuuntelee oletuksena vain tämän koneen loopback-osoitetta.
 
 Salasana tallennetaan satunnaisesti suolattuna scrypt-tiivisteenä. Kirjautuminen käyttää HttpOnly/SameSite-evästettä, ja palvelin estää sekä editorin että sen tiedostojen lataamisen ilman istuntoa. Istunto kestää 12 tuntia ja päättyy palvelimen uudelleenkäynnistyksessä. Käytä **Kirjaudu ulos**, kun lopetat.
 
@@ -49,7 +49,7 @@ Etäkäyttö vaatii Node-palvelinta tukevan hostauksen ja HTTPS:n. GitHub Pages 
 - `HAHMOSTUDIO_ORIGIN=https://oma-studio.example`
 - `HAHMOSTUDIO_SETUP_TOKEN`: pitkä satunnainen kertakäyttöinen käyttöönottoavain; syötä se ensimmäisen tunnuksen luonnissa.
 - `HAHMOSTUDIO_DATA_DIR`: pysyvä yksityinen tallennuskansio.
-- `PORT`: palvelimen portti (oletus 4174).
+- `PORT`: palvelimen portti (oletus 4176).
 
 Käytä HTTPS-välityspalvelinta ja estä suora julkinen pääsy Node-porttiin. Älä julkaise `dist`-kansiota suojaamattomalla staattisella palvelimella. Palvelin ei lähetä salasanaa tai tunnustietoja selaimeen.
 
@@ -67,3 +67,6 @@ Lähdekoodi on julkisessa GitHub-repositoriossa. Kirjautuminen suojaa omaa palve
 
 ## Käyttöohje studiossa
 Yläpalkin Käyttöohje avaa kuusi ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
+
+## Kokonainen projekti, ääni ja video
+Tallenna projekti kirjoittaa .hahmo-tiedoston, joka sisältää tasokuvat, näkyvyydet, nivelmääritykset, avainruudut ja valinnaisen äänen. Avaa projekti ei tarvitse erillistä PSD:tä. Alkuperäinen Photoshop-tiedosto kannattaa säilyttää, koska projektissa on normalisoidut rasterikuvat eikä Photoshopin muokattavia maskeja. Projektin kokoraja on 128 Mt. Lisää ääni hyväksyy MP3/WAV/OGG/M4A-tiedoston enintään 25 Mt. Luo suun liike vaihtaa kahta suutasoa äänen voimakkuudesta (ei foneemien tunnistusta) ja korvaa niiden avainruudut; Kumoa palauttaa aiemmat. Vie video tuottaa enintään 30 sekunnin ja 1080 pikselin WebM-tallennuksen reaaliajassa; pidä välilehti aktiivisena. Kameraohjaus, automaattinen niveltaivutus ja foneemihuulisynkronointi ovat vielä puuttuvia ominaisuuksia.
