@@ -65,3 +65,5 @@
 @media(max-width:850px){.timeline{height:260px;flex-basis:260px}.timeline-body{height:130px}.details-panel .audio-bar{position:static}}@media(max-width:600px){.timeline{height:300px;flex-basis:300px}.timeline-body{height:145px}}
 
 .episode-edit{font-size:10px;padding:6px 0;color:var(--green)}
+
+@media(min-width:851px){.studio:has(.timeline){height:100dvh;min-height:640px}.studio:has(.timeline) .workspace{min-height:0}.studio:has(.timeline) .stage{min-height:160px;padding:16px}}
