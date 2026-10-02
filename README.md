@@ -6,7 +6,7 @@ Tässä on ensimmäisen vaiheen PSD-editorin lähdekoodi tavallisena React + Typ
 
 [Avaa Hahmostudio GitHub Pagesissa](https://aleksipii.github.io/hahmostudio/)
 
-Julkaisu odottaa GitHub Pagesin käyttöönottoa. Linkki toimii, kun Pages on otettu käyttöön ja julkaisu onnistunut.
+Editorin selainversio julkaistaan GitHub Pagesissa. Avaa yllä oleva linkki käyttääksesi Hahmostudiota ilman paikallista asennusta.
 
 Editorissa voit avata oman PSD-tiedoston tai kokeilla tasotestiä. PSD-tiedostot käsitellään paikallisesti selaimessa. Avoimen editorin tila säilyy vain nykyisessä välilehdessä.
 
@@ -27,9 +27,9 @@ Codexille aloitustehtävä:
 
 > Jatka tätä Hahmostudio-projektia. Lue AGENTS.md. Vaihe 1 on PSD importer + layer viewer. Toteuta seuraavaksi rig editor: tasojen roolien määritys, pivot- ja nivelpisteiden sijoittaminen hahmon päälle sekä rigin tallennus ja avaaminen JSON-tiedostona. Säilytä nykyinen PSD-tuonti ja käyttöliittymä. Älä toteuta vielä timelinea. Tarkista tyypit ja tuotantokoonti.
 
-## GitHub: pidä lähdekoodi yksityisenä
+## GitHub ja paikallinen kehitys
 
-Luo tyhjä GitHub-repositorio nimellä `hahmostudio` ja valitse **Private**. Voit lisätä tämän kansion GitHub Desktopissa paikalliseksi repositorioksi ja julkaista sen yksityisenä. Vaihtoehtoisesti käytä terminaalia:
+Lähdekoodi on repositoriossa [aleksipii/hahmostudio](https://github.com/aleksipii/hahmostudio). Jos julkaiset projektista oman kopion, voit käyttää GitHub Desktopia tai terminaalia:
 
 ```sh
 git init
@@ -48,7 +48,7 @@ Codex Cloudissa valitse GitHub-repositorio pilviympäristöön ja anna pääsy j
 
 **Private-repositorio ei yksin tee julkaistusta Pages-sivusta yksityistä.** Yksityinen Pages-julkaisu vaatii GitHub Enterprise Cloud -organisaation ja sen omistaman private/internal-projektirepositorion. Henkilökohtaisen tavallisen tilin Pages ei tarjoa tätä pääsynhallintaa.
 
-Repositoriossa on automaattinen julkaisu `.github/workflows/pages.yml`. Kun GitHub Pages on otettu käyttöön asetuksella **Source: GitHub Actions**, muutokset `main`-haaraan rakentavat ja julkaisevat editorin. Nykyinen yksityinen repositorio vaatii Pagesia tukevan maksullisen tilauksen; maksuttomalla tilillä repositorion on oltava julkinen.
+Repositoriossa on automaattinen julkaisu `.github/workflows/pages.yml`. Kun GitHub Pages on otettu käyttöön asetuksella **Source: GitHub Actions**, muutokset `main`-haaraan rakentavat ja julkaisevat editorin. Tämä repositorio ja GitHub Pages -sivu ovat julkisia.
 
 Jos sinulla on yksityiseen Pagesiin oikeuttava organisaatio:
 
