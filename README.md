@@ -64,3 +64,6 @@ npm run build:private
 Node.js 22.13+ vaaditaan. Tuotannossa käytä Node.js 24:ää. PSD:n purku, malli, rigi, animaation interpolointi, renderöinti ja yksityinen palvelin ovat erillisiä moduuleja.
 
 Lähdekoodi on julkisessa GitHub-repositoriossa. Kirjautuminen suojaa omaa palvelinta; muut voivat edelleen kopioida julkisen lähdekoodin.
+
+## Käyttöohje studiossa
+Yläpalkin Käyttöohje avaa kuusi ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
