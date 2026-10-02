@@ -31,7 +31,7 @@ Tunnustiedot ovat `.private-storage/owner.json`-tiedostossa. Kansiota ei viedä 
 
 **Kumoa** ja **Tee uudelleen** toimivat avainruutujen ja aikajanan asetusten muutoksiin (40 muutosta). Asennon kenttien muokkaus on esikatselu, kunnes painat avainruudun tallennusta. Pelkkä aikajanalla siirtyminen ei tallenna uutta asentoa.
 
-Nivelet-vaiheen Liitä osaan yhdistää tasot liikehierarkiaksi. Lapsi seuraa kohteen liikettä, kiertoa, kokoa ja peittävyyttä ja voi lisäksi käyttää omia avainruutujaan. Kiertokeskus vaikuttaa kiertoon; nivelpisteet ovat apumerkkejä eikä automaattista niveltaivutusta vielä ole. Ääni, huulisynkronointi, kameraseuranta ja sisäkkäiset animaatioklipit ovat myöhempiä kehitysvaiheita. Tämä ei vielä vastaa Adobe Character Animatorin koko toiminnallisuutta.
+Nivelet-vaiheen Liitä osaan yhdistää tasot liikehierarkiaksi. Lapsi seuraa kohteen liikettä, kiertoa, kokoa ja peittävyyttä ja voi lisäksi käyttää omia avainruutujaan. Kiertokeskus vaikuttaa kiertoon; nivelpisteet ovat apumerkkejä eikä automaattista niveltaivutusta vielä ole. Äänteisiin perustuva huulisynkronointi, kameraseuranta ja sisäkkäiset animaatioklipit ovat myöhempiä kehitysvaiheita. Tämä ei vielä vastaa Adobe Character Animatorin koko toiminnallisuutta.
 
 ## Rajat
 
