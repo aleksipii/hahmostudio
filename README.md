@@ -66,7 +66,7 @@ Node.js 22.13+ vaaditaan. Tuotannossa käytä Node.js 24:ää. PSD:n purku, mall
 Lähdekoodi on julkisessa GitHub-repositoriossa. Kirjautuminen suojaa omaa palvelinta; muut voivat edelleen kopioida julkisen lähdekoodin.
 
 ## Käyttöohje studiossa
-Yläpalkin Käyttöohje avaa kymmenen ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
+Yläpalkin Käyttöohje avaa yksitoista ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
 
 ## Kokonainen projekti, ääni ja video
 Tallenna projekti kirjoittaa .hahmo-tiedoston, joka sisältää tasokuvat, näkyvyydet, nivelmääritykset, avainruudut ja valinnaisen äänen. Avaa projekti ei tarvitse erillistä PSD:tä. Alkuperäinen Photoshop-tiedosto kannattaa säilyttää, koska projektissa on normalisoidut rasterikuvat eikä Photoshopin muokattavia maskeja. Projektin kokoraja on 128 Mt. Lisää ääni hyväksyy MP3/WAV/OGG/M4A-tiedoston enintään 25 Mt. Luo suun liike vaihtaa kahta suutasoa äänen voimakkuudesta (ei foneemien tunnistusta) ja korvaa niiden avainruudut; Kumoa palauttaa aiemmat. Vie MP4-video tuottaa näyttämön kokoisen, enintään 60 sekunnin H.264/AAC-tallennuksen. Katso alta uudet liikkeen tallennustoiminnot.
@@ -95,3 +95,8 @@ Avaa vasemmalta **Jaksot / sarja**. **Lisää nykyinen jakso** säilyttää senh
 **Tallenna sarja** tallentaa listan .sarja-tiedostoon. Sen voi avata myöhemmin Tuo jaksot -painikkeella. Selain ei tallenna listaa automaattisesti. Korjattu jakso lisätään listaan uudelleen vanhan tilalle. Sarjan projektit saavat olla yhteensä enintään 128 Mt ja tasokuvat 48 megapikseliä; videon enimmäiskoko on 128 Mt.
 
 Paneelit: hahmon osat ja jaksot vasemmalla, näyttämö keskellä, kameraseuranta ja ominaisuudet oikealla, aikajana alhaalla. Käyttöohjeen viimeinen luku opastaa koko työnkulun. MP4-vienti korvaa aiemman WebM-viennin. PNG-kuvasarja käyttää Animoi-näkymässä näyttämön kokoa ja taustaväriä, muissa näkymissä alkuperäisen PSD:n rajauksen.
+
+## Kävelyanimaatio ja tasohaku
+Oikean paneelin **Kävelyanimaatio** luo jalkojen ja valinnaisten käsien vastakkaiset heilahdukset avainruuduiksi. Säädä askelkierron kestoa, kiertokulmia, vartalon pomppua ja etenemistä. Valitse raajojen yläosat ja aseta kiertokeskukset lonkkiin/olkapäihin. Vartalon liike edellyttää raajojen liittämistä vartaloon. Toiminto korvaa valittujen osien radat luontivälillä; muiden osien radat säilyvät ja Kumoa palauttaa muutoksen. Maahan lukitusta tai automaattista polvitaivutusta ei tehdä. Käyttöohjeen luku 11 opastaa vaiheet.
+
+**Hae hahmon osaa** suodattaa tasoluettelon nimen tai ryhmäpolun mukaan. Hakua vastaavat ryhmät avautuvat myös silloin, kun ne on aiemmin suljettu. Haku ei muuta näkyvyyttä tai tallennettua PSD-hierarkiaa.
