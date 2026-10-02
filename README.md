@@ -66,7 +66,7 @@ Node.js 22.13+ vaaditaan. Tuotannossa käytä Node.js 24:ää. PSD:n purku, mall
 Lähdekoodi on julkisessa GitHub-repositoriossa. Kirjautuminen suojaa omaa palvelinta; muut voivat edelleen kopioida julkisen lähdekoodin.
 
 ## Käyttöohje studiossa
-Yläpalkin Käyttöohje avaa yhdeksan ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
+Yläpalkin Käyttöohje avaa yhdeksän ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
 
 ## Kokonainen projekti, ääni ja video
 Tallenna projekti kirjoittaa .hahmo-tiedoston, joka sisältää tasokuvat, näkyvyydet, nivelmääritykset, avainruudut ja valinnaisen äänen. Avaa projekti ei tarvitse erillistä PSD:tä. Alkuperäinen Photoshop-tiedosto kannattaa säilyttää, koska projektissa on normalisoidut rasterikuvat eikä Photoshopin muokattavia maskeja. Projektin kokoraja on 128 Mt. Lisää ääni hyväksyy MP3/WAV/OGG/M4A-tiedoston enintään 25 Mt. Luo suun liike vaihtaa kahta suutasoa äänen voimakkuudesta (ei foneemien tunnistusta) ja korvaa niiden avainruudut; Kumoa palauttaa aiemmat. Vie video tuottaa enintään 30 sekunnin ja 1080 pikselin WebM-tallennuksen reaaliajassa; pidä välilehti aktiivisena. Katso alta uudet liikkeen tallennustoiminnot.
