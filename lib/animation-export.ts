@@ -1,18 +1,20 @@
+import {renderScene} from './scene-render';
+import type {Scene} from './scene-model';
 import { renderLayers } from './psd-render';
 import type { PsdDocument, LayerNode } from './psd-model';
 import type { Animation } from './animation-model';
-export async function exportFrames(doc: PsdDocument, animation: Animation, signal: AbortSignal, progress: (frame: number) => void): Promise<Blob> {
- // Limit retained PNG memory; output is capped to 1080 px and 300 frames.
+export async function exportFrames(doc: PsdDocument, animation: Animation, signal: AbortSignal, progress: (frame: number) => void,scene?:Scene): Promise<Blob> {
+ // Limit retained PNG memory to 128 MiB and 300 frames.
  if (animation.duration > 300) throw new Error('Kuvasarjavienti tukee enintään 300 ruutua. Lyhennä animaatiota vientiä varten.');
  const clone=(nodes:LayerNode[]):LayerNode[]=>nodes.map(n=>({...n,children:clone(n.children)}));
  const snapshot={...doc,layers:clone(doc.layers)};
  const { zip, strToU8 } = await import('fflate');
  const canvas = document.createElement('canvas'), output = document.createElement('canvas');
- const ratio = Math.min(1,1080 / Math.max(doc.width,doc.height)); output.width=Math.round(doc.width*ratio);output.height=Math.round(doc.height*ratio);
+ const ratio = Math.min(1,1080 / Math.max(doc.width,doc.height)); output.width=scene?.width??Math.round(doc.width*ratio);output.height=scene?.height??Math.round(doc.height*ratio);
  const ctx=output.getContext('2d')!, files: Record<string,Uint8Array> = {}; let bytes=0;
  try {
   for(let i=0;i<animation.duration;i++) {
-   signal.throwIfAborted(); renderLayers(canvas,snapshot,undefined,animation,i);ctx.clearRect(0,0,output.width,output.height);ctx.drawImage(canvas,0,0,output.width,output.height);
+   signal.throwIfAborted(); if(scene)renderScene(output,canvas,snapshot,animation,i,scene);else{renderLayers(canvas,snapshot,undefined,animation,i);ctx.clearRect(0,0,output.width,output.height);ctx.drawImage(canvas,0,0,output.width,output.height);}
    const blob=await new Promise<Blob>((resolve,reject)=>output.toBlob(b=>b?resolve(b):reject(new Error('Ruudun tallennus epäonnistui.')),'image/png'));
    bytes+=blob.size;if(bytes>128*1024*1024)throw new Error('Kuvasarja on yli 128 Mt. Lyhennä animaatiota.');
    files[`ruutu_${String(i).padStart(4,'0')}.png`]=new Uint8Array(await blob.arrayBuffer());progress(i+1);
