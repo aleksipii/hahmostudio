@@ -10,7 +10,8 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --test lib/rig-model.test.ts"
   },
   "dependencies": {
     "ag-psd": "31.0.2",

@@ -69,4 +69,14 @@ Viralliset ohjeet:
 
 PSD-tuonti, sisäkkäiset tasoryhmät, näkyvyys, tasotiedot, PNG-/ZIP-vienti, zoomaus, alkuperäinen PSD-esikatselu ja tasotesti. Tasojen näkyvyys ja valinnat eivät vielä tallennu. Monimutkaiset Photoshop-tehosteet voivat poiketa tasoesikatselussa.
 
-Seuraava vaihe on rig editor. Tarkempi jatkuvuusohje on `AGENTS.md`-tiedostossa.
+## Rigin muokkaus
+
+1. Avaa PSD ja valitse taso vasemmalta.
+2. Avaa **Rigi**-välilehti ja valitse oikealta tason rooli.
+3. Valitse **Aseta pivot** tai **Lisää nivel** ja napsauta kuvaa. Voit muokata pisteiden X/Y-koordinaatteja myös numeroina.
+4. Valitse **Tallenna rigi**, jotta roolit ja pisteet säilyvät JSON-tiedostossa.
+5. Jatka myöhemmin avaamalla sama PSD ja valitsemalla **Avaa rigi**.
+
+Pivot näkyy oranssina ja nivelet turkooseina. Koordinaatit ovat alkuperäisen PSD:n pikseleitä zoomauksesta riippumatta. Rigi ei sisällä PSD:tä tai tasokuvia. Tämä vaihe tallentaa rigin määrittelyn; animaatio ja timeline ovat myöhempiä vaiheita.
+
+Testit: `npm test`. Tarkempi jatkuvuusohje on `AGENTS.md`-tiedostossa.
