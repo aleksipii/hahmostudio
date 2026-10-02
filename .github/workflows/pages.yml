@@ -17,3 +17,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build:private
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hahmostudio-private-build
+          path: dist
+          retention-days: 7
