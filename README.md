@@ -2,6 +2,14 @@
 
 Tässä on ensimmäisen vaiheen PSD-editorin lähdekoodi tavallisena React + TypeScript + Vite -projektina. Projekti ei tarvitse Sites-, Cloudflare- tai ChatGPT-palvelinta. PSD:t käsitellään selaimessa.
 
+## Nettisivu
+
+[Avaa Hahmostudio GitHub Pagesissa](https://aleksipii.github.io/hahmostudio/)
+
+Julkaisu odottaa GitHub Pagesin käyttöönottoa. Linkki toimii, kun Pages on otettu käyttöön ja julkaisu onnistunut.
+
+Editorissa voit avata oman PSD-tiedoston tai kokeilla tasotestiä. PSD-tiedostot käsitellään paikallisesti selaimessa. Avoimen editorin tila säilyy vain nykyisessä välilehdessä.
+
 ## Aloita omalla koneella
 
 1. Pura ZIP ja avaa `hahmostudio`-kansio Codexissa tai VS Codessa.
@@ -40,7 +48,7 @@ Codex Cloudissa valitse GitHub-repositorio pilviympäristöön ja anna pääsy j
 
 **Private-repositorio ei yksin tee julkaistusta Pages-sivusta yksityistä.** Yksityinen Pages-julkaisu vaatii GitHub Enterprise Cloud -organisaation ja sen omistaman private/internal-projektirepositorion. Henkilökohtaisen tavallisen tilin Pages ei tarjoa tätä pääsynhallintaa.
 
-Paketissa ei ole automaattista julkaisuworkflowta: pelkkä koodin vieminen GitHubiin ei julkaise editoria.
+Repositoriossa on automaattinen julkaisu `.github/workflows/pages.yml`. Kun GitHub Pages on otettu käyttöön asetuksella **Source: GitHub Actions**, muutokset `main`-haaraan rakentavat ja julkaisevat editorin. Nykyinen yksityinen repositorio vaatii Pagesia tukevan maksullisen tilauksen; maksuttomalla tilillä repositorion on oltava julkinen.
 
 Jos sinulla on yksityiseen Pagesiin oikeuttava organisaatio:
 
