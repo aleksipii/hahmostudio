@@ -11,7 +11,7 @@ export async function createPrivateServer({distDir,dataDir,origin,setupToken='',
  const root=await realpath(distDir),store=resolve(dataDir),ownerPath=resolve(store,'owner.json');await mkdir(store,{recursive:true,mode:0o700});
  let owner=null;try{owner=JSON.parse(await readFile(ownerPath,'utf8'));if(typeof owner.username!=='string'||typeof owner.salt!=='string'||typeof owner.hash!=='string')throw new Error('Invalid owner record');}catch(e){if(e.code!=='ENOENT')throw e;}
  const sessions=new Map(),attempts=new Map();let settingUp=false;
- const cookie=(value,age)=>`hahmostudio_session=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${secure?'; Secure':''}`;
+ const cookie=(name,value,age)=>`${name}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${secure?'; Secure':''}`;
  const body=async(req)=>{let bytes=0,chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>8192)throw new Error('Body too large');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString('utf8'));};
  const loginPage=(nonce)=>`<!doctype html><html lang="fi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hahmostudio · oma studio</title><style nonce="${nonce}">*{box-sizing:border-box}body{margin:0;background:#191c1e;color:#e4e7e7;font:16px system-ui;min-height:100vh;display:grid;place-items:center;padding:24px}main{width:min(440px,100%)}small{color:#b6e976;letter-spacing:2px}h1{font-size:38px}p{line-height:1.6;color:#aeb5b9}label{display:block;margin:18px 0 6px}input{width:100%;padding:14px;border:1px solid #4b5357;border-radius:7px;background:#252a2d;color:#fff;font:inherit}button{width:100%;padding:14px;margin-top:24px;background:#b6e976;border:0;border-radius:7px;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.5}#error{color:#ffb5a3}a{color:#b6e976}</style><main><small>OMA ANIMAATIOSTUDIO</small><h1>hahmostudio.</h1><p id="intro">Kirjaudu omaan studioosi. Hahmot ja animaatiot käsitellään tällä koneella.</p><form id="form"><label for="username">Käyttäjätunnus</label><input id="username" name="username" autocomplete="username" minlength="3" maxlength="64" required><label for="password">Salasana</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required><div id="setup" hidden><label for="confirm">Salasana uudelleen</label><input id="confirm" type="password" autocomplete="new-password"><div id="token-row" hidden><label for="token">Käyttöönottoavain</label><input id="token" type="password" autocomplete="off"></div><p>Ensimmäinen käyttäjä on studion ainoa käyttäjä. Salasanan tulee olla vähintään 12 merkkiä.</p></div><p id="error" role="alert"></p><button id="submit" disabled>Odota…</button></form></main><script nonce="${nonce}">
 let setup=false;const form=document.querySelector('#form'),button=document.querySelector('#submit'),error=document.querySelector('#error');
@@ -27,12 +27,13 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
    const address=new URL(req.url,'http://localhost'),path=address.pathname;
    const expected=origin??`http://${req.headers.host}`;
    if(!origin&&!['localhost','127.0.0.1','[::1]'].includes(new URL(expected).hostname)){send(403,{error:'Virheellinen palvelinosoite.'});return;}
-   const token=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith('hahmostudio_session='))?.slice('hahmostudio_session='.length);
+   const cookieName=`hahmostudio_session_${new URL(expected).port||(secure?'443':'80')}`;
+   const token=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(cookieName+'='))?.slice(cookieName.length+1);
    const session=token?sessions.get(token):undefined;const authorized=!!session&&session> Date.now();if(session&&!authorized)sessions.delete(token);
    if(req.method==='GET'&&path==='/api/auth/status'){send(200,{hasOwner:!!owner,needsToken:!!setupToken,authenticated:authorized});return;}
    if(req.method==='POST'&&path.startsWith('/api/auth/')){
     if(req.headers.origin!==expected||!req.headers['content-type']?.startsWith('application/json')){send(403,{error:'Pyyntö ei ole sallittu.'});return;}
-    if(path==='/api/auth/logout'){if(token)sessions.delete(token);res.setHeader('Set-Cookie',cookie('',0));send(200,{ok:true});return;}
+    if(path==='/api/auth/logout'){if(token)sessions.delete(token);res.setHeader('Set-Cookie',cookie(cookieName,'',0));send(200,{ok:true});return;}
     if(!['/api/auth/login','/api/auth/setup'].includes(path)){send(404,{error:'Ei löydy.'});return;}
     const ip=req.socket.remoteAddress,now=Date.now(),count=attempts.get(ip);if(count&&count.until>now&&count.count>=8){send(429,{error:'Liian monta yritystä. Odota 15 minuuttia.'});return;}
     for(const[k,v]of attempts)if(v.until<=now)attempts.delete(k);attempts.set(ip,{count:count&&count.until>now?count.count+1:1,until:count&&count.until>now?count.until:now+900000});
@@ -48,7 +49,7 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
      const derived=await hash(password,owner?.salt??'unconfigured-owner');
      if(!owner||username!==owner.username||!equal(derived,Buffer.from(owner.hash,'hex'))){send(401,{error:'Tunnus tai salasana on väärä.'});return;}
     }
-    attempts.delete(ip);for(const[k,v]of sessions)if(v<=now)sessions.delete(k);const id=randomBytes(32).toString('hex');sessions.set(id,Date.now()+12*3600000);res.setHeader('Set-Cookie',cookie(id,12*3600));send(200,{ok:true});return;
+    attempts.delete(ip);for(const[k,v]of sessions)if(v<=now)sessions.delete(k);const id=randomBytes(32).toString('hex');sessions.set(id,Date.now()+12*3600000);res.setHeader('Set-Cookie',cookie(cookieName,id,12*3600));send(200,{ok:true});return;
    }
    if(path==='/login'&&req.method==='GET'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end(loginPage(nonce));return;}
    if(!authorized){if(path.startsWith('/api/'))send(401,{error:'Kirjaudu ensin.'});else{res.writeHead(302,{Location:'/login'});res.end();}return;}

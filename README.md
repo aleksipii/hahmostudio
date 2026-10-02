@@ -4,7 +4,7 @@ Hahmostudio on suomenkielinen PSD-pohjainen animaatioeditori omaan käyttöön. 
 
 ## Yksityinen studio
 
-Julkinen GitHub Pages -julkaisu on poistettava käytöstä yksityistä käyttöä varten: Pages ei suorita kirjautumista tarkistavaa Node-palvelinta. Käytä tämän projektin yksityistä palvelinta.
+Julkinen GitHub Pages -julkaisu on poistettu käytöstä yksityistä käyttöä varten: Pages ei suorita kirjautumista tarkistavaa Node-palvelinta. Käytä tämän projektin yksityistä palvelinta.
 
 ```sh
 npm ci
@@ -62,3 +62,5 @@ npm run build:private
 ```
 
 Node.js 22.13+ vaaditaan. Tuotannossa käytä Node.js 24:ää. PSD:n purku, malli, rigi, animaation interpolointi, renderöinti ja yksityinen palvelin ovat erillisiä moduuleja.
+
+Lähdekoodi on julkisessa GitHub-repositoriossa. Kirjautuminen suojaa omaa palvelinta; muut voivat edelleen kopioida julkisen lähdekoodin.

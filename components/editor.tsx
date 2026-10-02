@@ -96,7 +96,7 @@ export default function Editor() {
  useEffect(() => {
   if (!stage.current) return;
   const observer = new ResizeObserver(([e]) => {
-   if (doc) setFit(Math.min((e.contentRect.width - 80) / doc.width, (e.contentRect.height - 80) / doc.height, 1));
+   if (doc) setFit(Math.min((e.contentRect.width - 8) / doc.width, (e.contentRect.height - 8) / doc.height, 1));
   }); observer.observe(stage.current); return () => observer.disconnect();
  }, [doc]);
  useEffect(() => {

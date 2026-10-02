@@ -7,7 +7,7 @@ test('private server protects assets, owner creation, session and logout',async(
   assert.equal((await fetch(base+'/app.js',{redirect:'manual'})).status,302);
   assert.equal((await post('/api/auth/setup',{username:'owner',password:'test-password-123',setupToken:'wrong'})).status,403);
   assert.equal((await post('/api/auth/setup',{username:'owner',password:'test-password-123',setupToken:'test-bootstrap-token'},null,'http://evil.test')).status,403);
-  const setup=await post('/api/auth/setup',{username:'owner',password:'test-password-123',setupToken:'test-bootstrap-token'});assert.equal(setup.status,200);const cookie=setup.headers.get('set-cookie').split(';')[0];assert.match(setup.headers.get('set-cookie'),/HttpOnly/);assert.match(setup.headers.get('set-cookie'),/SameSite=Strict/);
+  const setup=await post('/api/auth/setup',{username:'owner',password:'test-password-123',setupToken:'test-bootstrap-token'});assert.equal(setup.status,200);const cookie=setup.headers.get('set-cookie').split(';')[0];assert.ok(cookie.startsWith(`hahmostudio_session_${server.address().port}=`));assert.match(setup.headers.get('set-cookie'),/HttpOnly/);assert.match(setup.headers.get('set-cookie'),/SameSite=Strict/);
   assert.equal((await post('/api/auth/setup',{username:'attacker',password:'test-password-123',setupToken:'test-bootstrap-token'})).status,409);
   assert.equal(await(await fetch(base+'/app.js',{headers:{Cookie:cookie}})).text(),'PRIVATE ASSET');
   const stored=await readFile(join(root,'data','owner.json'),'utf8');assert.ok(!stored.includes('test-password-123'));
