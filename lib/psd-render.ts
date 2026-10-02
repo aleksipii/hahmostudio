@@ -1,5 +1,6 @@
+import { sampleTrack, type Animation, type Pose } from './animation-model';
 import { blendModes, type LayerNode, type PsdDocument } from './psd-model';
-export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?: string) {
+export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?: string, animation?: Animation, frame = 0, draft?: { key: string; pose: Pose }) {
  const ratio = Math.min(1, 2048 / Math.max(doc.width, doc.height));
  canvas.width = Math.round(doc.width * ratio); canvas.height = Math.round(doc.height * ratio);
  const ctx = canvas.getContext('2d')!; ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -16,7 +17,17 @@ export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?:
      const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
      paint(n.children, c.getContext('2d')!, within); target.drawImage(c, 0, 0); c.width = c.height = 0;
     }
-   } else if (n.image) target.drawImage(n.image, n.left * ratio, n.top * ratio, n.width * ratio, n.height * ratio);
+   } else if (n.image) {
+    if (animation) {
+     const pose = draft?.key === n.key ? draft.pose : sampleTrack(animation.tracks.find(t => t.key === n.key), frame);
+     const part = animation.rig.parts.find(p => p.key === n.key), pivot = part?.pivot ?? { x: n.left + n.width / 2, y: n.top + n.height / 2 };
+     target.globalAlpha *= pose.opacity;
+     target.translate((pivot.x + pose.x) * ratio, (pivot.y + pose.y) * ratio);
+     target.rotate(pose.rotation * Math.PI / 180); target.scale(pose.scale, pose.scale);
+     target.translate(-pivot.x * ratio, -pivot.y * ratio);
+    }
+    target.drawImage(n.image, n.left * ratio, n.top * ratio, n.width * ratio, n.height * ratio);
+   }
    target.restore();
   }
  };

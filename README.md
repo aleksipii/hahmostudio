@@ -1,82 +1,64 @@
-# Hahmostudio — Codex-projekti
+# Hahmostudio — oma animaatiostudio
 
-Tässä on ensimmäisen vaiheen PSD-editorin lähdekoodi tavallisena React + TypeScript + Vite -projektina. Projekti ei tarvitse Sites-, Cloudflare- tai ChatGPT-palvelinta. PSD:t käsitellään selaimessa.
+Hahmostudio on suomenkielinen PSD-pohjainen animaatioeditori omaan käyttöön. PSD:t ja animaatiot käsitellään paikallisesti. Pilvitallennusta ei ole.
 
-## Nettisivu
+## Yksityinen studio
 
-[Avaa Hahmostudio GitHub Pagesissa](https://aleksipii.github.io/hahmostudio/)
-
-Editorin selainversio julkaistaan GitHub Pagesissa. Avaa yllä oleva linkki käyttääksesi Hahmostudiota ilman paikallista asennusta.
-
-Editorissa voit avata oman PSD-tiedoston tai kokeilla tasotestiä. PSD-tiedostot käsitellään paikallisesti selaimessa. Avoimen editorin tila säilyy vain nykyisessä välilehdessä.
-
-## Aloita omalla koneella
-
-1. Pura ZIP ja avaa `hahmostudio`-kansio Codexissa tai VS Codessa.
-2. Käytä Node.js 22.13+ (tai uudempaa yhteensopivaa versiota).
-3. Suorita projektikansiossa:
+Julkinen GitHub Pages -julkaisu on poistettava käytöstä yksityistä käyttöä varten: Pages ei suorita kirjautumista tarkistavaa Node-palvelinta. Käytä tämän projektin yksityistä palvelinta.
 
 ```sh
 npm ci
-npm run dev
+npm run build:private
+npm run start:private
 ```
 
-Avaa terminaalin ilmoittama paikallinen osoite. `npm run build` tuottaa staattisen sivuston `dist`-kansioon. `npm run preview` näyttää kootun sivuston paikallisesti.
+Avaa **http://127.0.0.1:4174/**. Ensimmäisellä käyttökerralla etusivu pyytää luomaan oman käyttäjätunnuksen ja vähintään 12 merkin salasanan. Uusia käyttäjiä ei voi luoda tämän jälkeen. Palvelin kuuntelee oletuksena vain tämän koneen loopback-osoitetta.
 
-Codexille aloitustehtävä:
+Salasana tallennetaan satunnaisesti suolattuna scrypt-tiivisteenä. Kirjautuminen käyttää HttpOnly/SameSite-evästettä, ja palvelin estää sekä editorin että sen tiedostojen lataamisen ilman istuntoa. Istunto kestää 12 tuntia ja päättyy palvelimen uudelleenkäynnistyksessä. Käytä **Kirjaudu ulos**, kun lopetat.
 
-> Jatka tätä Hahmostudio-projektia. Lue AGENTS.md. Vaihe 1 on PSD importer + layer viewer. Toteuta seuraavaksi rig editor: tasojen roolien määritys, pivot- ja nivelpisteiden sijoittaminen hahmon päälle sekä rigin tallennus ja avaaminen JSON-tiedostona. Säilytä nykyinen PSD-tuonti ja käyttöliittymä. Älä toteuta vielä timelinea. Tarkista tyypit ja tuotantokoonti.
+Tunnustiedot ovat `.private-storage/owner.json`-tiedostossa. Kansiota ei viedä Gitiin. Säilytä kansio turvallisesti ja varmuuskopioi se; projektin päivitys ei saa korvata sitä. Älä laita salasanaa tai käyttöönottoavainta lähdekoodiin.
 
-## GitHub ja paikallinen kehitys
+## Animointi
 
-Lähdekoodi on repositoriossa [aleksipii/hahmostudio](https://github.com/aleksipii/hahmostudio). Jos julkaiset projektista oman kopion, voit käyttää GitHub Desktopia tai terminaalia:
+1. Avaa oma PSD tai kokeile valmista tasotestiä.
+2. Valitse vasemmalta taso. Avaa **Rigi**, määritä rooli ja aseta kierron pivot-piste kuvan päälle.
+3. Avaa **Animoi**. Valitse tason rata ja aikajanan ruutu.
+4. Muokkaa liikettä X/Y-suunnassa, kiertoa, skaalaa tai peittävyyttä ja paina **Lisää avainruutu**.
+5. Siirry seuraavaan ruutuun, muokkaa asentoa ja lisää seuraava avainruutu. **Toista** näyttää liikkeen silmukkana.
+6. Valitse siirtymä: Pehmeä, Tasainen tai Pidä asento. Siirtymä koskee kyseisestä avainruudusta seuraavaan kulkevaa liikettä.
+7. **Tallenna animaatio** tallentaa rigin ja avainruudut JSON-tiedostoon. Jatka avaamalla sama PSD ja **Avaa animaatio**. PSD-kuvia ei sisällytetä JSONiin.
+8. **Vie PNG-kuvasarja** lataa ZIP-tiedoston, jossa on läpinäkyvät ruutukuvat ja FPS-tiedot. Voit käyttää ruutuja videon koostamiseen toisessa ohjelmassa.
+
+**Kumoa** ja **Tee uudelleen** toimivat avainruutujen ja aikajanan asetusten muutoksiin (40 muutosta). Asennon kenttien muokkaus on esikatselu, kunnes painat avainruudun tallennusta. Pelkkä aikajanalla siirtyminen ei tallenna uutta asentoa.
+
+Nykyinen versio animoi tasoja toisistaan riippumatta. Pivot vaikuttaa kiertoon; nivelpisteet ovat rigin määrittelyä eivätkä vielä sido tasoja luurangoksi. Ääni, huulisynkronointi, kameraseuranta ja sisäkkäiset animaatioklipit ovat myöhempiä kehitysvaiheita. Tämä ei vielä vastaa Adobe Character Animatorin koko toiminnallisuutta.
+
+## Rajat
+
+- RGB/harmaasävy, 8-bittinen PSD; ei PSB:tä.
+- PSD enintään 100 MiB, kuva 16 MP, 1000 tasoa.
+- Animaatio: 1–60 FPS, 2–1800 ruutua.
+- PNG-vienti: enintään 300 ruutua, pisin sivu 1080 px ja pakkaamattomien PNG-tiedostojen yhteiskoko 128 MiB.
+- Monimutkaiset Photoshop-tehosteet voivat poiketa alkuperäisestä kuvasta. Tasojen näkyvyysmuutokset eivät sisälly animaatio-JSONiin.
+
+## Suojattu käyttö internetissä
+
+Etäkäyttö vaatii Node-palvelinta tukevan hostauksen ja HTTPS:n. GitHub Pages ei riitä. Palvelin on valmisteltu tähän, mutta hostaus on määritettävä erikseen:
+
+- `HAHMOSTUDIO_HOST=0.0.0.0`
+- `HAHMOSTUDIO_ORIGIN=https://oma-studio.example`
+- `HAHMOSTUDIO_SETUP_TOKEN`: pitkä satunnainen kertakäyttöinen käyttöönottoavain; syötä se ensimmäisen tunnuksen luonnissa.
+- `HAHMOSTUDIO_DATA_DIR`: pysyvä yksityinen tallennuskansio.
+- `PORT`: palvelimen portti (oletus 4174).
+
+Käytä HTTPS-välityspalvelinta ja estä suora julkinen pääsy Node-porttiin. Älä julkaise `dist`-kansiota suojaamattomalla staattisella palvelimella. Palvelin ei lähetä salasanaa tai tunnustietoja selaimeen.
+
+## Kehityksen tarkistukset
 
 ```sh
-git init
-git add .
-git commit -m "PSD importer and layer viewer"
-git branch -M main
-git remote add origin https://github.com/OMA-TUNNUS/hahmostudio.git
-git push -u origin main
+npm test
+npm run typecheck
+npm run build:private
 ```
 
-Vaihda `OMA-TUNNUS` omaan tunnukseesi. Kirjaudu GitHubin normaalia kirjautumista käyttäen; älä lisää tunnuksia tai tokeneita lähdekoodiin.
-
-Codex Cloudissa valitse GitHub-repositorio pilviympäristöön ja anna pääsy juuri tähän repositorioon. Omalla koneella kansiota voi kehittää ilman GitHubia.
-
-## GitHub Pagesin yksityisyys
-
-**Private-repositorio ei yksin tee julkaistusta Pages-sivusta yksityistä.** Yksityinen Pages-julkaisu vaatii GitHub Enterprise Cloud -organisaation ja sen omistaman private/internal-projektirepositorion. Henkilökohtaisen tavallisen tilin Pages ei tarjoa tätä pääsynhallintaa.
-
-Repositoriossa on automaattinen julkaisu `.github/workflows/pages.yml`. Kun GitHub Pages on otettu käyttöön asetuksella **Source: GitHub Actions**, muutokset `main`-haaraan rakentavat ja julkaisevat editorin. Tämä repositorio ja GitHub Pages -sivu ovat julkisia.
-
-Jos sinulla on yksityiseen Pagesiin oikeuttava organisaatio:
-
-1. Vie koodi sen private-repositorioon.
-2. Aseta Pages-julkaisu GitHub Actionsin kautta ja muuta Pagesin näkyvyys **Private**.
-3. Lisää rakennusvaiheiksi `npm ci` ja `npm run build`.
-4. Julkaise `dist` käyttäen GitHubin `upload-pages-artifact`- ja `deploy-pages`-actioneita.
-5. Yksityisen Pagesin erillisessä root-domainissa käytä oletusarvoa `VITE_BASE_PATH=/`.
-
-Jos tarkoituksella julkaiset julkisen projektisivun osoitteeseen `https://tunnus.github.io/hahmostudio/`, rakenna se muuttujalla `VITE_BASE_PATH=/hahmostudio/`. Sivun näkyvyys pitää silti ratkaista erikseen. Omaan käyttöön vaihtoehtona on paikallinen selainkäyttö tai nykyinen yksityinen Hahmostudio-julkaisu.
-
-Viralliset ohjeet:
-- https://docs.github.com/en/enterprise-cloud@latest/pages/getting-started-with-github-pages/changing-the-visibility-of-your-github-pages-site
-- https://developers.openai.com/codex/cloud
-- https://vite.dev/guide/static-deploy.html#github-pages
-
-## Toteutettu
-
-PSD-tuonti, sisäkkäiset tasoryhmät, näkyvyys, tasotiedot, PNG-/ZIP-vienti, zoomaus, alkuperäinen PSD-esikatselu ja tasotesti. Tasojen näkyvyys ja valinnat eivät vielä tallennu. Monimutkaiset Photoshop-tehosteet voivat poiketa tasoesikatselussa.
-
-## Rigin muokkaus
-
-1. Avaa PSD ja valitse taso vasemmalta.
-2. Avaa **Rigi**-välilehti ja valitse oikealta tason rooli.
-3. Valitse **Aseta pivot** tai **Lisää nivel** ja napsauta kuvaa. Voit muokata pisteiden X/Y-koordinaatteja myös numeroina.
-4. Valitse **Tallenna rigi**, jotta roolit ja pisteet säilyvät JSON-tiedostossa.
-5. Jatka myöhemmin avaamalla sama PSD ja valitsemalla **Avaa rigi**.
-
-Pivot näkyy oranssina ja nivelet turkooseina. Koordinaatit ovat alkuperäisen PSD:n pikseleitä zoomauksesta riippumatta. Rigi ei sisällä PSD:tä tai tasokuvia. Tämä vaihe tallentaa rigin määrittelyn; animaatio ja timeline ovat myöhempiä vaiheita.
-
-Testit: `npm test`. Tarkempi jatkuvuusohje on `AGENTS.md`-tiedostossa.
+Node.js 22.13+ vaaditaan. Tuotannossa käytä Node.js 24:ää. PSD:n purku, malli, rigi, animaation interpolointi, renderöinti ja yksityinen palvelin ovat erillisiä moduuleja.

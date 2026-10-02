@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types --test lib/rig-model.test.ts"
+    "test": "node --experimental-strip-types --test lib/*.test.ts server/*.test.mjs",
+    "start:private": "node server/private-server.mjs",
+    "build:private": "VITE_BASE_PATH=/ VITE_PRIVATE_SERVER=true npm run build"
   },
   "dependencies": {
     "ag-psd": "31.0.2",
