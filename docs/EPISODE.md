@@ -56,3 +56,9 @@ Vaatimus näyttää Toteutettu, Arvio tai Puuttuu sekä lähderivin ja siihen li
 Tämä on paikallinen sääntöpohjainen suunnittelija, ei kaikkien vapaamuotoisten käsikirjoitusten täydellinen semanttinen tulkitsija. Enintään neljä hahmomääritystä, kirjaston taustat ja yksi puhelin. Oman mielivaltaisen rekvisiitan, oman taustakuvan ja valitun puhesynteesin yhdistäminen tähän polkuun on jatkokehitystä. Repliikkiäänien tuonti toimii nyt.
 
 Live-kamera, mikrofoni ja näppäimet säilyvät tavallisessa Esitys-työtilassa. Jaksossa live-esikatselu vaikuttaa ensimmäisen hahmon kasvoihin; suu käyttää repliikkiääntä. Vienti ei ota live-dataa ja käyttää tallennettua suunnitelmaa. Selain-, fyysisiä laite- tai Finder-testejä ei tehty käyttäjän aiemman testausrajauksen vuoksi. Oikeita repliikkiäänityksiä ei toimitettu, joten puhuttua lopullista videota ei ole todennettu.
+
+## Kokeile ja muuta kuvan kokoa (0.7.1)
+
+Käsikirjoitus-välilehden **Kokeile esimerkkianimaatiota** rakentaa ja toistaa liike-esimerkin. Tyhjässä projektissa ladataan Aino-Monikulma. Valmiiksi avatun pikaanimointihahmon kanssa esimerkki lisätään aikajanan loppuun kumottavasti. Esimerkissä ei ole puheääntä; tekstistä ei tuoteta ääntä. Oman hahmon tilalle lataaminen käyttää olemassa olevaa tallentamiskehotetta ja säilyttää edellisen työn palautettavaksi.
+
+Näyttämön alareunan **Pienennä kuvaa** ja **Suurenna kuvaa** muuttavat hahmon kokoa myös videoviennissä. Dialogikohtauksissa ne muuttavat kaikkien kohtauksen hahmojen kokoa. Sijainti, liikkeet ja äänen ajoitus säilyvät. Muutoksen voi kumota. Loitonna/Lähennä/Sovita muuttavat vain esikatselun zoomausta. Pysäytä toisto ennen koon muuttamista.

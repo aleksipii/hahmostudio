@@ -1,0 +1,1 @@
+export const exampleScreenplay='[tausta studio]\nHei! Tervetuloa mukaan. [vilkuta 2s]\nKävelen oikealle. [kävele oikealle 3s]\n[tausta auto kuljettaja]\nNyt ollaan autossa. [nyökkää 2s]\n[tausta puhelin edestä]\nNähdään seuraavassa jaksossa! [vilkuta 2s]';
