@@ -1,11 +1,12 @@
 """Original flat paper-cutout cast, not characters or graphics from any TV show."""
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageOps
-import json
+import json,sys
+studio="--studio" in sys.argv
 root=Path(__file__).resolve().parent.parent
 for name,skin,coat,hair in [('Roni','#d5a17d','#226e74','#333136'),('Salla','#f0bb92','#ae4c3c','#643b30')]:
  for view in ['front','right','left']:
-  out=root/'.paper-character-build'/name/view;out.mkdir(parents=True,exist_ok=True)
+  out=root/('.paper-character-studio-build' if studio else '.paper-character-build')/name/view;out.mkdir(parents=True,exist_ok=True)
   layers=[];composite=Image.new('RGBA',(600,900));dark='#282b31';side=view!='front'
   def layer(key,label,group,role,pivot,parent,draw,hidden=False,joints=[]):
    im=Image.new('RGBA',(600,900));draw(ImageDraw.Draw(im))
@@ -15,12 +16,12 @@ for name,skin,coat,hair in [('Roni','#d5a17d','#226e74','#333136'),('Salla','#f0
    crop=im.crop(box);crop.save(out/(key+'.png'));(out/(key+'.rgba')).write_bytes(crop.tobytes())
    layers.append(dict(key=key,name=label,group=group,role=role,pivot=dict(x=pivot[0],y=pivot[1]),parentKey=parent,joints=[dict(x=x,y=y) for x,y in joints],left=box[0],top=box[1],width=crop.width,height=crop.height,hidden=hidden))
    if not hidden:composite.alpha_composite(im)
-  def shape(d,box,color,r=12):d.rounded_rectangle(box,r,fill=color,outline=dark,width=3)
+  def shape(d,box,color,r=12):d.rounded_rectangle(box,r,fill=color,outline=None if studio and color=='#3c4659' else dark,width=3)
   # Separate leg segments support stance IK; every view has its own joints.
   for which,x in [('right',280 if side else 254),('left',320 if side else 346)]:
    label='Oikea' if which=='right' else 'Vasen'
-   layer(which+'Thigh',label+' reisi','Vartalo','leg',(x,600),'root',lambda d,x=x:shape(d,(x-24,580,x+24,703),'#3c4659'),joints=[(x,690)])
-   layer(which+'Shin',label+' sääri','Vartalo','leg',(x,690),which+'Thigh',lambda d,x=x:shape(d,(x-22,672,x+22,791),'#3c4659'),joints=[(x,780)])
+   layer(which+'Thigh',label+' reisi','Vartalo','leg',(x,600),'root',lambda d,x=x:shape(d,(x-24,580,x+24,714),'#3c4659',24),joints=[(x,690)])
+   layer(which+'Shin',label+' sääri','Vartalo','leg',(x,690),which+'Thigh',lambda d,x=x:shape(d,(x-24,665,x+24,791),'#3c4659',24),joints=[(x,780)])
    layer(which+'Foot',label+' kenkä','Vartalo','foot',(x,780),which+'Shin',lambda d,x=x:shape(d,(x-30,769,x+42,804),'#282b31',8))
   for which,x in [('right',275 if side else 204),('left',325 if side else 396)]:
    label='Oikea' if which=='right' else 'Vasen'
@@ -32,6 +33,11 @@ for name,skin,coat,hair in [('Roni','#d5a17d','#226e74','#333136'),('Salla','#f0
    shape(d,b,coat,26)
    d.line((300,416,300,627),fill='#f5dfab',width=4)
    for y in [460,506,552]:d.ellipse((305,y,312,y+7),fill=dark)
+   if studio:
+    d.line((b[0]+15,478,b[0]+49,478),fill='#aac6c2' if name=='Roni' else '#f1baa7',width=3)
+    d.line((b[2]-47,478,b[2]-15,478),fill='#aac6c2' if name=='Roni' else '#f1baa7',width=3)
+    d.polygon([(b[0]+14,416),(300,454),(300,424)],fill='#194e53' if name=='Roni' else '#80382d')
+    d.polygon([(b[2]-14,416),(300,454),(300,424)],fill='#358a90' if name=='Roni' else '#c36652')
    if name=='Salla':d.polygon([(260,412),(300,448),(340,412)],fill='#f0dfcc')
   layer('root','Vartalo','Vartalo','body',(300,600),None,body)
   def head(d):
@@ -62,6 +68,7 @@ for name,skin,coat,hair in [('Roni','#d5a17d','#226e74','#333136'),('Salla','#f0
   layer('mouthNeutral','Suu lepo','Suut','mouth',(mouth,353),'head',lambda d:d.line((mouth-20,353,mouth+20,353),fill=dark,width=3))
   layer('mouthOpen','Suu auki','Suut','mouth',(mouth,353),'head',lambda d:(d.ellipse((mouth-19,337,mouth+19,370),fill=dark),d.rectangle((mouth-13,340,mouth+13,347),fill='#fff9ed')),True)
   layer('mouthRound','Suu pyöreä','Suut','mouth',(mouth,353),'head',lambda d:d.ellipse((mouth-10,339,mouth+10,368),fill=dark),True)
+  if studio:layer('mouthSmile','Suu hymy','Suut','mouth',(mouth,353),'head',lambda d:(d.chord((mouth-24,335,mouth+24,368),0,180,fill=dark),d.line((mouth-18,353,mouth+18,353),fill='#fff9ed',width=4)),True)
   # Keep the near arm in front of the torso; the far arm stays behind it.
   if side:
    near=[n for n in layers if n['key'] in ['leftArm','leftForearm','leftHand']]

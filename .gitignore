@@ -22,3 +22,5 @@ release/
 .multiview-otto-build/
 
 .paper-character-build/
+
+.paper-character-studio-build/

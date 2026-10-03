@@ -41,3 +41,6 @@ Toteutettu deterministinen Markdown-dialogipolku: lähdeteksti, puhujasidokset, 
 ## 0.7.0
 
 Toteutettu yleinen lähdeviitteellinen ohjaussuunnitelma, per-hahmo luonne/suhteet ja hillityt presetit, kirjaston ympäristöjen vaihdot, nykyisen moottorin vartaloliikkeet, rajoitusten ristiriidat, tarkat/joustavat aikavaatimukset, käyttäjän arvioiden vahvistus ja puuttuvien ohjeiden esto. Toinen riippumaton käsikirjoitus toimii ilman lähdekoodin muokkaamista. Jatkokehitys: vapaan luonnollisen kielen laajempi tulkinta, mielivaltainen rekvisiitta/omat taustaresurssit, valittu puhesynteesi ja oikeiden äänten/videoiden käyttövarmennus.
+
+### 0.8.0
+Kameran silmäluomet, jatkuva suuasento, katse, kulmakarvat ja valinnainen hymy on liitetty valmiisiin hahmoihin. Suun lähde on valittavissa; hiljainen aktiivinen mikrofoni ei enää peitä kameran suuasentoa automaattitilassa. Oma repliikki voidaan äänittää suoraan käsikirjoituksen työpisteessä. Studio-hahmot ja neljä lisätaustaa säilyttävät vanhan kirjaston. Teksturoidut 3D-paperitasot ja käännettävä kamera toimivat yhteisessä vientipiirtäjässä. Täysin tilavuudelliset ihmis-/esinemallit, kolmiulotteinen luuranko ja kameran avainruuturaita jäävät erilliseksi jatkokehitykseksi.

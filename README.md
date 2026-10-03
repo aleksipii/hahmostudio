@@ -2,6 +2,10 @@
 
 Hahmostudio on suomenkielinen PSD-pohjainen animaatioeditori omaan käyttöön. PSD:t ja animaatiot käsitellään paikallisesti. Pilvitallennusta ei ole.
 
+## Uutta 0.8.0
+
+Kamera ohjaa valmiin hahmon silmäluomia, katsetta, kulmakarvoja ja jatkuvaa suuasentoa. Valitse suun lähteeksi automaattinen, kamera tai mikrofoni. Voit tallentaa oman äänen ja esityksen tai äänittää repliikit suoraan käsikirjoituksen työpisteessä. Kirjastoon on lisätty Roni-Studio, Salla-Studio ja neljä tarkempaa taustaa. Näyttämön valinnainen 3D-paperimalli säilyttää PSD-osat ja nykyiset liikkeet, ja toimii samoin esikatselussa ja viennissä. Se ei sisällä tilavuudellista ihmisverkkoa tai 3D-luurankoa. Tarkemmat ohjeet: [Jakson valmistus](docs/EPISODE.md).
+
 ## Yksityinen studio
 
 Julkinen GitHub Pages -julkaisu on poistettu käytöstä yksityistä käyttöä varten: Pages ei suorita kirjautumista tarkistavaa Node-palvelinta. Käytä tämän projektin yksityistä palvelinta.

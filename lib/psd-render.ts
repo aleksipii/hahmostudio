@@ -1,3 +1,4 @@
+import {paintCutout3D,type Cutout3D} from './cutout-3d.ts';
 import {animationTransforms} from './animation-transform.ts';
 import { type Animation, type Pose } from './animation-model.ts';
 import { blendModes, type LayerNode, type PsdDocument } from './psd-model.ts';
@@ -33,7 +34,7 @@ export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?:
 }
 
 /** Draw library animation in stage coordinates, so moving limbs aren't clipped to the source PSD canvas. */
-export function paintAnimatedLayers(ctx:CanvasRenderingContext2D,doc:PsdDocument,animation:Animation,frame:number,draft?:{key:string;pose:Pose;poses?:Record<string,Pose>}){
+export function paintAnimatedLayers(ctx:CanvasRenderingContext2D,doc:PsdDocument,animation:Animation,frame:number,draft?:{key:string;pose:Pose;poses?:Record<string,Pose>},depth?:Cutout3D){if(depth?.enabled){paintCutout3D(ctx,doc,animation,frame,depth,draft);return;}
  const transforms=animationTransforms(animation,frame,draft);
  const paint=(nodes:LayerNode[],target:CanvasRenderingContext2D)=>{for(const n of nodes){if(!n.visible)continue;target.save();target.globalAlpha*=n.opacity;target.globalCompositeOperation=blendModes[n.blendMode]??'source-over';if(n.kind==='group'){
   if(n.blendMode==='pass through'&&n.opacity===1)paint(n.children,target);

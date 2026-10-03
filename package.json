@@ -1,6 +1,6 @@
 {
   "name": "hahmostudio",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -19,7 +19,7 @@
     "desktop:package:mac": "npm run desktop:build && node scripts/package-mac.mjs",
     "desktop:test": "node --test desktop/*.test.mjs",
     "desktop:test:package": "node scripts/desktop-package-test.mjs",
-    "assets:generate": "python3 scripts/create-characters.py && node scripts/create-library.mjs && python3 scripts/create-mouths.py && node scripts/create-mouths.mjs && node --experimental-strip-types scripts/create-backgrounds.mjs && python3 scripts/create-backgrounds.py && python3 scripts/create-multiview.py && node scripts/create-multiview.mjs && python3 scripts/create-otto-views.py && node scripts/create-multiview.mjs Otto && python3 scripts/create-paper-characters.py && node scripts/create-multiview.mjs Roni && node scripts/create-multiview.mjs Salla"
+    "assets:generate": "python3 scripts/create-characters.py && node scripts/create-library.mjs && python3 scripts/create-mouths.py && node scripts/create-mouths.mjs && node --experimental-strip-types scripts/create-backgrounds.mjs && python3 scripts/create-backgrounds.py && python3 scripts/create-multiview.py && node scripts/create-multiview.mjs && python3 scripts/create-otto-views.py && node scripts/create-multiview.mjs Otto && python3 scripts/create-paper-characters.py && node scripts/create-multiview.mjs Roni && node scripts/create-multiview.mjs Salla && python3 scripts/create-paper-characters.py --studio && node scripts/create-multiview.mjs Roni --studio && node scripts/create-multiview.mjs Salla --studio"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.32",

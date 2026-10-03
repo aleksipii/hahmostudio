@@ -1,0 +1,1 @@
+export const shortVideoTemplate='Title: Pieni kohtaaminen\nDuration: 10–20 s\nHahmo MIRA: ystävällinen, rauhallinen.\nHahmo NIKO: utelias.\nMiljöö: studio valoisa\nMira vilkuttaa 2 s.\nMIRA: Hei! Miten päiväsi sujuu?\nNIKO: Hyvin, lähdetään kävelylle.\nNiko kävelee oikealle 3 s.\nOtsikkokortti: Jatkuu 2 s';
