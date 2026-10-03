@@ -1,0 +1,2 @@
+import {spawnSync} from 'node:child_process';import {resolve,join} from 'node:path';
+const bundle=resolve(process.argv[2]??`release/Hahmostudio-darwin-${process.arch}/Hahmostudio.app`),result=spawnSync(join(bundle,'Contents/MacOS/Hahmostudio'),[join(bundle,'Contents/Resources/app.asar/desktop/runtime-smoke.mjs')],{stdio:'inherit',cwd:'/private/tmp',env:{...process.env,PATH:'/usr/bin:/bin',ELECTRON_RUN_AS_NODE:'1'}});process.exit(result.status??1);

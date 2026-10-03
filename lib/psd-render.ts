@@ -1,13 +1,15 @@
-import {animationTransforms} from './animation-transform';
-import { type Animation, type Pose } from './animation-model';
-import { blendModes, type LayerNode, type PsdDocument } from './psd-model';
+import {animationTransforms} from './animation-transform.ts';
+import { type Animation, type Pose } from './animation-model.ts';
+import { blendModes, type LayerNode, type PsdDocument } from './psd-model.ts';
 export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?: string, animation?: Animation, frame = 0, draft?: { key: string; pose: Pose; poses?: Record<string,Pose> }) {
  const ratio = Math.min(1, 2048 / Math.max(doc.width, doc.height));
  canvas.width = Math.round(doc.width * ratio); canvas.height = Math.round(doc.height * ratio);
  const ctx = canvas.getContext('2d')!; ctx.clearRect(0, 0, canvas.width, canvas.height);
  const transforms=animation?animationTransforms(animation,frame,draft):undefined;
+ const activeParts=!animation&&doc.quick?.views?new Set(Object.values(doc.quick.roles)):undefined;
  const paint = (nodes: LayerNode[], target: CanvasRenderingContext2D, selected = false) => {
   for (const n of nodes) {
+   if(n.kind==='layer'&&activeParts&&!activeParts.has(n.key))continue;
    const within = selected || n.key === solo;
    if (!solo && !n.visible) continue;
    if (solo && !within && !solo.startsWith(n.key + '/')) continue;
@@ -28,4 +30,13 @@ export function renderLayers(canvas: HTMLCanvasElement, doc: PsdDocument, solo?:
   }
  };
  paint(doc.layers, ctx);
+}
+
+/** Draw library animation in stage coordinates, so moving limbs aren't clipped to the source PSD canvas. */
+export function paintAnimatedLayers(ctx:CanvasRenderingContext2D,doc:PsdDocument,animation:Animation,frame:number,draft?:{key:string;pose:Pose;poses?:Record<string,Pose>}){
+ const transforms=animationTransforms(animation,frame,draft);
+ const paint=(nodes:LayerNode[],target:CanvasRenderingContext2D)=>{for(const n of nodes){if(!n.visible)continue;target.save();target.globalAlpha*=n.opacity;target.globalCompositeOperation=blendModes[n.blendMode]??'source-over';if(n.kind==='group'){
+  if(n.blendMode==='pass through'&&n.opacity===1)paint(n.children,target);
+  else{const layer=document.createElement('canvas');layer.width=target.canvas.width;layer.height=target.canvas.height;const isolated=layer.getContext('2d')!;isolated.setTransform(target.getTransform());paint(n.children,isolated);target.setTransform(1,0,0,1,0,0);target.drawImage(layer,0,0);layer.width=layer.height=0;}
+ }else if(n.image){const t=transforms.get(n.key);if(t){target.globalAlpha*=t.opacity;target.transform(t.a,t.b,t.c,t.d,t.e,t.f);}target.drawImage(n.image,n.left,n.top,n.width,n.height);}target.restore();}};paint(doc.layers,ctx);
 }

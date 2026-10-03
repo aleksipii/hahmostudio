@@ -1,0 +1,6 @@
+import {environmentId} from './presentation-direction.ts';
+import {actorPlacement} from './presentation-compile.ts';
+import type {Presentation,Binding} from './presentation-model.ts';
+/** Persistent world state, independent of shots. No camera reset changes actor/prop placement. */
+export function stageState(p:Presentation,time:number){const before=p.events.filter(e=>(e.at??0)<=time).sort((a,b)=>(a.at??0)-(b.at??0));const env=before.filter(e=>e.kind==='environment').at(-1),phone={...p.world.phone};for(const e of before.filter(e=>e.kind==='prop')){phone.enabled=e.value==='phone-on';if(p.characters.includes(e.target))phone.carrier=e.target;if(['front','back','side'].includes(e.text??''))phone.view=e.text as typeof phone.view;}return {design:env?environmentId(env.value):p.world.design,phone};}
+export function stageActor(p:Presentation,b:Binding,time:number,width=p.world.width,height=p.world.height){const placement=p.events.filter(e=>e.kind==='placement'&&e.target===b.speaker&&(e.at??0)<=time).sort((a,b)=>(a.at??0)-(b.at??0)).at(-1);return actorPlacement({...b,...(placement&&b.x===undefined&&placement.value!=='custom'?{x:width*(placement.value==='left'?.28:placement.value==='right'?.72:.5)}:{})},width,height);}

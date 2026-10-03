@@ -1,3 +1,4 @@
+import {createAudioContext} from './browser-audio';
 import {renderLayers} from './psd-render';import type {PsdDocument,LayerNode} from './psd-model';import type {Animation} from './animation-model';
 export async function exportVideo(doc:PsdDocument,animation:Animation,signal:AbortSignal,progress:(n:number)=>void,audioUrl?:string):Promise<Blob>{
  if(typeof MediaRecorder==='undefined'||typeof HTMLCanvasElement.prototype.captureStream!=='function')throw new Error('Selain ei tue videovientiä. Käytä ajantasaista Chromea tai PNG-kuvasarjaa.');
@@ -8,7 +9,7 @@ export async function exportVideo(doc:PsdDocument,animation:Animation,signal:Abo
  const stream=output.captureStream(animation.fps);let audio:HTMLAudioElement|undefined,context:AudioContext|undefined,request=0;
  try{
   signal.throwIfAborted();
-  if(audioUrl){audio=new Audio(audioUrl);audio.preload='auto';await new Promise<void>((resolve,reject)=>{audio!.onloadedmetadata=()=>resolve();audio!.onerror=()=>reject(new Error('Äänitiedoston avaaminen epäonnistui.'));signal.addEventListener('abort',()=>reject(signal.reason),{once:true});});context=new AudioContext();const node=context.createMediaElementSource(audio),dest=context.createMediaStreamDestination();node.connect(dest);stream.addTrack(dest.stream.getAudioTracks()[0]);await context.resume();}
+  if(audioUrl){audio=new Audio(audioUrl);audio.preload='auto';await new Promise<void>((resolve,reject)=>{audio!.onloadedmetadata=()=>resolve();audio!.onerror=()=>reject(new Error('Äänitiedoston avaaminen epäonnistui.'));signal.addEventListener('abort',()=>reject(signal.reason),{once:true});});context=createAudioContext();const node=context.createMediaElementSource(audio),dest=context.createMediaStreamDestination();node.connect(dest);stream.addTrack(dest.stream.getAudioTracks()[0]);await context.resume();}
   const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));if(!mime)throw new Error('WebM-videomuoto ei ole tuettu tässä selaimessa.');
   const recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6000000}),chunks:Blob[]=[];let bytes=0;
   const blob=await new Promise<Blob>((resolve,reject)=>{

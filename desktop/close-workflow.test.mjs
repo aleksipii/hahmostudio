@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {mayClose} from './close-workflow.mjs';
+test('clean close does not prompt or write',async()=>assert.equal(await mayClose({dirty:false,choose:()=>assert.fail(),save:()=>assert.fail()}),true));
+test('cancel keeps dirty document open and discard is explicit',async()=>{for(const decision of ['cancel','discard'])assert.equal(await mayClose({dirty:true,choose:async()=>decision,save:()=>assert.fail()}),decision==='discard');});
+test('failed, cancelled or changed-during-save documents remain open',async()=>{for(const result of [false,undefined])assert.equal(await mayClose({dirty:true,choose:async()=>'save',save:async()=>result}),false);assert.equal(await mayClose({dirty:true,choose:async()=>'save',save:async()=>{throw new Error('disk full');}}),false);assert.equal(await mayClose({dirty:true,choose:async()=>'save',save:async()=>true}),true);});

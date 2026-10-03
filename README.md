@@ -21,8 +21,8 @@ Tunnustiedot ovat `.private-storage/owner.json`-tiedostossa. Kansiota ei viedä 
 ## Animointi
 
 1. Avaa oma PSD tai kokeile valmista tasotestiä.
-2. Valitse vasemmalta taso. Avaa **Nivelet**, määritä rooli ja aseta kiertokeskus kuvan päälle.
-3. Avaa **Animoi**. Valitse tason rata ja aikajanan ruutu.
+2. Valitse vasemmalta taso. Avaa **Hahmo → Nivelmääritys**, määritä rooli ja aseta kiertokeskus kuvan päälle.
+3. Avaa **Animointi**. Valitse tason rata ja aikajanan ruutu.
 4. Muokkaa liikettä X/Y-suunnassa, kiertoa, skaalaa tai peittävyyttä ja paina **Lisää avainruutu**.
 5. Siirry seuraavaan ruutuun, muokkaa asentoa ja lisää seuraava avainruutu. **Toista** näyttää liikkeen silmukkana.
 6. Valitse siirtymä: Pehmeä, Tasainen tai Pidä asento. Siirtymä koskee kyseisestä avainruudusta seuraavaan kulkevaa liikettä.
@@ -31,14 +31,14 @@ Tunnustiedot ovat `.private-storage/owner.json`-tiedostossa. Kansiota ei viedä 
 
 **Kumoa** ja **Tee uudelleen** toimivat avainruutujen ja aikajanan asetusten muutoksiin (40 muutosta). Asennon kenttien muokkaus on esikatselu, kunnes painat avainruudun tallennusta. Pelkkä aikajanalla siirtyminen ei tallenna uutta asentoa.
 
-Nivelet-vaiheen Liitä osaan yhdistää tasot liikehierarkiaksi. Lapsi seuraa kohteen liikettä, kiertoa, kokoa ja peittävyyttä ja voi lisäksi käyttää omia avainruutujaan. Kiertokeskus vaikuttaa kiertoon. Kameraseuranta, kaksiosainen niveltaivutus ja paikallinen puheen suuasentotunnistus ovat nyt mukana. Sisäkkäiset animaatioklipit ja jatkuva kuvapinnan venytys puuttuvat edelleen; koko Adobe Character Animatorin toiminnallisuus ei ole toteutettu.
+Nivelmääritys-osion Liitä osaan yhdistää tasot liikehierarkiaksi. Lapsi seuraa kohteen liikettä, kiertoa, kokoa ja peittävyyttä ja voi lisäksi käyttää omia avainruutujaan. Kiertokeskus vaikuttaa kiertoon. Kameraseuranta, kaksiosainen niveltaivutus ja paikallinen puheen suuasentotunnistus ovat nyt mukana. Sisäkkäiset animaatioklipit ja jatkuva kuvapinnan venytys puuttuvat edelleen; koko Adobe Character Animatorin toiminnallisuus ei ole toteutettu.
 
 ## Rajat
 
 - RGB/harmaasävy, 8-bittinen PSD; ei PSB:tä.
 - PSD enintään 100 MiB, kuva 16 MP, 1000 tasoa.
 - Animaatio: 1–60 FPS, 2–1800 ruutua.
-- PNG-vienti: enintään 300 ruutua, Animoi-näkymässä näyttämön koko (muuten pisin sivu 1080 px), tiedostojen yhteiskoko 128 MiB.
+- PNG-vienti: enintään 300 ruutua, Animointi-työtilassa näyttämön koko (muuten pisin sivu 1080 px), tiedostojen yhteiskoko 128 MiB.
 - Monimutkaiset Photoshop-tehosteet voivat poiketa alkuperäisestä kuvasta. Tasojen näkyvyysmuutokset eivät sisälly animaatio-JSONiin.
 
 ## Suojattu käyttö internetissä
@@ -66,7 +66,7 @@ Node.js 22.13+ vaaditaan. Tuotannossa käytä Node.js 24:ää. PSD:n purku, mall
 Lähdekoodi on julkisessa GitHub-repositoriossa. Kirjautuminen suojaa omaa palvelinta; muut voivat edelleen kopioida julkisen lähdekoodin.
 
 ## Käyttöohje studiossa
-Yläpalkin Käyttöohje avaa yksitoista ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työvaiheet ovat 1. Tasot, 2. Nivelet ja 3. Animoi. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
+Yläpalkin Käyttöohje avaa kaksitoista ohjesivua: aloitus, nimeäminen, nivelmääritys, animointi, tallennus ja varoitukset. Työtilat ovat Hahmo, Esitys ja Animointi. Tasot ja Nivelmääritys löytyvät Hahmo-työtilasta. Nimillä ei käynnistetä automaattisia toimintoja. Vanhojen rigitiedostojen JSON-muoto säilyy yhteensopivana.
 
 ## Kokonainen projekti, ääni ja video
 Tallenna projekti kirjoittaa .hahmo-tiedoston, joka sisältää tasokuvat, näkyvyydet, nivelmääritykset, avainruudut ja valinnaisen äänen. Avaa projekti ei tarvitse erillistä PSD:tä. Alkuperäinen Photoshop-tiedosto kannattaa säilyttää, koska projektissa on normalisoidut rasterikuvat eikä Photoshopin muokattavia maskeja. Projektin kokoraja on 128 Mt. Lisää ääni hyväksyy MP3/WAV/OGG/M4A-tiedoston enintään 25 Mt. Luo suun liike vaihtaa kahta suutasoa äänen voimakkuudesta (ei foneemien tunnistusta) ja korvaa niiden avainruudut; Kumoa palauttaa aiemmat. Vie MP4-video tuottaa näyttämön kokoisen, enintään 60 sekunnin H.264/AAC-tallennuksen. Katso alta uudet liikkeen tallennustoiminnot.
@@ -86,17 +86,129 @@ Kaikki uudet toiminnot on kuvattu myös studion Käyttöohjeessa. Vanhojen proje
 
 ## Lyhytvideot ja viiden jakson YouTube-kooste
 
-Valitse oikealta **Näyttämö ja videon koko → Pystyvideo**, avaa **Animoi** ja sommittele hahmo 1080 × 1920 -näyttämölle. Säädä sijaintia, kokoa ja taustaväriä. Näyttämön asetukset tallentuvat .hahmo-projektiin. PSD:n osien alkuperäiset koordinaatit säilyvät nivelten muokkauksessa.
+Valitse oikealta **Näyttämö ja videon koko → Pystyvideo**, avaa **Animointi** ja sommittele hahmo 1080 × 1920 -näyttämölle. Säädä sijaintia, kokoa ja taustaväriä. Näyttämön asetukset tallentuvat .hahmo-projektiin. PSD:n osien alkuperäiset koordinaatit säilyvät nivelten muokkauksessa.
 
-**Vie MP4-video** tuottaa H.264-videon ja tarvittaessa AAC-ääniraidan, 30 kuvaa/s. Yksi jakso voi kestää enintään 60 sekuntia. Vienti edellyttää selaimen WebCodecs-tukea (ajantasainen Chrome/Edge); kameraa tai mikrofonia ei avata vientiä varten. Sommittelun apuviivat eivät näy videossa. Julkaise valmis MP4 itse Instagramiin, TikTokiin tai YouTubeen.
+**Vie MP4-video** tuottaa H.264-videon ja tarvittaessa AAC-ääniraidan, 30 kuvaa/s. Yksi jakso voi kestää enintään 60 sekuntia. Vienti edellyttää selaimen WebCodecs-tukea sekä H.264/AAC-koodereita; kameraa tai mikrofonia ei avata vientiä varten. Sommittelun apuviivat eivät näy videossa. Julkaise valmis MP4 itse Instagramiin, TikTokiin tai YouTubeen.
 
 Avaa vasemmalta **Jaksot / sarja**. **Lisää nykyinen jakso** säilyttää senhetkisen projektiversion listassa. **Tuo jaksot** avaa aiemmat .hahmo-projektit. Järjestä jaksot nuolilla. Kun viisi jaksoa on valmiina, **Vie 5 jaksoa YouTubeen · MP4** tekee yhden 1920 × 1080 -videon äänten kanssa. Pystykuva säilyy kokonaan ja sivut täytetään jakson taustavärillä. Koosteen enimmäiskesto on viisi minuuttia.
 
 **Tallenna sarja** tallentaa listan .sarja-tiedostoon. Sen voi avata myöhemmin Tuo jaksot -painikkeella. Selain ei tallenna listaa automaattisesti. Korjattu jakso lisätään listaan uudelleen vanhan tilalle. Sarjan projektit saavat olla yhteensä enintään 128 Mt ja tasokuvat 48 megapikseliä; videon enimmäiskoko on 128 Mt.
 
-Paneelit: hahmon osat ja jaksot vasemmalla, näyttämö keskellä, kameraseuranta ja ominaisuudet oikealla, aikajana alhaalla. Käyttöohjeen viimeinen luku opastaa koko työnkulun. MP4-vienti korvaa aiemman WebM-viennin. PNG-kuvasarja käyttää Animoi-näkymässä näyttämön kokoa ja taustaväriä, muissa näkymissä alkuperäisen PSD:n rajauksen.
+Paneelit: hahmon osat ja jaksot vasemmalla, näyttämö keskellä, kameraseuranta ja ominaisuudet oikealla, aikajana alhaalla. Käyttöohjeen viimeinen luku opastaa koko työnkulun. MP4-vienti korvaa aiemman WebM-viennin. PNG-kuvasarja käyttää Animointi-työtilassa näyttämön kokoa ja taustaväriä, muissa näkymissä alkuperäisen PSD:n rajauksen.
 
 ## Kävelyanimaatio ja tasohaku
 Oikean paneelin **Kävelyanimaatio** luo jalkojen ja valinnaisten käsien vastakkaiset heilahdukset avainruuduiksi. Säädä askelkierron kestoa, kiertokulmia, vartalon pomppua ja etenemistä. Valitse raajojen yläosat ja aseta kiertokeskukset lonkkiin/olkapäihin. Vartalon liike edellyttää raajojen liittämistä vartaloon. Toiminto korvaa valittujen osien radat luontivälillä; muiden osien radat säilyvät ja Kumoa palauttaa muutoksen. Maahan lukitusta tai automaattista polvitaivutusta ei tehdä. Käyttöohjeen luku 11 opastaa vaiheet.
 
 **Hae hahmon osaa** suodattaa tasoluettelon nimen tai ryhmäpolun mukaan. Hakua vastaavat ryhmät avautuvat myös silloin, kun ne on aiemmin suljettu. Haku ei muuta näkyvyyttä tai tallennettua PSD-hierarkiaa.
+
+
+## Selkeämmät työkalunäkymät (3.10.2026)
+Työtilat **Hahmo / Esitys / Animointi** ovat ylhäällä. Oikean paneelin **Valinta** näyttää tason ja nivelten tiedot, **Näyttämö** sommittelun, **Liikkeet** avainruudut, äänen, kävelyn, niveltaivutuksen ja videoviennin sekä **Ohjaus** kameran ja valmiin hahmon esityksen. Aikajana voidaan avata tai sulkea erikseen. Näkymän vaihto ei nollaa projektia, suukuvia, kävelyn tai kameran osavalintoja.
+
+**Sulje kamera** näkyy ylhäällä aina, kun kamera on käynnistymässä tai käytössä. Se lopettaa mediaresurssit ja mahdollisen kameraliikkeen tallennuksen; jo tallennetut avainruudut säilyvät. Kamerapaneelin piilottaminen ei sammuta kameraa. Käynnistyksen voi perua myös mallin latautuessa.
+
+Yläpalkissa ovat animaation **Kumoa / Tee uudelleen**. Projektirivi muistuttaa .hahmo-tallennuksesta ja ilmoittaa, kun projektitiedosto on ladattu. Selain ei pysty varmistamaan tiedoston säilyttämistä levyllä; automaattitallennusta ei lisätty. Projektiformaatti ja yksityinen kirjautuminen säilyvät ennallaan. Kehityksen rajaus ja jatko ovat [KEHITYSMUISTIO.md](KEHITYSMUISTIO.md)-tiedostossa.
+
+
+## Pikaanimointi · Otto (3.10.2026)
+
+Avaa Aloituskirjasto → Käytä Ottoa. Valmis alkuperäinen robotti ja studiotausta avautuvat suoraan 1080 × 1920 -näyttämölle. A/D nostavat hahmon omat kädet (pidä painettuna), W tekee hypyn, 1/2/3 valitsevat ilmeet, B räpäyttää ja R aloittaa/lopettaa uuden oton. Painikkeet käyttävät samoja toimintoja.
+
+Käynnistä mikrofoni vasta halutessasi käyttää sitä; lupa pyydetään silloin. Sulje mikrofoni pysäyttää laitteen. Suu reagoi paikalliseen äänenvoimakkuuteen, ei tunnista puheen äänteitä. Kameraa ei tarvita. Asetuksista säädät kohinarajaa, herkkyyttä, pehmennystä, liikkeitä ja näppäimiä. Määritykset tallentuvat projektiin; ristiriitaiset näppäinvalinnat on estetty. Kirjoituskentät ja ⌘/⌥/Control/Shift-yhdistelmät eivät laukaise perusliikkeitä. ⌘S lataa projektin, ⌘Z/⇧⌘Z kumoavat animaatiomuutoksia tekstikenttien ulkopuolella.
+
+Tallenna uusi otto lisää enintään 24 sekunnin muokattavat liikkeet aikajanan nykyisen keston jälkeen. Lepoliike, silmät ja suu tallentuvat avainruuduiksi. Mikrofoni tallentuu paikalliseksi mono-WAV-raidaksi; olemassa oleva ääni yhdistetään monoksi, säilyttäen sen koko kesto, ja uusi ääni lisätään oton kohdalle. Jos yhdistäminen epäonnistuu, liike ja vanha ääni säilyvät ja näet ilmoituksen. Animaation kumoaminen koskee avainruutuja; tarvittaessa poista tai vaihda ääniraita erikseen. Animointi-työtilassa korjaat ottoa nykyisellä aikajanalla. Tallenna .hahmo jatkamista varten ja Vie MP4 julkaistavaksi.
+
+Paketissa on yksi oikea rasteritasoinen RGB/8-bit PSD, yksi valmis 25-osainen robotti, kolme suuvarianttia ja yksi studiotausta. Ohjatut raajaliikkeet ovat vasen käsi ylös, oikea käsi ylös ja hyppy. Kolme ilmettä ja räpäytys ovat erillisiä kasvojen kanavia. Ottoa voi käyttää, muokata ja jakaa (oma Hahmostudio-grafiikka, CC0-1.0); Adobe-aineistoja ei ole mukana. PSD ja valmis .hahmo ovat eri lataukset. Pelkkä PSD-tuonti säilyttää grafiikan mutta ei asenna pikaanimoinnin sidoksia. Valmis .hahmo sisältää myös lähde-PSD:n.
+
+Uusi .hahmo-versio 2 sisältää pikaanimoinnin asetukset ja lähde-PSD:n. Vanha versio 1 avautuu edelleen; vanhat projektit tallentuvat versiona 1, ellei niihin ole näitä uusia tietoja. Studiotausta on erillinen, version mukaan toistettava näyttämöpresetti (studio-v1), ja ladattava PNG löytyy kirjastosta. Aiemmat niveliin, kameraan, Rhubarbiin, jaksoihin ja vientiin liittyvät työkalut säilyvät.
+
+Grafiikan uudelleenluonti kehittäjälle: `python3 scripts/create-otto.py` (Pillow), sitten `node scripts/create-otto.mjs` (lukitussa projektissa jo olevat ag-psd/fflate). Välitiedostot syntyvät `.asset-build`-kansioon; niitä ei tarvita sovelluksen käyttöön.
+
+Kesken: kaksi muuta hahmoa, tyhjä PSD-pohja, toinen suutyylipaketti, neljä muuta taustaa, vilkutus/kävely/kyykky/osoitus/nyökkäys pikatoimintoina, omien PSD/PNG-kuvien sovitus ja tarkempi pikatyötilan visemekartta. Uudessa toiminnossa ei käytetä ulkoisia malleja tai pilvipalvelua.
+
+## Kolme työtilaa ja laitteiden kooditestit · 3.10.2026
+
+Yläpalkin **Hahmo**, **Esitys** ja **Animointi** järjestävät nykyiset työkalut. Hahmo sisältää Tasot, Nivelmäärityksen ja alkuperäisen PSD-esikatselun. Esitys kokoaa ohjauslähteet ja uuden oton. Animointi näyttää aikajanan ja liikkeen korjaustyökalut. Aikajanan voi avata/sulkea ilman tietojen menetystä. Valmiiksi määritetty Otto avautuu Esitys-työtilaan. Ulkoasu voi olla järjestelmän mukainen, vaalea tai tumma; valinta säilyy tällä selaimella.
+
+- **Tallenna projekti** lataa .hahmo-tiedoston. Tilatieto perustuu tallennettuun projektiversioon; selaimen latauksen valmistumista tai levylle kirjoittamista ei voida todentaa sovelluksesta.
+- **Tallenna uusi otto** lisää yhteisen esityksen nykyisen aikajanan jälkeen.
+- **Vie MP4** tuottaa valmiin videon.
+
+Oton kamera ja mikrofoni pysyvät käynnissä työtilaa vaihdettaessa ja projektia tallennettaessa. Laitteet suljetaan erillisillä painikkeilla; ne näkyvät tilapalkissa myös muissa työtiloissa. Näppäinohjauksella on oma valintansa. Tekstikenttä, ikkunan fokuksen menetys tai ohjausten tilapäinen lukitus vapauttaa painetut kädet. Aikajanan toisto näyttää tallennetun liikkeen ilman kameran/mikrofonin sulkemista. Projektin korvaaminen tai sivun sulkeminen vapauttaa aiemmat laitteet. Piilotettu selainvälilehti sulkee mikrofonin ja viimeistelee mahdollisen oton.
+
+Ohjausten prioriteetti: aikajana säilyttää lähtöasennon muissa osissa; näppäimet ohjaavat käsien/vartalon kanavia ja valittuja ilmeitä; kamera ohittaa pään sijainnin/kierron/koon ja sille valittujen pupillitasojen näkyvyyden; mikrofoni ohjaa kolmen suukuvan näkyvyyttä ja ohittaa kameran suun koon. Kun kamera ei löydä kasvoja tai suljetaan, sen ohitus poistuu. Yhteinen otto tallentaa yhdistetyt asennot. Kameran oma erillistallennus säilyy tavallisille PSD-hahmoille.
+
+`npm test` sisältää alkuperäiset mallien, tallennusmuotojen ja yksityisen palvelimen testit sekä simuloidut mikrofonin elinkaaritestit, AudioWorklet-prosessorin testin, ohjauslähteiden yhdistämisen ja React-komponenttien palvelinrenderöinnin testit. Testit eivät avaa selainta, kameraa tai mikrofonia. `npm run build:private` tarkistaa myös TypeScript-tyypit ja kääntää JavaScriptin kohteisiin ES2022 / Safari 16.4. Tämä käännöskohde ei takaa kaikkien laite- tai kooderirajapintojen saatavuutta: ne tarkistetaan käytön yhteydessä. AudioContextin tavallinen ja webkit-nimi käsitellään, puuttuva AudioWorklet antaa ymmärrettävän virheen ja luvan odotuksen peruminen sulkee myös jälkikäteen myönnetyn ääniraidan.
+
+Fyysisen mikrofonin ääntä, oikean Safarin laitelupia ja näyttöasettelua ei ole tässä päivityksessä testattu. Niitä ei voi varmistaa simuloiduilla kooditesteillä. PNG-osien erottelu, piirtäminen, osien uudelleennimeäminen sovelluksessa, sisäkkäiset klipit sekä Oton vilkutus/kyykky/Q–E-kävely puuttuvat edelleen. Kävelyn avainruutugeneraattori on erillinen olemassa oleva työkalu. Laajempi hahmo- ja liikekirjasto on seuraava vaihe.
+
+## Mac-työpöytäversio · 0.2.0
+
+Electron käyttää samaa editoria, animaatiologiikkaa ja .hahmo/.sarja-tiedostoja. Native-tiedostoikkunat, Tallenna/Tallenna nimellä, viimeksi avatut projektit ja Mac-valikot on lisätty. Valmis .app sisältää runtimen ja offline-aineistot eikä tarvitse terminaalia. Työpöytäversio käyttää Macin käyttäjätiliä; verkkoversion tunnusta ei muuteta. PNG avautuu yhtenä tasona.
+
+```sh
+npm ci
+npm test
+npm run desktop:dev
+npm run desktop:build
+npm run desktop:package:mac
+```
+
+Paketti: `release/Hahmostudio-darwin-arm64/Hahmostudio.app` ja `release/Hahmostudio-Mac-arm64.zip` tällä Apple Silicon -Macilla. Ohjeet: [Mac-asennus ja jatkokehitys](docs/MAC_DESKTOP.md), [arkkitehtuuri](docs/ARCHITECTURE.md), [todellinen tila ja seuraavat vaiheet](docs/ROADMAP.md). Lähdekoodimuutos tarvitsee uuden paketoinnin ennen kuin asennettu sovellus päivittyy. Fyysinen laite- ja Safari-varmennus eivät seuraa kooditestien läpäisystä.
+
+### Käynnistyskorjaus 0.2.1
+
+Korjattu Electronin valmiustapahtumaa odottanut päämoduulin lukkiutuminen. 70 kooditestiä läpäisee, mukaan lukien oikean päämoduulin käynnistysjärjestyksen testi. Käynnistyksen vaihe löytyy käyttäjäkohtaisen asetuskansion `startup-status.json`-tiedostosta. Vanha jumiutunut sovellus pitää lopettaa ennen uuden version avaamista.
+
+
+## Versio 0.3.0 · helpompi aloitus ja käsikirjoitus
+
+Avaa **Hahmot ja taustat**, valitse Otto, Aino, Leo tai muokattava Hahmopohja, valitse kuvausympäristö ja paina **Kirjoita käsikirjoitus**. Yksi tapahtuma per rivi, esimerkiksi `Hei! [vilkuta 2s]`, `[kävele oikealle 3s]` ja `[tausta auto kuljettaja]`. **Lisää animaatio aikajanan loppuun** säilyttää aiemman työn. Toista, korjaa avainruutuja, tallenna `.hahmo` ja vie 1080×1920 MP4. Viisi jaksoa voi koota nykyisellä sarjatyökalulla YouTube-laajakuvaksi.
+
+Käsikirjoitus toimii paikallisilla fi/en-liikeohjeilla, ei pilven kielimallilla. Teksti ei vielä tuota puheääntä tai tekstityksiä. Kävely taivuttaa erillisiä sääriä; automaattista jalkalukitusta tai kuvan mesh-venytystä ei ole. Tuntemattomat hakasuljeohjeet ilmoitetaan, puhe ilman tunnistettua liikettä muodostaa tauon.
+
+Kirjasto sisältää aidot tasolliset PSD:t ja valmiit `.hahmo`-paketit (Aino 25, Leo 19, Hahmopohja 25 tasoa; Otto säilytetty), kaksi A–H/X-suupakettia ja kuusi taustaa SVG/PNG-muodossa. Grafiikka on Hahmostudion alkuperäistä CC0-aineistoa; ulkoisia hahmokuvia ei kopioida. Muokkaa PSD Photoshopissa tasoja yhdistämättä. Tavallinen PSD-tuonti tarvitsee erillisen nivelmäärityksen; valmis `.hahmo` sisältää sen.
+
+**Pää irtoaa?** Pään nimi/rooli ei luo liitosta: Hahmo → Nivelmääritys → Liitä osaan → Vartalo. Aseta kiertokeskus kaulaan ja liitä silmät/suu päähän. Kameraseuranta pitää liitetyn pään paikallaan ja kallistaa sitä ±25°. Vanhoja tallennettuja siirtymiä ei poisteta.
+
+Kirjaston lähdekuvat voi generoida `npm run assets:generate` -komennolla (Python 3 + Pillow); olemassa oleva Otto säilyy. Rakentaminen ja käyttö eivät tarvitse Pythonia. Mac-päivitys: tallenna projektisi, sulje vanha Hahmostudio kokonaan ⌘Q, pura uusi ZIP ja avaa uusi Hahmostudio.app. Lähdekoodin muutos ei päivitä käynnissä olevaa sovellusta.
+
+
+## 0.4.0 · eri kuvakulmat, kävely/juoksu ja esineet
+
+**Hahmot ja esineet** -painike avaa kirjaston myös piilotettuna. Valitse **Aino · eri kuvakulmat** tai **Otto · eri kuvakulmat** (75 tasoa/hahmo, kolme erikseen piirrettyä 2D-kulmaa: edestä/oikea profiili/vasen profiili). Vanhoja hahmopaketteja ei muuteta. Yläreunan kuvakulmavalinta tekee muokattavan vaihtokohdan nykyiseen ruutuun; Kumoa palauttaa myös ohjaussidokset. Liike → Kävely/Juoksu → Vasemmalle/Kohti katsojaa/Oikealle lisää kahden sekunnin liikkeen aiemman työn perään. Kohti katsojaa -liike käyttää perspektiivikokoa, ei 3D-mallia. Sivuaskeleen polvi taipuu IK:lla ja tukijalka pysyy paikallaan tukivaiheessa.
+
+Käsikirjoitus ymmärtää `[kävele suoraan 2s]`, `[juokse oikealle 2s]`, `[juokse vasemmalle 2s]`, `[juokse suoraan 2s]` sekä `[hahmo edestä]`, `[hahmo vasen]`, `[hahmo oikea]` ennen tapahtumariviä. Kulma vaihtuu monikulmahahmossa automaattisesti suunnan mukaan. Luonti, puhelin ja kuvakulmat säilyvät .hahmo:ssa; aiempi animaatio säilytetään.
+
+Kirjaston **Esineet · puhelimet** tarjoaa puhelimen edestä/takaa/sivulta. Kiinnitä valmiin hahmon käteen tai sijoita näyttämölle; koko/kierto/siirtymä ovat muokattavia. `[puhelin edestä]`, `[puhelin takaa]`, `[puhelin sivulta]`, `[puhelin pois]` vaihtavat esineen kulmaa seuraavasta tapahtumasta alkaen. Puhelinta esittävä tausta on erillinen asia: `[tausta puhelin edestä]`.
+
+**Näkymä**-valikko näyttää/piilottaa kirjaston, ominaisuudet/ohjauksen, aikajanan ja laitteiden tilarivin. Komponentit säilyvät asennettuina: paneelin piilotus ei sulje laitteita. Palauta oletusnäkymä tuo paneelit takaisin. Näkymäasetukset tallentuvat paikalliseen käyttöliittymäasetukseen, eivät projektin animaatioon.
+
+Päivitä Lataukset-kansion sovellus: tallenna projektit, sulje vanha ⌘Q, pura uusi 0.4.0-ZIP ja korvaa vanha Hahmostudio.app.
+
+
+## Mac 0.5.0 · työtilan selkeytys ja paperileikkaushahmot
+
+Yläreunan Tiedosto, Muokkaa, Näytä ja Ohje kokoavat toiminnot; Macin natiivi valikkorivi sisältää myös Näytä ja Ohje. Näytä → Keskity näyttämöön piilottaa sivupaneelit ja aikajanan; Sovita koko näyttämö palauttaa koko videokuvan. Kirjaston/ominaisuuksien sisäreunoja ja aikajanan yläreunaa voi vetää, tai käyttää Tab + nuolet / Home / End. Koot tallentuvat paikallisiin asetuksiin, eivät projektin piirroksiin. Pienet näytöt pinovat paneelit.
+
+Hahmot ja esineet → Hahmot sisältää uudet Roni ja Salla · eri kuvakulmat: omat paperileikkaustyyliset hahmot, ei sarjan hahmoja tai kopioitua grafiikkaa. Molemmissa on kolme kuvakulmaa, 75 tasoa, nivelet ja .hahmo sekä lähde-PSD. Vanha kirjasto säilyy. Lataa ja muokkaa avaa hahmokortin PSD/.hahmo-lataukset.
+
+Asennettu sovellus ei päivity automaattisesti. Tallenna projektit ja sarja, sulje ⌘Q, pura Hahmostudio-Mac-0.5.0-arm64.zip ja korvaa vanha Hahmostudio.app. Projektit ja asetukset ovat sovelluspaketin ulkopuolella.
+
+## Uutta 0.6.0: käsikirjoituksesta dialogikohtaukseksi
+
+Käsikirjoitus → Dialogi ja leikkaukset tuo UTF-8 Markdownin tai tekstin. KILSAT-esimerkissä KILLE on Roni ja HANDU Salla. Repliikit säilyvät alkuperäisinä; hahmot, ilmeet, katseet, puhelin, suorat kameraleikkaukset ja suojatut tauot ovat muokattavia tapahtumia. Tuo omat repliikkiäänet: todellinen äänen kesto määrää ajoituksen. Tavoiteristiriidat näytetään, ääntä ei nopeuteta. Käsikirjoitus ei tuota puheääntä.
+
+Keskeneräisen valmistelun voi liittää projektiin ja tallentaa .hahmo-tiedostoon. Valmis kohtaus lisätään aiemman aikajanan loppuun, ja sen päivittäminen on kumottavissa myös äänen osalta. Projektimuoto v3 sisältää käsikirjoituksen, näyttämön, erilliset hahmopaketit, alkuperäiset repliikkiäänet ja suuajoitukset. Vanhat v1/v2-projektit avautuvat edelleen.
+
+Roni ja Salla saivat korjatun sivukuvien käsien piirtojärjestyksen. Keskitä hahmo huomioi liikkuvien osien rajat. Sommittelun turvarajat näkyvät vain editorissa. Dialoginäyttämöllä kummallakin hahmolla on oma paikka ja koko.
+
+Katso sovelluksen Käyttöohje → Dialogi ja repliikkiäänet sekä [dialogin ohje](docs/DIALOGUE.md). Mukana ei ole oikeita KILSAT-repliikkiäänityksiä eikä puhesynteesiä. Kooditestit ja Mac-paketin runtime-testi eivät varmista fyysisiä laitteita, Finder-käynnistystä tai oikeaa Safari-käyttöä.
+
+## Uutta 0.7.0: yleinen jakson ohjaussuunnitelma
+
+Käsikirjoitus → Dialogi ja leikkaukset käsittelee myös uusia hahmonimiä, ympäristöjä ja ajoituksia. Valitse itse nimien hahmopaketit. KILSAT on esimerkkisyöte; sen nimiin tai studioon ei sidota toteutusta. Toinen mukana tuleva esimerkki on Aamu autossa.
+
+Ohjaussuunnitelma näyttää lähderiveineen tarkoituksen, luonteen/suhteet, miljöön, rekvisiitan, sijoittelun, dialogin, toiminnan, katseet, ilmeet, tauot, rajoitukset, kameraleikkaukset ja lopetuksen. Toteutettu, Arvio ja Puuttuu erotetaan. Arviot pitää hyväksyä, puuttuvat olennaiset toiminnot korjata. Liikeohjeet käyttävät nykyisen moottorin kävely-, juoksu-, vilkutus-, hyppy-, kyykistys- ja nyökkäystoimintoja.
+
+Tuettuja miljöitä ovat kirjaston taustat ja neutraali valkoinen tausta. Muu ympäristö tai rekvisiitta merkitään puuttuvaksi. Käsikirjoitus tulkitaan paikallisilla säännöillä: vapaamuotoisen tarkoituksen ja hahmokuvauksen tulkinta näytetään arviona. Puhesynteesiä ei ole kytketty; käytä tuotuja repliikkiääniä. Ilman ääniä tulos on alustava esikatselu. Katso [yleisen jaksotyökalun ohje](docs/EPISODE.md).

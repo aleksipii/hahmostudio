@@ -8,9 +8,10 @@ import { fileURLToPath } from 'node:url';
 const derive=promisify(scrypt);
 const hash=async(password,salt)=>Buffer.from(await derive(password,salt,64,{N:32768,maxmem:64*1024*1024}));
 const equal=(a,b)=>{const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y);};
-export async function createPrivateServer({distDir,dataDir,origin,setupToken='',secure=false,speechRecognizer=recognizeSpeech}={}) {
- const root=await realpath(distDir),store=resolve(dataDir),ownerPath=resolve(store,'owner.json');await mkdir(store,{recursive:true,mode:0o700});
- let owner=null;try{owner=JSON.parse(await readFile(ownerPath,'utf8'));if(typeof owner.username!=='string'||typeof owner.salt!=='string'||typeof owner.hash!=='string')throw new Error('Invalid owner record');}catch(e){if(e.code!=='ENOENT')throw e;}
+export async function createPrivateServer({distDir,dataDir,origin,setupToken='',secure=false,desktopToken='',speechRecognizer=recognizeSpeech}={}) {
+ if(desktopToken&&!/^[a-f0-9]{64}$/.test(desktopToken))throw new Error('Invalid desktop session');
+ const root=await realpath(distDir),store=desktopToken?null:resolve(dataDir),ownerPath=store?resolve(store,'owner.json'):null;if(store)await mkdir(store,{recursive:true,mode:0o700});
+ let owner=null;try{if(ownerPath)owner=JSON.parse(await readFile(ownerPath,'utf8'));if(!ownerPath)owner={username:'desktop'};if(ownerPath&&(typeof owner.username!=='string'||typeof owner.salt!=='string'||typeof owner.hash!=='string'))throw new Error('Invalid owner record');}catch(e){if(e.code!=='ENOENT')throw e;}
  const sessions=new Map(),attempts=new Map();let settingUp=false,speechRunning=false;
  const cookie=(name,value,age)=>`${name}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${secure?'; Secure':''}`;
  const body=async(req)=>{let bytes=0,chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>8192)throw new Error('Body too large');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString('utf8'));};
@@ -30,9 +31,10 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
    if(!origin&&!['localhost','127.0.0.1','[::1]'].includes(new URL(expected).hostname)){send(403,{error:'Virheellinen palvelinosoite.'});return;}
    const cookieName=`hahmostudio_session_${new URL(expected).port||(secure?'443':'80')}`;
    const token=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(cookieName+'='))?.slice(cookieName.length+1);
-   const session=token?sessions.get(token):undefined;const authorized=!!session&&session> Date.now();if(session&&!authorized)sessions.delete(token);
+   const session=token?sessions.get(token):undefined;const desktopCookie=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith('hahmostudio_desktop='))?.slice('hahmostudio_desktop='.length);const authorized=desktopToken?!!desktopCookie&&equal(desktopCookie,desktopToken):!!session&&session> Date.now();if(session&&!authorized)sessions.delete(token);
    if(req.method==='GET'&&path==='/api/auth/status'){send(200,{hasOwner:!!owner,needsToken:!!setupToken,authenticated:authorized});return;}
    if(req.method==='POST'&&path.startsWith('/api/auth/')){
+    if(desktopToken){send(403,{error:'Työpöytäistuntoa hallitsee sovellus.'});return;}
     if(req.headers.origin!==expected||!req.headers['content-type']?.startsWith('application/json')){send(403,{error:'Pyyntö ei ole sallittu.'});return;}
     if(path==='/api/auth/logout'){if(token)sessions.delete(token);res.setHeader('Set-Cookie',cookie(cookieName,'',0));send(200,{ok:true});return;}
     if(!['/api/auth/login','/api/auth/setup'].includes(path)){send(404,{error:'Ei löydy.'});return;}

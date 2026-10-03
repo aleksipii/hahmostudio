@@ -10,3 +10,15 @@ dist-private/
 
 public/vision/
 .private-runtime/
+
+# Desktop build products; never include owner state in packaging
+dist-desktop/
+release/
+
+.character-build/
+.mouth-build/
+
+.multiview-build/
+.multiview-otto-build/
+
+.paper-character-build/

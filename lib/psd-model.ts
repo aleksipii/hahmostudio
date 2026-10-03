@@ -5,6 +5,8 @@ export interface LayerNode {
  children: LayerNode[]; warnings: string[];
 }
 export interface PsdDocument {
+ presentationAssets?: import("./presentation-compile.ts").PresentationAssets; presentationAudio?: Record<string,import("./presentation-audio.ts").PresentationAudio>;
+ quick?: import("./quick-animation.ts").QuickProfile; sourcePsd?: Blob;
  name: string; width: number; height: number; size: number; layers: LayerNode[];
  composite?: Blob; compositeUrl?: string; compositeImage?: HTMLImageElement; warnings: string[];
 }
@@ -17,6 +19,7 @@ export const blendModes: Record<string, GlobalCompositeOperation> = {
 };
 export function releaseDocument(doc?: PsdDocument | null) {
  if (!doc) return;
+ for(const asset of Object.values(doc.presentationAssets??{}))releaseDocument(asset.doc);
  for (const n of flatten(doc.layers)) if (n.url) URL.revokeObjectURL(n.url);
  if (doc.compositeUrl) URL.revokeObjectURL(doc.compositeUrl);
 }

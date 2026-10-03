@@ -1,0 +1,79 @@
+import {app,BrowserWindow,Menu,dialog,ipcMain,session,systemPreferences,utilityProcess,nativeTheme} from 'electron';
+import {join,dirname} from 'node:path';import {randomBytes,randomUUID} from 'node:crypto';import {readFile,mkdir,writeFile} from 'node:fs/promises';import {fileURLToPath} from 'node:url';
+import {DesktopFiles} from './files.mjs';import {validSender,allowedMedia,allowedMediaCheck} from './policy.mjs';
+import {mayClose} from './close-workflow.mjs';
+const root=dirname(dirname(fileURLToPath(import.meta.url))),testing=process.argv.includes('--self-test');
+if(testing){if(!process.env.HAHMOSTUDIO_TEST_DATA_DIR)throw new Error('Self-test requires isolated data directory');app.setPath('userData',process.env.HAHMOSTUDIO_TEST_DATA_DIR);}
+let window,service,files,origin,serviceOrigin,dirty=false,ready=false,closing=false,closeBusy=false,pendingClose,speech;
+const token=randomBytes(32).toString('hex');
+if(!app.requestSingleInstanceLock()){app.quit();}else{
+ app.on('second-instance',()=>{window?.show();window?.focus();});
+ app.on('before-quit',event=>{if(window&&!closing){event.preventDefault();void closeWindow();}});
+ app.on('window-all-closed',async()=>{await stopService();app.quit();});
+ // Electron emits ready only after the ESM entry module has finished loading.
+ // Register the callback without awaiting it at module scope.
+ app.whenReady().then(async()=>{
+ try{
+  await mkdir(app.getPath('userData'),{recursive:true});await startupStatus('local-service');
+  service=utilityProcess.fork(join(root,'desktop/service.mjs'),[],{stdio:'ignore',serviceName:'Hahmostudio · paikallinen puhepalvelu'});
+  const port=await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>{service.kill();reject(new Error('Paikallisen palvelun käynnistys aikakatkaistiin.'));},15000);service.once('message',message=>{clearTimeout(timeout);message.type==='ready'?resolve(message.port):reject(new Error(message.message??'Palvelun käynnistys epäonnistui.'));});service.once('exit',()=>{clearTimeout(timeout);reject(new Error('Paikallinen palvelu sulkeutui käynnistyksessä.'));});service.postMessage({type:'start',token,distDir:join(root,'dist-desktop'),rhubarb:app.isPackaged?join(process.resourcesPath,'rhubarb/rhubarb'):join(root,'.private-runtime/rhubarb/rhubarb')});});
+  serviceOrigin=`http://127.0.0.1:${port}`;
+  origin=process.env.HAHMOSTUDIO_DEV_URL??serviceOrigin;
+  if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(origin))throw new Error('Kehitysosoitteen on oltava paikallinen.');
+  const ses=session.fromPartition('persist:hahmostudio-desktop');
+  await ses.cookies.set({url:origin,name:'hahmostudio_desktop',value:token,httpOnly:true,sameSite:'strict'});
+  window=new BrowserWindow({width:1440,height:980,minWidth:800,minHeight:650,show:false,title:'Hahmostudio',backgroundColor:'#202328',webPreferences:{preload:join(root,'desktop/preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,session:ses}});
+  files=new DesktopFiles({dialog,window:()=>window,dataDir:app.getPath('userData'),onProject:path=>{window?.setRepresentedFilename(path??'');},onTheme:theme=>{nativeTheme.themeSource=theme;}});
+  const preferences=await files.initialize();nativeTheme.themeSource=preferences.theme;
+  ses.setPermissionCheckHandler((contents,permission,requestingOrigin,details)=>contents===window?.webContents&&allowedMediaCheck(permission,details,requestingOrigin,origin));
+  ses.setPermissionRequestHandler(async(contents,permission,callback,details)=>{if(contents!==window?.webContents||!allowedMedia(permission,details,details.requestingUrl??contents.getURL(),origin)){callback(false);return;}try{let granted=true;for(const type of details.mediaTypes){const device=type==='audio'?'microphone':'camera';const status=systemPreferences.getMediaAccessStatus(device);granted=granted&&(status==='granted'||status==='not-determined'&&await systemPreferences.askForMediaAccess(device));}callback(granted);}catch{callback(false);}});
+  window.webContents.setWindowOpenHandler(()=>({action:'deny'}));window.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith(origin+'/'))event.preventDefault();});window.webContents.on('will-attach-webview',event=>event.preventDefault());
+  window.webContents.session.on('will-download',(event)=>{event.preventDefault();dialog.showErrorBox('Tallenna tiedosto sovelluksen kautta','Käytä Tallenna projekti- tai Vie tiedosto -painiketta.');});
+  window.on('close',event=>{if(!closing){event.preventDefault();void closeWindow();}});
+  window.on('closed',()=>{window=null;void stopService();});
+  service.on('exit',()=>{if(!closing&&window){dialog.showErrorBox('Paikallinen palvelu päättyi','Tallenna projekti ja käynnistä Hahmostudio uudelleen. Puheentunnistus ei ole käytettävissä.');}});
+  registerIPC();makeMenu();await startupStatus('interface-loading');await window.loadURL(origin+'/');await startupStatus('ready');
+  if(testing){await selfTest();closing=true;window.destroy();await stopService();app.quit();}else{window.show();}
+ }catch(e){await startupStatus('failed',e.message);if(testing){await testReport({ok:false,error:e.message});}else dialog.showErrorBox('Hahmostudio ei käynnistynyt',e.message+'\nSulje sovellus ja yritä uudelleen.');closing=true;window?.destroy();await stopService();app.exit(1);}
+ }).catch(error=>{closing=true;dialog.showErrorBox('Hahmostudio ei käynnistynyt',error.message);app.exit(1);});
+}
+function trusted(event){if(!validSender(event,window,origin))throw new Error('Pyyntö ei tullut Hahmostudion omasta ikkunasta.');}
+function registerIPC(){
+ const handle=(name,fn)=>ipcMain.handle(name,async(event,...args)=>{trusted(event);return fn(...args);});
+ handle('studio:confirm-replace',async()=>{const choice=await dialog.showMessageBox(window,{type:'question',message:'Nykyisessä työssä on tallentamattomia muutoksia.',buttons:['Tallenna ensin','Jatka tallentamatta','Peruuta'],defaultId:0,cancelId:2});return ['save','discard','cancel'][choice.response];});
+ handle('studio:open',kind=>files.choose(kind));handle('studio:recent',id=>files.recent(id));handle('studio:adopt',id=>files.adopt(id));handle('studio:save',request=>files.save(request));handle('studio:preferences',()=>files.getPreferences());handle('studio:theme',theme=>files.setTheme(theme));
+ handle('studio:edit',action=>{if(!['undo','redo'].includes(action))throw new Error('Tuntematon muokkaustoiminto.');window.webContents[action]();});
+ handle('studio:speech',async(bytes,language)=>{if(!(bytes instanceof Uint8Array)||bytes.length>1920044||!['fi','en'].includes(language))throw new Error('Virheellinen puheaineisto.');if(speech)throw new Error('Edellinen tunnistus on kesken.');const controller=new AbortController();speech=controller;try{const response=await fetch(serviceOrigin+'/api/speech/recognize?language='+language,{method:'POST',headers:{Origin:serviceOrigin,'Content-Type':'audio/wav',Cookie:'hahmostudio_desktop='+token},body:bytes,signal:controller.signal});const data=await response.json();if(!response.ok)throw new Error(data.error);return data.mouthCues;}finally{if(speech===controller)speech=null;}});
+ handle('studio:cancel-speech',()=>speech?.abort());
+ ipcMain.on('studio:state',(event,state)=>{if(!validSender(event,window,origin))return;if(typeof state?.dirty!=='boolean'||typeof state?.ready!=='boolean')return;dirty=state.dirty;ready=state.ready;window.setDocumentEdited(dirty);});
+ ipcMain.on('studio:close-result',(event,id,saved)=>{if(!validSender(event,window,origin))return;if(pendingClose&&pendingClose.id===id&&typeof saved==='boolean'){pendingClose.resolve(saved);pendingClose=null;}});
+}
+function action(name){if(window&&ready)window.webContents.send('studio:action',{action:name});}
+function makeMenu(){Menu.setApplicationMenu(Menu.buildFromTemplate([
+ {label:'Hahmostudio',submenu:[{role:'about',label:'Tietoja Hahmostudiosta'},{type:'separator'},{role:'hide',label:'Kätke Hahmostudio'},{role:'hideOthers',label:'Kätke muut'},{role:'unhide',label:'Näytä kaikki'},{type:'separator'},{role:'quit',label:'Lopeta Hahmostudio'}]},
+ {label:'Tiedosto',submenu:[{label:'Avaa projekti…',accelerator:'CmdOrCtrl+O',click:()=>action('open')},{label:'Tuo kuva / PSD…',click:()=>action('import')},{label:'Lisää ääni…',click:()=>action('audio')},{type:'separator'},{label:'Tallenna projekti',accelerator:'CmdOrCtrl+S',click:()=>action('save')},{label:'Tallenna nimellä…',accelerator:'CmdOrCtrl+Shift+S',click:()=>action('saveAs')},{label:'Vie MP4…',click:()=>action('export')},{type:'separator'},{label:'Sulje',accelerator:'CmdOrCtrl+W',click:()=>void closeWindow()}]},
+ {label:'Muokkaa',submenu:[{label:'Kumoa',accelerator:'CmdOrCtrl+Z',click:()=>action('undo')},{label:'Tee uudelleen',accelerator:'CmdOrCtrl+Shift+Z',click:()=>action('redo')},{type:'separator'},{role:'cut',label:'Leikkaa'},{role:'copy',label:'Kopioi'},{role:'paste',label:'Liitä'},{role:'selectAll',label:'Valitse kaikki'}]},
+ {label:'Näytä',submenu:[{label:'Kirjasto',click:()=>action('library')},{label:'Ominaisuudet',click:()=>action('inspector')},{label:'Aikajana',click:()=>action('timeline')},{type:'separator'},{label:'Sovita koko näyttämö',click:()=>action('fit')},{label:'Keskity näyttämöön',click:()=>action('focus-stage')},{label:'Palauta työtila ja paneelien koot',click:()=>action('reset-layout')}]},
+ {label:'Ohje',submenu:[{label:'Käyttöohje',click:()=>action('help')}]},
+ {label:'Ikkuna',submenu:[{role:'minimize',label:'Pienennä'},{role:'zoom',label:'Zoomaa'}]},
+ ...(app.isPackaged?[]:[{label:'Kehitys',submenu:[{role:'toggleDevTools',label:'Kehittäjätyökalut'}]}])
+ ]));}
+async function closeWindow(){
+ if(closeBusy||closing||!window)return;closeBusy=true;
+ try{const allowed=await mayClose({dirty,choose:async()=>{const choice=await dialog.showMessageBox(window,{type:'question',message:'Tallennetaanko keskeneräinen työ?',detail:'Tallentamattomat muutokset häviävät, jos suljet tallentamatta.',buttons:['Tallenna','Sulje tallentamatta','Peruuta'],defaultId:0,cancelId:2});return ['save','discard','cancel'][choice.response];},save:()=>new Promise(resolve=>{const id=randomUUID();const timer=setTimeout(()=>{pendingClose=null;resolve(false);},120000);pendingClose={id,resolve:value=>{clearTimeout(timer);resolve(value);}};window.webContents.send('studio:action',{action:'save-for-close',id});})});if(!allowed)return;
+  closing=true;ready=false;speech?.abort();await stopService();window.destroy();app.quit();
+ }catch(error){dialog.showErrorBox("Sulkeminen keskeytettiin",error.message);}finally{closeBusy=false;}
+}
+async function stopService(){speech?.abort();if(!service)return;const child=service;service=null;await new Promise(resolve=>{const timer=setTimeout(()=>{child.kill();resolve();},2500);child.once('exit',()=>{clearTimeout(timer);resolve();});child.postMessage({type:'stop'});});}
+async function startupStatus(phase,error){await writeFile(join(app.getPath('userData'),'startup-status.json'),JSON.stringify({version:app.getVersion(),phase,time:new Date().toISOString(),...(error?{error}:{})},null,2),{mode:0o600}).catch(()=>{});}
+async function testReport(report){await writeFile(join(app.getPath('userData'),'self-test.json'),JSON.stringify(report,null,2));}
+async function selfTest(){
+ // Native-runtime startup smoke test: no device access and no visual/browser UI test.
+ const resources=['/library/Otto.hahmo','/library/Otto.psd','/vision/face_landmarker.task','/microphone-recorder.worklet.js'];for(const path of resources){const response=await fetch(serviceOrigin+path,{headers:{Cookie:'hahmostudio_desktop='+token}});if(response.status!==200)throw new Error('Packaged resource missing: '+path);}
+ const denied=await fetch(serviceOrigin+'/library/Otto.hahmo',{redirect:'manual'});if(denied.status!==302)throw new Error('Unprotected desktop service');
+ const wav=Buffer.alloc(44+32000);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVE',8);wav.write('fmt ',12);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(16000,24);wav.writeUInt32LE(32000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
+ for(const language of ['fi','en']){const response=await fetch(serviceOrigin+'/api/speech/recognize?language='+language,{method:'POST',headers:{Origin:serviceOrigin,'Content-Type':'audio/wav',Cookie:'hahmostudio_desktop='+token},body:wav});const data=await response.json();if(!response.ok||!Array.isArray(data.mouthCues))throw new Error('Packaged Rhubarb failed: '+language+' '+JSON.stringify(data));}
+ const preferences=window.webContents.getLastWebPreferences();if(!preferences.contextIsolation||!preferences.sandbox||preferences.nodeIntegration)throw new Error('Renderer isolation failed');
+ const content=await window.webContents.executeJavaScript('({title:document.title,bridge:typeof window.hahmostudio,require:typeof window.require})');if(content.bridge!=='object'||content.require!=='undefined')throw new Error('Preload bridge failed');
+ await testReport({ok:true,packaged:app.isPackaged,arch:process.arch,electron:process.versions.electron,node:process.versions.node,resources,preload:content,isolated:true,deviceTests:false,rhubarbSilentWav:['fi','en']});
+}

@@ -1,0 +1,22 @@
+import {readFile,writeFile,mkdir,rename,stat,open,unlink} from 'node:fs/promises';
+import {basename,dirname,extname,join} from 'node:path';import {randomUUID} from 'node:crypto';
+import {fileKinds,MAX_FILE_BYTES,saveRequest,safeRecent} from './policy.mjs';
+export class DesktopFiles{
+ constructor({dialog,window,dataDir,onProject=()=>{},onTheme=()=>{}}){this.dialog=dialog;this.window=window;this.dataDir=dataDir;this.onProject=onProject;this.onTheme=onTheme;this.handles=new Map();this.currentPath=null;this.preferences={theme:'system',recent:[]};this.writes=Promise.resolve();}
+ async initialize(){try{const p=JSON.parse(await readFile(join(this.dataDir,'preferences.json'),'utf8'));this.preferences={theme:['system','light','dark'].includes(p.theme)?p.theme:'system',recent:safeRecent(p.recent)};}catch(e){if(e.code!=='ENOENT'&&!(e instanceof SyntaxError))throw e;}return this.getPreferences();}
+ getPreferences(){return {theme:this.preferences.theme,recent:this.preferences.recent.map(p=>({id:p.id,name:basename(p.path)}))};}
+ persist(){const copy=JSON.stringify(this.preferences);this.writes=this.writes.catch(()=>{}).then(async()=>{await mkdir(this.dataDir,{recursive:true,mode:0o700});const p=join(this.dataDir,'preferences.json');await writeFile(p+'.next',copy,{mode:0o600});await rename(p+'.next',p);});return this.writes;}
+ async setTheme(theme){if(!['system','light','dark'].includes(theme))throw new Error('Virheellinen ulkoasu.');this.preferences.theme=theme;this.onTheme(theme);await this.persist();}
+ async remember(path){const previous=this.preferences.recent.find(p=>p.path===path);this.preferences.recent=[previous??{id:randomUUID(),path},...this.preferences.recent.filter(p=>p.path!==path)].slice(0,10);await this.persist();}
+ async readSelected(path,kind){const info=await stat(path);if(!info.isFile()||info.size>MAX_FILE_BYTES)throw new Error('Valitse enintään 128 Mt tiedosto.');if(!fileKinds[kind]?.includes(extname(path).slice(1).toLowerCase()))throw new Error('Tiedostotyyppi ei sovi tähän toimintoon.');const id=randomUUID();this.handles.set(id,{path,kind});if(this.handles.size>30)this.handles.delete(this.handles.keys().next().value);return {id,name:basename(path),bytes:new Uint8Array(await readFile(path))};}
+ async choose(kind){if(!Object.hasOwn(fileKinds,kind))throw new Error('Tuntematon tiedostovalinta.');const result=await this.dialog.showOpenDialog(this.window(),{title:kind==='project'?'Avaa Hahmostudio-projekti':'Tuo aineisto',properties:['openFile'],filters:[{name:kind==='character'?'PSD tai PNG':kind==='audio'?'Äänitiedosto':'Hahmostudion tiedosto',extensions:fileKinds[kind]}]});return result.canceled?null:this.readSelected(result.filePaths[0],kind);}
+ async recent(id){const file=this.preferences.recent.find(p=>p.id===id);if(!file)throw new Error('Projekti ei ole viimeksi avatuissa.');return this.readSelected(file.path,'project');}
+ async adopt(id){if(id===null){this.currentPath=null;this.onProject(null);return;}const selected=this.handles.get(id);if(!selected||selected.kind!=='project')throw new Error('Projektia ei ole avattu järjestelmän tiedostoikkunasta.');this.currentPath=selected.path;this.onProject(selected.path);await this.remember(selected.path);}
+ async save(value){const request=saveRequest(value);let path=request.kind==='project'&&!request.saveAs?this.currentPath:null;if(!path){const result=await this.dialog.showSaveDialog(this.window(),{title:request.kind==='project'?'Tallenna projekti':'Vie tiedosto',defaultPath:request.kind==='project'&&this.currentPath?this.currentPath:request.name,filters:[{name:'Tiedosto',extensions:[extname(request.name).slice(1)||'bin']}]});if(result.canceled||!result.filePath)return {saved:false};path=result.filePath;}
+  if(request.kind==='project'&&!path.toLowerCase().endsWith('.hahmo'))path+='.hahmo';
+  // Write in the selected directory and atomically replace only after all bytes are on disk.
+  const temp=join(dirname(path),'.hahmostudio-'+randomUUID()+'.tmp');let handle;
+  try{handle=await open(temp,'wx',0o600);await handle.writeFile(request.bytes);await handle.sync();await handle.close();handle=null;await rename(temp,path);}catch(e){await handle?.close();await unlink(temp).catch(()=>{});throw e;}
+  if(request.kind==='project'){this.currentPath=path;this.onProject(path);await this.remember(path);}return {saved:true,name:basename(path)};
+ }
+}

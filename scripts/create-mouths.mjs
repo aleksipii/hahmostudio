@@ -1,0 +1,4 @@
+import fs from 'node:fs';import {writePsdBuffer,initializeCanvas} from 'ag-psd';
+initializeCanvas(()=>{throw Error('Unused canvas')},(width,height)=>({width,height,data:new Uint8ClampedArray(width*height*4)}));
+const source=new URL('../.mouth-build/',import.meta.url),out=new URL('../public/library/',import.meta.url);
+for(const style of ['Pehmea','Sarjakuva']){const meta=JSON.parse(fs.readFileSync(new URL(style+'.json',source)));const psd={width:160,height:100,imageData:{width:160,height:100,data:new Uint8ClampedArray(fs.readFileSync(new URL(style+'-X.rgba',source)))},children:meta.map((n,i)=>({id:9000+i,name:'Suu '+n.shape,left:0,top:0,right:160,bottom:100,hidden:n.shape!=='X',imageData:{width:160,height:100,data:new Uint8ClampedArray(fs.readFileSync(new URL(style+'-'+n.shape+'.rgba',source)))}}))};fs.writeFileSync(new URL('Suupaketti-'+style+'.psd',out),writePsdBuffer(psd,{generateThumbnail:false}));}
