@@ -7,7 +7,7 @@ Päivä: 4.10.2026. Toimitus: macOS arm64, Electron 44.5.1. Koodin kehitys säil
 - `npm test`: **147/147 hyväksytty**, ei ohitettuja eikä epäonnistuneita testejä.
 - TypeScript-tarkistus, `npm run build:private` ja `npm run desktop:package:mac`: onnistuneet. Rakennus varoittaa suuresta JS-paketista ja päällekkäisestä fflate-tuonnista; nämä eivät estä rakennusta. .icon-muotoa koskeva pakkausvaroitus ei poista mukana olevaa .icns-kuvaketta.
 - `npm run desktop:test:package`: onnistunut paketoidun Electronin Node-ajotilassa. Paikallinen autentikoitu palvelin, vanhat hahmot/PSD:t/kuvausympäristöt, kameramalli/WASM ja AudioWorklet palauttavat resurssit. Rhubarb käsittelee hiljaisen WAV:n molemmilla kielivalinnoilla. Tämä ei ole käyttöliittymän käynnistystesti eikä fyysinen laitetesti.
-- Mac-paketin `codesign --verify --deep --strict`: onnistui. Paikallinen ad hoc -allekirjoitus; ei Applen notarisoima jakelu.
+- ZIPiin pakatun alkuperäisen Mac-appin `codesign --verify --deep --strict`: onnistui. Paikallinen ad hoc -allekirjoitus; ei Applen notarisoima jakelu.
 - Tasotestit: muokkaus säilyttää tunnisteen, PSD-sijainnin, pivotin, rigin ja animaation; vanhan projektin luku ja v4-muokkausten/maskien/vektorien/äänen analyysin tallennus–uudelleenavaus; lukitus, järjestys ja virheellisten syötteiden hylkäys.
 - Jonotestit: itsenäinen tilannekuva, yksi aktiivinen työ, peruminen ja uudelleenyritys. ExportService-testissä korvattu Electron-ikkuna/IPC toimittaa oikeasti levylle ruudut: yksi kuittaus kerrallaan, valmis PNG-hakemisto, peruminen ja encoder-virhe säilyttävät aiemman vientitiedoston.
 - Pitkän viennin WAV-muunnoksen 300 s raja testattu erillään litteroinnin/äänteiden 60 s syöterajasta; puhepalvelun rajoitusta ei laajenneta.
@@ -46,3 +46,7 @@ Litterointi enintään 60 s; puhealue/hiljaisuus on RMS-kynnysanalyysi, sanat Wh
 Uusi taustajono/GIF/Finder ovat Mac-ominaisuuksia; vanhat web-MP4/PNG-viennit säilyvät. Malli on Mac-paketissa. Staattinen Pages ei voi ajaa paikallista Whisper-palvelinta. Canvas-renderöinnin, PNG/GIF:n ja äänen koko putki ei ole VideoToolbox-kiihdytetty. Työ ei jatku sovelluksen täydellisen sulkemisen jälkeen.
 
 Käyttö, asetukset, rajat ja rakentamiskomennot: DEVELOPMENT-0.9.md. Projektit ja asetukset säilytetään sovelluspaketin ulkopuolella. Vanha Lataukset-kansion app ei päivity automaattisesti: sulje se ja korvaa sovellus uudella paketilla.
+
+## Purettu app toimituskansiossa
+
+Toimituskansion tiedostopalvelu lisää/palauttaa tyhjän com.apple.FinderInfo-metatiedon .app-osapaketteihin. Tämän kansiokopion syvä strict-allekirjoitustarkistus epäonnistui, vaikka sama alkuperäinen app /private/tmp-rakennuskansiossa läpäisee tarkistuksen. Vain FinderInfo/ResourceFork-metatiedon poistoa kokeiltiin; quarantine-attribuuttia, Gatekeeperia tai muita käyttöoikeuksia ei muutettu. Käytä ensisijaisesti Hahmostudio-Mac-0.9.0-arm64.zip-pakettia ja pura se paikalliseen Ohjelmat-kansioon. Kansioon puretun appin GUI-käynnistystä ei ole tässä varmennettu. ZIPin CRC tarkistettiin ja se sisältää alkuperäisen appin.
