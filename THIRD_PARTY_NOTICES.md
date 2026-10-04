@@ -972,3 +972,7 @@ For files under tasks/cc/text/language_detector/custom_ops/utils/utf/
  */
 
 ```
+
+## Local export and speech runtime
+
+FFmpeg 8.1 (LGPL 2.1+, GPL disabled), OpenH264 2.6.0 (BSD), whisper.cpp 1.9.4 and Whisper base weights (MIT). Static binaries use only macOS system frameworks. Licenses: licenses/native/. Corresponding pinned source archives and configuration: Contents/Resources/native/sources/. Maintainer build command: npm run native:prepare. Model source: https://huggingface.co/ggerganov/whisper.cpp. No audio is sent there during recognition.

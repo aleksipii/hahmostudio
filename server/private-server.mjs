@@ -1,3 +1,4 @@
+import {createTranscriber} from './transcriber.mjs';
 import http from 'node:http';
 import {recognizeSpeech,validateSpeechWav} from './speech-recognizer.mjs';
 import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
@@ -8,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const derive=promisify(scrypt);
 const hash=async(password,salt)=>Buffer.from(await derive(password,salt,64,{N:32768,maxmem:64*1024*1024}));
 const equal=(a,b)=>{const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y);};
-export async function createPrivateServer({distDir,dataDir,origin,setupToken='',secure=false,desktopToken='',speechRecognizer=recognizeSpeech}={}) {
+export async function createPrivateServer({distDir,dataDir,origin,setupToken='',secure=false,desktopToken='',speechRecognizer=recognizeSpeech,transcriber=createTranscriber({binary:fileURLToPath(new URL('../.private-runtime/native/bin/whisper-cli',import.meta.url)),model:fileURLToPath(new URL('../.private-runtime/native/models/ggml-base.bin',import.meta.url))})}={}) {
  if(desktopToken&&!/^[a-f0-9]{64}$/.test(desktopToken))throw new Error('Invalid desktop session');
  const root=await realpath(distDir),store=desktopToken?null:resolve(dataDir),ownerPath=store?resolve(store,'owner.json'):null;if(store)await mkdir(store,{recursive:true,mode:0o700});
  let owner=null;try{if(ownerPath)owner=JSON.parse(await readFile(ownerPath,'utf8'));if(!ownerPath)owner={username:'desktop'};if(ownerPath&&(typeof owner.username!=='string'||typeof owner.salt!=='string'||typeof owner.hash!=='string'))throw new Error('Invalid owner record');}catch(e){if(e.code!=='ENOENT')throw e;}
@@ -56,6 +57,13 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
    }
    if(path==='/login'&&req.method==='GET'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end(loginPage(nonce));return;}
    if(!authorized){if(path.startsWith('/api/'))send(401,{error:'Kirjaudu ensin.'});else{res.writeHead(302,{Location:'/login'});res.end();}return;}
+   if(path==='/api/audio/model'&&req.method==='GET'){send(200,await transcriber.status());return;}
+   if(path==='/api/audio/model'&&req.method==='POST'){if(req.headers.origin!==expected){send(403,{error:'Pyyntö ei ole sallittu.'});return;}if(speechRunning){send(409,{error:'Edellinen puhetoiminto on kesken.'});return;}speechRunning=true;const controller=new AbortController(),close=()=>{if(!res.writableEnded)controller.abort();};res.on('close',close);try{send(200,await transcriber.download(controller.signal));}catch(e){if(!controller.signal.aborted)send(400,{error:e.message});}finally{speechRunning=false;res.off('close',close);}return;}
+   if(path==='/api/audio/transcribe'&&req.method==='POST'){
+    if(req.headers.origin!==expected||!req.headers['content-type']?.startsWith('audio/wav')){send(403,{error:'Pyyntö ei ole sallittu.'});return;}
+    if(speechRunning){send(409,{error:'Edellinen puheanalyysi on kesken.'});return;}speechRunning=true;const controller=new AbortController(),disconnected=()=>{if(!res.writableEnded)controller.abort();};res.on('close',disconnected);
+    try{let size=0;const chunks=[];for await(const c of req){size+=c.length;if(size>1920044)throw Error('Enimmäiskesto on 60 sekuntia.');chunks.push(c);}const analysis=await transcriber.recognize(Buffer.concat(chunks),address.searchParams.get('language'),controller.signal);if(!controller.signal.aborted)send(200,analysis);}catch(e){if(!controller.signal.aborted)send(400,{error:e.message});}finally{res.off('close',disconnected);speechRunning=false;}return;
+   }
    if(path==='/api/speech/recognize'&&req.method==='POST'){
     if(req.headers.origin!==expected||!req.headers['content-type']?.startsWith('audio/wav')){send(403,{error:'Pyyntö ei ole sallittu.'});return;}
     const language=address.searchParams.get('language');if(!['fi','en'].includes(language)){send(400,{error:'Valitse suomi tai englanti.'});return;}
@@ -64,7 +72,7 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
    }
    if(!['GET','HEAD'].includes(req.method)){send(405,{error:'Menetelmä ei ole sallittu.'});return;}
    let decoded;try{decoded=decodeURIComponent(path);}catch{send(400,{error:'Virheellinen polku.'});return;}
-   const candidate=resolve(root,'.'+(decoded==='/'?'/index.html':decoded));if(!candidate.startsWith(root+sep)){send(404,{error:'Ei löydy.'});return;}
+   const candidate=resolve(root,'.'+(['/','/export-worker'].includes(decoded)?'/index.html':decoded));if(!candidate.startsWith(root+sep)){send(404,{error:'Ei löydy.'});return;}
    let file;try{file=await realpath(candidate);}catch{send(404,{error:'Ei löydy.'});return;}if(!file.startsWith(root+sep)){send(404,{error:'Ei löydy.'});return;}
    const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.json':'application/json','.psd':'application/octet-stream','.wasm':'application/wasm'};
    const bytes=await readFile(file);res.writeHead(200,{'Content-Type':types[extname(file)]??'application/octet-stream'});res.end(req.method==='HEAD'?undefined:bytes);

@@ -216,3 +216,7 @@ Käsikirjoitus → Dialogi ja leikkaukset käsittelee myös uusia hahmonimiä, y
 Ohjaussuunnitelma näyttää lähderiveineen tarkoituksen, luonteen/suhteet, miljöön, rekvisiitan, sijoittelun, dialogin, toiminnan, katseet, ilmeet, tauot, rajoitukset, kameraleikkaukset ja lopetuksen. Toteutettu, Arvio ja Puuttuu erotetaan. Arviot pitää hyväksyä, puuttuvat olennaiset toiminnot korjata. Liikeohjeet käyttävät nykyisen moottorin kävely-, juoksu-, vilkutus-, hyppy-, kyykistys- ja nyökkäystoimintoja.
 
 Tuettuja miljöitä ovat kirjaston taustat ja neutraali valkoinen tausta. Muu ympäristö tai rekvisiitta merkitään puuttuvaksi. Käsikirjoitus tulkitaan paikallisilla säännöillä: vapaamuotoisen tarkoituksen ja hahmokuvauksen tulkinta näytetään arviona. Puhesynteesiä ei ole kytketty; käytä tuotuja repliikkiääniä. Ilman ääniä tulos on alustava esikatselu. Katso [yleisen jaksotyökalun ohje](docs/EPISODE.md).
+
+## 0.9: piirtäminen, litterointi ja Macin vientijono
+
+Hahmo → Piirtäminen sisältää rasterisiveltimen, pyyhkimen, pipetin, aluevalinnan/siirron, palautettavat maskit ja muokattavat vektorit. Animointi → Liikkeet sisältää aaltomuodon ja paikallisen Whisper-litteroinnin. Macin Vie-päätoiminto sisältää MP4/GIF/PNG-esiasetukset ja erillisessä prosessissa toimivan vientijonon. [Käyttö, toteutus, riippuvuudet ja todelliset rajat](DEVELOPMENT-0.9.md).

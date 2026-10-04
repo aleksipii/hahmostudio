@@ -1,4 +1,5 @@
 export interface LayerNode {
+ locked?: boolean; edit?: import("./layer-edit.ts").LayerEdit;
  key: string; psdId?: number; name: string; path: string; kind: 'group' | 'layer';
  left: number; top: number; width: number; height: number; opacity: number;
  visible: boolean; blendMode: string; png?: Blob; url?: string; image?: HTMLImageElement;

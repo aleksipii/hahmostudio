@@ -1,0 +1,4 @@
+import {checkLayerPixels} from './lib/layer-pixels-check';
+import {renderExport} from './lib/export-render';import type {ExportPreset} from './lib/export-presets';
+declare global{interface Window{exportWorker?:{job:()=>Promise<{id:string;bytes:Uint8Array;preset:ExportPreset;verify?:boolean}>;frame:(id:string,index:number,bytes:Uint8Array)=>Promise<void>;audio:(id:string,bytes:Uint8Array)=>Promise<void>;complete:(id:string)=>Promise<void>;failed:(id:string,message:string)=>Promise<void>};}}
+export async function startExportWorker(){const bridge=window.exportWorker!;const job=await bridge.job();try{if(job.verify)await checkLayerPixels();await renderExport(job.bytes,job.preset,{frame:(i,b)=>bridge.frame(job.id,i,b),audio:b=>bridge.audio(job.id,b),check:()=>{}});await bridge.complete(job.id);}catch(e){await bridge.failed(job.id,(e as Error).message);}}

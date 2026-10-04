@@ -1,0 +1,2 @@
+const {contextBridge,ipcRenderer}=require('electron');
+contextBridge.exposeInMainWorld('exportWorker',Object.freeze({job:()=>ipcRenderer.invoke('export:job'),frame:(id,index,bytes)=>ipcRenderer.invoke('export:frame',id,index,bytes),audio:(id,bytes)=>ipcRenderer.invoke('export:audio',id,bytes),complete:id=>ipcRenderer.invoke('export:complete',id),failed:(id,message)=>ipcRenderer.invoke('export:failed',id,message)}));

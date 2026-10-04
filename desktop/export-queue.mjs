@@ -1,0 +1,14 @@
+import {randomUUID} from 'node:crypto';
+/** One immutable snapshot per job. The runner awaits each frame's sink acknowledgement. */
+export class ExportQueue{
+ constructor({run,notify=()=>{}}){this.run=run;this.notify=notify;this.jobs=[];this.snapshots=new Map();this.active=null;}
+ list(){return this.jobs.map(({controller,...j})=>structuredClone(j));}
+ emit(){this.notify(this.list());}
+ enqueue({name,destination,preset,bytes}){if(!(bytes instanceof Uint8Array)||bytes.length>128*1024*1024||!bytes.length)throw Error('Viennin projektitiedosto on virheellinen.');if(this.jobs.filter(j=>['queued','preparing','rendering','packing'].includes(j.state)).length>=4)throw Error('Jonossa voi olla enintään neljä keskeneräistä vientiä.');for(const j of this.jobs)if(j.state==='done')this.snapshots.delete(j.id);if([...this.snapshots.values()].reduce((n,b)=>n+b.length,0)+bytes.length>256*1024*1024)throw Error('Vientijonon tilannekuvat ylittävät 256 Mt. Käynnistä sovellus uudelleen tai käytä pienempiä projekteja.');this.jobs=this.jobs.slice(-20);for(const id of this.snapshots.keys())if(!this.jobs.some(j=>j.id===id))this.snapshots.delete(id);const id=randomUUID(),job={id,name,destination,preset:structuredClone(preset),state:'queued',progress:0};this.snapshots.set(id,new Uint8Array(bytes));this.jobs.push(job);this.emit();void this.pump();return id;}
+ async pump(){if(this.active)return;const job=this.jobs.find(j=>j.state==='queued');if(!job)return;this.active=job.id;job.controller=new AbortController();job.state='preparing';this.emit();try{await this.run(job,this.snapshots.get(job.id),job.controller.signal,patch=>{if(job.controller.signal.aborted)return;Object.assign(job,patch);this.emit();});if(job.controller.signal.aborted)job.state='canceled';else{job.state='done';job.progress=1;}}catch(e){job.state=job.controller.signal.aborted?'canceled':'error';if(job.state==='error')job.error=e.message;}finally{delete job.controller;this.active=null;this.emit();void this.pump();}}
+ cancel(id){const job=this.jobs.find(j=>j.id===id);if(!job)throw Error('Vientityötä ei löydy.');if(job.state==='queued')job.state='canceled';else job.controller?.abort();this.emit();}
+ retry(id){const j=this.jobs.find(j=>j.id===id);if(!j||!['error','canceled'].includes(j.state))throw Error('Vientiä ei voi yrittää uudelleen.');j.state='queued';j.progress=0;delete j.error;this.emit();void this.pump();}
+ forget(id){const j=this.jobs.find(j=>j.id===id);if(!j||!['done','error','canceled'].includes(j.state))throw Error('Keskeneräistä vientiä ei voi poistaa jonosta.');this.jobs=this.jobs.filter(j=>j.id!==id);this.snapshots.delete(id);this.emit();}
+ pending(){return this.jobs.some(j=>['queued','preparing','rendering','packing'].includes(j.state));}
+ cancelAll(){for(const j of this.jobs)if(['queued','preparing','rendering','packing'].includes(j.state))this.cancel(j.id);}
+}
