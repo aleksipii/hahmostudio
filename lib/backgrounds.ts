@@ -1,5 +1,7 @@
+import {environmentLibrary,environmentShapes} from './environment-library.ts';
 /** Original vector scenery shared by preview, PNG/MP4 rendering and downloadable SVGs. */
 export const backgrounds=[
+ ...environmentLibrary.map(e=>({id:e.id,name:e.name,hint:e.category+' · 2D, etukamera'})),
  {id:'studio-premium-v1',name:'Studio · valoisa',hint:'Valopaneelit, akustiikka ja syvyys'},
  {id:'apartment-v1',name:'Olohuone',hint:'Ikkuna, sohva ja lämmin sisustus'},
  {id:'city-evening-v1',name:'Kaupunki · ilta',hint:'Iltavalot, julkisivut ja kävelykatu'},
@@ -14,6 +16,7 @@ export const backgrounds=[
 export type BackgroundId=typeof backgrounds[number]['id'];
 export type Shape={fill:string;points?:number[][];rect?:number[];ellipse?:number[];gradient?:[string,string]};
 export function backgroundShapes(id:BackgroundId):Shape[]{
+ const extended=environmentShapes(id);if(extended)return extended;
  const r=(fill:string,...rect:number[]):Shape=>({fill,rect}),p=(fill:string,...points:number[][]):Shape=>({fill,points}),e=(fill:string,...ellipse:number[]):Shape=>({fill,ellipse});
  if(id==='studio-premium-v1')return [{...r('#dce5ee',0,0,1,1),gradient:['#f0f4fa','#9aabc3']},p('#b7c6d8',[0,.78],[1,.72],[1,1],[0,1]),r('#28405b',.08,.1,.84,.62),r('#526e87',.12,.14,.76,.54),...Array.from({length:9},(_,i)=>r(i%2?'#3d586d':'#48647c',.16+i*.08,.18,.018,.45)),r('#f4d9a1',.07,.10,.01,.63),r('#f4d9a1',.92,.10,.01,.63),e('#6e7c8d',.5,.87,.35,.025),r('#273c54',.04,.07,.18,.012),r('#273c54',.78,.07,.18,.012),r('#e6f7ff',.02,.05,.22,.018),r('#e6f7ff',.76,.05,.22,.018),p('#d0dceb',[.02,.068],[.24,.068],[.43,.74],[.02,.77]),p('#d0dceb',[.76,.068],[.98,.068],[.98,.77],[.57,.74])];
  if(id==='apartment-v1')return [{...r('#eadcc8',0,0,1,1),gradient:['#f8edda','#d9c4a5']},p('#aa8061',[0,.8],[1,.76],[1,1],[0,1]),...Array.from({length:5},(_,i)=>p('#ba9474',[0,.81+i*.04],[1,.77+i*.04],[1,.775+i*.04],[0,.815+i*.04])),r('#3b546a',.08,.12,.34,.4),r('#a7cfe0',.09,.13,.32,.38),p('#d7eff9',[.09,.13],[.41,.13],[.09,.5]),r('#f8f0e3',.245,.13,.015,.38),r('#f8f0e3',.09,.31,.32,.01),r('#c8a778',.55,.16,.26,.21),r('#e7d7b7',.565,.17,.23,.19),e('#799780',.68,.27,.07,.04),r('#8d6661',.17,.61,.66,.19),r('#ad8581',.19,.59,.62,.13),r('#cba79a',.24,.60,.18,.09),r('#d9bdae',.60,.60,.16,.09),r('#614c48',.22,.79,.025,.03),r('#614c48',.75,.79,.025,.03),e('#d6c5a5',.50,.91,.36,.045),r('#696c50',.9,.67,.06,.14),r('#779879',.927,.47,.008,.2),e('#739575',.88,.54,.05,.035),e('#739575',.963,.51,.034,.027)];

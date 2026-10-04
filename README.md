@@ -2,6 +2,8 @@
 
 Hahmostudio on suomenkielinen PSD-pohjainen animaatioeditori omaan käyttöön. PSD:t ja animaatiot käsitellään paikallisesti. Pilvitallennusta ei ole.
 
+**Nykyisen 0.10-version kokonaiskuvaus:** [UI/UX, toiminnallisuudet, animaatiologiikka ja tekniset rajat](SOVELLUSKUVAUS.md).
+
 ## Uutta 0.8.0
 
 Kamera ohjaa valmiin hahmon silmäluomia, katsetta, kulmakarvoja ja jatkuvaa suuasentoa. Valitse suun lähteeksi automaattinen, kamera tai mikrofoni. Voit tallentaa oman äänen ja esityksen tai äänittää repliikit suoraan käsikirjoituksen työpisteessä. Kirjastoon on lisätty Roni-Studio, Salla-Studio ja neljä tarkempaa taustaa. Näyttämön valinnainen 3D-paperimalli säilyttää PSD-osat ja nykyiset liikkeet, ja toimii samoin esikatselussa ja viennissä. Se ei sisällä tilavuudellista ihmisverkkoa tai 3D-luurankoa. Tarkemmat ohjeet: [Jakson valmistus](docs/EPISODE.md).
@@ -220,3 +222,7 @@ Tuettuja miljöitä ovat kirjaston taustat ja neutraali valkoinen tausta. Muu ym
 ## 0.9: piirtäminen, litterointi ja Macin vientijono
 
 Hahmo → Piirtäminen sisältää rasterisiveltimen, pyyhkimen, pipetin, aluevalinnan/siirron, palautettavat maskit ja muokattavat vektorit. Animointi → Liikkeet sisältää aaltomuodon ja paikallisen Whisper-litteroinnin. Macin Vie-päätoiminto sisältää MP4/GIF/PNG-esiasetukset ja erillisessä prosessissa toimivan vientijonon. [Käyttö, toteutus, riippuvuudet ja todelliset rajat](DEVELOPMENT-0.9.md).
+
+## Käsikirjoitus ja 3D-toon (0.10)
+
+Ohjauspöytä, vakaat päivitykset, kuvakortit, reaktiolukitukset, Roni/Salla-3D, 32 taustaa ja 20 esinettä: katso [käyttö ja todelliset rajat](DEVELOPMENT-0.10.md). Koko laajennus ja lopullinen äänellinen esittelyvideo eivät vielä ole valmiit. Paikallinen semanttinen malli ja KILSAT-repliikkiäänet puuttuvat.

@@ -1,0 +1,60 @@
+JOURNEY — S01E02: “The Delivery”
+Duration: 600 s
+Character Aino: courier and planner.
+Character Oskar: a careful colleague.
+Scene: office
+WIDE
+AINO MEDIUM, right three-quarter view.
+AINO: “Today we must deliver the old city map to the exhibition, but the address label on the box got wet. I can read the street name on my phone, but the building number has disappeared. I do not want to guess because this is the original paper and its folds are fragile. First let us photograph the package, check the museum message and record the delivery steps in our notebook. If we find two different addresses, we should ask which door is actually open today. We have enough time to be careful and still arrive before the exhibition opens.”
+CUT TO OSKAR CLOSE-UP
+Hold 0.7 seconds of silence.
+OSKAR: “The museum message mentions the old main entrance, while this morning’s notice directs deliveries to the side door. We should record both instructions rather than silently replacing the first with the second. I will call the attendant before we leave and make sure he knows the box is coming. You can check the seals and packing list. Once the information is confirmed, we will save the route on the phone. There is also a small letter from the donor inside the protective case. It must travel with the map throughout the journey instead of becoming a loose page at the bottom of a bag.”
+Aino waves for 1.2 seconds.
+Aino looks at her phone.
+Scene: cafe
+WIDE
+AINO MEDIUM, right three-quarter view.
+AINO: “The attendant did not answer, so we came to the cafe to wait for his return call. The box is on the chair between us and the protective case is still closed. The barista mentioned roadworks on the side street that are not shown in the map application yet. If we take the bus, the stop might have moved a block away. Let us read the city transport notice before we finish our coffee. I will hold the phone where you can see the screen, but keep it away from direct sunlight. Otherwise the reflection hides the small street names and we could choose the wrong intersection.”
+CUT TO OSKAR CLOSE-UP
+Hold 0.7 seconds of silence.
+OSKAR: “The notice uses the old stop name, but the route now passes the library. That could help because the library has a floor plan of the exhibition building. We could check the side entrance while waiting for an answer. Still, I do not want to add an unnecessary detour just because the building looks interesting. Let us set a clear rule: we visit the library only if the attendant asks us to wait. If he answers immediately, we continue straight there. I will write our decision and departure time in the notebook so the receiver can later see what actually happened during the delivery.”
+Aino waves for 1.2 seconds.
+Aino looks at her phone.
+Scene: bus stop
+WIDE
+AINO MEDIUM, right three-quarter view.
+AINO: “Our bus is missing from this timetable even though the phone says it will arrive in three minutes. There is a small paper notice at the bottom of the sign announcing a diversion. It seems we are on the wrong side of the street after all. I will not run through traffic carrying the box. Let us wait for the green light, look both ways and cross together. You can carry the package while I hold the list and phone. If we miss this bus, the next one still gets us there in time. The map’s safety should not depend on saving a single minute.”
+CUT TO OSKAR CLOSE-UP
+Hold 0.7 seconds of silence.
+OSKAR: “The attendant just sent a message. He is waiting at the side door and asks us to use the walkway behind the library. It is fortunate we did not head towards the old main entrance. I am saving the message because it includes the door number and the name used to register the delivery. The wind is strong here, so keep the lid closed and do not inspect the contents at the stop. On the bus we will put the box on the floor between our feet, rather than on the luggage shelf. I will reopen the route map after we sit down and tell you well before our stop.”
+Aino waves for 1.2 seconds.
+Aino looks at her phone.
+Scene: library
+WIDE
+AINO MEDIUM, right three-quarter view.
+AINO: “The bus dropped us outside the library and the attendant says the door opens at ten. We have a little time to wait indoors. According to this floor plan, the side entrance is across a small courtyard. The exhibition room is right beside it, which means we do not have to carry the package up any stairs. I will ask the librarian whether we may photograph the directional sign. We only need the entrance location, so we will leave the people in the reading room out of the picture. We should also check whether the courtyard gate is open or whether we must walk around the other side.”
+CUT TO OSKAR CLOSE-UP
+Hold 0.7 seconds of silence.
+OSKAR: “The librarian says the gate is open, but bicycles must be walked through the courtyard. We are on foot, so that instruction does not change our plan. I notice the floor plan has the same street name as the damaged label. Neither address was entirely wrong: they described different doors of the same building. We would not have discovered that simply by changing the search words on the phone. I will add the explanation to the delivery report and cite the attendant’s message. When we leave, we will return the chairs to their places and thank the librarian. Waiting calmly was more useful than guessing quickly at the bus stop.”
+Aino waves for 1.2 seconds.
+Aino looks at her phone.
+Scene: garage
+WIDE
+AINO MEDIUM, right three-quarter view.
+AINO: “The courtyard path ends in this service area. The attendant will meet us through that door, so we should stop inside the marked waiting zone. We will place the box on a clean table, never on the oily floor. I will show the booking number on my phone and hand him the printed list so he can inspect the seals himself. If the names differ, we will leave the case closed until the exhibition manager arrives. Our job is to give the object to the correct receiver, rather than settle the museum’s internal records. Could you keep the box still while I straighten the protective cloth at the edge of the table?”
+CUT TO OSKAR CLOSE-UP
+Hold 0.7 seconds of silence.
+OSKAR: “I am holding the box with both hands and keeping the lid towards me. The name on the attendant’s badge matches the message. He also brought a signed receipt with the correct exhibition title. First we check the outside of the package, then the list and finally the protective seal. With his permission I will photograph only the package and receipt. You can sign the sender section because you checked the packing this morning. I will record our arrival time and note that we found no damage during transport. Each step will be traceable later, without relying on memories of a confusing chain of messages.”
+Aino waves for 1.2 seconds.
+Aino looks at her phone.
+Scene: white studio
+WIDE
+AINO MEDIUM, right three-quarter view.
+AINO: “The map is now safely in the exhibition and the delivery has been completed. I want to make a short video about our journey so the next courier can avoid the same address problem. We will show the damaged label first, then the confirmed message and finally the side entrance location. We do not need large gestures or fast camera movements because the important detail is the small difference between two doors. I will explain the route while you show the phone screen. We should leave a short silence at the end so viewers can read the door number, then finish with a clear title card rather than additional dialogue or unexpected background objects.”
+CUT TO OSKAR CLOSE-UP
+Hold 0.7 seconds of silence.
+OSKAR: “That works. We will save the original report with the project and keep the words unchanged during later corrections. If the receiver changes the door number, we should update only the relevant shot and explanation, rather than rewrite the entire journey. The phone stays in the same hand in both wide shots and close views, and my eyes follow the point you indicate. Finally I will put the phone down on the table before the title card so the action ends calmly. This is a story about checking unclear information in time. The map arrived, the letter stayed with it and the next journey begins with a better plan.”
+Aino waves for 1.2 seconds.
+Aino looks at her phone.
+No camera movement.
+Ending: Delivery completed 1 s

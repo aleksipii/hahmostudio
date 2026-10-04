@@ -1,0 +1,54 @@
+{
+  "words": 1062,
+  "scenes": 6,
+  "dialogue": [
+    {
+      "speaker": "AINO",
+      "text": "Tänään meidän pitää toimittaa kaupungin vanha kartta näyttelyyn, mutta laatikon osoitelappu on kastunut. Näen puhelimesta vain kadun nimen, en rakennuksen numeroa. En halua arvata määränpäätä, koska paperi on alkuperäinen ja sen taitokset ovat jo hauraita. Otetaan ensin kuva laatikosta, tarkistetaan museon lähettämä viesti ja merkitään toimituksen vaiheet vihkoon. Jos löydämme kaksi eri osoitetta, kysymme vastaanottajalta kumpi ovi on avoinna tänään. Meillä on aikaa tehdä tämä rauhallisesti ja silti ehtiä ennen näyttelyn avausta."
+    },
+    {
+      "speaker": "OSKAR",
+      "text": "Museon viestissä lukee vanha pääsisäänkäynti, mutta tämän aamun tiedote ohjaa tavaratoimitukset sivuovelle. Minusta meidän kannattaa kirjata molemmat tiedot eikä korvata ensimmäistä hiljaa toisella. Soitan vartijalle ennen lähtöä ja varmistan, että hän tietää laatikon saapuvan. Sinä voit tarkistaa sinetit ja pakkausluettelon. Kun tieto on vahvistettu, tallennamme yhteisen reitin puhelimeen. Kartan mukana kulkee myös pieni kirje lahjoittajalta, joten sen pitää pysyä samassa suojakotelossa koko matkan eikä irrallisena laukun pohjalla."
+    },
+    {
+      "speaker": "AINO",
+      "text": "Vartija ei vastannut, joten tulimme kahvilaan odottamaan hänen takaisinsoittoaan. Laatikko on tuossa tuolilla meidän välissämme, ja suojakotelo on yhä kiinni. Barista kertoi sivukadun remontista, joka ei vielä näy karttasovelluksessa. Jos menemme bussilla, pysäkki saattaa olla siirretty yhden korttelin päähän. Katsotaan kaupungin liikennetiedote ennen kuin juomme kahvimme loppuun. Minä pidän puhelinta niin, että näet ruudun, mutta en käännä sitä aurinkoon, koska silloin pienet katunimet katoavat heijastukseen ja voimme valita vahingossa väärän risteyksen."
+    },
+    {
+      "speaker": "OSKAR",
+      "text": "Tiedotteessa pysäkin nimi on sama kuin ennen, mutta reitti kulkee nyt kirjaston vierestä. Se voisi auttaa meitä, sillä kirjastossa on näyttelypaikan vanha pohjapiirros. Voimme tarkistaa siitä sivuoven sijainnin odottaessamme vastausta. En kuitenkaan halua lisätä matkaan turhaa mutkaa vain siksi, että rakennus näyttää mielenkiintoiselta. Sovitaan selvä raja: käymme kirjastossa vain, jos vartija pyytää meitä odottamaan. Jos hän vastaa heti, jatkamme suoraan. Kirjaan päätöksen ja lähtöajan vihkoon, jotta vastaanottajalle voidaan myöhemmin kertoa mitä matkan aikana oikeasti tapahtui."
+    },
+    {
+      "speaker": "AINO",
+      "text": "Tässä pysäkkitaulussa ei ole meidän bussiamme, vaikka puhelimen sovellus väittää sen tulevan kolmen minuutin päästä. Taulun alakulmassa on pieni paperinen ilmoitus, jossa lukee poikkeusreitti. Näyttää siltä, että olemme sittenkin väärällä puolella katua. En lähde juoksemaan laatikon kanssa liikenteen väliin. Odotetaan vihreää valoa, katsotaan molempiin suuntiin ja ylitetään yhdessä. Sinä voit kantaa laatikon, minä pidän luettelon ja puhelimen. Jos emme ehdi tähän vuoroon, seuraava vie meidät perille riittävän ajoissa eikä kartan turvallisuus riipu siitä yhdestä minuutista."
+    },
+    {
+      "speaker": "OSKAR",
+      "text": "Vartija lähetti juuri viestin. Hän odottaa sivuovella ja pyytää meitä käyttämään kirjaston takana olevaa kävelyreittiä. Hyvä että emme lähteneet vanhan pääoven suuntaan. Tallennan viestin, koska siinä on oven numero ja nimi, jolla toimitus kirjataan sisään. Täällä tuulee voimakkaasti, joten pidetään laatikon kansi suljettuna emmekä tarkista sen sisältöä pysäkillä. Bussissa laitamme sen lattialle jalkojemme väliin, emme ylös tavarahyllylle. Palaan reittikarttaan vasta kun olemme istumassa, jotta voin samalla seurata pysäkkejä ja ilmoittaa sinulle hyvissä ajoin milloin poistumme."
+    },
+    {
+      "speaker": "AINO",
+      "text": "Bussi jätti meidät kirjaston eteen, ja vartija ilmoitti oven olevan avoinna vasta kymmeneltä. Nyt meillä on hetki aikaa odottaa täällä sisällä. Tämän pohjapiirroksen mukaan sivuovi on pienen sisäpihan toisessa päässä. Kartan näyttelyhuone on heti sen vieressä, joten meidän ei tarvitse kantaa laatikkoa portaissa. Pyydän kirjastonhoitajalta luvan kuvata piirroksen opasteen. En kuvaa ihmisiä lukusalissa, sillä tarvitsemme vain oven sijainnin. Samalla voimme tarkistaa, onko sisäpihalle johtava portti käytössä vai pitääkö meidän kiertää rakennuksen toinen puoli."
+    },
+    {
+      "speaker": "OSKAR",
+      "text": "Kirjastonhoitaja sanoi portin olevan auki, mutta pyörät pitää taluttaa pihan läpi. Me kuljemme jalan, joten ohje ei muuta suunnitelmaamme. Huomaan piirroksessa saman kadunnimen kuin vanhassa osoitelapussa. Se tarkoittaa, että kumpikaan osoite ei ollut kokonaan väärä: ne viittasivat saman rakennuksen eri oviin. Tätä eroa ei olisi saanut selville vain vaihtamalla hakusanaa puhelimessa. Kirjoitan selityksen toimitusraporttiin ja merkitsen vartijan viestin lähteeksi. Kun lähdemme, jätämme käyttämämme tuolit paikoilleen ja kiitämme avusta. Rauhallinen odotus auttoi enemmän kuin kiireinen arvailu pysäkillä."
+    },
+    {
+      "speaker": "AINO",
+      "text": "Sisäpihan kulkureitti päättyy tähän huoltotilaan. Vartija tulee vastaan tuosta ovesta, joten pysähdymme tähän merkittyyn alueeseen. Laatikkoa ei lasketa öljyiselle lattialle, vaan puhtaalle pöydälle. Näytän puhelimesta varausnumeron, mutta annan hänelle myös paperisen luettelon, jotta hän voi tarkistaa sinetit omin silmin. Jos nimissä on eroa, emme avaa koteloa ennen kuin näyttelyn vastuuhenkilö on paikalla. Meidän tehtävämme on luovuttaa esine oikealle vastaanottajalle, ei ratkaista museon sisäisiä kirjauksia. Voitko pitää laatikkoa hetken paikallaan kun vedän pöydän reunasta suojaliinan suoraksi?"
+    },
+    {
+      "speaker": "OSKAR",
+      "text": "Pidän laatikosta molemmin käsin, ja kansi pysyy minuun päin. Vartijan nimikyltti vastaa viestissä ollutta nimeä. Hän toi myös allekirjoitetun vastaanottolomakkeen, jossa näyttelyn nimi on oikein. Tarkistamme ensin laatikon ulkopinnan, sitten luettelon ja lopuksi suojakotelon sinetin. Otan valokuvan vain pakkauksesta ja lomakkeesta hänen luvallaan. Sinä saat allekirjoittaa lähettäjän kohdan, koska tarkistit pakkauksen aamulla. Minä merkitsen saapumisajan ja sen, ettei matkan aikana havaittu vaurioita. Näin jokainen vaihe on myöhemmin löydettävissä eikä meidän tarvitse muistella tapahtumia epäselvien viestien perusteella."
+    },
+    {
+      "speaker": "AINO",
+      "text": "Nyt kartta on turvallisesti näyttelyssä, ja toimitus on kirjattu valmiiksi. Haluan tehdä lyhyen videon matkastamme, jotta seuraava kuljettaja osaa välttää saman osoiteongelman. Videossa näytämme ensin kastuneen lapun, sitten vahvistetun viestin ja lopuksi sivuoven sijainnin. Emme tarvitse suuria eleitä tai nopeita kameraliikkeitä, koska tärkein asia on pieni ero kahden sisäänkäynnin välillä. Minä selitän reitin, sinä näytät puhelimen ruudun. Pidetään lopussa lyhyt hiljaisuus, jotta katsoja ehtii lukea oven numeron, ja päätetään video selkeään yhteenvetoon ilman uutta dialogia tai taustalle ilmestyviä tavaroita."
+    },
+    {
+      "speaker": "OSKAR",
+      "text": "Se sopii. Tallennamme alkuperäisen raportin projektin mukaan ja pidämme sanat samoina myös myöhemmissä korjauksissa. Jos vastaanottaja muuttaa oven numeroa, päivitetään vain sitä koskeva kuva ja selitys, ei koko matkan tapahtumia. Puhelin on samassa kädessä lähi- ja laajassa kuvassa, ja minun katseeni seuraa näyttämääsi kohtaa. Lopuksi lasken puhelimen pöydälle ennen otsikkokorttia, jotta toiminta päättyy rauhallisesti. Tämä ei ole tarina epäonnistuneesta toimituksesta, vaan siitä miten epäselvä tieto tarkistettiin ajoissa. Kartta pääsi perille, kirje pysyi mukana ja seuraava matka alkaa nyt paljon paremmasta suunnitelmasta."
+    }
+  ]
+}

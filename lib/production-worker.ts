@@ -1,0 +1,2 @@
+import {parsePresentation} from './presentation-parser';import {rebuildPresentation} from './presentation-timing';
+self.onmessage=(e:MessageEvent)=>{try{self.postMessage({progress:0.1});const parsed=parsePresentation(e.data.text,e.data.aliases);self.postMessage({progress:.7});const result=e.data.previous?rebuildPresentation(parsed,e.data.previous):parsed;self.postMessage({result});}catch(error){self.postMessage({error:(error as Error).message});}};

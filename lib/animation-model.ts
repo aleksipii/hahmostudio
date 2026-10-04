@@ -28,7 +28,7 @@ export function removeKeyframe(animation: Animation, key: string, frame: number)
 }
 export function readAnimation(text: string, doc: PsdDocument): Animation {
  const a = JSON.parse(text);
- if (!a || a.format !== 'hahmostudio-animation' || a.version !== 1 || !Number.isInteger(a.fps) || a.fps < 1 || a.fps > 60 || !Number.isInteger(a.duration) || a.duration < 2 || a.duration > 1800 || !Array.isArray(a.tracks) || a.tracks.length > 1000) throw new Error('Animaatiotiedoston asetukset ovat virheelliset.');
+ if (!a || a.format !== 'hahmostudio-animation' || a.version !== 1 || !Number.isInteger(a.fps) || a.fps < 1 || a.fps > 60 || !Number.isInteger(a.duration) || a.duration < 2 || a.duration > 72000 || !Array.isArray(a.tracks) || a.tracks.length > 1000) throw new Error('Animaatiotiedoston asetukset ovat virheelliset.');
  const rig = readRig(JSON.stringify(a.rig), doc), used = new Set<string>(); let total = 0;
  const tracks = a.tracks.map((t: Track) => {
   if (!t || !Array.isArray(t.frames)) throw new Error('Animaation rata on virheellinen.');
