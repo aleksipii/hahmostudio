@@ -4,12 +4,13 @@ Päivä: 4.10.2026. Toimitus: macOS arm64, Electron 44.5.1. Koodin kehitys säil
 
 ## Automaattiset tarkistukset
 
-- `npm test`: **146/146 hyväksytty**, ei ohitettuja eikä epäonnistuneita testejä.
-- TypeScript-tarkistus ja `npm run desktop:package:mac`: onnistuneet. Rakennus varoittaa suuresta JS-paketista ja päällekkäisestä fflate-tuonnista; nämä eivät estä rakennusta. .icon-muotoa koskeva pakkausvaroitus ei poista mukana olevaa .icns-kuvaketta.
+- `npm test`: **147/147 hyväksytty**, ei ohitettuja eikä epäonnistuneita testejä.
+- TypeScript-tarkistus, `npm run build:private` ja `npm run desktop:package:mac`: onnistuneet. Rakennus varoittaa suuresta JS-paketista ja päällekkäisestä fflate-tuonnista; nämä eivät estä rakennusta. .icon-muotoa koskeva pakkausvaroitus ei poista mukana olevaa .icns-kuvaketta.
 - `npm run desktop:test:package`: onnistunut paketoidun Electronin Node-ajotilassa. Paikallinen autentikoitu palvelin, vanhat hahmot/PSD:t/kuvausympäristöt, kameramalli/WASM ja AudioWorklet palauttavat resurssit. Rhubarb käsittelee hiljaisen WAV:n molemmilla kielivalinnoilla. Tämä ei ole käyttöliittymän käynnistystesti eikä fyysinen laitetesti.
 - Mac-paketin `codesign --verify --deep --strict`: onnistui. Paikallinen ad hoc -allekirjoitus; ei Applen notarisoima jakelu.
 - Tasotestit: muokkaus säilyttää tunnisteen, PSD-sijainnin, pivotin, rigin ja animaation; vanhan projektin luku ja v4-muokkausten/maskien/vektorien/äänen analyysin tallennus–uudelleenavaus; lukitus, järjestys ja virheellisten syötteiden hylkäys.
 - Jonotestit: itsenäinen tilannekuva, yksi aktiivinen työ, peruminen ja uudelleenyritys. ExportService-testissä korvattu Electron-ikkuna/IPC toimittaa oikeasti levylle ruudut: yksi kuittaus kerrallaan, valmis PNG-hakemisto, peruminen ja encoder-virhe säilyttävät aiemman vientitiedoston.
+- Pitkän viennin WAV-muunnoksen 300 s raja testattu erillään litteroinnin/äänteiden 60 s syöterajasta; puhepalvelun rajoitusta ei laajenneta.
 - Aikaisemmat kamera-, mikrofonin AudioWorklet-, mouth track-, käsikirjoitus-, kiinnitys-/IK-, audioajoitus- ja tiedostoturvatestit pysyvät mukana. Mallinnettu testi ei todista fyysistä mikrofonia tai kameraa.
 
 ## Todelliset paikalliset media-ajot

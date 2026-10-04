@@ -16,8 +16,8 @@ export function applyMouthCues(animation:Animation,map:MouthMap,cues:MouthCue[])
  if(tracks.reduce((n,t)=>n+t.frames.length,0)+animation.tracks.filter(t=>!keys.has(t.key)).reduce((n,t)=>n+t.frames.length,0)>10000)throw new Error('Liikaa avainruutuja. Lyhennä animaatiota.');
  return{...animation,tracks:[...animation.tracks.filter(t=>!keys.has(t.key)),...tracks]};
 }
-export function encodeSpeechWav(channels:Float32Array[],sampleRate:number):Uint8Array{
- if(!channels.length||!Number.isFinite(sampleRate)||sampleRate<=0||channels[0].length/sampleRate>60)throw new Error('Äännetunnistus tukee enintään 60 sekunnin äänitiedostoa.');
+export function encodeSpeechWav(channels:Float32Array[],sampleRate:number,maxSeconds=60):Uint8Array{
+ if(!channels.length||!Number.isFinite(sampleRate)||sampleRate<=0||!Number.isFinite(maxSeconds)||maxSeconds<1||maxSeconds>300||channels[0].length/sampleRate>maxSeconds)throw new Error(`Äänimuunnos tukee enintään ${maxSeconds} sekunnin äänitiedostoa.`);
  const length=Math.floor(channels[0].length*16000/sampleRate);if(!length)throw new Error('Äänitiedosto on tyhjä.');const output=new Uint8Array(44+length*2),view=new DataView(output.buffer);const text=(offset:number,s:string)=>{for(let i=0;i<s.length;i++)view.setUint8(offset+i,s.charCodeAt(i));};text(0,'RIFF');view.setUint32(4,output.length-8,true);text(8,'WAVE');text(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,16000,true);view.setUint32(28,32000,true);view.setUint16(32,2,true);view.setUint16(34,16,true);text(36,'data');view.setUint32(40,length*2,true);
  for(let i=0;i<length;i++){const position=i*sampleRate/16000,a=Math.floor(position),t=position-a;let sum=0;for(const channel of channels)sum+=(channel[a]??0)*(1-t)+(channel[a+1]??channel[a]??0)*t;const sample=Math.max(-1,Math.min(1,sum/channels.length));view.setInt16(44+i*2,Math.round(sample*(sample<0?32768:32767)),true);}return output;
 }
