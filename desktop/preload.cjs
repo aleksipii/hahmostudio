@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('hahmostudio',Object.freeze({
  exportEnqueue:request=>ipcRenderer.invoke('studio:export-enqueue',request),exportList:()=>ipcRenderer.invoke('studio:export-list'),exportCancel:id=>ipcRenderer.invoke('studio:export-cancel',id),exportRemove:id=>ipcRenderer.invoke('studio:export-remove',id),exportRetry:id=>ipcRenderer.invoke('studio:export-retry',id),exportFinder:id=>ipcRenderer.invoke('studio:export-finder',id),onExports:callback=>{const listener=(_e,jobs)=>callback(jobs);ipcRenderer.on('studio:export-jobs',listener);return()=>ipcRenderer.removeListener('studio:export-jobs',listener);},
  confirmReplace:()=>ipcRenderer.invoke('studio:confirm-replace'),
  openFile:kind=>ipcRenderer.invoke('studio:open',kind),openRecent:id=>ipcRenderer.invoke('studio:recent',id),adoptFile:id=>ipcRenderer.invoke('studio:adopt',id),
- saveFile:request=>ipcRenderer.invoke('studio:save',request),preferences:()=>ipcRenderer.invoke('studio:preferences'),setAccessibility:value=>ipcRenderer.invoke('studio:accessibility',value),setTheme:theme=>ipcRenderer.invoke('studio:theme',theme),
+ saveFile:request=>ipcRenderer.invoke('studio:save',request),preferences:()=>ipcRenderer.invoke('studio:preferences'),setUi:value=>ipcRenderer.invoke('studio:ui-settings',value),setAccessibility:value=>ipcRenderer.invoke('studio:accessibility',value),setTheme:theme=>ipcRenderer.invoke('studio:theme',theme),
  audioDownload:()=>ipcRenderer.invoke('studio:audio-download'),
  audioModel:()=>ipcRenderer.invoke('studio:audio-model'),transcribe:(bytes,language)=>ipcRenderer.invoke('studio:transcribe',bytes,language),
  speech:(bytes,language)=>ipcRenderer.invoke('studio:speech',bytes,language),cancelSpeech:()=>ipcRenderer.invoke('studio:cancel-speech'),
