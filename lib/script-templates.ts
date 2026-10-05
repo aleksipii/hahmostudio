@@ -33,4 +33,17 @@ Kohtaus: Olohuone
 Tausta: olohuone 0.5 s
 Kamera: laaja 1 s
 Kille nyökkää 1 s`}
+,
+ {id:'english',name:'English · two characters',description:'Englanninkielinen rakenne. Repliikit tarvitsevat omat äänet.',source:`#!kilsat
+Character: Kille
+Character: Handu
+Scene: Studio
+Background: studio 0.5 seconds
+Camera: wide 0.5 seconds
+Kille walks right 2 seconds
+Meanwhile: Handu waves 2 seconds
+Kille says: "Are you ready?" 2 seconds
+Handu says: "Let's begin." 2 seconds
+Meanwhile: Camera: close-up Handu 2 seconds
+Wait 1 second`}
 ] as const;
