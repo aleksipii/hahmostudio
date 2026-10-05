@@ -1,7 +1,7 @@
 import {layoutDiagnostic} from './layout-diagnostic.mjs';
 import {RevisionStore} from './revisions.mjs';
 import {DesktopExports} from './export-service.mjs';
-import {app,BrowserWindow,Menu,dialog,ipcMain,session,systemPreferences,utilityProcess,nativeTheme} from 'electron';
+import {app,BrowserWindow,Menu,dialog,ipcMain,session,systemPreferences,utilityProcess,nativeTheme,screen} from 'electron';
 import {join,dirname} from 'node:path';import {randomBytes,randomUUID} from 'node:crypto';import {readFile,mkdir,writeFile} from 'node:fs/promises';import {fileURLToPath} from 'node:url';
 import {DesktopFiles} from './files.mjs';import {validSender,allowedMedia,allowedMediaCheck} from './policy.mjs';
 import {RecoveryStore} from './recovery.mjs';
@@ -30,7 +30,7 @@ if(!testing&&!app.requestSingleInstanceLock()){app.quit();}else{
   window=new BrowserWindow({width:1440,height:900,minWidth:1200,minHeight:700,show:false,title:'KILSAT Studio',backgroundColor:'#202328',webPreferences:{preload:join(root,'desktop/preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,session:ses}});
   recovery=new RecoveryStore(app.getPath('userData'));revisions=new RevisionStore(app.getPath('userData'));
   files=new DesktopFiles({dialog,window:()=>window,dataDir:app.getPath('userData'),onProject:path=>{window?.setRepresentedFilename(path??'');},onTheme:theme=>{nativeTheme.themeSource=theme;}});
-  const preferences=await files.initialize();nativeTheme.themeSource=preferences.theme;if(preferences.ui?.window)window.setBounds(preferences.ui.window);let boundsTimer;const saveBounds=()=>{clearTimeout(boundsTimer);boundsTimer=setTimeout(()=>void files.setUi({window:window.getBounds()}).catch(()=>{}),300);};window.on('resize',saveBounds);window.on('move',saveBounds);
+  const preferences=await files.initialize();nativeTheme.themeSource=preferences.theme;if(preferences.ui?.window){const saved=preferences.ui.window,area=screen.getDisplayMatching(saved).workArea,b={...saved,width:Math.min(saved.width,Math.max(1200,area.width)),height:Math.min(saved.height,Math.max(700,area.height))};b.x=Math.max(area.x,Math.min(b.x,area.x+area.width-b.width));b.y=Math.max(area.y,Math.min(b.y,area.y+area.height-b.height));window.setBounds(b);}let boundsTimer;const saveBounds=()=>{clearTimeout(boundsTimer);boundsTimer=setTimeout(()=>void files.setUi({window:window.getBounds()}).catch(()=>{}),300);};window.on('resize',saveBounds);window.on('move',saveBounds);
   ses.setPermissionCheckHandler((contents,permission,requestingOrigin,details)=>contents===window?.webContents&&allowedMediaCheck(permission,details,requestingOrigin,origin));
   ses.setPermissionRequestHandler(async(contents,permission,callback,details)=>{if(contents!==window?.webContents||!allowedMedia(permission,details,details.requestingUrl??contents.getURL(),origin)){callback(false);return;}try{let granted=true;for(const type of details.mediaTypes){const device=type==='audio'?'microphone':'camera';const status=systemPreferences.getMediaAccessStatus(device);granted=granted&&(status==='granted'||status==='not-determined'&&await systemPreferences.askForMediaAccess(device));}callback(granted);}catch{callback(false);}});
   window.webContents.setWindowOpenHandler(()=>({action:'deny'}));window.webContents.on('will-navigate',(event,url)=>{if(!url.startsWith(origin+'/'))event.preventDefault();});window.webContents.on('will-attach-webview',event=>event.preventDefault());

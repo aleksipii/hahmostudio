@@ -40,10 +40,10 @@ export function buildScreenplay(animation:Animation,q:QuickProfile,scene:Scene,p
   if(beat.design){if(!backgrounds.some(b=>b.id===beat.design))throw new Error('Tuntematon tausta.');cuts.push({frame:start+offset,design:beat.design});}
   if((moving||beat.motion==='crouch')&&!['leftThigh','rightThigh','leftShin','rightShin'].every(r=>roles[r]))throw new Error('Kävely tarvitsee kokovartalohahmon. Valitse Aino tai Otto.');
   for(const role of ['head','leftArm','rightArm','leftForearm','rightForearm','leftThigh','rightThigh','leftShin','rightShin','leftFoot','rightFoot'])if(roles[role]&&!rig.parts.find(p=>p.key===roles[role])?.parentKey)throw new Error('Liitä hahmon osat toisiinsa ennen käsikirjoituksen animointia.');
-  const times=new Set<number>([offset,end]);for(let f=offset;f<=end;f+=step)times.add(f);
   const frontal=moving&&beat.motion.endsWith('front'),distance=moving&&!frontal?(beat.motion.endsWith('left')?-1:1)*rig.source.width*(running?.32:.11)*beat.seconds:0,period=running?.62:1.1,rootBase=sampleTrack(animation.tracks.find(t=>t.key===q.roles.root),start-1);
   const worldStart=scene.x+(rootBase.x+travel)*scene.scale,walk=boundedWalk(worldStart,distance*scene.scale,limits.left,limits.right,scene.edgeBehavior??'stop');
   if(moving&&!frontal&&walk.crossed){boundaryMessages.push('Hahmo ylittäisi reunan, kävely lyhennetty');if(scene.edgeBehavior==='shorten'){count=Math.max(2,Math.round(count*walk.fraction));end=offset+count-1;}}
+  const times=new Set<number>([offset,end]);for(let f=offset;f<=end;f+=step)times.add(f);
   const travelAt=(t:number)=>(walk.position(t*(scene.edgeBehavior==='shorten'?walk.fraction:1))-scene.x)/scene.scale-rootBase.x;
   const growth=frontal?(running?.055:.025)*beat.seconds:0,advance=frontal?rig.source.height*.018*beat.seconds:0;
   for(const f of [...times].sort((a,b)=>a-b)){const t=(f-offset)/(count-1),sec=t*beat.seconds*(scene.edgeBehavior==='shorten'&&walk.crossed?walk.fraction:1),phase=sec*2*Math.PI/period,envelope=Math.sin(Math.PI*t)**2,poseRoot=rootBase;

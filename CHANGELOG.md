@@ -1,3 +1,10 @@
+# 0.35.0
+
+- Ammattimainen kompakti oranssi työpöytäasettelu ja natiivivalikot.
+- Raitazoom, pysyvät paneeli-/ikkuna-asetukset ja tilapalkki.
+- Näyttämön raahaus, nuolisiirto, turvarajat ja kolme kävelyn reunakäytöstä.
+- Vanha PSD-, luusto-, animaatio-, tallennus- ja vientipolku säilytetty.
+
 # 0.34.0
 
 - Käyttäjän KILSAT-logo Mac-kuvakkeeseen, selainkuvakkeeseen ja oikeaan yläreunaan.

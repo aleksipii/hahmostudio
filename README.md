@@ -338,3 +338,9 @@ Valmiit liikkeet avaa kävelyn, juoksun ja suunnan pikatyökalut. Toiston mittau
 ### Paikallinen Mac-asennus
 
 FileProviderin tai iCloudin hallinnoima työ-/toimituskansio voi lisätä purettuun .app-bundleen Finder-metatietoja, jotka estävät allekirjoitustarkistuksen. Pura ZIP paikalliseen Ohjelmat-kansioon. Tämän toimituksen erillinen tarkistettu asennus on käyttäjän `~/Applications/KILSAT Studio 0.34.app`; vanhaa asennusta ei korvattu. Tallenna työ ja sulje vanha KILSAT Studio ennen uuden avaamista.
+
+## KILSAT Studio 0.35
+
+Raahaa hahmoa näyttämöllä. Shift lukitsee akselin; nuolinäppäimet siirtävät 1 px ja Shift 10 px. Näyttämön tulee olla aktiivinen. Yksi raahaus on yksi projektin kumoamiskomento. Näyttämö → Turva-alue ja reunakäytös määrittää reunat sekä pysähtymisen, kääntymisen tai kävelyn lyhennyksen. Näytä-valikosta turvakehys voidaan piilottaa.
+
+Työpöydän minimikoko on 1200×700. Aikajanan Zoom muuttaa ajan näkymää; paneelit ja accordionit muistetaan natiivissa asetustiedostossa. Lisätyökalut tarjoaa aiemmat lisätiedosto- ja revisiotoiminnot. Tavallinen näyttämö tukee raahausta kaikilla editorin zoomeilla; tuotantokohtauksissa raahaus on 2D-laajakuvassa, koska seuraavia lähikuvakameroita ei muuteta. Katso DEVELOPMENT-0.35.md:n varmennusrajat.
