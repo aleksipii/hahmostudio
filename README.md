@@ -1,8 +1,44 @@
+Vaihe 0.27: vahvistettu palautusjournal, editorin muokkaustransaktiot ja PSD/rig-hahmopaketin vaihto avainruudut säilyttäen. Tarkat rajat: DEVELOPMENT-0.27.md.
+
+Vaihe 0.26: tuotantokomentoraja, tallentuva komentohistoria, resurssit ja SHA-256-äänipalautus sekä hyväksynnän resurssitarkistus. Vaiheiden 6–10 rajaus ja puutteet: DEVELOPMENT-0.26.md.
+
+Vaihe 0.25: tuotantopolun integraatiotarkistus, tarkistusilmoitusten haku ja selaus sekä käänteinen työjonolajittelu. Katso DEVELOPMENT-0.25.md.
+
+Vaihe 0.24: työjonon lajittelu ja lajittelun tallennus hakunäkymiin. Katso DEVELOPMENT-0.24.md.
+
+Vaihe 0.23: nimetyt paikalliset työjonon hakunäkymät. Katso DEVELOPMENT-0.23.md.
+
+Vaihe 0.22: kuvakohtainen tarkistuslista ja Mac-viennin todellinen tilannekuvaesitarkistus. Katso DEVELOPMENT-0.22.md.
+
+Vaihe 0.21: tuotannon tarkistuspaneeli, tapahtuman/kuvan/toistokohdan navigointi ja korjausehdotukset. Katso DEVELOPMENT-0.21.md.
+
+Vaihe 0.20: työjonon usean kuvan yhteismuokkaus haun/suodatuksen pohjalta, yksi kumottava transaktio. Katso DEVELOPMENT-0.20.md.
+
+# KILSAT Studio
+
+Mac-työpöytäsovelluksen näkyvä nimi on KILSAT Studio. Aiempi Hahmostudio-projektirakenne ja tiedostomuodot säilyvät. [Työtilauudistus 0.11](DEVELOPMENT-0.11.md).
+
+**Uutta 0.19:** koko valmistelun tai suodatetun työjonon CSV-vienti. [Käyttö ja rajat](DEVELOPMENT-0.19.md).
+
+**Uutta 0.18:** kuvien vastuuhenkilöt, määräajat sekä myöhässä/ilman vastuuhenkilöä -työjonosuodatus. [Käyttö ja rajat](DEVELOPMENT-0.18.md).
+
+**Uutta 0.17:** tuotantotilanteen koonti, kuvien tilasuodatus ja siirtyminen seuraavaan keskeneräiseen kuvaan. [Käyttö ja rajat](DEVELOPMENT-0.17.md).
+
+**Uutta 0.16:** projektiin tallentuvat kuvakohtaiset tarkistuskommentit, toistokohtaan navigointi ja käsittelytilat. [Käyttö ja rajat](DEVELOPMENT-0.16.md).
+
+**Uutta 0.15:** kuvakohtainen muutoksen vaikutustarkistus. Muita kuvia voi muokata aiemman kuvan pysyessä lukittuna; muuttumattomien kuvien hyväksyntä säilyy. [Toiminta ja rajat](DEVELOPMENT-0.15.md).
+
+**Uutta 0.14:** nimetyt projektiversiot, kuvien hyväksyntä/lukitus, ohjausmuokkausten komentoraja ja keskeytyksestä palautuva Mac-vientijono. [Käyttö ja rajat](DEVELOPMENT-0.14.md).
+
+**Uutta 0.13:** pysyvä jakso/kohtaus/kuva-adapteri, äänenvaihdon transaktio, tarkistetut palautuspisteet, vientimanifesti ja kuvataulu. [Käyttö, toteutus ja rajat](DEVELOPMENT-0.13.md).
+
+**Uutta 0.12:** Mr.Kille ja Mr.Handu, kolme kartonkitaustaa, yhdeksän suuasennon tuki ja sääntöpohjainen SVG/JSON-animaatio. [Toteutus, käyttö ja rajat](DEVELOPMENT-0.12.md).
+
 # Hahmostudio — oma animaatiostudio
 
 Hahmostudio on suomenkielinen PSD-pohjainen animaatioeditori omaan käyttöön. PSD:t ja animaatiot käsitellään paikallisesti. Pilvitallennusta ei ole.
 
-**Nykyisen 0.10-version kokonaiskuvaus:** [UI/UX, toiminnallisuudet, animaatiologiikka ja tekniset rajat](SOVELLUSKUVAUS.md).
+**Moottorien ja aiempien ominaisuuksien kokonaiskuvaus:** [UI/UX, toiminnallisuudet, animaatiologiikka ja tekniset rajat](SOVELLUSKUVAUS.md).
 
 ## Uutta 0.8.0
 

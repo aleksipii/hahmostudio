@@ -1,5 +1,5 @@
 import type { PsdDocument } from './psd-model.ts';
-import { readRig, type Rig } from './rig-model.ts';
+import { readRig, validateRig, type Rig } from './rig-model.ts';
 export type Pose = { x: number; y: number; rotation: number; scale: number; opacity: number };
 export type Keyframe = Pose & { frame: number; easing: 'linear' | 'smooth' | 'hold' };
 export type Track = { key: string; frames: Keyframe[] };
@@ -26,10 +26,11 @@ export function putKeyframe(animation: Animation, key: string, frame: Keyframe):
 export function removeKeyframe(animation: Animation, key: string, frame: number): Animation {
  return { ...animation, tracks: animation.tracks.map(t => t.key === key ? { ...t, frames: t.frames.filter(k => k.frame !== frame) } : t).filter(t => t.frames.length) };
 }
-export function readAnimation(text: string, doc: PsdDocument): Animation {
- const a = JSON.parse(text);
+export function readAnimation(text: string, doc: PsdDocument): Animation {return validateAnimation(JSON.parse(text),doc);}
+export function validateAnimation(value:unknown,doc:PsdDocument):Animation {
+ const a = value as any;
  if (!a || a.format !== 'hahmostudio-animation' || a.version !== 1 || !Number.isInteger(a.fps) || a.fps < 1 || a.fps > 60 || !Number.isInteger(a.duration) || a.duration < 2 || a.duration > 72000 || !Array.isArray(a.tracks) || a.tracks.length > 1000) throw new Error('Animaatiotiedoston asetukset ovat virheelliset.');
- const rig = readRig(JSON.stringify(a.rig), doc), used = new Set<string>(); let total = 0;
+ const rig = validateRig(a.rig, doc), used = new Set<string>(); let total = 0;
  const tracks = a.tracks.map((t: Track) => {
   if (!t || !Array.isArray(t.frames)) throw new Error('Animaation rata on virheellinen.');
   const oldPart = a.rig.parts.find((p: {key: string}) => p.key === t.key);

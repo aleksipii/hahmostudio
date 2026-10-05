@@ -1,0 +1,22 @@
+/** Editable current-format companion to the actual deterministic SVG demo. */
+import {readFileSync,writeFileSync} from 'node:fs';
+import {readProject,saveProject} from '../lib/project-file.ts';
+import {parsePresentation} from '../lib/presentation-parser.ts';
+import {compilePresentation} from '../lib/presentation-compile.ts';
+import {functions} from '../lib/presentation-model.ts';
+import {rhubarbVisemes} from '../lib/cutout/lip-sync.ts';
+import type {MouthCue} from '../lib/phonetic-speech.ts';
+const [input,out]=process.argv.slice(2);if(!out)throw Error('Anna paikallinen äänikansio ja tuloskansio.');
+const rows=JSON.parse(readFileSync(input+'/sequence-cues.json','utf8'));
+const r=await readProject(new Blob([readFileSync('public/library/Mr.Kille.hahmo')])),s=await readProject(new Blob([readFileSync('public/library/Mr.Handu.hahmo')])),assets={kille:{doc:r.doc,animation:r.animation},handu:{doc:s.doc,animation:s.animation}};
+const lines=['KILSAT — S01E01: The Mileage Log','Pituus: noin 32 s','Kohtaus: cutout-studio-v1','LAAJA KUVA','Pidä 0,5 sekuntia hiljaisuutta.'];
+for(const row of rows)lines.push(row.speaker+':','“'+row.text+'”','Pidä 0,25 sekuntia hiljaisuutta.');lines.push('Pidä 0,5 sekuntia hiljaisuutta.');
+let p=parsePresentation(lines.join('\n'));p.id='kilsat-cutout-original-voices';p.world.width=1080;p.world.height=1920;p.world.phone.enabled=false;p.natural=true;
+p.bindings=p.characters.map((speaker,i)=>({speaker,asset:speaker==='KILLE'?'kille':'handu',voice:speaker==='KILLE'?'Little Dude II':'Ziggy',side:i?'right':'left',x:i?795:285,y:1195,scale:1.4,functions:Object.fromEntries(functions.map(f=>[f,f==='show_phone'?'none':'supported']))}));
+const dialogue=p.events.filter(e=>e.kind==='dialogue');if(dialogue.length!==16)throw Error('Repliikkimäärä ei täsmää.');
+const voices:NonNullable<typeof r.doc.presentationAudio>={};
+p.audioClips=dialogue.map((e,i)=>{const row=rows[i];if(e.target!==row.speaker)throw Error('Puheäänen hahmo ei täsmää.');voices[row.asset]={name:row.name,blob:new Blob([readFileSync(row.original??row.wav)],{type:row.original?'audio/mpeg':'audio/wav'})};return {id:'clip-'+i,dialogue:e.id,asset:row.asset,start:0,end:row.duration,duration:row.duration,source:'viseme',mouth:[{time:0,shape:'rest',viseme:'REST'},...row.cues.map((cue:MouthCue)=>({time:Math.min(row.duration,cue.start),shape:cue.value==='X'?'rest':['E','F','H'].includes(cue.value)?'round':'open',viseme:rhubarbVisemes[cue.value]})),{time:row.duration,shape:'rest',viseme:'REST'}]};});
+p=compilePresentation(p,assets,24);p.startFrame=0;if(p.diagnostics.some(d=>d.severity==='error'))throw Error(JSON.stringify(p.diagnostics));
+const animation={...r.animation,tracks:[],fps:24,duration:Math.ceil(p.seconds*24)},scene={...r.scene,width:1080,height:1920,presentations:[p],presentationDraft:undefined};
+const bytes=new Uint8Array(await(await saveProject({...r.doc,presentationAssets:assets,presentationAudio:voices},animation,undefined,scene)).arrayBuffer());const reopen=await readProject(new Blob([bytes]));if(Object.keys(reopen.doc.presentationAudio??{}).length!==16||reopen.scene.presentations?.[0].audioClips.some(a=>a.source!=='viseme'))throw Error('Äänteiden tallennustarkistus epäonnistui.');
+writeFileSync(out+'/KILSAT-kartonkidemo.hahmo',bytes);writeFileSync(out+'/KILSAT-editorin-kasikirjoitus.md',p.original);writeFileSync(out+'/editorin-tarkistukset.json',JSON.stringify({seconds:p.seconds,voices:16,cast:['Mr.Kille','Mr.Handu'],visemes:9,roundtrip:true,diagnostics:p.diagnostics,limits:'SVG-video ja editorin muokattava esitys ovat eri esityspolut. Editorin projektissa ei ole SVG-demon erillisiä eleitä tai automaattisia räpäytyksiä.'},null,2));console.log('Editable cutout project',p.seconds,'s, 16 actual voice clips, Rhubarb visemes');

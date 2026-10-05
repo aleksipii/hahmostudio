@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KILSAT cutout frames",
+  "type": "object",
+  "properties": {
+    "timeline": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "kilsat-cutout"
+        },
+        "version": {
+          "const": 1
+        },
+        "fps": {
+          "const": 24
+        },
+        "source": {
+          "type": "string",
+          "maxLength": 60000
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 28800
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "cadence": {
+          "enum": [
+            "twos",
+            "threes",
+            "three-two"
+          ]
+        },
+        "actors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "asset": {
+                "enum": [
+                  "Kille",
+                  "Mr.Kille",
+                  "Mr.Handu"
+                ]
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 10
+              },
+              "rig": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "const": 1
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4096
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4096
+                  },
+                  "layers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_]{1,100}$"
+                        },
+                        "parent": {
+                          "type": "string"
+                        },
+                        "pivot": {
+                          "type": "array",
+                          "items": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        "bounds": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 4,
+                          "maxItems": 4
+                        },
+                        "pivotFrame": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 4,
+                          "maxItems": 4
+                        },
+                        "z": {
+                          "type": "number"
+                        },
+                        "switch": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "default": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "pivot",
+                        "bounds",
+                        "z"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 200
+                  }
+                },
+                "required": [
+                  "version",
+                  "width",
+                  "height",
+                  "layers"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "asset",
+              "x",
+              "y",
+              "scale",
+              "rig"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "kind": {
+                "enum": [
+                  "scene",
+                  "dialogue",
+                  "action",
+                  "emotion",
+                  "camera",
+                  "hold"
+                ]
+              },
+              "actor": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "value": {
+                "type": "string",
+                "maxLength": 5000
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "seconds": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 60
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 28800
+              },
+              "end": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 28800
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "value",
+              "line",
+              "start",
+              "end"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 2500
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "fps",
+        "source",
+        "duration",
+        "width",
+        "height",
+        "cadence",
+        "actors",
+        "events"
+      ],
+      "additionalProperties": false
+    },
+    "frames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "const": "kilsat-cutout-frame"
+          },
+          "version": {
+            "const": 1
+          },
+          "frame": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 28800
+          },
+          "fps": {
+            "const": 24
+          },
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "scene": {
+            "enum": [
+              "WHITE_STUDIO",
+              "STUDIO",
+              "STREET",
+              "CAR"
+            ]
+          },
+          "camera": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 6,
+            "maxItems": 6
+          },
+          "actors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "asset": {
+                  "enum": [
+                    "Kille",
+                    "Mr.Kille",
+                    "Mr.Handu"
+                  ]
+                },
+                "switches": {
+                  "type": "object",
+                  "properties": {
+                    "EYES_GROUP": {
+                      "enum": [
+                        "NORMAL",
+                        "BLINK",
+                        "SQUINT",
+                        "ANGRY"
+                      ]
+                    },
+                    "MOUTH_SWITCH": {
+                      "enum": [
+                        "REST",
+                        "AI",
+                        "E",
+                        "O",
+                        "U",
+                        "MBP",
+                        "FV",
+                        "CDGKNRSThYZ",
+                        "L_WQ"
+                      ]
+                    },
+                    "ARM_LEFT_HAND": {
+                      "enum": [
+                        "DEFAULT",
+                        "POINT",
+                        "FIST"
+                      ]
+                    },
+                    "ARM_RIGHT_HAND": {
+                      "enum": [
+                        "DEFAULT",
+                        "POINT",
+                        "FIST"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "EYES_GROUP",
+                    "MOUTH_SWITCH",
+                    "ARM_LEFT_HAND",
+                    "ARM_RIGHT_HAND"
+                  ],
+                  "additionalProperties": false
+                },
+                "layers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "opacity": {
+                        "enum": [
+                          0,
+                          1
+                        ]
+                      },
+                      "matrix": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 6,
+                        "maxItems": 6
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "opacity",
+                      "matrix"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "maxItems": 200
+                }
+              },
+              "required": [
+                "id",
+                "asset",
+                "switches",
+                "layers"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 4
+          }
+        },
+        "required": [
+          "format",
+          "version",
+          "frame",
+          "fps",
+          "width",
+          "height",
+          "scene",
+          "camera",
+          "actors"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 7200
+    }
+  },
+  "required": [
+    "timeline",
+    "frames"
+  ],
+  "additionalProperties": false
+}

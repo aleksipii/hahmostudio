@@ -1,0 +1,15 @@
+import {open,mkdir,readFile,readdir,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {createHash} from 'node:crypto';
+const marker=Buffer.from('KILSAT-JOURNAL-CHUNKS-1\n');
+const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+const max=128*1024*1024;
+/** Content-defined immutable chunks: changed ZIP headers do not shift every image block. */
+export class ProjectChunks{
+ constructor(dir){this.dir=join(dir,'chunks');}
+ split(bytes){const chunks=[];let start=0,rolling=0;for(let i=0;i<bytes.length;i++){rolling=((rolling<<1)+(bytes[i]*2654435761>>>0))>>>0;if(i-start>=16383&&((rolling&32767)===0||i-start>=65535)){chunks.push(bytes.subarray(start,i+1));start=i+1;rolling=0;}}if(start<bytes.length)chunks.push(bytes.subarray(start));return chunks;}
+ manifest(bytes){if(!Buffer.from(bytes.subarray(0,marker.length)).equals(marker))return null;if(bytes.length>2*1024*1024)throw Error('Journalin palaluettelo on liian suuri.');const m=JSON.parse(Buffer.from(bytes.subarray(marker.length)).toString());if(m.version!==1||!Number.isSafeInteger(m.size)||m.size<1||m.size>max||!/^[a-f0-9]{64}$/.test(m.hash)||!Array.isArray(m.chunks)||m.chunks.length>8192||m.chunks.some(c=>!c||!/^[a-f0-9]{64}$/.test(c.hash)||!Number.isInteger(c.size)||c.size<1||c.size>65536)||m.chunks.reduce((n,c)=>n+c.size,0)!==m.size)throw Error('Journalin palaluettelo on virheellinen.');return m;}
+ async encode(bytes){if(bytes.length<128*1024)return bytes;await mkdir(this.dir,{recursive:true,mode:0o700});const chunks=[];for(const part of this.split(bytes)){const hash=digest(part),path=join(this.dir,'chunk-'+hash+'.bin');let present=await readFile(path).catch(e=>{if(e.code==='ENOENT')return null;throw e;});if(present&&(present.length!==part.length||digest(present)!==hash))throw Error('Journalin yhteinen resurssipala on vioittunut: '+hash);if(!present){const file=await open(path,'wx',0o600);try{await file.writeFile(part);await file.sync();}finally{await file.close();}}chunks.push({hash,size:part.length});}const dir=await open(this.dir,'r');try{await dir.sync();}finally{await dir.close();}return Buffer.concat([marker,Buffer.from(JSON.stringify({version:1,size:bytes.length,hash:digest(bytes),chunks}))]);}
+ async decode(bytes){const m=this.manifest(bytes);if(!m)return new Uint8Array(bytes);const parts=[];for(const c of m.chunks){const part=await readFile(join(this.dir,'chunk-'+c.hash+'.bin'));if(part.length!==c.size||digest(part)!==c.hash)throw Error('Journalin resurssipalan tarkistussumma ei täsmää.');parts.push(part);}const result=Buffer.concat(parts);if(digest(result)!==m.hash)throw Error('Palautettavan projektin tarkistussumma ei täsmää.');return new Uint8Array(result);}
+ async prune(snapshots){const used=new Set();for(const bytes of snapshots){const m=this.manifest(bytes);for(const c of m?.chunks??[])used.add('chunk-'+c.hash+'.bin');}for(const file of await readdir(this.dir).catch(e=>{if(e.code==='ENOENT')return[];throw e;}))if(/^chunk-[a-f0-9]{64}\.bin$/.test(file)&&!used.has(file))await rm(join(this.dir,file),{force:true});}
+}

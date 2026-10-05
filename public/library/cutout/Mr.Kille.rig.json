@@ -1,0 +1,702 @@
+{
+  "version": 1,
+  "width": 400,
+  "height": 600,
+  "layers": [
+    {
+      "id": "ROOT",
+      "pivot": [
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        400,
+        600
+      ],
+      "z": 0
+    },
+    {
+      "id": "PANTS",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        120,
+        410,
+        160,
+        70
+      ],
+      "z": 1,
+      "parent": "TORSO",
+      "pivotFrame": [
+        120,
+        445,
+        160,
+        70
+      ]
+    },
+    {
+      "id": "LEG_LEFT",
+      "pivot": [
+        0.35,
+        0.9
+      ],
+      "bounds": [
+        125,
+        445,
+        50,
+        135
+      ],
+      "z": 1,
+      "parent": "PANTS",
+      "pivotFrame": [
+        132.5,
+        323.5,
+        50,
+        135
+      ]
+    },
+    {
+      "id": "LEG_RIGHT",
+      "pivot": [
+        0.65,
+        0.9
+      ],
+      "bounds": [
+        225,
+        445,
+        50,
+        135
+      ],
+      "z": 1,
+      "parent": "PANTS",
+      "pivotFrame": [
+        217.5,
+        323.5,
+        50,
+        135
+      ]
+    },
+    {
+      "id": "TORSO",
+      "pivot": [
+        0.5,
+        0.2
+      ],
+      "bounds": [
+        110,
+        245,
+        180,
+        195
+      ],
+      "z": 2,
+      "parent": "ROOT",
+      "pivotFrame": [
+        110,
+        391.0,
+        180,
+        195
+      ]
+    },
+    {
+      "id": "ARM_LEFT_UPPER",
+      "pivot": [
+        0.15,
+        0.85
+      ],
+      "bounds": [
+        90,
+        270,
+        40,
+        150
+      ],
+      "z": 3,
+      "parent": "TORSO",
+      "pivotFrame": [
+        104.0,
+        162.5,
+        40,
+        150
+      ]
+    },
+    {
+      "id": "ARM_LEFT_HAND",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        90,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_LEFT_UPPER"
+    },
+    {
+      "id": "HAND_LEFT_DEFAULT",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        90,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_LEFT_HAND",
+      "switch": "ARM_LEFT_HAND",
+      "state": "DEFAULT",
+      "default": true
+    },
+    {
+      "id": "HAND_LEFT_POINT",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        90,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_LEFT_HAND",
+      "switch": "ARM_LEFT_HAND",
+      "state": "POINT",
+      "default": false
+    },
+    {
+      "id": "HAND_LEFT_FIST",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        90,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_LEFT_HAND",
+      "switch": "ARM_LEFT_HAND",
+      "state": "FIST",
+      "default": false
+    },
+    {
+      "id": "ARM_RIGHT_UPPER",
+      "pivot": [
+        0.85,
+        0.85
+      ],
+      "bounds": [
+        270,
+        270,
+        40,
+        150
+      ],
+      "z": 3,
+      "parent": "TORSO",
+      "pivotFrame": [
+        256.0,
+        162.5,
+        40,
+        150
+      ]
+    },
+    {
+      "id": "ARM_RIGHT_HAND",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        270,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_RIGHT_UPPER"
+    },
+    {
+      "id": "HAND_RIGHT_DEFAULT",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        270,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_RIGHT_HAND",
+      "switch": "ARM_RIGHT_HAND",
+      "state": "DEFAULT",
+      "default": true
+    },
+    {
+      "id": "HAND_RIGHT_POINT",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        270,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_RIGHT_HAND",
+      "switch": "ARM_RIGHT_HAND",
+      "state": "POINT",
+      "default": false
+    },
+    {
+      "id": "HAND_RIGHT_FIST",
+      "pivot": [
+        0.5,
+        0
+      ],
+      "bounds": [
+        270,
+        395,
+        40,
+        45
+      ],
+      "z": 4,
+      "parent": "ARM_RIGHT_HAND",
+      "switch": "ARM_RIGHT_HAND",
+      "state": "FIST",
+      "default": false
+    },
+    {
+      "id": "HEAD_GROUP",
+      "pivot": [
+        0.5,
+        0.05
+      ],
+      "bounds": [
+        90,
+        30,
+        220,
+        220
+      ],
+      "z": 5,
+      "parent": "TORSO",
+      "pivotFrame": [
+        90,
+        233.0,
+        220,
+        220
+      ]
+    },
+    {
+      "id": "HAT_TOP",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        85,
+        25,
+        230,
+        88
+      ],
+      "z": 6,
+      "parent": "HEAD_GROUP"
+    },
+    {
+      "id": "FACE_DETAILS",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        130,
+        165,
+        140,
+        64
+      ],
+      "z": 6,
+      "parent": "HEAD_GROUP"
+    },
+    {
+      "id": "EYES_GROUP",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        130,
+        113,
+        140,
+        57
+      ],
+      "z": 7,
+      "parent": "HEAD_GROUP"
+    },
+    {
+      "id": "EYES_NORMAL",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        130,
+        113,
+        140,
+        57
+      ],
+      "z": 7,
+      "parent": "EYES_GROUP",
+      "switch": "EYES_GROUP",
+      "state": "NORMAL",
+      "default": true
+    },
+    {
+      "id": "EYES_BLINK",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        130,
+        113,
+        140,
+        57
+      ],
+      "z": 7,
+      "parent": "EYES_GROUP",
+      "switch": "EYES_GROUP",
+      "state": "BLINK",
+      "default": false
+    },
+    {
+      "id": "EYES_SQUINT",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        130,
+        113,
+        140,
+        57
+      ],
+      "z": 7,
+      "parent": "EYES_GROUP",
+      "switch": "EYES_GROUP",
+      "state": "SQUINT",
+      "default": false
+    },
+    {
+      "id": "EYES_ANGRY",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        130,
+        113,
+        140,
+        57
+      ],
+      "z": 7,
+      "parent": "EYES_GROUP",
+      "switch": "EYES_GROUP",
+      "state": "ANGRY",
+      "default": false
+    },
+    {
+      "id": "PUPIL_LEFT",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        148,
+        132,
+        14,
+        16
+      ],
+      "z": 8,
+      "parent": "HEAD_GROUP",
+      "switch": "PUPILS",
+      "state": "VISIBLE",
+      "default": true
+    },
+    {
+      "id": "BROW_LEFT",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        132,
+        106,
+        46,
+        8
+      ],
+      "z": 8,
+      "parent": "HEAD_GROUP"
+    },
+    {
+      "id": "LID_LEFT",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        126,
+        108,
+        58,
+        64
+      ],
+      "z": 9,
+      "parent": "HEAD_GROUP",
+      "switch": "MANUAL_LIDS",
+      "state": "OFF",
+      "default": false
+    },
+    {
+      "id": "PUPIL_RIGHT",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        238,
+        132,
+        14,
+        16
+      ],
+      "z": 8,
+      "parent": "HEAD_GROUP",
+      "switch": "PUPILS",
+      "state": "VISIBLE",
+      "default": true
+    },
+    {
+      "id": "BROW_RIGHT",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        222,
+        106,
+        46,
+        8
+      ],
+      "z": 8,
+      "parent": "HEAD_GROUP"
+    },
+    {
+      "id": "LID_RIGHT",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        216,
+        108,
+        58,
+        64
+      ],
+      "z": 9,
+      "parent": "HEAD_GROUP",
+      "switch": "MANUAL_LIDS",
+      "state": "OFF",
+      "default": false
+    },
+    {
+      "id": "MOUTH_SWITCH",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "HEAD_GROUP"
+    },
+    {
+      "id": "MOUTH_REST",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "REST",
+      "default": true
+    },
+    {
+      "id": "MOUTH_AI",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "AI",
+      "default": false
+    },
+    {
+      "id": "MOUTH_E",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "E",
+      "default": false
+    },
+    {
+      "id": "MOUTH_O",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "O",
+      "default": false
+    },
+    {
+      "id": "MOUTH_U",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "U",
+      "default": false
+    },
+    {
+      "id": "MOUTH_MBP",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "MBP",
+      "default": false
+    },
+    {
+      "id": "MOUTH_FV",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "FV",
+      "default": false
+    },
+    {
+      "id": "MOUTH_CDGKNRSThYZ",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "CDGKNRSThYZ",
+      "default": false
+    },
+    {
+      "id": "MOUTH_L_WQ",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "bounds": [
+        170,
+        188,
+        60,
+        42
+      ],
+      "z": 10,
+      "parent": "MOUTH_SWITCH",
+      "switch": "MOUTH_SWITCH",
+      "state": "L_WQ",
+      "default": false
+    }
+  ]
+}

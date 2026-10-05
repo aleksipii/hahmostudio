@@ -1,0 +1,4 @@
+import {validateCues,type MouthCue} from '../phonetic-speech.ts';import type {Viseme} from './model.ts';
+/** User's explicit mapping. A remains REST here; X handles actual detector silence. */
+export const rhubarbVisemes:Record<MouthCue['value'],Viseme>={A:'REST',B:'CDGKNRSThYZ',C:'E',D:'AI',E:'O',F:'U',G:'FV',H:'L_WQ',X:'REST'};
+export function visemeFrames(input:unknown,duration:number):Viseme[]{const raw=input&&typeof input==='object'&&!Array.isArray(input)&&'mouthCues' in input?(input as {mouthCues:unknown}).mouthCues:input;const cues=validateCues(raw);if(!Number.isFinite(duration)||duration<=0||duration>60||cues.some(c=>c.end>duration+.001))throw Error('Äänteen kesto on virheellinen.');let index=0;return Array.from({length:Math.ceil(duration*24)},(_,frame)=>{const t=frame/24;while(index<cues.length&&cues[index].end<=t)index++;const c=cues[index];return c&&t>=c.start?rhubarbVisemes[c.value]:'REST';});}

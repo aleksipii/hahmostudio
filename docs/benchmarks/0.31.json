@@ -1,0 +1,68 @@
+{
+  "version": "0.31.0",
+  "node": "v24.15.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "hardwareCpu": "host environment",
+  "timestamp": "2026-10-05T06:12:38.002Z",
+  "scope": "Node domain, serialization, disk journal, restore; no graphical frame pacing or physical devices",
+  "metrics": [
+    {
+      "name": "500-shot domain and production dashboard ×20",
+      "ms": 83.133
+    },
+    {
+      "name": "1000 transform samples across 10,000 keys",
+      "ms": 31.977
+    },
+    {
+      "name": "serialize real character + 500 shots + 10,000 keys",
+      "ms": 32.238
+    },
+    {
+      "name": "open and validate large project",
+      "ms": 15.299
+    },
+    {
+      "name": "baseline commit of large project",
+      "ms": 298.004
+    },
+    {
+      "name": "cold replay of 101 commits and materialize large project",
+      "ms": 184.697
+    },
+    {
+      "name": "pack 16 history entries using shared chunks",
+      "ms": 1141.72
+    },
+    {
+      "name": "verify portable deduplicated history",
+      "ms": 125.711
+    }
+  ],
+  "shots": 500,
+  "durationSeconds": 1000,
+  "keyframes": 10000,
+  "projectBytes": 2511506,
+  "commandLatency": {
+    "count": 100,
+    "p50Ms": 8.867,
+    "p95Ms": 12.07,
+    "maxMs": 74.298
+  },
+  "commandIpcBytes": {
+    "min": 600,
+    "max": 625
+  },
+  "portableHistoryBytes": 5257066,
+  "historyWithoutDedupBytes": 42695890,
+  "journalDiskBytes": 2616138,
+  "memory": {
+    "rss": 434536448,
+    "heapTotal": 165789696,
+    "heapUsed": 29469016,
+    "external": 76073680,
+    "arrayBuffers": 81424024
+  },
+  "peakRssKiB": 424352
+}

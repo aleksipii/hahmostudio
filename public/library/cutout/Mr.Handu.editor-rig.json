@@ -1,0 +1,478 @@
+{
+  "format": "hahmostudio-rig",
+  "version": 1,
+  "source": {
+    "name": "Mr.Handu.psd",
+    "width": 400,
+    "height": 600
+  },
+  "parts": [
+    {
+      "key": "ROOT",
+      "psdId": 9000,
+      "path": "ROOT",
+      "role": "none",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "joints": []
+    },
+    {
+      "key": "PANTS",
+      "psdId": 9001,
+      "path": "PANTS",
+      "role": "none",
+      "pivot": {
+        "x": 200,
+        "y": 445
+      },
+      "joints": [],
+      "parentKey": "TORSO"
+    },
+    {
+      "key": "LEG_LEFT",
+      "psdId": 9002,
+      "path": "LEG_LEFT",
+      "role": "leg",
+      "pivot": {
+        "x": 150,
+        "y": 445
+      },
+      "joints": [],
+      "parentKey": "PANTS"
+    },
+    {
+      "key": "LEG_RIGHT",
+      "psdId": 9003,
+      "path": "LEG_RIGHT",
+      "role": "leg",
+      "pivot": {
+        "x": 250,
+        "y": 445
+      },
+      "joints": [],
+      "parentKey": "PANTS"
+    },
+    {
+      "key": "TORSO",
+      "psdId": 9004,
+      "path": "TORSO",
+      "role": "body",
+      "pivot": {
+        "x": 200,
+        "y": 430
+      },
+      "joints": [],
+      "parentKey": "ROOT"
+    },
+    {
+      "key": "ARM_LEFT_UPPER",
+      "psdId": 9005,
+      "path": "ARM_LEFT_UPPER",
+      "role": "arm",
+      "pivot": {
+        "x": 110,
+        "y": 290
+      },
+      "joints": [],
+      "parentKey": "TORSO"
+    },
+    {
+      "key": "ARM_RIGHT_UPPER",
+      "psdId": 9006,
+      "path": "ARM_RIGHT_UPPER",
+      "role": "arm",
+      "pivot": {
+        "x": 290,
+        "y": 290
+      },
+      "joints": [],
+      "parentKey": "TORSO"
+    },
+    {
+      "key": "ARM_LEFT_HAND",
+      "psdId": 9007,
+      "path": "ARM_LEFT_HAND",
+      "role": "none",
+      "pivot": {
+        "x": 110,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_LEFT_UPPER"
+    },
+    {
+      "key": "HAND_LEFT_DEFAULT",
+      "psdId": 9008,
+      "path": "HAND_LEFT_DEFAULT",
+      "role": "hand",
+      "pivot": {
+        "x": 110,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_LEFT_HAND"
+    },
+    {
+      "key": "HAND_LEFT_POINT",
+      "psdId": 9009,
+      "path": "HAND_LEFT_POINT",
+      "role": "hand",
+      "pivot": {
+        "x": 110,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_LEFT_HAND"
+    },
+    {
+      "key": "HAND_LEFT_FIST",
+      "psdId": 9010,
+      "path": "HAND_LEFT_FIST",
+      "role": "hand",
+      "pivot": {
+        "x": 110,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_LEFT_HAND"
+    },
+    {
+      "key": "ARM_RIGHT_HAND",
+      "psdId": 9011,
+      "path": "ARM_RIGHT_HAND",
+      "role": "none",
+      "pivot": {
+        "x": 290,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_RIGHT_UPPER"
+    },
+    {
+      "key": "HAND_RIGHT_DEFAULT",
+      "psdId": 9012,
+      "path": "HAND_RIGHT_DEFAULT",
+      "role": "hand",
+      "pivot": {
+        "x": 290,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_RIGHT_HAND"
+    },
+    {
+      "key": "HAND_RIGHT_POINT",
+      "psdId": 9013,
+      "path": "HAND_RIGHT_POINT",
+      "role": "hand",
+      "pivot": {
+        "x": 290,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_RIGHT_HAND"
+    },
+    {
+      "key": "HAND_RIGHT_FIST",
+      "psdId": 9014,
+      "path": "HAND_RIGHT_FIST",
+      "role": "hand",
+      "pivot": {
+        "x": 290,
+        "y": 395
+      },
+      "joints": [],
+      "parentKey": "ARM_RIGHT_HAND"
+    },
+    {
+      "key": "HEAD_GROUP",
+      "psdId": 9015,
+      "path": "HEAD_GROUP",
+      "role": "head",
+      "pivot": {
+        "x": 200,
+        "y": 244
+      },
+      "joints": [],
+      "parentKey": "TORSO"
+    },
+    {
+      "key": "HAT_TOP",
+      "psdId": 9016,
+      "path": "HAT_TOP",
+      "role": "none",
+      "pivot": {
+        "x": 200,
+        "y": 69
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "FACE_DETAILS",
+      "psdId": 9017,
+      "path": "FACE_DETAILS",
+      "role": "none",
+      "pivot": {
+        "x": 200,
+        "y": 197
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "EYES_GROUP",
+      "psdId": 9018,
+      "path": "EYES_GROUP",
+      "role": "eye",
+      "pivot": {
+        "x": 200,
+        "y": 141.5
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "EYES_NORMAL",
+      "psdId": 9019,
+      "path": "EYES_NORMAL",
+      "role": "eye",
+      "pivot": {
+        "x": 200,
+        "y": 141.5
+      },
+      "joints": [],
+      "parentKey": "EYES_GROUP"
+    },
+    {
+      "key": "EYES_BLINK",
+      "psdId": 9020,
+      "path": "EYES_BLINK",
+      "role": "eye",
+      "pivot": {
+        "x": 200,
+        "y": 141.5
+      },
+      "joints": [],
+      "parentKey": "EYES_GROUP"
+    },
+    {
+      "key": "EYES_SQUINT",
+      "psdId": 9021,
+      "path": "EYES_SQUINT",
+      "role": "eye",
+      "pivot": {
+        "x": 200,
+        "y": 141.5
+      },
+      "joints": [],
+      "parentKey": "EYES_GROUP"
+    },
+    {
+      "key": "EYES_ANGRY",
+      "psdId": 9022,
+      "path": "EYES_ANGRY",
+      "role": "eye",
+      "pivot": {
+        "x": 200,
+        "y": 141.5
+      },
+      "joints": [],
+      "parentKey": "EYES_GROUP"
+    },
+    {
+      "key": "PUPIL_LEFT",
+      "psdId": 9023,
+      "path": "PUPIL_LEFT",
+      "role": "eye",
+      "pivot": {
+        "x": 155,
+        "y": 140
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "BROW_LEFT",
+      "psdId": 9024,
+      "path": "BROW_LEFT",
+      "role": "none",
+      "pivot": {
+        "x": 155,
+        "y": 110
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "PUPIL_RIGHT",
+      "psdId": 9025,
+      "path": "PUPIL_RIGHT",
+      "role": "eye",
+      "pivot": {
+        "x": 245,
+        "y": 140
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "BROW_RIGHT",
+      "psdId": 9026,
+      "path": "BROW_RIGHT",
+      "role": "none",
+      "pivot": {
+        "x": 245,
+        "y": 110
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "LID_LEFT",
+      "psdId": 9027,
+      "path": "LID_LEFT",
+      "role": "none",
+      "pivot": {
+        "x": 155,
+        "y": 140
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "LID_RIGHT",
+      "psdId": 9028,
+      "path": "LID_RIGHT",
+      "role": "none",
+      "pivot": {
+        "x": 245,
+        "y": 140
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "MOUTH_SWITCH",
+      "psdId": 9029,
+      "path": "MOUTH_SWITCH",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "HEAD_GROUP"
+    },
+    {
+      "key": "MOUTH_REST",
+      "psdId": 9030,
+      "path": "MOUTH_REST",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_AI",
+      "psdId": 9031,
+      "path": "MOUTH_AI",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_E",
+      "psdId": 9032,
+      "path": "MOUTH_E",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_O",
+      "psdId": 9033,
+      "path": "MOUTH_O",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_U",
+      "psdId": 9034,
+      "path": "MOUTH_U",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_MBP",
+      "psdId": 9035,
+      "path": "MOUTH_MBP",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_FV",
+      "psdId": 9036,
+      "path": "MOUTH_FV",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_CDGKNRSThYZ",
+      "psdId": 9037,
+      "path": "MOUTH_CDGKNRSThYZ",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    },
+    {
+      "key": "MOUTH_L_WQ",
+      "psdId": 9038,
+      "path": "MOUTH_L_WQ",
+      "role": "mouth",
+      "pivot": {
+        "x": 200,
+        "y": 209
+      },
+      "joints": [],
+      "parentKey": "MOUTH_SWITCH"
+    }
+  ]
+}

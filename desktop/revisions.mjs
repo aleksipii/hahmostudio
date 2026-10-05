@@ -1,0 +1,12 @@
+import {randomUUID} from 'node:crypto';
+import {join} from 'node:path';
+import {ArchiveStore} from './archive-store.mjs';
+const project=v=>{if(typeof v!=='string'||!/^[-a-zA-Z0-9_]{1,100}$/.test(v))throw Error('Projektitunniste on virheellinen.');return v;};
+export class RevisionStore{
+ constructor(dataDir){this.store=new ArchiveStore(join(dataDir,'project-revisions'),2*1024**3);}
+ async index(){const index=await this.store.index({schemaVersion:1,entries:[]});if(index.schemaVersion!==1||!Array.isArray(index.entries)||index.entries.length>1000||new Set(index.entries.map(e=>e?.id)).size!==index.entries.length||index.entries.some(e=>!e||!/^[-a-f0-9]{36}$/.test(e.id)||!/^[-a-zA-Z0-9_]{1,100}$/.test(e.projectId)||!/^[a-f0-9]{64}$/.test(e.hash)||typeof e.name!=='string'||e.name.length>256||typeof e.label!=='string'||e.label.length>120||!Number.isFinite(Date.parse(e.createdAt))))throw Error('Revisiohistorian hakemisto on vioittunut.');return index;}
+ list(projectId){return this.store.serial(async()=>{project(projectId);const index=await this.index();await this.store.prune(new Set(index.entries.map(e=>e.hash)));return index.entries.filter(e=>e.projectId===projectId).map(e=>({...e}));});}
+ save({projectId,name,label,bytes}){return this.store.serial(async()=>{project(projectId);if(typeof name!=='string'||name.length>256||typeof label!=='string'||!label.trim()||label.length>120)throw Error('Revision nimi on virheellinen.');const index=await this.index();if(index.entries.length>=1000)throw Error('Revisioita on enintään 1000. Poista itse tarpeettomia versioita.');const hash=await this.store.put(bytes),entry={id:randomUUID(),projectId,name,label:label.trim(),hash,createdAt:new Date().toISOString()};await this.store.writeIndex({...index,entries:[entry,...index.entries]});return entry;});}
+ read(projectId,id){return this.store.serial(async()=>{project(projectId);const entry=(await this.index()).entries.find(e=>e.id===id&&e.projectId===projectId);if(!entry)throw Error('Revisiota ei löydy tästä projektista.');return{...entry,bytes:await this.store.get(entry.hash)};});}
+ remove(projectId,id){return this.store.serial(async()=>{project(projectId);const index=await this.index();if(!index.entries.some(e=>e.id===id&&e.projectId===projectId))throw Error('Revisiota ei löydy tästä projektista.');index.entries=index.entries.filter(e=>e.id!==id);await this.store.writeIndex(index);await this.store.prune(new Set(index.entries.map(e=>e.hash)));});}
+}

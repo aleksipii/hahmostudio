@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {sceneFrame,documentFrame} from './production-playhead.ts';
+test('cards and script seek share document time including scenes appended after earlier content',()=>{for(const start of [0,240,1024])for(const local of [0,1,120,300])assert.equal(sceneFrame(documentFrame(local,start),start),local);assert.equal(documentFrame(120,240),360);assert.equal(sceneFrame(50,240),0);});

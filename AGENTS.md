@@ -52,3 +52,75 @@ Desktop 0.3.0: preserve original Otto bytes and the additional original PSD/.hah
 0.10: preserve production source spans/revision, manual overrides/order, independent reaction locks and stable reconciled IDs. No silent audio retention for changed dialogue. .hahmo v5 reads v1–v4. Roni/Salla toon meshes are actual skinned volumes, marked review; original 2D and paper assets stay intact. Match anatomical hand roles to PSD (left is screen right). Phone IK preserves mouth tracks; table release requires a reachable library table. Background/prop library is 2D; report camera mismatch. No semantic backend or final demo audio is present; do not label the whole request finished. Read DEVELOPMENT-0.10.md before continuing, including remaining acceptance work.
 
 2026-10-04: the user explicitly authorizes pushing current source changes to aleksipii/hahmostudio and requests SOVELLUSKUVAUS.md covering UI/UX, functionality and logic. This supersedes the earlier no-push restriction for this source upload only. Do not change repository visibility, deploy Pages, publish releases or include local credentials, owner state, device recordings or generated app bundles. Keep the document honest about implemented and unfinished features.
+
+0.11: user requests KILSAT Studio UI redesign in the existing Electron app, with visual preview explicitly authorized. Preserve package name/bundle ID/data path, controllers across workspace docking, all assets and v1–v5 formats. PanelDock moves persistent portal hosts. No new push/deployment authorization is inferred. Read DEVELOPMENT-0.11.md.
+
+0.12: original Mr.Kille/Mr.Handu cutout assets and backgrounds are additive. Preserve optional QuickProfile.switchDefaults and AudioClip.mouth.viseme, with legacy three-mouth fallback. Normalized cutout pivots use an optional pivotFrame to retain the specified numbers while anchoring the neck/shoulders anatomically. Never publish user dialogue voices in source/app bundles. Read DEVELOPMENT-0.12.md; SVG demo and editable legacy presentation are distinct render paths.
+
+0.13: Studio domain is an adapter; Presentation/Production remain animation authority. Preserve common tick timebase and source IDs. Voice replacement commits timing, mouth tracks, voice resources and approval invalidation as one undo transaction. Drafts may have missing resources and exceed the committed timeline; committed scenes remain strict. Optional resource-manifest.json extends .hahmo v1–v5, never downgrade checksum validation silently. Recovery owns only its two bounded snapshots; never overwrite user project files. Actual worker preflight and video decode QC precede publication. Read DEVELOPMENT-0.13.md for explicit limits.
+
+
+## 0.14 — revisioarkisto ja palautuva vientijono
+
+Säilytä Scene.studioProjectId ja .hahmo-yhteensopivuus. Nimetyt revisiot ovat erillisiä kahdesta palautusvedoksesta; älä poista niitä automaattisesti kiintiön täyttyessä. Native-arkiston checkpoint on kirjoitettava ennen renderin dispatchia. Palautunut render on interrupted ja vaatii käyttäjän uudelleenyrityksen; vedoksen tarkistussumma ja renderin versiosopimus säilyvät. Review-komennot ovat metadataa nykyisessä adapterissa, eivät uusi moottori. Sisältömuutos vanhentaa hyväksynnän, lukittu kuva estää konservatiivisesti koko esityksen muutoksen. Katso DEVELOPMENT-0.14.md ja durable-storage/studio-testit.
+
+
+## 0.15 — kuvakohtainen vaikutustarkistus
+
+0.14:n koko esityksen lukitusrajan korvaa lib/studio/shot-impact.ts:n varovainen riippuvuusvertailu. Vertaa komentojen lähtö ja tulos samalla compilerilla. Lukittuun kuvaan vaikuttava muutos tai poisto estää transaktion; muut muuttumattomat hyväksynnät siirtyvät uuteen revisioon. Säilytä vanhat studioskeemat ja undo. Älä rajaa riippuvuuksia vain kuvan sisäisiin tapahtumiin: edeltävä tila ja rajaa seuraava interpolointiavain voivat vaikuttaa kuvaan. Ei väitettä täydellisestä resurssien vaikutusgraafista. Katso DEVELOPMENT-0.15.md.
+
+
+## 0.16 — paikalliset tarkistuskommentit
+
+StudioMetadata.reviewComments on valinnainen skeema-1-laajennus; vanhat projektit ilman kommentteja säilyvät. Kuvan sisäinen tick-offset seuraa ajoitusta. Poistetun kuvan kommenttia ei poisteta tai siirretä automaattisesti toiseen kuvaan; lyhentyneen kuvan navigointi rajataan, alkuperäinen offset säilyy. Review-metadata ei muuta sisältörevisiota. Avoimet kommentit estävät uuden hyväksynnän/lukituksen. Kommentti tai uudelleenavaus vanhentaa hyväksytyn kuvan hyväksynnän, mutta lukitusta ei avata automaattisesti. Kommentin käsittely on oma kumottava transaktio. Ei tiimikäyttäjäidentiteettejä tai ilmoituksia. Katso DEVELOPMENT-0.16.md.
+
+
+## 0.17 — tuotantotilanteen koonti
+
+lib/studio/production-overview.ts on read-only-projektio nykyisestä esityksestä. Älä lisää toista hyväksynnän/kommenttien totuuslähdettä. Teknisesti tarkistettavissa ei tarkoita hyväksyttyä, renderöityä tai oikean ääniblobin todennusta; varsinaiset tiedostot tarkistetaan edelleen export preflightissa. Tyhjä tapahtumamalli ei luo koontiin valmista kuvaa. Säilytä kommenttiorvot, lukitukset ja yhteinen valinta/toistokohta. Katso DEVELOPMENT-0.17.md.
+
+
+## 0.18 — työjonon vastuut ja määräajat
+
+StudioMetadata.shotTasks on valinnainen skeema-1-laajennus. assignShotTask on kumottava metadatakomento; säilytä animaatio, hyväksyntä, lukitus ja sisältörevisionumero. Määräpäivä on validoitu YYYY-MM-DD ilman kellonaikaa, vertailu käyttää eksplisiittistä kalenteripäivää ja UI Macin paikallista päivää. Määräpäivänä ei olla myöhässä. Hyväksytyt/lukitut ongelmattomat kuvat eivät ole keskeneräistä työjonoa. Orpotiedot säilyvät mutta eivät kerry aktiivisiin työjonomääriin. Vastuuhenkilö on vapaa paikallinen teksti, ei tilin identiteetti tai ilmoitusvastaanottaja. Katso DEVELOPMENT-0.18.md.
+
+Käyttäjä pyytää jokaisessa jatkokehityksen päivityksessä kertomaan nykyisen kehitysvaiheen, mikä on valmis ja seuraavan työn.
+
+
+## 0.19 — työjonon CSV-vienti
+
+exportProductionCsv on read-only-projektio nykyisestä productionOverviewsta. Vie suodatuksen kaikki sivut, älä vain näkyvää 24 korttia. CSV sisältää UTF-8 BOMin, puolipiste-erottimen, CRLF-rivit ja pilkun sekuntien desimaalierottimena; tarkat tick-sarakkeet säilyvät. Lainaa tekstisolut, suojaa kaavaprefiksit ja rajaa tiedostonimi turvalliseksi Unicode-lehdeksi. Käytä saveFile kind:export -polkua; älä adoptoi vientiä projektiksi tai tyhjennä projektin dirty-tilaa. CSV ei ole projektivarmuuskopio eikä import-muoto. Katso DEVELOPMENT-0.19.md.
+
+## 0.20 — työjonon yhteismuokkaus
+assignShotTasks validoi koko ID-joukon ennen commitia. Omitted kenttä säilyy kuvakohtaisena, tyhjä merkkijono tyhjentää vain oman kentän. Yksi update/undo, ei sisältörevision tai hyväksynnän muutosta. UI käyttää koko suodatettua tulosta kaikilta sivuilta ja vahvistaa määrän ja muutokset. Säilytä orpotiedot. Katso DEVELOPMENT-0.20.md.
+
+## 0.21 — tarkistusnavigointi
+productionIssues on read-only. Globaalia tai poistettuun tapahtumaan osoittavaa ilmoitusta ei saa arvata ensimmäisen kuvan virheeksi. Navigointi ratkaistaan nykyisistä ID:istä ja käyttää selectShot/yhteistä playheadia, näyttää oikean sivun suodatuksesta riippumatta. Puuttuva AudioClip-viite on erillinen tarkistus, ei blob-todennus. Ehdotukset eivät ole automaattikorjauksia. Katso DEVELOPMENT-0.21.md.
+
+## 0.22 — tarkistuslista ja vientivalmius
+Kuvan hyväksyntä, viitteen saatavuus ja tekninen snapshot-preflight ovat eri asioita. Käytä freezeRender-polkua, älä tee rinnakkaista resurssitodennusta. Tarkistuksen tulos kuuluu Episode-viitteeseen ja profiilin sisältöön; piilota vanha tulos muutoksessa. Esitarkistus ei ole render/QC tai automaattihyväksyntä eikä kirjoita tiedostoa. Katso DEVELOPMENT-0.22.md.
+
+## 0.23 — hakunäkymät
+Hakunäkymät ovat schemaVersion 1 -localStorage-asetuksia, eivät projektidataa tai undo-komentoja. Säilytä haku/suodatus, älä tallenna kohdekuvia tai playheadia. Virheellinen/uudempi skeema ei saa ylikirjoittua automaattisesti. Päivitä lista vasta onnistuneen kirjoituksen jälkeen. Katso DEVELOPMENT-0.23.md.
+
+## 0.24 — työjonon lajittelu
+Lajittelu on näkymä, ei ajoitusmuutos. Suodata ennen lajittelua ja sivuta sen jälkeen. Puuttuvat arvot viimeiseksi, tasatilanne jakson järjestyksessä. SavedShotView.sort on valinnainen skeema-1-kenttä; puuttuva tarkoittaa timeline. Kohdenavigointi palauttaa lajittelun timeline-tilaan ennen jaksojärjestyksen sivun laskentaa. Katso DEVELOPMENT-0.24.md.
+
+## 0.25 — tuotantopolun integraatio ja työjono
+Käänteinen työjonolajittelu säilyttää puuttuvat arvot viimeisenä ja tasatilanteessa jakson järjestyksen. descending on valinnainen boolean hakunäkymän skeemassa 1. Kohdenavigointi nollaa suunnan. Seuraava tarkistuskohde rajataan nykyiseen hakuun/vakavuuteen ja ohittaa globaalit/orpotargetit. 500 rivin datatesti ei ole 500 kuvan GUI/render-kuormitustesti. Katso DEVELOPMENT-0.25.md.
+
+## 0.26 — tuotantokomennot ja resurssit
+commandJournal on valinnainen validoitu max100 audit-kenttä, ei replay/WAL. Käytä yhteistä executeProductionCommand-rajaa tuotannon muokkauksiin. Alkuperäisen äänen palautus edellyttää tarkkaa audio-SHA256-viitettä ja samoja tavuja; muuta ääntä ei saa hyväksyä alkuperäisenä. Guardaa async palautus mallin vaihdolta. Approve/lock vaatii nykyisen valmistelun kaikki sidotut resurssit; unlock ei. Säilytä vanhat palautusvedokset/revisiot ja .hahmo-yhteensopivuus. Katso DEVELOPMENT-0.26.md.
+
+## 0.27 — palautusjournal ja hahmoresurssit
+Macin commit-record on snapshotin ja oman checksuminsa avulla validoitu itsenäinen palautuskohde. Älä palauta pelkkiä orposnapshotteja tai mielivaltaisia polkuja. Max20/512MiB, säilytä vanha kahden vedoksen yhteensopivuus. Autosave-replay ei ole per-command WAL/durability. Hahmopaketin vaihto ei ylikirjoita vanhaa resurssia; säilytä readRig/readAnimationin yksiselitteinen PSD-ID/avain+polku-mapping, vanhat radat ja undo-resurssikartta. Älä structuredClone DOM-mediaolioita. Raw PSD→paketti ja eri skeletonin automaattinen retarget eivät ole valmiita. Katso DEVELOPMENT-0.27.md.
+
+## 0.28 — journal-kuittaus ennen julkaisua
+Säilytä DurableCommandGate:n järjestys validate→persist→publish. Historian commit/pop ja projektin React-julkaisu vasta kuittauksen jälkeen. Macin komento-ID/hash/size-ack pitää tarkistaa; eri komentoja ei deduplikoida samojen tavujen vuoksi. SaveRecovery ilman command-kenttää on edelleen autosave. Älä väitä snapshot-journalia semanttisen payloadin replayksi tai kaikkien suoran setState-reittien kattamiseksi. ProductionPanel update/parser/undo käyttävät persistProposal-palvelua, lomakkeet odottavat async-onnistumista. DOM-resursseja ei kloonata. Katso DEVELOPMENT-0.28.md.
+
+## 0.29 — yhteinen levypohjainen projektiundo ja sisältöpalat
+Projektihistoria on yksi editorin totuuslähde, enintään16 viitettä /384MiB. Säilytä historia autosave/baseline-komentojen mukana ja journal-prunessa; vain validoidut omat snapshot-viitteet, kuittaus ennen undo-julkaisua. Tavallinen tiedoston avaus aloittaa uuden historian, Palauta työ palauttaa journal-historian. Macin ProjectChunks rekonstruoi täsmälleen alkuperäisen .hahmo-arkiston ja tarkistaa jokaisen palan sekä koko hashin. Älä kutsu tätä semanttiseksi komentodeltaksi. Raw text on UI-luonnos kunnes komento kuitataan; dirty/sulkeminen ei saa piilottaa sitä. PSD mapping edellyttää jokaista vanhaa osaa eri olemassa olevaan uuteen tasoon; säilytä parent/pivot/track/QuickProfile ja sama canvas. Ei arvaavaa anatomia-retargetia. Katso DEVELOPMENT-0.29.md.
+
+0.30: immutable resource bytes/hash/ZIP record caches; fixed stored-ZIP timestamps and order. Semantic JSON path deltas carry before/after and baseline/result metadata hashes alongside verified full checkpoints. Array edits are atomic. Portable editor history is optional in .hahmo, max16 states and128MiB total; never silently trim portable history. Prepare imports into local journal before publication. Prepared .hahmo relink retains target rig and scales motion from corresponding chain lengths; mapping proposals use semantic QuickProfile roles, reject ambiguous IDs/topology. Raw PSD mapping scales pivots/joints/translations axis-wise for different canvas sizes. This is not arbitrary skeleton topology/FK-IK retargeting. Read DEVELOPMENT-0.30.md.
+
+0.31: Mac ordinary editor mutations use saveProjectRecovery/recoveryTransaction and delta-journal.mjs. Only a new project/import/cache miss establishes a baseline; subsequent commits carry typed semantic path/splice deltas and changed content-defined resource chunks. Preserve legacy RecoveryStore snapshots and browser fallback. A delta reference hash is a state/Merkle hash; materialized archives expose archiveHash separately. Do not compare those as if both were ZIP hashes. All history states import in one commit, after current image decoding, with no partial visible history. History v2 shares chunks and reads v1; max16/384MiB expanded/128MiB package. Normalized editor rig/animation validation results are frozen; edit copies. Chain retarget bakes FK/IK/contact/constraint results for explicitly anchored 2D chains, not arbitrary 3D anatomy or a replacement of live/gait engines. Keep real process SIGKILL tests separate from actual power loss. GUI attempt exit134 and missing Computer Use permissions/hardware mean GUI and physical device tests remain unverified. Read DEVELOPMENT-0.31.md and benchmark scope before claiming production readiness.

@@ -1,3 +1,53 @@
+Vaihe 0.27: vahvistettu palautusjournal, editorin muokkaustransaktiot ja PSD/rig-hahmopaketin vaihto avainruudut säilyttäen. Tarkat rajat: DEVELOPMENT-0.27.md.
+
+Vaihe 0.26: tuotantokomentoraja, tallentuva komentohistoria, resurssit ja SHA-256-äänipalautus sekä hyväksynnän resurssitarkistus. Vaiheiden 6–10 rajaus ja puutteet: DEVELOPMENT-0.26.md.
+
+Vaihe 0.25: tuotantopolun integraatiotarkistus, tarkistusilmoitusten haku ja selaus sekä käänteinen työjonolajittelu. Katso DEVELOPMENT-0.25.md.
+
+Vaihe 0.24: työjonon lajittelu ja lajittelun tallennus hakunäkymiin. Katso DEVELOPMENT-0.24.md.
+
+Vaihe 0.23: nimetyt paikalliset työjonon hakunäkymät. Katso DEVELOPMENT-0.23.md.
+
+Vaihe 0.22: kuvakohtainen tarkistuslista ja Mac-viennin todellinen tilannekuvaesitarkistus. Katso DEVELOPMENT-0.22.md.
+
+Vaihe 0.21: tuotannon tarkistuspaneeli, tapahtuman/kuvan/toistokohdan navigointi ja korjausehdotukset. Katso DEVELOPMENT-0.21.md.
+
+Vaihe 0.20: työjonon usean kuvan yhteismuokkaus haun/suodatuksen pohjalta, yksi kumottava transaktio. Katso DEVELOPMENT-0.20.md.
+
+# KILSAT Studio — työjonon CSV-vienti 0.19
+
+Tuotantotilanteesta voi viedä koko valmistelun tai nykyisen haun/suodatuksen CSV-tiedostoksi. Mukana ovat pysyvät kuva-ID:t, tilat, ajat, vastuut, määräpäivät ja tarkistusmäärät. Vienti ei muuta projektia. [Toteutus ja rajat](DEVELOPMENT-0.19.md).
+
+# KILSAT Studio — kuvien työjono 0.18
+
+Kuville voi tallentaa paikallisen vastuuhenkilön ja määräpäivän. Tuotantotilanne suodattaa myöhästyneet keskeneräiset kuvat ja vastuuhenkilöttömät työt; haku tunnistaa myös vastuuhenkilön. Työjonotiedot ovat kumottavaa metadataa eivätkä muuta animaatiota, hyväksyntää tai lukitusta. [Toteutus ja rajat](DEVELOPMENT-0.18.md). Ei tiimipalvelinta tai käyttäjätilijärjestelmää.
+
+# KILSAT Studio — tuotantotilanteen koonti 0.17
+
+Kuvataulun Tuotantotilanne-näkymä kokoaa hyväksynnät, lukitukset, avoimet kommentit, puuttuvat ääniviitteet ja tekniset virheet. Tilasuodatus yhdistyy kuva-/kohtaus-/hahmohakuun ja seuraava keskeneräinen kuva avautuu nykyiseen esikatseluun. [Toteutus ja rajat](DEVELOPMENT-0.17.md). Tiedot ovat valmistelun nykyisestä mallista laskettuja; erillistä tuotantotilaa tai automaattista hyväksyntää ei lisätty.
+
+# KILSAT Studio — paikalliset tarkistuskommentit 0.16
+
+Kuvataulusta voi lisätä kuvan sisäiseen toistokohtaan sidotun kommentin, merkitä sen käsitellyksi tai avata uudelleen ja navigoida kohteeseen. Kommentit tallentuvat .hahmo-projektiin; avoimet kommentit estävät kuvan uuden hyväksynnän/lukituksen. [Toteutus, käyttö ja rajat](DEVELOPMENT-0.16.md). Tämä on paikallinen review-vaihe, ei monen käyttäjän yhteistyöpalvelu.
+
+# KILSAT Studio — kuvakohtainen muokkausturva 0.15
+
+Ohjauskomennot vertaavat kuvien riippuvuuksia ennen muutoksen hyväksymistä. Muutos estetään, jos se koskee lukittua kuvaa; muuttumattomien kuvien hyväksyntä siirtyy uudelle sisältörevisiolle. [Toteutus ja rajat](DEVELOPMENT-0.15.md). Alla aiempien versioiden kuvaukset ovat historiallisia: koko esityksen lukitusraja korvautuu tässä kuvatulla vaikutustarkistuksella.
+
+# KILSAT Studio — tuotantoperustan jatko 0.14
+
+Nimetty paikallinen projektihistoria, kuvakorttien hyväksyntä/lukitus, validoidut ohjausmuokkaukset ja palautuva Mac-vientijono ovat toteutettuja ensimmäisiä vaiheita. [Käyttö, arkkitehtuuri, testit ja rajat](DEVELOPMENT-0.14.md). Tiimireview, inkrementaalinen tallennus ja koko editorin yhteinen pysyvä komentohistoria ovat edelleen jatkotyötä.
+
+# KILSAT Studio — tuotantoperustan kehitysversio 0.13
+
+0.13 lisää nykyisten moottorien päälle tuotantoidentiteetin, repliikkiäänen vaihtokomennon, kahden projektivedoksen automaattipalautuksen, resurssimanifestin, Mac-viennin esitarkistuksen ja kuvataulun. Näiden käyttö, arkkitehtuuri ja keskeneräiset osat kuvataan [0.13-muistiossa](DEVELOPMENT-0.13.md). Tämä ei vielä ole täydellinen studiotason tuotantojärjestelmä.
+
+Kaksi alkuperäistä Mr.Kille/Mr.Handu-hahmoa, kartonkitaustat, yhdeksän suun ohjaus ja sääntöpohjaiset SVG/JSON-moduulit on kuvattu [0.12-muutosmuistiossa](DEVELOPMENT-0.12.md). Aiemmat projektimuodot ja moottorit säilyvät.
+
+# KILSAT Studio — käyttöliittymä 0.11
+
+Hahmostudion nykyinen toteutus jatkuu KILSAT Studio -nimellä. Kolme työtilaa, pysyvät ohjauspaneelit, keskitetyt kuvakortit, yhteinen toistokohta ja PSD-tuonnin vertailu on kuvattu [0.11-muutosmuistiossa](DEVELOPMENT-0.11.md). Alla oleva moottorien ja resurssien kuvaus säilyy 0.10-pohjan dokumentaationa.
+
 # Hahmostudio: käyttöliittymä, käyttökokemus, toiminnallisuudet ja logiikka
 
 Dokumentoitu lähdekoodiversio: **0.10.0**, 4.10.2026. Tämä kuvaus käsittelee nykyistä toteutusta. Hahmostudio on edelleen kehitysvaiheessa; keskeneräiset ominaisuudet ja testauksen rajat on erotettu toteutetuista.
@@ -273,3 +323,23 @@ Mac-paketointi edellyttää Macia ja valmisteltuja natiiviresursseja; yllä olev
 - [Mac-version ohje](docs/MAC_DESKTOP.md)
 - [Jatkokehityksen suunnitelma](docs/ROADMAP.md)
 - [Kolmansien osapuolten ilmoitukset](THIRD_PARTY_NOTICES.md)
+
+## Päivitys 0.28 — komento ja pysyvä kuittaus
+
+Editorin yhteiset hahmo-/animaatiotransaktiot ja tuotannon update/parser/undo-reitit julkaisevat projektimuutoksen vasta validoidun, pysyvästi kirjoitetun projektivedosjournalin kuittauksen jälkeen. Mac tarkistaa komento-ID:n, SHA-256:n ja koon; kirjoitusvirhe säilyttää näkyvän projektin ja historian. Journal palauttaa kokonaisprojektitiloja, ei semanttisia komentoja. Raakateksti, osa suorista asetuksista ja projektivaihdot sekä yksi yhtenäinen projektiundo ovat vielä kesken. Tarkka rajaus ja testit: [DEVELOPMENT-0.28.md](DEVELOPMENT-0.28.md).
+
+## Päivitys 0.29 — yhteinen projektiundo ja resurssipalautus
+
+Raakakäsikirjoituksen tallennus ja QuickPanelin näyttämöasetukset käyttävät journal-kuittausta. Yhteinen projektiundo kattaa hahmon, animaation, äänen ja tuotannon; Palauta työ palauttaa myös rajatun historian. Macin sisältöpalat vähentävät samojen kuvien levytallennusta, mutta koko projektin serialisointi säilyy. PSD/PNG/.hahmo-resurssille voi valita tasovastaavuuden käsin samalla piirtoalueella. Automaattinen eri anatomian retarget ja semanttinen komentodelta eivät kuulu tähän versioon. Tarkka rajaus: [DEVELOPMENT-0.29.md](DEVELOPMENT-0.29.md).
+
+## Vaihe 0.30 — projektihistoria ja liikesovitus
+
+Tallennuksen muuttumattomat kuvat/äänet ja ZIP-tietueet välimuistitetaan; metadatan semanttiset komentodeltat tarkistetaan replaylla ja tallennetaan täyden palautuscheckpointin rinnalle. Tallenna projekti siirtää myös paikallisen past/future-undo-historian `.hahmo`-pakettiin; avaaminen tuo sen paikalliseen kuittausjournaliin. Paketin 128 MiB raja koskee myös historiaa. Valmisteltu uusi hahmoluusto säilyttää omat nivelet ja vastaanottaa sovitetut siirtymät yksiselitteisen, käyttäjän tarkistettavan semanttisen osamappingin kautta. Raaka-PSD:n mapping voi skaalata eri piirtoalueeseen. Eri luustoketjujen tai kontaktien automaattinen ratkaisu ei ole valmis. Tarkempi sopimus ja rajoitukset: DEVELOPMENT-0.30.md.
+
+## Vaihe 0.31 — pienet komennot, deduplikoitu historia ja 2D-ketjusovitus
+
+Macin tavalliset editorimuutokset käyttävät nyt delta-WALia: polku-/splice-muutokset, resurssiviitteet ja vain muuttuneet sisältöpalat lähetetään IPC:ssä. Täysi .hahmo muodostetaan erikseen tiedostotallennusta, palautusta tai renderiä varten. Aloitustila tarvitaan uudelle projektille; vanha snapshot-journal ja selainfallback luetaan edelleen. Tilahash ja materiaalistetun arkiston hash erotetaan.
+
+Siirrettävän historian v2 jakaa samoja sisältöpaloja, lukee v1-historian ja tuo past/future/current-joukon atomisesti yhdessä commitissa. Eri luumäärien 2D-ketjusovitus tarjoaa FK:n, IK:n, niiden osuuden, kontaktit ja diagnoosit. Semanttiset ankkurit ja kelvolliset liitosketjut tarvitaan; nykyiset live-/kävelyohjainten omat vaatimukset säilyvät.
+
+500 kuvan /1000 sekunnin /10 000 avainruudun Node-kuormitusmittaus on tehty ja raportti on docs/benchmarks/0.31.json. Näkyvä Mac-käynnistys, fyysiset laitteet ja oikea virtakatkos eivät ole onnistuneesti varmennettuja. Tämä ei ole koko studion tuotantovalmiuslausunto. Sopimus ja rajat: DEVELOPMENT-0.31.md.

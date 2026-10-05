@@ -1,0 +1,24 @@
+/** Local supplied-voice project. No generated voices, cloud upload or source changes. */
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {readProject,saveProject} from '../lib/project-file.ts';
+import {parsePresentation} from '../lib/presentation-parser.ts';
+import {compilePresentation} from '../lib/presentation-compile.ts';
+import {functions} from '../lib/presentation-model.ts';
+const input=process.argv[2],out=process.argv[3];if(!input||!out)throw Error('Anna paikallinen ääniluettelo ja tuloskansio.');
+const rows=JSON.parse(readFileSync(input+'/sequence.json','utf8'));
+if(!Array.isArray(rows)||rows.length!==16)throw Error('Tarvitaan 16 kohdistettua repliikkiä.');
+const r=await readProject(new Blob([readFileSync('public/library/Roni-Studio.hahmo')])),s=await readProject(new Blob([readFileSync('public/library/Salla-Studio.hahmo')]));
+const assets={roni:{doc:r.doc,animation:r.animation},salla:{doc:s.doc,animation:s.animation}};
+let p=parsePresentation(readFileSync(input+'/KILSAT-16-aanirepliikkia.md','utf8'));
+p.id='kilsat-s01e01-supplied-voices';p.world.width=1080;p.world.height=1920;p.world.phone.enabled=false;p.natural=true;
+p.bindings=p.characters.map((speaker,i)=>({speaker,asset:speaker==='KILLE'?'roni':'salla',voice:speaker==='KILLE'?'Little Dude II':'Ziggy',side:i?'right':'left',functions:Object.fromEntries(functions.map(f=>[f,'supported']))}));
+const dialogue=p.events.filter(e=>e.kind==='dialogue');if(dialogue.length!==rows.length)throw Error('Repliikkien lukumäärä ei täsmää.');
+const voices:NonNullable<typeof r.doc.presentationAudio>={};
+p.audioClips=dialogue.map((e,i)=>{const row=rows[i];if(e.target!==row.speaker||e.text!==row.text)throw Error('Repliikin kohdistus ei täsmää.');voices[row.asset]={name:row.name,blob:new Blob([readFileSync(row.wav)],{type:'audio/wav'})};return {id:'clip-'+i,dialogue:e.id,asset:row.asset,start:0,end:row.duration,duration:row.duration,mouth:row.mouth,source:'volume' as const};});
+p=compilePresentation(p,assets,24);p.startFrame=0;
+const animation={...r.animation,tracks:[],fps:24,duration:Math.ceil(p.seconds*24)},scene={...r.scene,width:1080,height:1920,presentations:[p],presentationDraft:undefined};
+const file=await saveProject({...r.doc,presentationAssets:assets,presentationAudio:voices},animation,undefined,scene);
+const bytes=new Uint8Array(await file.arrayBuffer());const reopened=await readProject(new Blob([bytes]));if(Object.keys(reopened.doc.presentationAudio??{}).length!==16)throw Error('Äänien tallennustarkistus epäonnistui.');
+mkdirSync(out,{recursive:true});writeFileSync(out+'/KILSAT-16-aanirepliikkia.hahmo',bytes);writeFileSync(out+'/KILSAT-16-aanirepliikkia.md',p.original);
+writeFileSync(out+'/KILSAT-aanien-kohdistus.json',JSON.stringify({status:'Käyttäjän pyytämä sisällön mukainen järjestys. Litterointi ja kuva tarkistettava.',lipSync:'RMS-voimakkuus; ei äänteiden tunnistus',seconds:p.seconds,cast:{KILLE:'Roni-Studio → Kille',HANDU:'Salla-Studio → Mr.Handu'},dialogue:dialogue.map((e,i)=>({speaker:e.target,text:e.text,file:rows[i].name,duration:rows[i].duration})),diagnostics:p.diagnostics},null,2));
+console.log(JSON.stringify({seconds:p.seconds,voices:16,roundtrip:true,diagnostics:p.diagnostics}));

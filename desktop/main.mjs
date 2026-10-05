@@ -1,11 +1,14 @@
+import {RevisionStore} from './revisions.mjs';
 import {DesktopExports} from './export-service.mjs';
 import {app,BrowserWindow,Menu,dialog,ipcMain,session,systemPreferences,utilityProcess,nativeTheme} from 'electron';
 import {join,dirname} from 'node:path';import {randomBytes,randomUUID} from 'node:crypto';import {readFile,mkdir,writeFile} from 'node:fs/promises';import {fileURLToPath} from 'node:url';
 import {DesktopFiles} from './files.mjs';import {validSender,allowedMedia,allowedMediaCheck} from './policy.mjs';
+import {RecoveryStore} from './recovery.mjs';
 import {mayClose} from './close-workflow.mjs';
+const legacyData=app.getPath('userData');app.setName('KILSAT Studio');app.setPath('userData',legacyData);
 const root=dirname(dirname(fileURLToPath(import.meta.url))),testing=process.argv.includes('--self-test');
-if(testing){if(!process.env.HAHMOSTUDIO_TEST_DATA_DIR)throw new Error('Self-test requires isolated data directory');app.setPath('userData',process.env.HAHMOSTUDIO_TEST_DATA_DIR);}
-let window,service,files,origin,serviceOrigin,dirty=false,ready=false,closing=false,closeBusy=false,pendingClose,speech,exports;
+if(testing||process.argv.includes('--diagnostic-workspace')){if(!process.env.HAHMOSTUDIO_TEST_DATA_DIR)throw new Error('Self-test requires isolated data directory');app.setPath('userData',process.env.HAHMOSTUDIO_TEST_DATA_DIR);}
+let window,service,files,origin,serviceOrigin,dirty=false,ready=false,closing=false,closeBusy=false,pendingClose,speech,exports,recovery,revisions;
 const token=randomBytes(32).toString('hex');
 if(!testing&&!app.requestSingleInstanceLock()){app.quit();}else{
  app.on('second-instance',()=>{window?.show();window?.focus();});
@@ -16,14 +19,15 @@ if(!testing&&!app.requestSingleInstanceLock()){app.quit();}else{
  app.whenReady().then(async()=>{
  try{
   await mkdir(app.getPath('userData'),{recursive:true});await startupStatus('local-service');
-  service=utilityProcess.fork(join(root,'desktop/service.mjs'),[],{stdio:'ignore',serviceName:'Hahmostudio · paikallinen puhepalvelu'});
+  service=utilityProcess.fork(join(root,'desktop/service.mjs'),[],{stdio:'ignore',serviceName:'KILSAT Studio · paikallinen puhepalvelu'});
   const port=await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>{service.kill();reject(new Error('Paikallisen palvelun käynnistys aikakatkaistiin.'));},15000);service.once('message',message=>{clearTimeout(timeout);message.type==='ready'?resolve(message.port):reject(new Error(message.message??'Palvelun käynnistys epäonnistui.'));});service.once('exit',()=>{clearTimeout(timeout);reject(new Error('Paikallinen palvelu sulkeutui käynnistyksessä.'));});service.postMessage({type:'start',token,distDir:join(root,'dist-desktop'),transcriber:{binary:join(app.isPackaged?process.resourcesPath:join(root,'.private-runtime'),'native/bin/whisper-cli'),model:join(app.isPackaged?process.resourcesPath:join(root,'.private-runtime'),'native/models/ggml-base.bin'),downloadPath:join(app.getPath('userData'),'models/ggml-base.bin')},rhubarb:app.isPackaged?join(process.resourcesPath,'rhubarb/rhubarb'):join(root,'.private-runtime/rhubarb/rhubarb')});});
   serviceOrigin=`http://127.0.0.1:${port}`;
   origin=process.env.HAHMOSTUDIO_DEV_URL??serviceOrigin;
   if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(origin))throw new Error('Kehitysosoitteen on oltava paikallinen.');
   const ses=session.fromPartition('persist:hahmostudio-desktop');
   await ses.cookies.set({url:origin,name:'hahmostudio_desktop',value:token,httpOnly:true,sameSite:'strict'});
-  window=new BrowserWindow({width:1440,height:980,minWidth:800,minHeight:650,show:false,title:'Hahmostudio',backgroundColor:'#202328',webPreferences:{preload:join(root,'desktop/preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,session:ses}});
+  window=new BrowserWindow({width:1440,height:980,minWidth:800,minHeight:650,show:false,title:'KILSAT Studio',backgroundColor:'#202328',webPreferences:{preload:join(root,'desktop/preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,session:ses}});
+  recovery=new RecoveryStore(app.getPath('userData'));revisions=new RevisionStore(app.getPath('userData'));
   files=new DesktopFiles({dialog,window:()=>window,dataDir:app.getPath('userData'),onProject:path=>{window?.setRepresentedFilename(path??'');},onTheme:theme=>{nativeTheme.themeSource=theme;}});
   const preferences=await files.initialize();nativeTheme.themeSource=preferences.theme;
   ses.setPermissionCheckHandler((contents,permission,requestingOrigin,details)=>contents===window?.webContents&&allowedMediaCheck(permission,details,requestingOrigin,origin));
@@ -32,15 +36,17 @@ if(!testing&&!app.requestSingleInstanceLock()){app.quit();}else{
   window.webContents.session.on('will-download',(event)=>{event.preventDefault();dialog.showErrorBox('Tallenna tiedosto sovelluksen kautta','Käytä Tallenna projekti- tai Vie tiedosto -painiketta.');});
   window.on('close',event=>{if(!closing){event.preventDefault();void closeWindow();}});
   window.on('closed',()=>{window=null;void stopService();});
-  service.on('exit',()=>{if(!closing&&window){dialog.showErrorBox('Paikallinen palvelu päättyi','Tallenna projekti ja käynnistä Hahmostudio uudelleen. Puheentunnistus ei ole käytettävissä.');}});
+  service.on('exit',()=>{if(!closing&&window){dialog.showErrorBox('Paikallinen palvelu päättyi','Tallenna projekti ja käynnistä KILSAT Studio uudelleen. Puheentunnistus ei ole käytettävissä.');}});
   exports=new DesktopExports({window:()=>window,origin,session:ses,root,binary:join(app.isPackaged?process.resourcesPath:join(root,'.private-runtime'),'native/bin/ffmpeg'),trusted,dataDir:app.getPath('userData'),testing});registerIPC();makeMenu();await startupStatus('interface-loading');await window.loadURL(origin+'/');await startupStatus('ready');
   if(testing){await selfTest();closing=true;window.destroy();await stopService();app.quit();}else{window.show();}
- }catch(e){await startupStatus('failed',e.message);if(testing){await testReport({ok:false,error:e.message});}else dialog.showErrorBox('Hahmostudio ei käynnistynyt',e.message+'\nSulje sovellus ja yritä uudelleen.');closing=true;window?.destroy();await stopService();app.exit(1);}
- }).catch(error=>{closing=true;dialog.showErrorBox('Hahmostudio ei käynnistynyt',error.message);app.exit(1);});
+ }catch(e){await startupStatus('failed',e.message);if(testing){await testReport({ok:false,error:e.message});}else dialog.showErrorBox('KILSAT Studio ei käynnistynyt',e.message+'\nSulje sovellus ja yritä uudelleen.');closing=true;window?.destroy();await stopService();app.exit(1);}
+ }).catch(error=>{closing=true;dialog.showErrorBox('KILSAT Studio ei käynnistynyt',error.message);app.exit(1);});
 }
-function trusted(event){if(!validSender(event,window,origin))throw new Error('Pyyntö ei tullut Hahmostudion omasta ikkunasta.');}
+function trusted(event){if(!validSender(event,window,origin))throw new Error('Pyyntö ei tullut KILSAT Studion omasta ikkunasta.');}
 function registerIPC(){
  const handle=(name,fn)=>ipcMain.handle(name,async(event,...args)=>{trusted(event);return fn(...args);});
+ handle('studio:revisions-list',id=>revisions.list(id));handle('studio:revisions-save',data=>revisions.save(data));handle('studio:revisions-read',(project,id)=>revisions.read(project,id));handle('studio:revisions-remove',(project,id)=>revisions.remove(project,id));
+ handle('studio:recovery-resources',refs=>recovery.delta.missing(refs));handle('studio:recovery-transaction',request=>recovery.transaction(request));handle('studio:recovery-import',request=>recovery.importBatch(request));handle('studio:recovery-read',reference=>recovery.read(reference));handle('studio:recovery-save',data=>recovery.save(data));handle('studio:recovery-latest',()=>recovery.latest());handle('studio:recovery-clear',()=>recovery.clear());
  handle('studio:confirm-replace',async()=>{const choice=await dialog.showMessageBox(window,{type:'question',message:'Nykyisessä työssä on tallentamattomia muutoksia.',buttons:['Tallenna ensin','Jatka tallentamatta','Peruuta'],defaultId:0,cancelId:2});return ['save','discard','cancel'][choice.response];});
  handle('studio:open',kind=>files.choose(kind));handle('studio:recent',id=>files.recent(id));handle('studio:adopt',id=>files.adopt(id));handle('studio:save',request=>files.save(request));handle('studio:preferences',()=>files.getPreferences());handle('studio:theme',theme=>files.setTheme(theme));handle('studio:accessibility',value=>files.setAccessibility(value));
  handle('studio:edit',action=>{if(!['undo','redo'].includes(action))throw new Error('Tuntematon muokkaustoiminto.');window.webContents[action]();});
@@ -54,7 +60,7 @@ function registerIPC(){
 }
 function action(name){if(window&&ready)window.webContents.send('studio:action',{action:name});}
 function makeMenu(){Menu.setApplicationMenu(Menu.buildFromTemplate([
- {label:'Hahmostudio',submenu:[{role:'about',label:'Tietoja Hahmostudiosta'},{type:'separator'},{role:'hide',label:'Kätke Hahmostudio'},{role:'hideOthers',label:'Kätke muut'},{role:'unhide',label:'Näytä kaikki'},{type:'separator'},{role:'quit',label:'Lopeta Hahmostudio'}]},
+ {label:'KILSAT Studio',submenu:[{role:'about',label:'Tietoja KILSAT Studiosta'},{type:'separator'},{role:'hide',label:'Kätke KILSAT Studio'},{role:'hideOthers',label:'Kätke muut'},{role:'unhide',label:'Näytä kaikki'},{type:'separator'},{role:'quit',label:'Lopeta KILSAT Studio'}]},
  {label:'Tiedosto',submenu:[{label:'Avaa projekti…',accelerator:'CmdOrCtrl+O',click:()=>action('open')},{label:'Tuo kuva / PSD…',click:()=>action('import')},{label:'Lisää ääni…',click:()=>action('audio')},{type:'separator'},{label:'Tallenna projekti',accelerator:'CmdOrCtrl+S',click:()=>action('save')},{label:'Tallenna nimellä…',accelerator:'CmdOrCtrl+Shift+S',click:()=>action('saveAs')},{label:'Vie animaatio…',click:()=>action('export')},{type:'separator'},{label:'Sulje',accelerator:'CmdOrCtrl+W',click:()=>void closeWindow()}]},
  {label:'Muokkaa',submenu:[{label:'Kumoa',accelerator:'CmdOrCtrl+Z',click:()=>action('undo')},{label:'Tee uudelleen',accelerator:'CmdOrCtrl+Shift+Z',click:()=>action('redo')},{type:'separator'},{role:'cut',label:'Leikkaa'},{role:'copy',label:'Kopioi'},{role:'paste',label:'Liitä'},{role:'selectAll',label:'Valitse kaikki'}]},
  {label:'Näytä',submenu:[{label:'Kirjasto',click:()=>action('library')},{label:'Ominaisuudet',click:()=>action('inspector')},{label:'Aikajana',click:()=>action('timeline')},{type:'separator'},{label:'Sovita koko näyttämö',click:()=>action('fit')},{label:'Keskity näyttämöön',click:()=>action('focus-stage')},{label:'Palauta työtila ja paneelien koot',click:()=>action('reset-layout')}]},

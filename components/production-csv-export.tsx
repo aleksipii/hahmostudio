@@ -1,0 +1,10 @@
+import {useState} from 'react';
+import {saveFile,desktop} from '../lib/platform';
+import {exportProductionCsv,productionCsvFilename} from '../lib/studio/production-csv';
+import type {ProductionOverview} from '../lib/studio/production-overview';
+import type {Shot} from '../lib/studio/domain';
+export default function ProductionCsvExport({overview,filtered,disabled}:{overview:ProductionOverview;filtered:Shot[];disabled:boolean}){
+ const [scope,setScope]=useState<'all'|'filtered'>('all'),[busy,setBusy]=useState(false),[message,setMessage]=useState('');const rows=scope==='all'?overview.episode.shots:filtered;
+ const run=async()=>{setBusy(true);setMessage('');try{const csv=exportProductionCsv(overview,rows),saved=await saveFile(new Blob([csv],{type:'text/csv;charset=utf-8'}),productionCsvFilename(overview.episode.name),{kind:'export',saveAs:true});setMessage(saved?(desktop()?`CSV tallennettu · ${rows.length} kuvaa.`:`CSV-lataus käynnistetty · ${rows.length} kuvaa.`):'CSV-tallennus peruttiin. Projekti säilyy ennallaan.');}catch(e){setMessage((e as Error).message);}finally{setBusy(false);}};
+ return <details className="studio-csv-export"><summary>Vie kuvien työjono CSV-tiedostoksi</summary><p>Vie tilat, vastuut, määräajat ja tarkistusmäärät taulukkolaskentaan. Vienti sisältää myös suodatuksen muilla sivuilla olevat kuvat. Se ei sisällä puheääniä, kommenttitekstejä tai projektin kuvia.</p><label>Vietävät kuvat<select disabled={disabled||busy} value={scope} onChange={e=>{setScope(e.target.value as 'all'|'filtered');setMessage('');}}><option value="all">Koko valmistelu ({overview.episode.shots.length})</option><option value="filtered">Nykyinen haku ja suodatus ({filtered.length})</option></select></label><button disabled={disabled||busy||!rows.length} onClick={()=>void run()}>{busy?'Tallennetaan CSV…':'Vie CSV'}</button><p role="status">{message}</p><p>UTF-8, puolipiste-erotin ja pilkku sekuntien desimaalierottimena. Tuonti takaisin projektiin ei ole käytössä.</p></details>;
+}

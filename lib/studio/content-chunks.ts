@@ -1,0 +1,2 @@
+/** Deterministic content boundaries remain stable after insertions. */
+export function contentChunks(bytes:Uint8Array):Uint8Array[]{const parts:Uint8Array[]=[];let start=0,rolling=0;for(let i=0;i<bytes.length;i++){rolling=((rolling<<1)+(bytes[i]*2654435761>>>0))>>>0;if(i-start>=16383&&((rolling&32767)===0||i-start>=65535)){parts.push(bytes.subarray(start,i+1));start=i+1;rolling=0;}}if(start<bytes.length)parts.push(bytes.subarray(start));return parts;}

@@ -1,0 +1,5 @@
+import type {Timeline} from './model.ts';
+export function heldFrame(frame:number,cadence:Timeline['cadence']){if(cadence==='twos')return Math.floor(frame/2)*2;if(cadence==='threes')return Math.floor(frame/3)*3;const cycle=Math.floor(frame/5)*5;return cycle+(frame%5<3?0:3);}
+function hash(s:string){let n=2166136261;for(const c of s)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;}
+export function blinking(id:string,frame:number){let next=24*(3+hash(id)%4),i=0;while(next+2<=frame){next+=24*(3+hash(id+':'+ ++i)%4);}return frame>=next&&frame<next+2;}
+export function motion(action:string,frame:number,talking:boolean){const step=Math.floor(frame/5),up=frame%5>=2,direction=action.endsWith('LEFT')?-1:1,walking=/^(WALK|RUN)_/.test(action),speed=action.startsWith('RUN')?2:1;return {x:walking?direction*frame*2*speed:0,y:walking&&up?-4:0,rotations:{HEAD_GROUP:talking?(Math.floor(frame/3)%2?2:-2):0,ARM_LEFT_UPPER:action==='HAND_WAVE'?Math.floor(frame/3)%2?-40:-70:action==='POINT'?-65:walking?Math.sin(step*Math.PI/2)*18:0,ARM_RIGHT_UPPER:walking?-Math.sin(step*Math.PI/2)*18:0,LEG_LEFT:walking?(step%2?18:-18):0,LEG_RIGHT:walking?(step%2?-18:18):0}};}

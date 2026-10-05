@@ -1,3 +1,4 @@
+import {freezeRender} from './studio/render-contract';
 import {createAudioContext} from './browser-audio';
 import {Output,Mp4OutputFormat,BufferTarget,CanvasSource,AudioBufferSource,Quality,canEncodeVideo,canEncodeAudio} from 'mediabunny';
 import {renderScene} from './scene-render';
@@ -10,6 +11,7 @@ export async function exportMp4(episodes:Episode[],wide:boolean,signal:AbortSign
  const clone=(nodes:LayerNode[]):LayerNode[]=>nodes.map(n=>({...n,children:clone(n.children)}));episodes=episodes.map(e=>({...e,doc:{...e.doc,layers:clone(e.doc.layers)},animation:structuredClone(e.animation),scene:{...e.scene}}));
  if(!episodes.length||episodes.length>5)throw new Error('Valitse 1–5 jaksoa.');
  const timing=episodeTiming(episodes.map(e=>e.animation)),total=timing.reduce((n,t)=>n+t.frames,0),width=wide?1920:episodes[0].scene.width,height=wide?1080:episodes[0].scene.height,quality=new Quality({bitrate:wide?3000000:8000000});
+ for(const e of episodes){signal.throwIfAborted();await freezeRender(e.doc,e.animation,e.audio,e.scene,{id:'web-mp4',name:'MP4',format:'mp4',width,height,fps:30,start:0,end:e.animation.duration/e.animation.fps,quality:8,transparent:false,audio:true,loop:0});}
  const check=()=>{if(signal.aborted)throw new DOMException('Vienti peruttu.','AbortError');};check();
  if(!await canEncodeVideo('avc',{width,height,frameRate:30,quality}))throw new Error('Selain ei tue H.264-vientiä. Päivitä selain tai vie PNG-kuvasarja.');
  const hasAudio=episodes.some(e=>e.audio),audioQuality=new Quality({bitrate:128000});

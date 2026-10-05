@@ -5,8 +5,9 @@ export type RigPart = { key: string; psdId?: number; path: string; role: keyof t
 export type Rig = { format: 'hahmostudio-rig'; version: 1; source: { name: string; width: number; height: number }; parts: RigPart[] };
 export function defaultPart(n: LayerNode): RigPart { return { key: n.key, psdId: n.psdId, path: n.path, role: 'none', pivot: { x: n.left + n.width / 2, y: n.top + n.height / 2 }, joints: [] }; }
 export function createRig(doc: PsdDocument): Rig { return { format: 'hahmostudio-rig', version: 1, source: { name: doc.name, width: doc.width, height: doc.height }, parts: flatten(doc.layers).filter(n => n.kind === 'layer').map(n => { const p = defaultPart(n); p.pivot.x = Math.max(0, Math.min(doc.width, p.pivot.x)); p.pivot.y = Math.max(0, Math.min(doc.height, p.pivot.y)); return p; }) }; }
-export function readRig(text: string, doc: PsdDocument): Rig {
- const data = JSON.parse(text);
+export function readRig(text: string, doc: PsdDocument): Rig {return validateRig(JSON.parse(text),doc);}
+export function validateRig(value:unknown,doc:PsdDocument):Rig {
+ const data = value as any;
  if (!data || data.format !== 'hahmostudio-rig' || data.version !== 1 || data.source?.width !== doc.width || data.source?.height !== doc.height || !Array.isArray(data.parts) || data.parts.length > 1000) throw new Error('Nivelmäärityksen versio tai kuvan koko ei vastaa avattua PSD:tä.');
  const rig = createRig(doc), used = new Set<string>(), remap = new Map<string,string>();
  const point = (p: unknown): Point => {

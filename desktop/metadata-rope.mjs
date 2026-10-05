@@ -1,0 +1,8 @@
+import {createHash} from 'node:crypto';
+const digest=x=>createHash('sha256').update(x).digest('hex');
+const cache=new WeakMap(),tokens=new Map(),primitives=new Map();
+const token=text=>{let b=tokens.get(text);if(!b){b=Buffer.from(text);if(tokens.size<16384&&text.length<=256)tokens.set(text,b);}return b;};
+/** Persistent object subtrees retain ropes and Merkle hashes across path edits. */
+export function metadataRope(value){if(value===undefined)value=null;if(value&&typeof value==='object'){const found=cache.get(value);if(found)return found;const keys=Array.isArray(value)?value.map((_,i)=>String(i)):Object.keys(value).filter(k=>value[k]!==undefined).sort(),parts=[token(Array.isArray(value)?'[':'{')],hashes=[];keys.forEach((key,i)=>{if(i)parts.push(token(','));if(!Array.isArray(value))parts.push(token(JSON.stringify(key)+':'));const child=metadataRope(value[key]);parts.push(child);hashes.push([key,child.hash]);});parts.push(token(Array.isArray(value)?']':'}'));const node={parts,size:parts.reduce((n,p)=>n+(Buffer.isBuffer(p)?p.length:p.size),0),hash:digest(JSON.stringify([Array.isArray(value)?'array':'object',hashes]))};cache.set(value,node);return node;}const text=JSON.stringify(value);let node=primitives.get(text);if(!node){const bytes=token(text);node={parts:[bytes],size:bytes.length,hash:digest(bytes)};if(primitives.size<16384&&text.length<=256)primitives.set(text,node);}return node;}
+export function* ropeParts(node){for(const part of node.parts){if(Buffer.isBuffer(part))yield part;else yield*ropeParts(part);}}
+export function ropeBytes(node){return Buffer.concat([...ropeParts(node)],node.size);}

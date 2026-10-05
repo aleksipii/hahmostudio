@@ -1,6 +1,8 @@
+import {cutoutScenery,cutoutShapes} from './cutout/scenery.ts';
 import {environmentLibrary,environmentShapes} from './environment-library.ts';
 /** Original vector scenery shared by preview, PNG/MP4 rendering and downloadable SVGs. */
 export const backgrounds=[
+ ...cutoutScenery,
  ...environmentLibrary.map(e=>({id:e.id,name:e.name,hint:e.category+' · 2D, etukamera'})),
  {id:'studio-premium-v1',name:'Studio · valoisa',hint:'Valopaneelit, akustiikka ja syvyys'},
  {id:'apartment-v1',name:'Olohuone',hint:'Ikkuna, sohva ja lämmin sisustus'},
@@ -16,6 +18,7 @@ export const backgrounds=[
 export type BackgroundId=typeof backgrounds[number]['id'];
 export type Shape={fill:string;points?:number[][];rect?:number[];ellipse?:number[];gradient?:[string,string]};
 export function backgroundShapes(id:BackgroundId):Shape[]{
+ const cutout=cutoutShapes(id);if(cutout)return cutout;
  const extended=environmentShapes(id);if(extended)return extended;
  const r=(fill:string,...rect:number[]):Shape=>({fill,rect}),p=(fill:string,...points:number[][]):Shape=>({fill,points}),e=(fill:string,...ellipse:number[]):Shape=>({fill,ellipse});
  if(id==='studio-premium-v1')return [{...r('#dce5ee',0,0,1,1),gradient:['#f0f4fa','#9aabc3']},p('#b7c6d8',[0,.78],[1,.72],[1,1],[0,1]),r('#28405b',.08,.1,.84,.62),r('#526e87',.12,.14,.76,.54),...Array.from({length:9},(_,i)=>r(i%2?'#3d586d':'#48647c',.16+i*.08,.18,.018,.45)),r('#f4d9a1',.07,.10,.01,.63),r('#f4d9a1',.92,.10,.01,.63),e('#6e7c8d',.5,.87,.35,.025),r('#273c54',.04,.07,.18,.012),r('#273c54',.78,.07,.18,.012),r('#e6f7ff',.02,.05,.22,.018),r('#e6f7ff',.76,.05,.22,.018),p('#d0dceb',[.02,.068],[.24,.068],[.43,.74],[.02,.77]),p('#d0dceb',[.76,.068],[.98,.068],[.98,.77],[.57,.74])];

@@ -1,5 +1,9 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('hahmostudio',Object.freeze({
+ revisionsList:project=>ipcRenderer.invoke('studio:revisions-list',project),revisionsSave:data=>ipcRenderer.invoke('studio:revisions-save',data),revisionsRead:(project,id)=>ipcRenderer.invoke('studio:revisions-read',project,id),revisionsRemove:(project,id)=>ipcRenderer.invoke('studio:revisions-remove',project,id),
+ recoveryResources:refs=>ipcRenderer.invoke('studio:recovery-resources',refs),recoveryTransaction:request=>ipcRenderer.invoke('studio:recovery-transaction',request),recoveryImport:request=>ipcRenderer.invoke('studio:recovery-import',request),
+ recoveryRead:reference=>ipcRenderer.invoke('studio:recovery-read',reference),
+ recoverySave:snapshot=>ipcRenderer.invoke('studio:recovery-save',snapshot),recoveryLatest:()=>ipcRenderer.invoke('studio:recovery-latest'),recoveryClear:()=>ipcRenderer.invoke('studio:recovery-clear'),
  exportPreferences:()=>ipcRenderer.invoke('studio:export-preferences'),exportSetPreferences:data=>ipcRenderer.invoke('studio:export-set-preferences',data),
  exportEnqueue:request=>ipcRenderer.invoke('studio:export-enqueue',request),exportList:()=>ipcRenderer.invoke('studio:export-list'),exportCancel:id=>ipcRenderer.invoke('studio:export-cancel',id),exportRemove:id=>ipcRenderer.invoke('studio:export-remove',id),exportRetry:id=>ipcRenderer.invoke('studio:export-retry',id),exportFinder:id=>ipcRenderer.invoke('studio:export-finder',id),onExports:callback=>{const listener=(_e,jobs)=>callback(jobs);ipcRenderer.on('studio:export-jobs',listener);return()=>ipcRenderer.removeListener('studio:export-jobs',listener);},
  confirmReplace:()=>ipcRenderer.invoke('studio:confirm-replace'),
