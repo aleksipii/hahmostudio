@@ -737,3 +737,39 @@ html,body,#root {width:100%;height:100%;overflow:hidden;}
 .studio .camera-controls,.studio .details-content {padding:8px;min-width:0;}
 .studio .camera-controls label {display:grid;gap:4px;}
 .studio .scene-section input,.studio .scene-section select {width:100%;box-sizing:border-box;}
+/* E: fixed-name timeline, horizontal time zoom and one compact status surface. */
+.studio .timeline-scroll {overflow:auto;min-height:0;flex:1;}
+.studio .timeline-scroll .animation-tracks,.studio .timeline-scroll .time-ruler {width:calc(100% * var(--timeline-zoom));min-width:100%;}
+.studio .timeline-body {overflow:visible;}
+.studio .animation-track {height:24px;min-height:24px;}
+.studio .track-name {position:sticky;left:0;z-index:2;flex:0 0 160px;width:160px;background:var(--color-surface);border:0;text-align:left;height:24px;padding:4px 8px;}
+.studio .time-ruler>span {position:sticky;left:0;z-index:3;width:160px;flex:0 0 160px;background:var(--color-surface);}
+.studio .track-keys {height:24px;margin:0;}
+.studio [data-track-kind=motion] .track-keys button {color:var(--track-blue);}
+.studio [data-track-kind=dialogue] .track-keys button {color:var(--track-green);}
+.studio [data-track-kind=expression] .track-keys button {color:var(--track-purple);}
+.studio [data-track-kind=layer] .track-keys button {color:var(--track-gray);}
+.studio .animation-track.active {box-shadow:inset 2px 0 var(--accent);background:var(--accent-subtle);}
+.studio .timeline-zoom {margin-left:auto;display:flex;gap:8px;align-items:center;order:9;}
+.studio .timeline-zoom input {width:100px;accent-color:var(--accent);}
+.studio .statusbar {height:24px;min-height:24px;padding:0 8px;display:flex;gap:12px;white-space:nowrap;overflow:hidden;font-size:11px;background:var(--color-surface);border-color:var(--border);}
+.studio .statusbar .device-status {display:contents;font-size:11px;}
+.studio .statusbar .device-status>span,.studio .statusbar strong {font-size:11px;font-weight:400;}
+.studio .statusbar>span {min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:11px;}
+.studio .statusbar button {min-height:20px;height:20px;padding:0 4px;font-size:11px;}
+.studio .preview-footer {position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:5;border:1px solid var(--border);border-radius:4px;background:var(--color-surface);max-width:calc(100% - 16px);width:max-content;}
+.studio .preview-footer>span {display:none;}
+.studio .zoom-controls {display:flex;align-items:center;gap:4px;}
+.studio .zoom-controls button {font-size:11px;min-height:24px;padding:2px 6px;}
+.studio .stage {padding-bottom:40px;}
+.studio .stage-position {pointer-events:none;}
+.studio .character-drag-hit {pointer-events:all;}
+.studio .stage-position:focus-visible {outline:1px solid var(--accent);outline-offset:-2px;}
+.studio :is(h2,h3,h4) {font-size:12px!important;}
+/* F: Electron owns the platform menu. The legacy actions remain in the tools drawer. */
+.desktop-shell .app-menubar {display:none;}
+.desktop-shell .app-menubar.extra-open {display:flex;position:fixed;top:44px;left:8px;padding:8px;background:var(--color-surface);border:1px solid var(--border);z-index:1000;}
+.studio .topbar,.studio .workspace-tabs,.studio .timeline-heading,.studio .library-tabs {user-select:none;}
+.studio input,.studio textarea,.studio pre {user-select:text;}
+.desktop-shell .topbar {flex-wrap:nowrap;}
+.desktop-shell .workspace {display:grid;grid-template-columns:var(--library-size) 6px minmax(0,1fr) 6px var(--inspector-size);}
