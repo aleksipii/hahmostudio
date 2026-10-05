@@ -19,18 +19,18 @@
   --color-white: #f5f7fa;
 
   /* Accent (Rive-blue inspired) */
-  --color-accent: #70b6ff;
+  --color-accent: #DF8E15;
   --color-accent-contrast: #0f1113;
-  --color-accent-hover: #5aa4ff;
-  --color-accent-active: #4a96ff;
-  --color-accent-soft: rgba(112, 182, 255, 0.1);
-  --color-accent-border: rgba(112, 182, 255, 0.2);
+  --color-accent-hover: #F0A030;
+  --color-accent-active: #C27B0F;
+  --color-accent-soft: rgba(223,142,21,.15);
+  --color-accent-border: rgba(223,142,21,.4);
 
   /* Semantic */
   --color-success: #5cc96f;
   --color-warning: #f0cb85;
   --color-error: #ff6b6b;
-  --color-info: #70b6ff;
+  --color-info: #DF8E15;
 
   /* ─── SEMANTIC COLORS ─── */
   --color-bg: var(--color-gray-900);
@@ -121,7 +121,7 @@
 
 /* Light theme override */
 :root[data-theme='light'] {
-  --color-accent:#075fc2; --color-accent-hover:#0052a6; --color-accent-active:#004489; --color-accent-soft:rgba(7,95,194,.1); --color-accent-border:rgba(7,95,194,.3); --color-accent-contrast:#ffffff;
+  --color-accent:#DF8E15; --color-accent-hover:#F0A030; --color-accent-active:#C27B0F; --color-accent-soft:rgba(223,142,21,.15); --color-accent-border:rgba(223,142,21,.4); --color-accent-contrast:#1b1b1d;
   --color-bg: var(--color-gray-100);
   --color-surface: var(--color-white);
   --color-surface-hover: var(--color-gray-200);
@@ -133,7 +133,7 @@
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]), :root[data-theme='system'] {
-    --color-accent:#075fc2; --color-accent-hover:#0052a6; --color-accent-active:#004489; --color-accent-soft:rgba(7,95,194,.1); --color-accent-border:rgba(7,95,194,.3); --color-accent-contrast:#ffffff;
+    --color-accent:#DF8E15; --color-accent-hover:#F0A030; --color-accent-active:#C27B0F; --color-accent-soft:rgba(223,142,21,.15); --color-accent-border:rgba(223,142,21,.4); --color-accent-contrast:#1b1b1d;
     --color-bg: var(--color-gray-100);
     --color-surface: var(--color-white);
     --color-surface-hover: var(--color-gray-200);
@@ -154,3 +154,7 @@
 }
 /* Shared KILSAT workspace geometry; available in every theme. */
 :root {--studio-control-height:32px;--studio-toolbar-gap:8px;--studio-logo-size:52px;--studio-stage-gutter:20px;}
+
+:root {--bg-0:#1b1b1d;--bg-1:#232326;--bg-2:#2c2c30;--bg-hover:#34343a;--border:#3a3a40;--text:#e6e6e8;--text-dim:#9a9aa2;--text-disabled:#5e5e66;--accent:#DF8E15;--accent-hover:#F0A030;--accent-press:#C27B0F;--accent-subtle:rgba(223,142,21,.15);--on-accent:#1b1b1d;--playhead:#E5484D;--studio-control-height:26px;--radius-sm:4px;--radius-md:4px;--radius-lg:4px;--text-sm:12px;--text-xs:11px;--green:var(--accent);--green-bg:var(--accent-subtle);--green-line:var(--accent);--track-blue:#678eb8;--track-green:#6eaa8b;--track-purple:#a08bbd;--track-gray:#7c818c;}
+:root[data-theme=dark] {--color-bg:var(--bg-0);--color-surface:var(--bg-1);--color-surface-hover:var(--bg-hover);--color-border:var(--border);--color-text:var(--text);--color-text-secondary:var(--text-dim);}
+@media(prefers-color-scheme:dark){:root:not([data-theme]),:root[data-theme=system]{--color-bg:var(--bg-0);--color-surface:var(--bg-1);--color-surface-hover:var(--bg-hover);--color-border:var(--border);--color-text:var(--text);--color-text-secondary:var(--text-dim);}}

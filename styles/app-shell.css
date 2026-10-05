@@ -671,3 +671,31 @@ summary:focus-visible {
 /* Let resizable docks fit the real window instead of forcing a taller canvas. */
 .studio {min-height:0;}
 .studio:has(.timeline) .workspace,.studio:has(.timeline) .stage {min-height:0;}
+
+/* A: compact desktop primitives. */
+.studio {font-size:12px;--blue:var(--accent);--blue-soft:var(--accent-subtle);}
+.studio h1,.studio h2,.studio h3,.studio .brand h1 {font-size:12px;line-height:1.4;}
+.studio h1 {font-size:14px!important;}
+.studio button,.studio summary {font-size:12px;cursor:default;}
+.studio button {min-height:26px;padding:4px 8px;}
+.studio label {font-size:11px;min-width:0;}
+.studio input:not([type=checkbox]):not([type=range]):not([type=file]),.studio select {height:28px;min-width:0;max-width:100%;padding:4px 8px;background:var(--color-surface-hover);color:var(--color-text);border:1px solid var(--color-border);border-radius:4px;font-size:12px;}
+.studio textarea {font-size:12px;max-width:100%;min-width:0;background:var(--color-surface-hover);color:var(--color-text);border:1px solid var(--color-border);}
+.studio input:focus,.studio select:focus,.studio textarea:focus {outline:1px solid var(--accent);outline-offset:0;border-color:var(--accent);}
+.studio .primary {background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+.studio .primary:hover {background:var(--accent-hover);}
+.studio .primary:active {background:var(--accent-press);}
+.studio button:disabled,.studio input:disabled,.studio select:disabled {opacity:.5;}
+.studio .workspace-tabs {background:transparent;border:0;border-radius:0;padding:0;}
+.studio .workspace-tabs button {background:transparent;border:0;border-radius:0;border-bottom:2px solid transparent;padding:6px 12px;font-size:12px;}
+.studio .workspace-tabs button.active {background:transparent;border-color:var(--accent);color:var(--accent);}
+.studio .pose-fields {grid-template-columns:repeat(2,minmax(0,1fr));}
+.studio .secondary {font-size:12px;}
+.studio ::-webkit-scrollbar {width:8px;height:8px;}
+.studio ::-webkit-scrollbar-thumb {background:var(--color-border);border-radius:4px;}
+.studio ::-webkit-scrollbar-track {background:var(--color-bg);}
+.studio .safe-guide,.studio .selection-box {border-color:var(--accent);}
+.studio .playhead {background:var(--playhead);}
+.studio .app-menubar,.studio .topbar {position:relative;z-index:100;}
+.studio .app-menu[open],.studio .view-menu[open] {z-index:200;}
+.studio .app-menu-content,.studio .view-menu>div {z-index:300;max-height:calc(100dvh - 80px);overflow:auto;}
