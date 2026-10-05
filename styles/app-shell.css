@@ -668,3 +668,6 @@ summary:focus-visible {
 .studio .track-keys {background:var(--color-bg);}
 .studio .track-keys button {border:0;background:transparent;box-shadow:none;padding:3px 0;color:var(--color-accent);font-size:11px;}
 .studio .track-keys .current-key {color:var(--color-warning);}
+/* Let resizable docks fit the real window instead of forcing a taller canvas. */
+.studio {min-height:0;}
+.studio:has(.timeline) .workspace,.studio:has(.timeline) .stage {min-height:0;}
