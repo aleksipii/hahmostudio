@@ -1,9 +1,10 @@
+.motion-tools {
 /* ============================================================================
    HAHMOSTUDIO v0.32 — APP SHELL + COMPONENT PRIMITIVES
    Rive-inspired layout foundation for editor, panels and motion tooling.
    ============================================================================ */
 
-@import './tokens.css';
+
 
 :root {
   color-scheme: dark;
@@ -583,3 +584,28 @@ summary:focus-visible {
     border-top: 1px solid var(--color-border);
   }
 }
+
+}
+
+.motion-tools { font-family:var(--font-stack); color:var(--color-text); display:grid; gap:var(--space-3); padding:var(--space-3); }
+.motion-tools [hidden] {display:none!important;}
+.motion-tools .motion-panel {border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);padding:var(--space-3);}
+.motion-tools summary {cursor:pointer;font-weight:var(--font-semibold);}
+.motion-tools p,.motion-curve-note {font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--line-relaxed);}
+.motion-tools .easing-presets {display:flex;flex-wrap:wrap;gap:var(--space-2);}
+.motion-tools .easing-curve {height:240px;background:var(--color-bg);touch-action:none;margin-top:var(--space-3);}
+.motion-tools .curve-grid {fill:none;stroke:var(--color-border);}
+.motion-tools .curve-line {fill:none;stroke:var(--color-accent);stroke-width:3;}
+.motion-tools .curve-handle {fill:none;stroke:var(--color-text-secondary);stroke-width:1;}
+.motion-tools .curve-control {fill:var(--color-surface);stroke:var(--color-accent);stroke-width:3;cursor:grab;}
+.motion-tools .curve-preview {fill:var(--color-success);}
+.motion-tools svg text {fill:var(--color-text);font-size:var(--text-sm);text-anchor:middle;pointer-events:none;}
+.motion-tools .state-editor {display:block;min-height:0;}
+.motion-tools .state-graph {width:100%;max-height:320px;background:var(--color-bg);}
+.motion-tools .state-inspector {padding:var(--space-2);background:var(--color-surface);}
+.motion-tools .state-shape {fill:var(--color-surface);stroke:var(--color-border);}
+.motion-tools .state-shape.selected {stroke:var(--color-accent);stroke-width:3;}
+.motion-tools fieldset {min-width:0;border:1px solid var(--color-border);padding:var(--space-2);display:grid;gap:var(--space-2);}
+.motion-tools label {display:grid;gap:var(--space-1);font-size:var(--text-sm);}
+.motion-tools input,.motion-tools select {width:100%;background:var(--color-bg);color:var(--color-text);border:1px solid var(--color-border);border-radius:var(--radius-sm);min-height:var(--size-sm);}
+.motion-tools [aria-pressed=true] {border-color:var(--color-accent);}

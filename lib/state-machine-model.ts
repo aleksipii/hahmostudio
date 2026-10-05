@@ -1,4 +1,4 @@
-import type { Animation, Keyframe } from './animation-model';
+import type { Animation, Keyframe } from './animation-model.ts';
 
 /**
  * State Machine Model v1
@@ -102,7 +102,7 @@ export function createStateMachine(entryTrackKey: string): StateMachine {
     states: [
       {
         id: entryId,
-        name: 'Entry',
+        name: 'Aloitus',
         trackKey: entryTrackKey,
         timeOffset: 0,
         speed: 1,
@@ -227,12 +227,13 @@ export function evaluateConditions(
     const value = paramValues[cond.paramId];
     if (value === undefined) return false;
 
-    const v = typeof value === 'string' ? parseFloat(value) : value;
-    const target = typeof cond.value === 'string' ? parseFloat(cond.value) : cond.value;
+    if (cond.op === 'eq') return value === cond.value;
+    if (cond.op === 'ne') return value !== cond.value;
+    const v = Number(value);
+    const target = Number(cond.value);
+    if (!Number.isFinite(v) || !Number.isFinite(target)) return false;
 
     switch (cond.op) {
-      case 'eq': return v === target;
-      case 'ne': return v !== target;
       case 'gt': return v > target;
       case 'gte': return v >= target;
       case 'lt': return v < target;
@@ -261,6 +262,15 @@ export function getApplicableTransitions(
  */
 export function validateStateMachine(machine: StateMachine): string[] {
   const errors: string[] = [];
+  if (!machine || machine.format !== 'hahmostudio-state-machine' || machine.version !== 1 || !Array.isArray(machine.states) || !Array.isArray(machine.transitions) || !Array.isArray(machine.parameters) || machine.states.length > 256 || machine.transitions.length > 1024 || machine.parameters.length > 256) return ['Tilakoneen rakenne on virheellinen.'];
+  const ids = new Set<string>();
+  for (const s of machine.states) {
+    if (!s || typeof s.id !== 'string' || ids.has(s.id) || typeof s.name !== 'string' || s.name.length > 256 || typeof s.trackKey !== 'string' || !Number.isFinite(s.speed) || s.speed <= 0 || s.speed > 10 || !Number.isFinite(s.timeOffset) || s.timeOffset < 0 || (s.exitTime !== undefined && (!Number.isFinite(s.exitTime) || s.exitTime < 0 || s.exitTime > 1)) || (s.metadata && [s.metadata.x,s.metadata.y].some(v=>v !== undefined && (!Number.isFinite(v) || Math.abs(v)>10000)))) return ['Tilakoneen tila on virheellinen.'];
+    ids.add(s.id);
+  }
+  for (const p of machine.parameters) if (!p || typeof p.id !== 'string' || typeof p.name !== 'string' || !['float','trigger','enum'].includes(p.type)) return ['Tilakoneen parametri on virheellinen.'];
+  for (const t of machine.transitions) if (!t || typeof t.id !== 'string' || !Array.isArray(t.conditions) || !Number.isFinite(t.duration) || t.duration < 0 || t.duration > 60 || t.conditions.some(c=>!c || !['eq','ne','gt','gte','lt','lte'].includes(c.op))) return ['Tilakoneen siirtymä on virheellinen.'];
+
 
   if (!machine.states.some(s => s.id === machine.entryState)) {
     errors.push('Entry state does not exist in states list.');

@@ -1,4 +1,4 @@
-import type { Keyframe } from './animation-model';
+import type { Keyframe } from './animation-model.ts';
 
 /**
  * Bezier Easing Model v1
@@ -85,7 +85,7 @@ export function sampleBezierCurve(curve: BezierCurve, t: number): number {
 
   // Binary search to find x on the curve that matches t
   let low = 0, high = 1, mid = t;
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 30; i++) {
     const x = cubicBezier(mid, 0, curve.cp1.x, curve.cp2.x, 1);
     if (x < t) {
       low = mid;
@@ -154,6 +154,7 @@ export function curveToSvgPath(points: Array<{ x: number; y: number }>): string 
  */
 export function validateBezierCurve(curve: BezierCurve): string[] {
   const errors: string[] = [];
+  if (!curve || !curve.cp1 || !curve.cp2 || ![curve.cp1.x,curve.cp1.y,curve.cp2.x,curve.cp2.y].every(Number.isFinite)) return ['Käyrän pisteiden tulee olla äärellisiä lukuja.'];
   if (curve.cp1.x < 0 || curve.cp1.x > 1) errors.push('cp1.x must be in [0, 1]');
   if (curve.cp1.y < -0.5 || curve.cp1.y > 1.5) errors.push('cp1.y should be in [-0.5, 1.5]');
   if (curve.cp2.x < 0 || curve.cp2.x > 1) errors.push('cp2.x must be in [0, 1]');

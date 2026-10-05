@@ -166,3 +166,15 @@ border: 1px solid var(--color-border);
    - User guide for state machines
    - Easing curve best practices
    - Animation workflow examples
+
+## Toteutettu integraatio: siirtymäkäyrät ja tilakone
+
+Animointi → Liikkeet → Siirtymäkäyrä näyttää valitun tason nykyisen avainruudun käyrän. Valitse avainruutu aikajanan timantista. Linear, Ease In, Ease Out ja Ease In Out tallentavat Bézier-pisteet. CP1/CP2 toimivat osoittimella ja nuolinäppäimillä; Shift kasvattaa askelta. Esikatselun liukusäädin näyttää liikkeen osuuden. Pidä asento -ruudussa käyrän muokkaus on estetty; vaihda ensin siirtymätyyppi. Viimeisellä avainruudulla ei ole seuraavaa siirtymää.
+
+Data kulkee `EasingEditor → commitAnimation → prepareEditorEdit → durable journal → Animation → sampleTrack`. Pisteen vedon aikana vain käyräpaneelin luonnos päivittyy; vapautus tallentaa yhden komennon. Nykyinen näyttämö päivittyy kuittauksen jälkeen. `Keyframe.bezierCurve` on valinnainen; vanhat linear/smooth/hold-projektit toimivat ennallaan. Tallennus, palautus ja undo käyttävät olemassa olevia projektipalveluita.
+
+Liikelogiikka-paneelin `StateEditor` tarjoaa SVG-solmukaavion, tilojen nimet/radat/nopeudet, aloitustilan sekä siirtymien luomisen, kestot ja poistamisen. `Animation.stateMachine` on valinnainen ja validoitu. Se säilyy .hahmo-tiedostossa ja projektihistoriassa. **Tilakoneen runtime, ehdonmuokkaus ja blend-puiden toisto eivät kuulu tähän integraatioon.** Kaavio ei ohita nykyistä animaatiomoottoria.
+
+Uusi app-shell CSS on rajattu `.motion-tools`-alueeseen, jotta vanha telakointi, näyttämön mitat ja laitteiden elinkaari säilyvät. Uudet paneelit käyttävät tokens.css:n väri-, typografia-, väli- ja kokotunnuksia; vaalea/tumma/järjestelmäteema säilyvät.
+
+Varmennus: TypeScript, 292 kooditestiä sekä desktop:build onnistuvat. Buildin olemassa olevat suuren JS-paketin ja fflate-importtien varoitukset säilyvät. Graafista käyttöä tai fyysisiä laitteita ei testattu tässä muutoksessa; asennettu Mac-sovellus tarvitsee erillisen uudelleenpaketoinnin.
