@@ -5,6 +5,7 @@ import {renderToonCast} from './toon-render.ts';
 import type {Cutout3D} from './cutout-3d';
 import {sampleTrack} from './animation-model.ts';
 import {drawBackground} from './backgrounds.ts';
+import {isHardCameraCutSource} from './presentation-camera-cut.ts';
 import {stageState,stageActor} from './presentation-stage.ts';
 import {viewAtFrame} from './character-view.ts';
 import {paintAnimatedLayers} from './psd-render.ts';import {drawPhone,phonePlacement,defaultPhone} from './phone-prop.ts';import {actorPlacement,type PresentationAssets} from './presentation-compile.ts';import type {Pose} from './animation-model.ts';import type {Presentation} from './presentation-model.ts';
@@ -19,7 +20,7 @@ export function renderPresentation(canvas:HTMLCanvasElement,scratch:HTMLCanvasEl
   const transform=(at:number)=>{const c=toonCamera(p,at),binding=p.bindings.find(b=>b.speaker===c.target),resource=binding?assets[binding.asset]:undefined;let x=width/2,y=height*.46;
    if(binding&&resource&&c.target!=='scene'){const r=stageActor(p,binding,at,width,height),a=p.actorAnimations?.[binding.speaker],q=resource.doc.quick,root=a&&q?(q.views?.[viewAtFrame(q,a,at*a.fps)]??q.roles).root:undefined,pose=a?sampleTrack(a.tracks.find(t=>t.key===root),at*a.fps):undefined;x=r.x+(pose?.x??0)*r.scale;y=r.y+(pose?.y??0)*r.scale-resource.doc.height*r.scale*.22;}
    return {scale:c.zoom,x:width/2-(c.offsetX+c.pan*c.panX)*width*c.zoom-x*c.zoom,y:height*.46-(c.offsetY+c.pan*c.panY)*height*c.zoom-y*c.zoom};};
-  const next=transform(time),shot=state.shot,hard=shot&&/^\s*(?:Samalla:\s*)?Leikkaus:/i.test(shot.sourceRef.text),progress=shot?Math.max(0,Math.min(1,(time-(shot.at??0))/.35)):1,u=progress*progress*(3-2*progress),before=shot?transform(Math.max(0,(shot.at??0)-.000001)):next;
+  const next=transform(time),shot=state.shot,hard=shot&&isHardCameraCutSource(shot.sourceRef.text),progress=shot?Math.max(0,Math.min(1,(time-(shot.at??0))/.35)):1,u=progress*progress*(3-2*progress),before=shot?transform(Math.max(0,(shot.at??0)-.000001)):next;
   const blend=hard?1:u;ctx.translate(before.x+(next.x-before.x)*blend,before.y+(next.y-before.y)*blend);const scale=before.scale+(next.scale-before.scale)*blend;ctx.scale(scale,scale);
  } else {
  if(!hasToon&&target&&asset&&camera.target!=='scene'){const r=stageActor(p,target,time,width,height),zoom=camera.zoom;ctx.translate(width/2-(camera.offsetX+camera.pan*camera.panX)*width*zoom,height*.46-(camera.offsetY+camera.pan*camera.panY)*height*zoom);ctx.scale(zoom,zoom);const a=p.actorAnimations?.[target.speaker],q=asset.doc.quick,root=a&&q?(q.views?.[viewAtFrame(q,a,time*a.fps)]??q.roles).root:undefined,pose=a?sampleTrack(a.tracks.find(t=>t.key===root),time*a.fps):undefined;ctx.translate(-(r.x+(pose?.x??0)*r.scale),-(r.y+(pose?.y??0)*r.scale-asset.doc.height*r.scale*.22));}

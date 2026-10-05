@@ -1,0 +1,25 @@
+import {performance} from 'node:perf_hooks';
+import {readFile,writeFile} from 'node:fs/promises';
+import {readProject,saveProject} from '../lib/project-file.ts';
+import {buildStudioExample} from '../lib/studio-example.ts';
+import {createScene} from '../lib/scene-model.ts';
+import {flatten} from '../lib/psd-model.ts';
+import {measurePresentationPlayback,PLAYBACK_VIEWPORTS} from '../lib/playback-load.ts';
+import {inspectRenderSnapshot} from '../lib/studio/render-contract.ts';
+import {exportPresets} from '../lib/export-presets.ts';
+
+const load=async(name:string)=>{const p=await readProject(new Blob([new Uint8Array(await readFile('public/library/'+name+'.hahmo'))]));return {doc:p.doc,animation:p.animation};};
+const [kille,handu]=await Promise.all([load('Kille-Oma'),load('Handu-Oma')]);
+const built=buildStudioExample({kille,handu},createScene({width:1080,height:1920}));
+for(const pack of Object.values(built.assets))for(const n of flatten(pack.doc.layers))if(n.kind==='layer')n.image={key:n.key} as unknown as HTMLImageElement;
+const presentation=built.scene.presentations![0],fps=24,durationFrames=Math.ceil(presentation.seconds*fps);
+const frames=Array.from({length:48},(_,i)=>Math.min(durationFrames-1,Math.floor(i*durationFrames/48)));
+const playback=measurePresentationPlayback(presentation,built.assets,{fps,durationFrames,frames});
+const bytes=new Uint8Array(await (await saveProject(built.doc,built.animation,undefined,built.scene)).arrayBuffer());
+const preset=exportPresets(built.scene.width,built.scene.height,fps,presentation.seconds).find(p=>p.id==='project')!;
+const preflightStart=performance.now();
+const manifest=await inspectRenderSnapshot(bytes,{...preset,start:0,end:presentation.seconds});
+const report={version:'0.37.0',scope:'Node stub-canvas presentation playback + render preflight; not GPU rAF or packaged Electron',timestamp:new Date().toISOString(),platform:process.platform,arch:process.arch,episodeSeconds:presentation.seconds,sampledFrames:frames.length,viewports:PLAYBACK_VIEWPORTS.map(v=>v.label),playback,preflight:{ms:+(performance.now()-preflightStart).toFixed(3),expectedFrames:manifest.expectedFrames,revisionId:manifest.revisionId},memory:process.memoryUsage()};
+const target=process.argv[2]??'docs/benchmarks/0.37-playback.json';
+await writeFile(target,JSON.stringify(report,null,2));
+console.log(JSON.stringify(report,null,2));

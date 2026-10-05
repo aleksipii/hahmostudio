@@ -8,6 +8,7 @@ import {zipSync,unzipSync,strToU8,strFromU8} from 'fflate';
 import {flatten,type PsdDocument,type LayerNode} from './psd-model.ts';
 import {readAnimation,validateAnimation,type Animation} from './animation-model.ts';
 import {readScene,type Scene} from './scene-model.ts';
+import {characterProvenance} from './character-provenance.ts';
 import {readQuick} from './quick-animation.ts';
 const limit=128*1024*1024;
 // Blobs are immutable. Reuse unchanged resource bytes across command snapshots.
@@ -27,7 +28,14 @@ export async function prepareProject(doc:PsdDocument,animation:Animation,audio?:
  const files:Record<string,Uint8Array>={},refs=new Map<LayerNode,string>();let bytes=0;
  for(const [i,n] of flatten(doc.layers).entries())if(n.png){const path=`images/${i}.png`;refs.set(n,path);files[path]=await serializedResource(n.png);bytes+=files[path].length;if(bytes>limit)throw new Error('Projektin kuvat ovat yli 128 Mt.');}
  if(doc.composite){files['images/original.png']=await serializedResource(doc.composite);bytes+=files['images/original.png'].length;}
- if(quick){files['KAYTTOOHJE.txt']=strToU8('Valmis hahmo: A/D kädet ylös, W hyppy, 1/2/3 ilmeet, B räpäytys, R otto. Suu perustuu paikalliseen äänenvoimakkuuteen. Esitys ohjaa hahmoa; Käsikirjoitus luo muokattavia liikkeitä. Otto ja käsikirjoitus lisätään aikajanan loppuun. Alkuperäinen Hahmostudio-grafiikka, CC0-1.0, 2026. Ei ulkoisia hahmoaineistoja.');files['provenance.json']=strToU8(JSON.stringify({asset:quick.asset,version:1,author:'Hahmostudio',license:'CC0-1.0',externalAssets:[]}));}
+ if(quick){
+  const provenance=characterProvenance(quick,doc);
+  const guide=provenance.origin==='user-import'
+   ? 'Oma hahmopaketti: älä oleta lisenssiä provenance.json-tiedoston perusteella. Esitys ohjaa hahmoa; Käsikirjoitus luo muokattavia liikkeitä.'
+   : 'Valmis hahmo: A/D kädet ylös, W hyppy, 1/2/3 ilmeet, B räpäytys, R otto. Suu perustuu paikalliseen äänenvoimakkuuteen. Esitys ohjaa hahmoa; Käsikirjoitus luo muokattavia liikkeitä. Otto ja käsikirjoitus lisätään aikajanan loppuun. Alkuperäinen Hahmostudio-grafiikka, CC0-1.0, 2026. Ei ulkoisia hahmoaineistoja.';
+  files['KAYTTOOHJE.txt']=strToU8(guide);
+  files['provenance.json']=strToU8(JSON.stringify(provenance));
+ }
  if(doc.sourcePsd){files['source/character.psd']=await serializedResource(doc.sourcePsd);bytes+=files['source/character.psd'].length;}
 
  if(audio){if(audio.blob.size>116*1024*1024)throw new Error('Jakson miksattu äänitiedosto on yli 116 Mt.');files['audio/sound']=await serializedResource(audio.blob);bytes+=files['audio/sound'].length;}

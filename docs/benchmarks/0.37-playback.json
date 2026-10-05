@@ -1,0 +1,79 @@
+{
+  "version": "0.37.0",
+  "scope": "Node stub-canvas presentation playback + render preflight; not GPU rAF or packaged Electron",
+  "timestamp": "2026-10-05T17:45:52.646Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "episodeSeconds": 9,
+  "sampledFrames": 48,
+  "viewports": [
+    "portrait-full",
+    "stage-compact",
+    "preview-panel"
+  ],
+  "playback": {
+    "fps": 24,
+    "durationFrames": 216,
+    "sampledFrames": 48,
+    "stepMs": 16.666666666666668,
+    "viewports": {
+      "portrait-full": {
+        "render": {
+          "frames": 48,
+          "totalMs": 5.785,
+          "meanMs": 0.121,
+          "p95Ms": 0.204,
+          "maxMs": 1.595
+        },
+        "raf": {
+          "samples": 529,
+          "fps": 59.999999999999744,
+          "p95Ms": 16.666666666666668,
+          "slowFrames": 0
+        }
+      },
+      "stage-compact": {
+        "render": {
+          "frames": 48,
+          "totalMs": 3.796,
+          "meanMs": 0.079,
+          "p95Ms": 0.152,
+          "maxMs": 0.25
+        },
+        "raf": {
+          "samples": 529,
+          "fps": 59.999999999999744,
+          "p95Ms": 16.666666666666668,
+          "slowFrames": 0
+        }
+      },
+      "preview-panel": {
+        "render": {
+          "frames": 48,
+          "totalMs": 3.847,
+          "meanMs": 0.08,
+          "p95Ms": 0.17,
+          "maxMs": 0.193
+        },
+        "raf": {
+          "samples": 529,
+          "fps": 59.999999999999744,
+          "p95Ms": 16.666666666666668,
+          "slowFrames": 0
+        }
+      }
+    }
+  },
+  "preflight": {
+    "ms": 28.836,
+    "expectedFrames": 216,
+    "revisionId": "d9369dc2432d26a504ec3ec95fd1e43448847119cbb2f3b9d698790e70c9d762"
+  },
+  "memory": {
+    "rss": 169263104,
+    "heapTotal": 32931840,
+    "heapUsed": 16423992,
+    "external": 27906206,
+    "arrayBuffers": 32928894
+  }
+}

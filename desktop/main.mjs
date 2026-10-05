@@ -1,4 +1,6 @@
 import {layoutDiagnostic} from './layout-diagnostic.mjs';
+import {screenplayDiagnostic} from './screenplay-diagnostic.mjs';
+import {playbackRafDiagnostic} from './playback-raf-diagnostic.mjs';
 import {RevisionStore} from './revisions.mjs';
 import {DesktopExports} from './export-service.mjs';
 import {app,BrowserWindow,Menu,dialog,ipcMain,session,systemPreferences,utilityProcess,nativeTheme,screen} from 'electron';
@@ -7,7 +9,7 @@ import {DesktopFiles} from './files.mjs';import {validSender,allowedMedia,allowe
 import {RecoveryStore} from './recovery.mjs';
 import {mayClose} from './close-workflow.mjs';
 const legacyData=app.getPath('userData');app.setName('KILSAT Studio');app.setPath('userData',legacyData);
-const root=dirname(dirname(fileURLToPath(import.meta.url))),layoutTesting=process.argv.includes('--layout-screenshots'),testing=process.argv.includes('--self-test')||layoutTesting;
+const root=dirname(dirname(fileURLToPath(import.meta.url))),layoutTesting=process.argv.includes('--layout-screenshots'),screenplayTesting=process.argv.includes('--screenplay-gui-test'),playbackRafTesting=process.argv.includes('--playback-raf-profile'),testing=process.argv.includes('--self-test')||layoutTesting||screenplayTesting||playbackRafTesting;
 if(testing||process.argv.includes('--diagnostic-workspace')){if(!process.env.HAHMOSTUDIO_TEST_DATA_DIR)throw new Error('Self-test requires isolated data directory');app.setPath('userData',process.env.HAHMOSTUDIO_TEST_DATA_DIR);}
 let window,service,files,origin,serviceOrigin,dirty=false,ready=false,closing=false,closeBusy=false,pendingClose,speech,exports,recovery,revisions;
 const token=randomBytes(32).toString('hex');
@@ -39,8 +41,8 @@ if(!testing&&!app.requestSingleInstanceLock()){app.quit();}else{
   window.on('closed',()=>{window=null;void stopService();});
   service.on('exit',()=>{if(!closing&&window){dialog.showErrorBox('Paikallinen palvelu päättyi','Tallenna projekti ja käynnistä KILSAT Studio uudelleen. Puheentunnistus ei ole käytettävissä.');}});
   exports=new DesktopExports({window:()=>window,origin,session:ses,root,binary:join(app.isPackaged?process.resourcesPath:join(root,'.private-runtime'),'native/bin/ffmpeg'),trusted,dataDir:app.getPath('userData'),testing});registerIPC();makeMenu();await startupStatus('interface-loading');await window.loadURL(origin+'/');await startupStatus('ready');
-  if(testing){if(layoutTesting)await layoutDiagnostic(window,process.env.HAHMOSTUDIO_LAYOUT_OUTPUT??join(app.getPath('userData'),'screenshots'));else await selfTest();closing=true;window.destroy();await stopService();app.quit();}else{window.show();}
- }catch(e){await startupStatus('failed',e.message);if(testing){await testReport({ok:false,error:e.message});}else dialog.showErrorBox('KILSAT Studio ei käynnistynyt',e.message+'\nSulje sovellus ja yritä uudelleen.');closing=true;window?.destroy();await stopService();app.exit(1);}
+  if(testing){if(layoutTesting)await layoutDiagnostic(window,process.env.HAHMOSTUDIO_LAYOUT_OUTPUT??join(app.getPath('userData'),'screenshots'));else if(screenplayTesting)await screenplayDiagnostic(window,{undo:()=>action('undo'),reportPath:join(app.getPath('userData'),'screenplay-gui.json')});else if(playbackRafTesting)await playbackRafDiagnostic(window,{reportPath:join(app.getPath('userData'),'playback-raf.json')});else await selfTest();closing=true;window.destroy();await stopService();app.quit();}else{window.show();}
+ }catch(e){await startupStatus('failed',e.message);if(testing){const fail={ok:false,error:e.message,gui:true,devices:false};if(screenplayTesting)await writeFile(join(app.getPath('userData'),'screenplay-gui.json'),JSON.stringify(fail,null,2));else if(playbackRafTesting)await writeFile(join(app.getPath('userData'),'playback-raf.json'),JSON.stringify(fail,null,2));else await testReport({ok:false,error:e.message});}else dialog.showErrorBox('KILSAT Studio ei käynnistynyt',e.message+'\nSulje sovellus ja yritä uudelleen.');closing=true;window?.destroy();await stopService();app.exit(1);}
  }).catch(error=>{closing=true;dialog.showErrorBox('KILSAT Studio ei käynnistynyt',error.message);app.exit(1);});
 }
 function trusted(event){if(!validSender(event,window,origin))throw new Error('Pyyntö ei tullut KILSAT Studion omasta ikkunasta.');}
