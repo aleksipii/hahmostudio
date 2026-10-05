@@ -334,3 +334,7 @@ Esitys: käynnistä kamera ja mikrofoni ja tallenna yhteinen otto. Äänen ja ka
 Animointi: toista yleisestä toistonohjauksesta. Aikajanan asetukset avaa kuvataajuuden, ruutumäärän ja PNG-kuvasarjaviennin. Näytä-valikosta voit säätää paneeleja tai keskittyä näyttämöön.
 
 Valmiit liikkeet avaa kävelyn, juoksun ja suunnan pikatyökalut. Toiston mittaus avaa fps-tiedot ja mittausraportin tallennuksen. Pikavienti löytyy nyt Vie-ikkunasta. Aikajanan avainruudut säilyvät; niiden ympäriltä poistettiin ylimääräinen painikereunus.
+
+### Paikallinen Mac-asennus
+
+FileProviderin tai iCloudin hallinnoima työ-/toimituskansio voi lisätä purettuun .app-bundleen Finder-metatietoja, jotka estävät allekirjoitustarkistuksen. Pura ZIP paikalliseen Ohjelmat-kansioon. Tämän toimituksen erillinen tarkistettu asennus on käyttäjän `~/Applications/KILSAT Studio 0.34.app`; vanhaa asennusta ei korvattu. Tallenna työ ja sulje vanha KILSAT Studio ennen uuden avaamista.
