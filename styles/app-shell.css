@@ -611,3 +611,60 @@ summary:focus-visible {
 .motion-tools [aria-pressed=true] {border-color:var(--color-accent);}
 
 .transport-controls {display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);background:var(--color-surface);color:var(--color-text);font-size:var(--text-sm);border-top:1px solid var(--color-border);}
+
+/* Global studio shell. Motion-tool styles above remain scoped to their panel. */
+.studio {font-family:var(--font-stack);color:var(--color-text);background:var(--color-bg);}
+.studio .topbar {min-height:64px;height:auto;padding:6px 16px;gap:var(--space-4);background:var(--color-surface);border-color:var(--color-border);}
+.studio .brand h1 {font-size:18px;font-weight:var(--font-semibold);letter-spacing:-.4px;}
+.studio .brand-studio {color:var(--color-text);font-weight:var(--font-normal);}
+.studio .studio-logo {order:10;width:var(--studio-logo-size);height:var(--studio-logo-size);object-fit:contain;flex-shrink:0;border-radius:var(--radius-lg);}
+.studio .header-actions {order:9;margin-left:auto;gap:var(--space-2);}
+.studio .app-menubar {gap:var(--space-1);}
+.studio .app-menu>summary,.studio .view-menu>summary {border-color:transparent;background:transparent;box-shadow:none;font-size:13px;padding:7px 9px;}
+.studio .app-menu>summary:hover,.studio .view-menu>summary:hover {background:var(--color-surface-hover);}
+.studio button,.studio select,.studio input:not([type=range]):not([type=checkbox]):not([type=file]) {border-radius:var(--radius-md);font-family:var(--font-stack);}
+.studio .secondary {background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border);box-shadow:none;}
+.studio .primary {background:var(--color-accent);color:var(--color-accent-contrast);border:1px solid var(--color-accent);box-shadow:none;}
+.studio button:disabled {opacity:.5;}
+.studio .workspace-bar,.studio .device-status,.studio .preview-toolbar,.studio .preview-footer,.studio .stage-title,.studio .timeline-heading,.studio .timeline-container,.studio .layers-panel,.studio .details-panel {background:var(--color-surface);border-color:var(--color-border);}
+.studio .workspace-tabs {border:0;background:var(--color-bg);gap:var(--space-1);padding:var(--space-1);}
+.studio .workspace-tabs button {border:0;box-shadow:none;}
+.studio .workspace-tabs button.active {background:var(--color-surface-hover);color:var(--color-accent);}
+.studio .library-tabs {gap:var(--space-1);padding:var(--space-2);}
+.studio .library-tabs button,.studio .inspector-tabs button,.studio .script-container .asset-tabs button {border-color:transparent;background:transparent;box-shadow:none;min-height:var(--studio-control-height);padding:6px 10px;font-size:13px;}
+.studio .library-tabs button.active,.studio .inspector-tabs button.active,.studio .script-container .asset-tabs button[aria-pressed=true] {background:var(--color-surface-hover);border-color:var(--color-accent-border);color:var(--color-accent);}
+.studio .stage {padding:var(--studio-stage-gutter);background:var(--color-bg);}
+.studio .details-content,.studio .script-panel {padding:var(--space-4);}
+.studio .presentation-panel>h2 {font-size:18px;margin:0 0 var(--space-2);}
+.studio .presentation-panel>p {font-size:12px;color:var(--color-text-secondary);line-height:1.7;}
+.studio .performance-panel,.studio .script-source-editor,.studio .script-guide {border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface);margin:var(--space-3) 0;}
+.studio details>summary {cursor:pointer;padding:var(--space-3);font-size:13px;font-weight:var(--font-medium);color:var(--color-text);}
+.studio .script-guide-content {padding:0 var(--space-3) var(--space-3);font-size:13px;line-height:1.65;}
+.studio .script-guide-content ol {padding-left:20px;margin:var(--space-3) 0;}
+.studio .script-guide-content pre {max-height:240px;overflow:auto;white-space:pre-wrap;background:var(--color-bg);border:1px solid var(--color-border);padding:var(--space-3);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:12px;}
+.studio .script-guide-actions {display:flex;flex-wrap:wrap;gap:var(--space-2);}
+.studio .transport-controls {gap:var(--space-2);padding:7px 12px;font-size:12px;background:var(--color-surface);}
+.studio .transport-controls button {min-height:var(--studio-control-height);padding:5px 10px;font-size:12px;}
+.studio .timeline-heading {padding:var(--space-2) var(--space-3);gap:var(--space-2);font-size:12px;}
+.studio .timeline-heading h2 {font-size:13px;}
+.studio .timeline-settings {margin-left:auto;position:relative;}
+.studio .timeline-settings>summary {padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);}
+.studio .timeline-settings>div {position:absolute;right:0;bottom:100%;z-index:8;min-width:250px;display:grid;gap:var(--space-3);padding:var(--space-4);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:0 8px 28px rgba(0,0,0,.18);}
+.studio .track-name {background:transparent;border-color:transparent;font-size:12px;}
+.studio .animation-track {min-height:28px;border-bottom:1px solid var(--color-border);}
+.studio .track-key {width:8px;height:8px;border:0;background:var(--color-accent);}
+.studio .camera-preview video {width:100%;height:auto;aspect-ratio:auto;object-fit:contain;border-radius:var(--radius-lg);}
+.studio .camera-preview {background:var(--color-bg);border-radius:var(--radius-lg);overflow:hidden;}
+@media(max-width:1100px){.studio .editing-mode{display:none}.studio .topbar{gap:var(--space-2)}.studio .brand h1{font-size:16px}.studio .header-actions>button:first-child{display:none}}
+@media(max-width:760px){.studio .topbar{flex-wrap:wrap}.studio .studio-logo{margin-left:auto}.studio .header-actions{order:11;flex-basis:100%;justify-content:flex-end}.studio .timeline-settings>div{max-width:80vw}}
+
+.studio .motion-shortcuts {flex-shrink:0;border-bottom:1px solid var(--color-border);background:var(--color-surface);}
+.studio .motion-shortcuts>summary {padding:5px 16px;font-size:12px;color:var(--color-text-secondary);}
+.studio .motion-shortcuts .movement-bar {border:0;}
+.studio .transport-metrics {margin-left:auto;position:relative;}
+.studio .transport-metrics>summary {padding:6px 10px;font-size:12px;color:var(--color-text-secondary);}
+.studio .transport-metrics[open] {display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;}
+/* Dense recordings retain every keyframe; markers have no rectangular button chrome. */
+.studio .track-keys {background:var(--color-bg);}
+.studio .track-keys button {border:0;background:transparent;box-shadow:none;padding:3px 0;color:var(--color-accent);font-size:11px;}
+.studio .track-keys .current-key {color:var(--color-warning);}

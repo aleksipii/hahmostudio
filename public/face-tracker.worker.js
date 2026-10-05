@@ -6,6 +6,6 @@ let model;
 self.onmessage=async({data})=>{
  try{
   if(data.type==='init'){const root=new URL('./vision',self.location.href).href;model=await FaceLandmarker.createFromOptions(await FilesetResolver.forVisionTasks(root),{baseOptions:{modelAssetPath:root+'/face_landmarker.task',delegate:'CPU'},runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true});self.postMessage({type:'ready'});}
-  if(data.type==='frame'){try{const result=model.detectForVideo(data.bitmap,data.timestamp);self.postMessage({type:'result',landmarks:result.faceLandmarks[0]??[],shapes:result.faceBlendshapes[0]?.categories??[]});}finally{data.bitmap.close();}}
+  if(data.type==='frame'){try{const result=model.detectForVideo(data.bitmap,data.timestamp);self.postMessage({type:'result',timestamp:data.timestamp,landmarks:result.faceLandmarks[0]??[],shapes:result.faceBlendshapes[0]?.categories??[]});}finally{data.bitmap.close();}}
  }catch(e){self.postMessage({type:'error',message:String(e?.message??e)});}
 };

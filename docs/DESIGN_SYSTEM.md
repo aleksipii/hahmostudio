@@ -181,3 +181,7 @@ Varmennus: TypeScript, 292 kooditestiä sekä desktop:build onnistuvat. Buildin 
 
 ## 0.32: transport ja tiukka käsikirjoitus
 Tilakoneen automaattinen kohtaus-transport on toteutettu erillisessä PlaybackControllerissa. SVG-liikelogiikan parametriohjattu blend-tree-runtime säilyy erillisenä jatkotehtävänä. Katso docs/tilakone.md.
+
+## KILSAT Studio 0.34
+
+Varsinainen editori käyttää nyt samoja teematokeneja kuin motion-paneelit. App shellin uudet säännöt on rajattu .studio-luokkaan. Logo käyttää BASE_URL-polkua. Rakenneohje on erillinen ScriptGuide ja parserilla testatut mallit script-templates.ts-tiedostossa. Paneelien näkyvyys ja mitat jäävät paikallisiksi käyttäjäasetuksiksi, eivät projektidomainiksi. Toisto ja lähteet eivät nollaudu työtilan visuaalisesta vaihtamisesta. Lisäasetukset avataan tarvittaessa. Kameran ajoituskorjaus on projektidata, koska se muuttaa tallennetun oton ajoitusta.

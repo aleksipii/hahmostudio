@@ -1,3 +1,12 @@
+# 0.34.0
+
+- Käyttäjän KILSAT-logo Mac-kuvakkeeseen, selainkuvakkeeseen ja oikeaan yläreunaan.
+- Yhteiset teemapinnat, rauhalliset työtilavälilehdet, yksi toistonohjaus ja aikajanan asetusten valikko.
+- Kolme parserilla tarkistettua käsikirjoitusmallia ja suomenkielinen rakenneohje.
+- Kameran kuvanottamisen aikaleima säilyy analyysin yli; yhteisen oton kamerakanavat käyttävät tätä aikaa.
+- AudioWorklet tallentaa sample-paikat ja kuittaa lopetuksen viimeisten näytteiden jälkeen.
+- Projektikohtainen kameraliikkeen ajoituskorjaus -500…500 ms.
+
 # 0.33.0
 
 - Selkeä reunaviivan päälle/pois-valinta uusille ja valituille vektorimuodoille.

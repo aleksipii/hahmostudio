@@ -9,8 +9,8 @@ function fixture(fail?:'resume'|'module'|'permission'|'processor'|'track'){
  const stream={getTracks:()=>[track],getAudioTracks:()=>[track]} as unknown as MediaStream;
  const node=(name:string)=>({connect(){},disconnect(){disconnected.push(name);}});
  const analyser={...node('analyser'),fftSize:4,getFloatTimeDomainData(data:Float32Array){data.fill(.25);}};
- const processor={...node('processor'),port:{onmessage:null as null|((e:{data:Float32Array})=>void),postMessage:(v:unknown)=>messages.push(v)}};
- const context={state:'running',sampleRate:8000,destination:node('destination'),resume:async()=>{if(fail==='resume')throw new Error('resume');},audioWorklet:{addModule:async()=>{if(fail==='module')throw new Error('module');}},close:async()=>{closed++;context.state='closed';},createMediaStreamSource:()=>node('source'),createAnalyser:()=>analyser,createGain:()=>({...node('mute'),gain:{value:1}}),decodeAudioData:async()=>({length:16000,numberOfChannels:2,getChannelData:()=>new Float32Array(16000).fill(.2)})};
+ const processor={...node('processor'),port:{onmessage:null as null|((e:{data:Float32Array})=>void),postMessage:(v:unknown)=>{messages.push(v);if((v as {type?:string})?.type==='end')queueMicrotask(()=>processor.port.onmessage?.({data:{type:'stopped',epoch:(v as {epoch:number}).epoch} as unknown as Float32Array}));}}};
+ const context={state:'running',currentTime:0,sampleRate:8000,destination:node('destination'),resume:async()=>{if(fail==='resume')throw new Error('resume');},audioWorklet:{addModule:async()=>{if(fail==='module')throw new Error('module');}},close:async()=>{closed++;context.state='closed';},createMediaStreamSource:()=>node('source'),createAnalyser:()=>analyser,createGain:()=>({...node('mute'),gain:{value:1}}),decodeAudioData:async()=>({length:16000,numberOfChannels:2,getChannelData:()=>new Float32Array(16000).fill(.2)})};
  let constraints:MediaStreamConstraints|undefined;
  const environment={createContext:()=>context,getUserMedia:async(c:MediaStreamConstraints)=>{constraints=c;if(fail==='permission')throw new DOMException('Denied','NotAllowedError');return stream;},createProcessor:()=>{if(fail==='processor')throw new Error('processor');return processor;},moduleUrl:'/nested/microphone-recorder.worklet.js'} as unknown as MicrophoneEnvironment;
  return {environment,processor,context,track,stream,messages,disconnected,get stopped(){return stopped;},get closed(){return closed;},get constraints(){return constraints;}};
@@ -18,7 +18,7 @@ function fixture(fail?:'resume'|'module'|'permission'|'processor'|'track'){
 test('microphone requests audio only, measures RMS, gates PCM and releases every node once',async()=>{
  const f=fixture(),mic=await LocalMicrophone.start(f.environment);assert.deepEqual(f.constraints,{audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:false},video:false});assert.equal(mic.level(),.25);
  f.processor.port.onmessage!({data:new Float32Array([.5])});assert.equal(mic.count,0);mic.begin();f.processor.port.onmessage!({data:new Float32Array([.5,-.5])});assert.equal(mic.count,2);
- const b=await mic.finish(undefined,1,.1),v=new DataView(await b.arrayBuffer());assert.equal(v.getInt16(44,true),0);assert.equal(v.getInt16(44+8000*2,true),16383);assert.equal(mic.recording,false);assert.deepEqual(f.messages,[true,false]);
+ const b=await mic.finish(undefined,1,.1),v=new DataView(await b.arrayBuffer());assert.equal(v.getInt16(44,true),0);assert.equal(v.getInt16(44+8000*2,true),16383);assert.equal(mic.recording,false);assert.deepEqual(f.messages,[{type:'begin',epoch:1,frame:0},{type:'end',epoch:1}]);
  mic.close();mic.close();assert.equal(f.stopped,1);assert.equal(f.closed,1);assert.deepEqual(f.disconnected,['source','analyser','processor','mute']);assert.equal(f.processor.port.onmessage,null);assert.equal(mic.level(),0);assert.throws(()=>mic.begin());
 });
 test('permission, worklet, context and processor failures clean up acquired devices',async()=>{for(const stage of ['resume','module','permission','processor','track'] as const){const f=fixture(stage);await assert.rejects(LocalMicrophone.start(f.environment));assert.equal(f.closed,1,stage);assert.equal(f.stopped,stage==='processor'||stage==='track'?1:0,stage);}});
@@ -42,4 +42,17 @@ test('audio decoding selects the standard context before prefixed fallback and r
 
 test('voice actor keeps original PCM rhythm and quick mouth reacts promptly to synthetic speech then releases in silence',async()=>{
  const {readProject}=await import('./project-file.ts'),{initialQuick,quickPoses}=await import('./quick-animation.ts');const p=await readProject(new Blob([readFileSync(new URL('../public/library/Roni-Studio.hahmo',import.meta.url))])),q=p.doc.quick!,s=initialQuick();quickPoses(s,q,p.animation.rig,0);const poses=quickPoses(s,q,p.animation.rig,1/30,.06);assert.equal(poses[q.roles.mouthOpen].opacity,1);let quiet=poses;for(let f=2;f<22;f++)quiet=quickPoses(s,q,p.animation.rig,f/30,0);assert.equal(quiet[q.roles.mouthNeutral].opacity,1);const f=fixture(),mic=await LocalMicrophone.start(f.environment);mic.begin();const samples=Float32Array.from({length:800},(_,i)=>Math.sin(i*.3)*.5);f.processor.port.onmessage!({data:samples});const voice=await mic.finish(undefined,0,.1),v=new DataView(await voice.arrayBuffer());for(const i of [0,10,20,200,799])assert.ok(Math.abs(v.getInt16(44+i*2,true)/32768-samples[i])<.0001);mic.close();
+});
+test('timestamped PCM retains gaps and final queued samples before stop acknowledgement',async()=>{
+ const f=fixture();f.context.currentTime=10;const mic=await LocalMicrophone.start(f.environment);mic.begin();
+ const emit=(data:unknown)=>f.processor.port.onmessage!({data:data as Float32Array});
+ emit({type:'samples',epoch:0,frame:80000,samples:new Float32Array([1])});assert.equal(mic.count,0);
+ emit({type:'samples',epoch:1,frame:80002,samples:new Float32Array([.25])});
+ f.processor.port.postMessage=(v:unknown)=>{f.messages.push(v);};const pending=mic.finish(undefined,0,.01);assert.equal(mic.recording,true);assert.throws(()=>mic.begin());await assert.rejects(mic.finish(undefined,0,.01),/viimeistellään/);
+ emit({type:'samples',epoch:1,frame:80004,samples:new Float32Array([.5])});emit({type:'stopped',epoch:1});
+ const wave=new DataView(await(await pending).arrayBuffer());assert.equal(wave.getInt16(44,true),0);assert.equal(wave.getInt16(44+2*2,true),8191);assert.equal(wave.getInt16(44+3*2,true),0);assert.equal(wave.getInt16(44+4*2,true),16383);assert.equal(mic.recording,false);mic.close();
+});
+test('worklet cuts a partial first quantum and acknowledges only the active epoch',()=>{
+ let Worklet:any;const messages:unknown[]=[];class Base{port={onmessage:null as any,postMessage:(v:unknown)=>messages.push(v)}}
+ const scope={AudioWorkletProcessor:Base,currentFrame:100,Float32Array,registerProcessor:(_name:string,c:unknown)=>Worklet=c};vm.runInNewContext(readFileSync(new URL('../public/microphone-recorder.worklet.js',import.meta.url),'utf8'),scope);const w=new Worklet();w.port.onmessage({data:{type:'begin',epoch:2,frame:102}});w.process([[new Float32Array([1,2,3,4])]]);const result=messages[0] as {frame:number;epoch:number;samples:Float32Array};assert.equal(result.frame,102);assert.equal(result.epoch,2);assert.deepEqual([...result.samples],[3,4]);w.port.onmessage({data:{type:'end',epoch:1}});assert.equal(w.recording,true);w.port.onmessage({data:{type:'end',epoch:2}});assert.equal(w.recording,false);assert.equal((messages.at(-1) as {type:string}).type,'stopped');
 });

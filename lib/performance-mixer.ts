@@ -21,3 +21,11 @@ export function mixPerformance(animation:Animation,frame:number,q:QuickProfile,q
  if(micOwns&&q.roles.mouthSmile&&result[q.roles.mouthSmile])result[q.roles.mouthSmile]={...result[q.roles.mouthSmile],opacity:0};
  return result;
 }
+
+/** Camera-owned channels keep their acquisition time even when analysis arrives later. */
+export function cameraCaptureTimes(q:QuickProfile,camera:Record<string,Pose>|undefined,capturedMs:number|undefined,microphone:boolean,voiceActive:boolean):Record<string,number>{
+ if(!camera||capturedMs===undefined||!Number.isFinite(capturedMs))return {};
+ const micOwns=microphone&&q.mouthSource!=='camera'&&(q.mouthSource==='microphone'||voiceActive);
+ const roles=['head','leftPupil','rightPupil','leftBrow','rightBrow','leftBlink','rightBlink',...(q.mouthSource!=='microphone'&&!micOwns?['mouthNeutral','mouthOpen','mouthRound','mouthSmile']:[])];
+ return Object.fromEntries(roles.map(r=>q.roles[r]).filter(key=>key&&camera[key]).map(key=>[key,capturedMs+(q.cameraOffsetMs??0)]));
+}

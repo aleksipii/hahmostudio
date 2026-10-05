@@ -24,10 +24,15 @@ export function wav(samples:Float32Array,rate:number):Blob{
 }
 export class LocalMicrophone{
  stream:MediaStream;context:AudioContext;analyser:AnalyserNode;processor:AudioWorkletNode;chunks:Float32Array[]=[];recording=false;count=0;closed=false;
- private disconnected:()=>void;
+ private disconnected:()=>void;private epoch=0;private startFrame=0;private offsets:number[]=[];private stopPending?:{resolve:()=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>};
  private constructor(stream:MediaStream,context:AudioContext,analyser:AnalyserNode,processor:AudioWorkletNode,disconnect:()=>void){
   this.stream=stream;this.context=context;this.analyser=analyser;this.processor=processor;this.disconnected=disconnect;
-  processor.port.onmessage=e=>{if(this.recording&&!this.closed&&e.data instanceof Float32Array){const chunk=e.data.slice(0,Math.max(0,context.sampleRate*60-this.count));if(chunk.length){this.chunks.push(chunk);this.count+=chunk.length;}}};
+  processor.port.onmessage=e=>{
+   const data=e.data;if(data?.type==='stopped'&&data.epoch===this.epoch&&this.stopPending){clearTimeout(this.stopPending.timer);const pending=this.stopPending;this.stopPending=undefined;pending.resolve();return;}
+   const raw=data instanceof Float32Array?data:data?.type==='samples'&&data.epoch===this.epoch?data.samples:undefined;
+   const offset=data instanceof Float32Array?this.count:data?.frame-this.startFrame;
+   if(this.recording&&!this.closed&&raw instanceof Float32Array&&Number.isInteger(offset)&&offset>=0&&offset<context.sampleRate*60){const chunk=raw.slice(0,Math.max(0,context.sampleRate*60-offset));if(chunk.length){this.chunks.push(chunk);this.offsets.push(offset);this.count=Math.max(this.count,offset+chunk.length);}}
+  };
  }
  static async start(environment?:MicrophoneEnvironment,signal?:AbortSignal){
   const env=environment??microphoneEnvironment();let stream:MediaStream|undefined,context:AudioContext|undefined;const connected:AudioNode[]=[];
@@ -48,14 +53,17 @@ export class LocalMicrophone{
  }
  get available(){return !this.closed&&this.context.state!=='closed'&&this.stream.getAudioTracks().some(t=>t.readyState==='live');}
  level(){if(!this.available||this.context.state!=='running')return 0;const data=new Float32Array(this.analyser.fftSize);this.analyser.getFloatTimeDomainData(data);return Math.sqrt(data.reduce((n,v)=>n+(Number.isFinite(v)?v*v:0),0)/data.length);}
- begin(){if(!this.available)throw new Error('Mikrofoni on suljettu. Käynnistä se uudelleen.');this.chunks=[];this.count=0;this.recording=true;this.processor.port.postMessage(true);}
+ begin(){if(!this.available||this.stopPending)throw new Error('Mikrofoni ei ole valmis. Odota tallennuksen valmistumista.');this.chunks=[];this.offsets=[];this.count=0;this.epoch++;this.startFrame=Math.round((this.context.currentTime??0)*this.context.sampleRate);this.recording=true;this.processor.port.postMessage({type:'begin',epoch:this.epoch,frame:this.startFrame});}
  async finish(previous:Blob|undefined,startSeconds:number,duration:number){
+  if(this.closed)throw new Error('Mikrofoni on suljettu.');
   if(!Number.isFinite(startSeconds)||startSeconds<0||!Number.isFinite(duration)||duration<=0)throw new Error('Äänen tallennusaika on virheellinen.');
-  this.recording=false;this.processor.port.postMessage(false);const chunks=this.chunks;this.chunks=[];
+  if(this.stopPending)throw new Error('Äänitystä viimeistellään jo.');
+  try {await new Promise<void>((resolve,reject)=>{const timer=setTimeout(()=>{this.stopPending=undefined;reject(new Error('Mikrofonin viimeisten näytteiden kuittaus puuttui. Käynnistä mikrofoni uudelleen.'));},1500);this.stopPending={resolve,reject,timer};this.processor.port.postMessage({type:'end',epoch:this.epoch});});}finally{this.recording=false;}
+  const chunks=this.chunks,offsets=this.offsets;this.chunks=[];this.offsets=[];
   const rate=this.context.sampleRate,old=previous?await this.context.decodeAudioData(await previous.arrayBuffer()):undefined;
   const length=Math.max(Math.ceil((startSeconds+duration)*rate),old?.length??0);if(length*2>25*1024*1024)throw new Error('Yhdistetty ääni ylittää projektin 25 Mt rajan.');
   const result=new Float32Array(length);if(old)for(let c=0;c<old.numberOfChannels;c++){const channel=old.getChannelData(c);for(let i=0;i<channel.length;i++)result[i]+=channel[i]/old.numberOfChannels;}
-  let offset=Math.round(startSeconds*rate);for(const chunk of chunks){if(offset>=result.length)break;const slice=chunk.subarray(0,result.length-offset);for(let i=0;i<slice.length;i++)result[offset+i]+=slice[i];offset+=chunk.length;}return wav(result,rate);
+  const start=Math.round(startSeconds*rate);for(const [index,chunk] of chunks.entries()){const offset=start+offsets[index];if(offset>=result.length)continue;const slice=chunk.subarray(0,result.length-offset);for(let i=0;i<slice.length;i++)result[offset+i]+=slice[i];}return wav(result,rate);
  }
- close(){if(this.closed)return;this.closed=true;this.recording=false;this.chunks=[];this.processor.port.onmessage=null;this.disconnected();}
+ close(){if(this.closed)return;if(this.stopPending){clearTimeout(this.stopPending.timer);this.stopPending.reject(new Error('Mikrofoni suljettiin kesken viimeistelyn.'));this.stopPending=undefined;}this.closed=true;this.recording=false;this.chunks=[];this.offsets=[];this.processor.port.onmessage=null;this.disconnected();}
 }

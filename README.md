@@ -322,3 +322,15 @@ Hahmo → Piirtäminen → valitse taso. Uusien muotojen reunaviiva valitsee tul
 PSD/PNG:n rasteroitu viiva ei ole vektorimuoto: käytä pyyhekumia tai maskia. Uusissa Mr.Kille/Mr.Handu-pohjissa paidan ylimääräinen sisähelma/taskuruutu on poistettu; vanhat projektit säilyvät muuttumattomina.
 
 Mac 0.33: pura Hahmostudio-Mac-0.33.0-arm64.zip, sulje vanha app ja siirrä KILSAT Studio.app Ohjelmat-kansioon. Paikallinen Kilometrikirja-esimerkkivideo sisältää käyttäjän alkuperäisiä puheääniä ja suomenkieliset tekstitykset; yksityiset äänet eivät sisälly repositorioon.
+
+## KILSAT Studio 0.34
+
+Käyttäjän KILSAT-logo näkyy oikeassa yläreunassa sekä Mac-kuvakkeena. Pura Hahmostudio-Mac-0.34.0-arm64.zip, sulje vanha sovellus ja korvaa KILSAT Studio.app Ohjelmat-kansiossa.
+
+Käsikirjoitus → Dialogi ja leikkaukset → Käsikirjoituksen lähdeteksti ja tuonti → Rakenne, esimerkit ja kirjoitusohje. Valitse malli ja lisää se tyhjään kenttään tai kopioi tarvitut rivit. Muokkaa, tunnista, valitse hahmot/äänet, tarkista ja rakenna jakso. Malli ei tuota ääntä automaattisesti. Kaikki käsitellään paikallisesti.
+
+Esitys: käynnistä kamera ja mikrofoni ja tallenna yhteinen otto. Äänen ja kameran ajoitus tarjoaa -500…500 ms kameraliikkeen korjauksen. Aloita arvolla 0 ja tee lyhyt puhekoe. Laitekohtainen viive tarvitsee oman laitteesi tarkistuksen. Työtilan vaihto säilyttää lähteet; sulje ne omista painikkeistaan.
+
+Animointi: toista yleisestä toistonohjauksesta. Aikajanan asetukset avaa kuvataajuuden, ruutumäärän ja PNG-kuvasarjaviennin. Näytä-valikosta voit säätää paneeleja tai keskittyä näyttämöön.
+
+Valmiit liikkeet avaa kävelyn, juoksun ja suunnan pikatyökalut. Toiston mittaus avaa fps-tiedot ja mittausraportin tallennuksen. Pikavienti löytyy nyt Vie-ikkunasta. Aikajanan avainruudut säilyvät; niiden ympäriltä poistettiin ylimääräinen painikereunus.
