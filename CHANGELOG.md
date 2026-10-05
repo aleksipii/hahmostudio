@@ -36,3 +36,10 @@
 
 Rajat ja todentamisen laajuus: DEVELOPMENT-0.32.md. Aiemmat kehitysvaiheet
 säilyvät DEVELOPMENT-0.11.md–DEVELOPMENT-0.31.md-tiedostoissa.
+
+## 0.36.0 — 2026-10-05
+- Oma leveä käsikirjoitussivu; tekstin ja hahmovalintojen säilyminen ensimmäisessä tallennuksessa.
+- Tiukan kieliopin englanninkieliset vastineet ja ohjepohja.
+- Omista Kille/Handu-PSD:istä erilliset animoitavat kopiot ja nivelletyt jalat.
+- Uusi kaksihahmoinen Kokeile-esimerkki todellisella esitysmoottorilla.
+- Kaksikielisen tulkinnan, resurssien ja esimerkin tallennuksen regressiotestit.

@@ -343,3 +343,13 @@ Macin tavalliset editorimuutokset käyttävät nyt delta-WALia: polku-/splice-mu
 Siirrettävän historian v2 jakaa samoja sisältöpaloja, lukee v1-historian ja tuo past/future/current-joukon atomisesti yhdessä commitissa. Eri luumäärien 2D-ketjusovitus tarjoaa FK:n, IK:n, niiden osuuden, kontaktit ja diagnoosit. Semanttiset ankkurit ja kelvolliset liitosketjut tarvitaan; nykyiset live-/kävelyohjainten omat vaatimukset säilyvät.
 
 500 kuvan /1000 sekunnin /10 000 avainruudun Node-kuormitusmittaus on tehty ja raportti on docs/benchmarks/0.31.json. Näkyvä Mac-käynnistys, fyysiset laitteet ja oikea virtakatkos eivät ole onnistuneesti varmennettuja. Tämä ei ole koko studion tuotantovalmiuslausunto. Sopimus ja rajat: DEVELOPMENT-0.31.md.
+
+## 0.36 — käsikirjoitussivu ja englanti
+
+Yläpalkin Käsikirjoitus avaa oman sivun. Sama paneeli ja data siirretään portal-isännän mukana, joten sivun vaihto ei luo uutta projektia. Ensimmäisen käsikirjoitustallennuksen dokumentin nimen vaihto ei enää remounttaa paneelia. Vaihenavigointi erottaa tekstin, ohjauksen, hahmot, äänet ja tarkistuksen. Repliikkiäänten nykyinen paikallinen tuonti/äänitys ja pysyvä komentotallennus säilyvät.
+
+Tiukassa #!kilsat-kieliopissa on englanninkieliset vastineet suomalaisille tuetuille tapahtumille. Molemmat kielet tuottavat saman kohtausmallin; alkuperäiset rivit säilyvät jäljitettävyyttä varten. Miljoonien generoitujen liikeasujen kattavuus ei tarkoita vapaan proosan ymmärtämistä.
+
+Kille-Oma/Handu-Oma ovat käyttäjän PSD:istä valmisteltuja lisäresursseja. Niiden etunäkymässä on erilliset ylä-/alajalat, kengät, eksplisiittiset vanhemmat/kiertokeskukset, suljetut silmät ja alkuperäiset suuvariantit. Kaikki aiemmat kirjastoressurssit säilyvät. Handun sivunäkymä on tallessa lähde-PSD:ssä, mutta tämän uuden paketin profiilikävely ei ole eri kuvakulman piirros.
+
+Uusi Kokeile-esimerkki rakentaa kahden hahmon 9 sekunnin esityksen oikealla compiler/append-polulla. Se on liike-esimerkki ilman repliikkejä; puheääntä ei generoida. Kooditestit todentavat kaksikieliset komennot, hahmojen liitokset ja esimerkin tallennus/avaus. Graafisen UI:n ja fyysisten laitteiden kokeilua ei ole tehty.

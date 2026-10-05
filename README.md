@@ -344,3 +344,23 @@ FileProviderin tai iCloudin hallinnoima työ-/toimituskansio voi lisätä purett
 Raahaa hahmoa näyttämöllä. Shift lukitsee akselin; nuolinäppäimet siirtävät 1 px ja Shift 10 px. Näyttämön tulee olla aktiivinen. Yksi raahaus on yksi projektin kumoamiskomento. Näyttämö → Turva-alue ja reunakäytös määrittää reunat sekä pysähtymisen, kääntymisen tai kävelyn lyhennyksen. Näytä-valikosta turvakehys voidaan piilottaa.
 
 Työpöydän minimikoko on 1200×700. Aikajanan Zoom muuttaa ajan näkymää; paneelit ja accordionit muistetaan natiivissa asetustiedostossa. Lisätyökalut tarjoaa aiemmat lisätiedosto- ja revisiotoiminnot. Tavallinen näyttämö tukee raahausta kaikilla editorin zoomeilla; tuotantokohtauksissa raahaus on 2D-laajakuvassa, koska seuraavia lähikuvakameroita ei muuteta. Katso DEVELOPMENT-0.35.md:n varmennusrajat.
+
+### Käsikirjoitussivu (0.36)
+
+Paina yläpalkin **Käsikirjoitus**. Kirjoita tai tuo teksti, paina **Tunnista ja tarkista käsikirjoitus**, valitse jokaiselle puhujalle hahmopohja ja lisää repliikkiäänet. Korjaa tarkistuksessa näkyvät puutteet, sitten **Rakenna muokattava jakso projektiin**. **Takaisin editoriin** säilyttää valmistelun. **Kokeile esimerkkianimaatiota** käynnistää uuden Kille–Handu-liike-esimerkin; siinä ei ole puhetta. Omat PSD-hahmot löytyvät kirjastosta nimillä Kille-Oma ja Handu-Oma.
+
+Englanninkielinen tiukka esimerkki:
+
+```text
+#!kilsat
+Character: Kille
+Scene: Studio
+Background: studio 0.5 seconds
+Camera: wide 0.5 seconds
+Kille walks right 2 seconds
+Meanwhile: Kille nods 2 seconds
+Kille waves 2 seconds
+Wait 1 second
+```
+
+Suomenkieliset vastineet: Hahmo, Kohtaus, Tausta, Kamera, kävelee oikealle, Samalla, nyökkää, vilkuttaa ja Odota. Repliikki kirjoitetaan `Kille says: "Hello!" 2 seconds` tai `Kille sanoo: "Hei!" 2 s`; sille tarvitaan oikea äänitiedosto/tallenne. Ohjeen mallivalikossa on englanninkielinen kahden hahmon pohja. Istuminen ja ylä-/takakamera eivät kuulu tiukkaan kielioppiin.

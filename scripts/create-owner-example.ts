@@ -1,0 +1,7 @@
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {readProject,saveProject} from '../lib/project-file.ts';
+import {buildStudioExample,studioExampleScript} from '../lib/studio-example.ts';
+const out=process.argv[2];if(!out)throw Error('Anna esimerkin tuloskansio.');mkdirSync(out,{recursive:true});
+const load=(name:string)=>readProject(new Blob([readFileSync('public/library/'+name+'.hahmo')]));
+const [kille,handu]=await Promise.all([load('Kille-Oma'),load('Handu-Oma')]);const built=buildStudioExample({kille:{doc:kille.doc,animation:kille.animation},handu:{doc:handu.doc,animation:handu.animation}},kille.scene);
+const pack=await saveProject(built.doc,built.animation,undefined,built.scene);await readProject(pack);writeFileSync(out+'/Kille-ja-Handu-studio.hahmo',new Uint8Array(await pack.arrayBuffer()));writeFileSync(out+'/Kasikirjoitus.md',studioExampleScript);writeFileSync(out+'/README.md','# Kille ja Handu studiossa\n\nAvaa Kille-ja-Handu-studio.hahmo KILSAT Studiossa ja paina Toista. Sama muokattava 9 sekunnin esimerkki käynnistyy sovelluksen Kokeile-painikkeesta. Kaksi käyttäjän PSD:stä valmisteltua etunäkymän hahmoa, vilkutuksia, nyökkäyksiä ja kamerarajauksia. Ei puheääntä. Käsikirjoitus-sivulta voi muuttaa hahmoja ja lisätä omat repliikkiäänet. Alkuperäisiä PSD-tiedostoja ei muutettu.\n');console.log('Example roundtrip passed:',pack.size,'bytes,',built.presentation.seconds,'seconds');
