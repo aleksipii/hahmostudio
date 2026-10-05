@@ -1,0 +1,151 @@
+/* ============================================================================
+   HAHMOSTUDIO v0.32 — DESIGN SYSTEM TOKENS
+   Rive-inspired color, spacing, typography & component foundation
+   ============================================================================ */
+
+:root {
+  /* ─── COLOR PALETTE ─── */
+  /* Neutrals */
+  --color-black: #0f1113;
+  --color-gray-900: #1a1d21;
+  --color-gray-800: #252a30;
+  --color-gray-700: #333a42;
+  --color-gray-600: #454d57;
+  --color-gray-500: #6b7684;
+  --color-gray-400: #8d98a8;
+  --color-gray-300: #b0bcc8;
+  --color-gray-200: #d4dce5;
+  --color-gray-100: #e8ecf2;
+  --color-white: #f5f7fa;
+
+  /* Accent (Rive-blue inspired) */
+  --color-accent: #70b6ff;
+  --color-accent-hover: #5aa4ff;
+  --color-accent-active: #4a96ff;
+  --color-accent-soft: rgba(112, 182, 255, 0.1);
+  --color-accent-border: rgba(112, 182, 255, 0.2);
+
+  /* Semantic */
+  --color-success: #5cc96f;
+  --color-warning: #f0cb85;
+  --color-error: #ff6b6b;
+  --color-info: #70b6ff;
+
+  /* ─── SEMANTIC COLORS ─── */
+  --color-bg: var(--color-gray-900);
+  --color-surface: var(--color-gray-800);
+  --color-surface-hover: var(--color-gray-700);
+  --color-border: var(--color-gray-700);
+  --color-text: var(--color-white);
+  --color-text-secondary: var(--color-gray-300);
+  --color-text-tertiary: var(--color-gray-400);
+
+  /* ─── SPACING SCALE (8px base) ─── */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+  --space-11: 56px;
+  --space-12: 64px;
+
+  /* ─── SIZING ─── */
+  --size-xs: 24px;
+  --size-sm: 32px;
+  --size-md: 40px;
+  --size-lg: 48px;
+  --size-xl: 56px;
+
+  /* ─── TYPOGRAPHY SCALE ─── */
+  /* Font sizes */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --text-3xl: 24px;
+
+  /* Line heights */
+  --line-tight: 1.2;
+  --line-normal: 1.4;
+  --line-relaxed: 1.6;
+
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Font family */
+  --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+    sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Menlo,
+    Courier, monospace;
+
+  /* ─── SHADOW & DEPTH ─── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.2);
+
+  /* ─── BORDER RADIUS ─── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* ─── TRANSITIONS ─── */
+  --transition-fast: 150ms ease-out;
+  --transition-base: 200ms ease-out;
+  --transition-slow: 300ms ease-out;
+
+  /* ─── Z-INDEX ─── */
+  --z-hide: -1;
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-tooltip: 1200;
+}
+
+/* Light theme override */
+:root[data-theme='light'] {
+  --color-bg: var(--color-gray-100);
+  --color-surface: var(--color-white);
+  --color-surface-hover: var(--color-gray-200);
+  --color-border: var(--color-gray-200);
+  --color-text: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-tertiary: var(--color-gray-500);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --color-bg: var(--color-gray-100);
+    --color-surface: var(--color-white);
+    --color-surface-hover: var(--color-gray-200);
+    --color-border: var(--color-gray-200);
+    --color-text: var(--color-gray-900);
+    --color-text-secondary: var(--color-gray-600);
+    --color-text-tertiary: var(--color-gray-500);
+  }
+}
+
+/* ─── REDUCED MOTION ─── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0s;
+    --transition-base: 0s;
+    --transition-slow: 0s;
+  }
+}
