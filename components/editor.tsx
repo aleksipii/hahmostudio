@@ -1,3 +1,4 @@
+import {PlaybackController,frameMetrics,type PlaybackState} from '../lib/playback-machine';
 import StateEditor from './state-editor';
 import EasingEditor from './easing-editor';
 import {EASING_PRESETS} from '../lib/easing-model';
@@ -41,7 +42,7 @@ import {desktop,nativeFile,saveFile,type FileKind,type DesktopAction} from '../l
 import {importPng} from '../lib/png-import';
 import {createAudioContext} from '../lib/browser-audio';
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Layers, Upload, ChevronRight, ChevronDown, Eye, EyeOff, Folder, Image as ImageIcon, Download, X, ZoomIn, ZoomOut, Scan, AlertTriangle, Check, FileImage, Square, LoaderCircle, Package, Info } from 'lucide-react';
 import { flatten, releaseDocument, safeName, type LayerNode, type PsdDocument } from '@/lib/psd-model';
 import { renderLayers } from '@/lib/psd-render';
@@ -76,6 +77,8 @@ export default function Editor() {
  const [boardOpen,setBoardOpen]=useState(()=>typeof window==='undefined'||window.innerHeight>=800);
  const [performanceDock,setPerformanceDock]=useState<HTMLDivElement|null>(null),[productionDock,setProductionDock]=useState<HTMLDivElement|null>(null),[productionInspector,setProductionInspector]=useState<HTMLDivElement|null>(null),[productionPreview,setProductionPreview]=useState<HTMLDivElement|null>(null),[hasProductionPreview,setHasProductionPreview]=useState(false),[importReview,setImportReview]=useState(false);
  const [selectedStateId,setSelectedStateId]=useState<StateId|undefined>();
+ const [transportState,setTransportState]=useState<PlaybackState>('idle'),[fpsReport,setFpsReport]=useState<ReturnType<typeof frameMetrics>|null>(null);
+ const transport=useRef<PlaybackController|null>(null);
  const [themeLoaded,setThemeLoaded]=useState(!bridge);
  const [recent,setRecent]=useState<{id:string;name:string}[]>([]),[seriesDirty,setSeriesDirty]=useState(false);
  const save=(blob:Blob,name:string,options:{kind?:'project'|'export';saveAs?:boolean}={})=>saveFile(blob,name,options).catch(e=>{setError(e instanceof Error?e.message:'Tiedoston tallennus epäonnistui.');return false;});
@@ -160,7 +163,7 @@ export default function Editor() {
  useEffect(()=>{if(loadedNative.current===doc&&doc){loadedNative.current=null;setSavedSnapshot(projectSnapshot);}},[doc]);
  useEffect(()=>{bridge?.reportState({dirty:!!doc&&(!isSaved||quickBusy||cameraStatus.recording)||seriesDirty||sourceDirty,ready:true});},[doc,isSaved,seriesDirty,sourceDirty,quickBusy,cameraStatus.recording]);
  useEffect(()=>{if(!bridge)return;void bridge.preferences().then(p=>{setTheme(p.theme);setThemeLoaded(true);setRecent(p.recent);}).catch(()=>{});},[]);
- const nodes = doc ? flatten(doc.layers) : [], current = nodes.find(n => n.key === selected);
+ const nodes = useMemo(()=>doc ? flatten(doc.layers) : [],[doc,revision]), current = nodes.find(n => n.key === selected);
  const cancel = useCallback(() => {
   generation.current++; worker.current?.terminate(); worker.current = null;
   if (timer.current) clearTimeout(timer.current); setBusy(false); setProgress('');
@@ -216,7 +219,7 @@ export default function Editor() {
   }); observer.observe(stage.current); return () => observer.disconnect();
  }, [doc,workspace,scene.width,scene.height]);
  useEffect(() => {
-  if (!canvas.current || !doc) return;
+  if (!canvas.current || !doc || playing) return;
   if(workspace!=='character'&&animation&&rig){sceneScratch.current??=document.createElement('canvas');renderScene(canvas.current,sceneScratch.current,doc,{...animation,rig},frame,scene,workspace==='performance'&&!playing||quickBusy?draft:draft?.poses?undefined:draft);}
   else if (mode === 'original' && doc.compositeImage) {
    const c = canvas.current, r = Math.min(1, 2048 / Math.max(doc.width, doc.height)); c.width = Math.round(doc.width * r); c.height = Math.round(doc.height * r);
@@ -325,15 +328,19 @@ export default function Editor() {
   const source=doc??{name:'Tuotanto',width:scene.width,height:scene.height,size:0,layers:[],warnings:[]},sourceRig=rig??createRig(source),sourceAnimation=animation??createAnimation(sourceRig);
   return persistMutation(()=>({doc:source,rig:sourceRig,animation:sourceAnimation,scene:{...scene,studioProjectId:scene.studioProjectId??crypto.randomUUID(),presentationSource:text},audio:audioAsset}),publishEditor,'script-source');
  };
- const seek = (next: number) => { setPlaying(false);setDraft(undefined);setFrame(next); };
+ useEffect(()=>{if(!playing)setFrame(value=>Math.round(value));},[playing]);
+ const seek = (next: number) => { setPlaying(false);setDraft(undefined);setFrame(Math.round(next));setTransportState(animation?'valmis':'idle'); };
  const chooseLayer = (key: string) => {setSelected(key);setDraft(undefined);setLimbLower('');setLimbTarget(false);};
+ useEffect(()=>{if(animation){if(transport.current?.state==='toistaa')setPlaying(false);setTransportState('valmis');}else setTransportState('idle');},[animation]);
  useEffect(() => {
   if (!playing || !animation) return;
-  let request=0;const start=performance.now(), initial=frame;
-  const tick=(now:number)=>{setFrame((initial+Math.floor((now-start)/1000*animation.fps))%animation.duration);request=requestAnimationFrame(tick);};
-  request=requestAnimationFrame(tick);return()=>cancelAnimationFrame(request);
-  // frame advances within this loop; restarting it on each frame would pause playback.
- },[playing,animation?.fps,animation?.duration]);
+  let request=0,previous=performance.now(),lastUi=previous;const intervals:number[]=[];const preview=rig?{...animation,rig}:animation;
+  const sections=(scene.presentations??[]).flatMap(p=>p.sections.map(section=>({id:p.id+'/'+section.id,start:(p.startFrame??0)+section.start*animation.fps,end:Math.min(animation.duration,(p.startFrame??0)+section.end*animation.fps)}))).filter(section=>section.start<section.end);
+  const controller=new PlaybackController(animation.fps,animation.duration,sections);transport.current=controller;
+  controller.send('seek',previous,frame>=animation.duration-1?0:Math.min(frame,animation.duration-1));controller.send('play',previous);setTransportState('toistaa');
+  const tick=(now:number)=>{intervals.push(now-previous);if(intervals.length>3600)intervals.shift();previous=now;const next=controller.tick(now);if(canvas.current&&doc&&workspace!=='character'){sceneScratch.current??=document.createElement('canvas');renderScene(canvas.current,sceneScratch.current,doc,preview,next,scene,undefined,false,Math.min(1,Math.max(.15,(zoom??fit)*2)));}if(now-lastUi>=100||controller.state==='valmis_loppu'){setFrame(next);lastUi=now;}if(controller.state==='valmis_loppu'){setTransportState('valmis_loppu');setPlaying(false);}else request=requestAnimationFrame(tick);};
+  request=requestAnimationFrame(tick);return()=>{cancelAnimationFrame(request);setFpsReport(frameMetrics(intervals));if(controller.state==='toistaa'){controller.send('pause',performance.now());setTransportState('tauko');}};
+ },[playing,animation]);
  useEffect(()=>{setDraft(undefined);},[selected]);
  useEffect(()=>{const key=animation?.tracks.find(t=>t.key===selected)?.frames.find(k=>k.frame===frame);if(key)setEasing(key.easing);},[selected,frame,animation]);
  const pose = draft?.key === selected ? draft.pose : sampleTrack(animation?.tracks.find(t=>t.key===selected),frame);
@@ -440,6 +447,7 @@ export default function Editor() {
   </div>
   {workspace!=='character'&&animation&&rig&&<div className="timeline-toggle"><button className="secondary" aria-expanded={timelineOpen} aria-controls="editor-timeline" onClick={()=>setTimelineOpen(v=>!v)}>{timelineOpen?'Sulje aikajana':'Avaa aikajana'} · {(frame/animation.fps).toFixed(2)} s</button><span>{animation.tracks.length} raitaa · {animation.duration} ruutua</span></div>}
   <PanelResizer hidden={!timelineOpen||workspace==='character'||!animation} label="Aikajanan korkeus" value={panelSizes.timeline} min={120} max={440} vertical reverse change={n=>setPanelSizes(v=>resizePanel(v,'timeline',n))}/>
+  {workspace==='animation'&&animation&&<section className="transport-controls" aria-label="Kohtausten automaattinen toisto"><span role="status">Toisto: {transportState}</span><button className="secondary" disabled={projectBusy||frameExport||cameraActive||quickBusy||speechBusy} onClick={()=>{if(playing&&transport.current){transport.current.send('pause',performance.now());setFrame(Math.round(transport.current.frame));setTransportState('tauko');}setPlaying(v=>!v);}}>{playing?'Tauko':transportState==='tauko'?'Jatka':'Toista'}</button><button className="secondary" onClick={()=>{transport.current?.send('stop',performance.now());setPlaying(false);setFrame(0);setTransportState('pysäytetty');}}>Pysäytä</button><button className="secondary" disabled={projectBusy||frameExport||cameraActive||quickBusy||speechBusy} onClick={()=>{if(playing&&transport.current){transport.current.send('restart',performance.now());setFrame(0);}else{setFrame(0);setPlaying(true);}}}>Uudelleen alusta</button><label>Siirry kohtaukseen<select value="" disabled={projectBusy||frameExport} onChange={e=>{if(e.target.value)seek(Number(e.target.value));}}><option value="">Valitse kohtaus</option>{(scene.presentations??[]).flatMap(p=>p.sections.map(section=><option key={p.id+section.id} value={Math.round((p.startFrame??0)+section.start*animation.fps)}>{section.name}</option>))}</select></label>{fpsReport&&fpsReport.samples>0&&<span>{fpsReport.fps.toFixed(1)} fps · p95 {fpsReport.p95Ms.toFixed(1)} ms {fpsReport.fps<55?'· alle tavoitteen':''}</span>}<button className="secondary" disabled={!fpsReport?.samples} onClick={()=>{if(fpsReport)void saveFile(new Blob([JSON.stringify({version:1,scope:'editor-requestAnimationFrame',...fpsReport},null,2)],{type:'application/json'}),'KILSAT-fps.json',{kind:'export'});}}>Tallenna fps-mittaus</button></section>}
   <div id="editor-timeline" className="timeline-container" hidden={!timelineOpen||workspace==='character'}>{animation&&<PresentationTimeline scene={scene} fps={animation.fps} duration={animation.duration} disabled={cameraActive||quickBusy||speechBusy||frameExport||projectBusy} seek={seek} edit={(id,event)=>{setFocusedProduction({id,event});setLayout({...layout,library:true});setLibraryTab('script');setScriptMode('dialogue');}}/>}{animation && rig && <AnimationPanel controlsTarget={controlsTarget} animation={{...animation,rig}} nodes={nodes} selected={selected} select={chooseLayer} frame={frame} seek={seek} playing={playing} play={()=>{setDraft(undefined);setPlaying(!playing);}} pose={pose} setPose={p=>{if(selected){setDraft({key:selected,pose:p});setRigMessage('Asento muuttui — lisää tai päivitä avainruutu.');}}} easing={easing} setEasing={value=>{setEasing(value);const key=animation.tracks.find(t=>t.key===selected)?.frames.find(k=>k.frame===frame);if(key&&selected){const {bezierCurve,...plain}=key;void commitAnimation(putKeyframe(animation,selected,{...plain,easing:value}));}}} add={()=>{if(selected){commitAnimation(putKeyframe(animation,selected,{...pose,frame,easing:animation.tracks.find(t=>t.key===selected)?.frames.find(k=>k.frame===frame)?.easing??easing,...(animation.tracks.find(t=>t.key===selected)?.frames.find(k=>k.frame===frame)?.bezierCurve?{bezierCurve:animation.tracks.find(t=>t.key===selected)!.frames.find(k=>k.frame===frame)!.bezierCurve}:{})}));setDraft(undefined);setRigMessage('Avainruutu tallennettu. Tallenna projekti.');}}} remove={()=>{if(selected){commitAnimation(removeKeyframe(animation,selected,frame));setDraft(undefined);}}} configure={(fps,duration)=>{try{if(scene.presentations?.length){const next=retimePresentations({...animation,rig},scene,doc?.presentationAssets??{},fps,duration);commitAnimation(next.animation,next.scene);setFrame(Math.min(Math.round(frame/animation.fps*fps),next.animation.duration-1));}else{commitAnimation({...animation,fps,duration,tracks:animation.tracks.map(t=>({...t,frames:t.frames.filter(k=>k.frame<duration)}))});setFrame(Math.min(frame,duration-1));}setDraft(undefined);}catch(e){setError((e as Error).message);}}} undo={()=>undoAnimation()} redo={()=>undoAnimation(true)} canUndo={projectHistory.current.past.length>0&&!cameraActive} canRedo={projectHistory.current.future.length>0&&!cameraActive} exporting={frameExport||cameraStatus.recording||quickBusy||speechBusy||projectBusy} exportFrames={()=>void exportAnimation()}/>}</div>
   {doc?.warnings.length ? <details className="warnings"><summary><AlertTriangle size={15}/>Esikatseluhuomioita: {doc.warnings.length} — avaa lisätiedot (ei nimeämisvirhe)</summary><ul>{doc.warnings.map(w => <li key={w}>{w}</li>)}</ul><button className="secondary" onClick={()=>setImportReview(true)}>Vertaa alkuperäistä ja tasoja</button><button className="secondary" onClick={()=>setHelp(true)}>Avaa käyttöohje: varoitusten korjaaminen</button></details> : null}
   {recoveryError&&<section className="recovery-banner" role="alert"><strong>Palautuspisteitä ei voitu avata.</strong><span>{recoveryError} Nykyinen projekti säilyy.</span><button onClick={()=>void clearRecovery().then(()=>{recoverySaved.current=[];setRecoveryError('');setRecoveryEpoch(v=>v+1);setAutosaveStatus('Vioittunut palautushakemisto poistettu. Uusi palautuspiste luodaan nykyisestä projektista.');}).catch(e=>setError(e.message))}>Poista vioittuneet palautuspisteet ja aloita uusi automaattitallennus</button></section>}

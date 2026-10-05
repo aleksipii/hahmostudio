@@ -16,7 +16,7 @@ for name,color,hat,skin in [('Mr.Kille','#328e9f','#29465d','#efc39d'),('Mr.Hand
  for side,x,p in [('LEFT',125,.35),('RIGHT',225,.65)]:
   add('LEG_'+side,'PANTS',[x,445,50,135],[p,.90],1,f'<path d="M{x} 445v110h50V445" fill="#34485b"/><path d="M{x-12} 555q5-13 22-13h40q16 4 18 26v12h-80z" fill="#24323d"/>')
   layers[-1]['pivotFrame']=[x+25-50*p,445-135*.90,50,135]
- add('TORSO','ROOT',[110,245,180,195],[.5,.2],2,f'<rect x="110" y="245" width="180" height="195" rx="8" fill="{color}"/><path d="M200 266v160" fill="none" stroke="#173441"/><path d="M115 407h170v24H115z" fill="{color}"/>'+''.join(f'<circle cx="210" cy="{y}" r="3" fill="#f0d3a2" stroke="none"/>' for y in [295,325,355,385])+'<path d="M124 355h47v25h-47z" fill="none"/>')
+ add('TORSO','ROOT',[110,245,180,195],[.5,.2],2,f'<rect x="110" y="245" width="180" height="195" rx="8" fill="{color}"/><path d="M200 266v160" fill="none" stroke="#173441"/><path d="M115 407h170v24H115z" fill="{color}" stroke="none"/>'+''.join(f'<circle cx="210" cy="{y}" r="3" fill="#f0d3a2" stroke="none"/>' for y in [295,325,355,385])+'')
  layers[-1]['pivotFrame']=[110,430-195*.2,180,195]
  for side,x,p in [('LEFT',90,.15),('RIGHT',270,.85)]:
   add('ARM_'+side+'_UPPER','TORSO',[x,270,40,150],[p,.85],3,f'<rect x="{x}" y="270" width="40" height="148" rx="20" fill="{color}"/><path d="M{x+2} 400h36v16h-36z" fill="{hat}"/>')

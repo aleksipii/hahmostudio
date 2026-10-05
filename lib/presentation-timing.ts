@@ -15,6 +15,11 @@ export function timePresentation(input:Presentation,fps:number):Presentation{
   else if(e.kind==='title'){e.duration=e.seconds??.7;cursor+=e.duration;}
   else if(e.kind==='action'&&(productionMotions.includes(e.value as any)||phoneActions.includes(e.value as any))){e.duration=e.seconds??(e.value==='stop'?0:2);if(e.after){const dialogue=p.events.find(d=>d.id===e.after);e.at=dialogue?.at??cursor;cursor=Math.max(cursor,e.at+e.duration);}else cursor+=e.duration;}
   if(['expression','shot','gaze'].includes(e.kind)&&e.after){const d=p.events.find(d=>d.id===e.after);if(d?.at!==undefined)e.at=d.at;}
+  if(p.original.trimStart().startsWith('#!kilsat') && before?.at!==undefined) {
+   if(e.kind==='dialogue' && Math.abs(e.duration-(e.seconds??0))>1/fps) diagnostics.push({code:'strict-audio-timing',severity:'error',event:e.id,message:'Rivi '+e.sourceRef.line+': äänen kesto ei vastaa ilmoitettua kestoa. Korjaa kesto tai rajaa ääni.'});
+   e.at=before.at;e.duration=e.seconds??e.duration;
+   cursor=Math.max(...p.events.filter(v=>v===e || v.sourceRef.line<e.sourceRef.line).map(v=>(v.at??0)+(v.duration??0)),0);
+  }
   if(['action','expression','gaze','placement'].includes(e.kind)&&!p.characters.includes(e.target))diagnostics.push({code:'unknown-target',severity:'error',event:e.id,message:'Ohjeen hahmo puuttuu: '+e.target});
   if(e.kind==='placement'&&!['left','right','center','custom'].includes(e.value))diagnostics.push({code:'unknown-placement',severity:'error',event:e.id,message:'Sijoittelun arvot: left, right, center, custom.'});
   if(e.kind==='prop'&&!['phone-on','phone-off'].includes(e.value))diagnostics.push({code:'unknown-prop',severity:'error',event:e.id,message:'Tuettu rekvisiitta: phone-on tai phone-off. Muu esine puuttuu.'});

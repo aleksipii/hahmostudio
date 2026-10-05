@@ -609,3 +609,5 @@ summary:focus-visible {
 .motion-tools label {display:grid;gap:var(--space-1);font-size:var(--text-sm);}
 .motion-tools input,.motion-tools select {width:100%;background:var(--color-bg);color:var(--color-text);border:1px solid var(--color-border);border-radius:var(--radius-sm);min-height:var(--size-sm);}
 .motion-tools [aria-pressed=true] {border-color:var(--color-accent);}
+
+.transport-controls {display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);background:var(--color-surface);color:var(--color-text);font-size:var(--text-sm);border-top:1px solid var(--color-border);}

@@ -1,0 +1,15 @@
+{
+  "actors": 64,
+  "verbs": 16,
+  "directions": 3,
+  "durations": 50,
+  "units": 8,
+  "rules": 8,
+  "recognizedMotionSentences": 1228800,
+  "lexiconEntries": 27,
+  "lexiconWords": 28,
+  "verifiedSentences": 1228800,
+  "unknownSentences": 0,
+  "recognitionPercent": 100,
+  "milliseconds": 1090.3247920000001
+}

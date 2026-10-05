@@ -178,3 +178,6 @@ Liikelogiikka-paneelin `StateEditor` tarjoaa SVG-solmukaavion, tilojen nimet/rad
 Uusi app-shell CSS on rajattu `.motion-tools`-alueeseen, jotta vanha telakointi, näyttämön mitat ja laitteiden elinkaari säilyvät. Uudet paneelit käyttävät tokens.css:n väri-, typografia-, väli- ja kokotunnuksia; vaalea/tumma/järjestelmäteema säilyvät.
 
 Varmennus: TypeScript, 292 kooditestiä sekä desktop:build onnistuvat. Buildin olemassa olevat suuren JS-paketin ja fflate-importtien varoitukset säilyvät. Graafista käyttöä tai fyysisiä laitteita ei testattu tässä muutoksessa; asennettu Mac-sovellus tarvitsee erillisen uudelleenpaketoinnin.
+
+## 0.32: transport ja tiukka käsikirjoitus
+Tilakoneen automaattinen kohtaus-transport on toteutettu erillisessä PlaybackControllerissa. SVG-liikelogiikan parametriohjattu blend-tree-runtime säilyy erillisenä jatkotehtävänä. Katso docs/tilakone.md.

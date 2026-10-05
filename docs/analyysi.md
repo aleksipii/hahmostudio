@@ -1,0 +1,17 @@
+# Lähtötilanteen analyysi
+- KILSAT Studio on paikallinen React 19 / TypeScript 5.9 / Electron 44 -sovellus Mac arm64:lle.
+- Vite tuottaa yhteisen selain-/Electron-renderöijän; natiivipalvelut kulkevat validoidun IPC:n kautta.
+- PSD-tuonti: ag-psd, .hahmo-arkistot: fflate, video/ääni: WebCodecs ja paikallinen FFmpeg.
+- `screenplay.ts` tulkitsee yhden hahmon liikeohjeita ja lisää muokattavat avainruudut.
+- `presentation-parser.ts` luo dialogi-/kohtaus-/kameratapahtumat alkuperäisillä riviviitteillä.
+- `presentation-direction.ts` luokittelee toteutetut, arvioidut ja puuttuvat vaatimukset.
+- `presentation-compile.ts` ja motion/audio-palvelut kääntävät esityksen olemassa olevaksi animaatioksi.
+- Tuntemattoman proosan tulkinta ei ole yleinen luonnollisen kielen ymmärtäjä.
+- Ajoituksen perustana ovat fps/ruudut sekä tuotannon yhteinen tick-aika.
+- Nykyinen editoritoisto pyöristää kellon kokonaisruuduiksi ja kiertää animaation alusta.
+- SVG-tilakonekaavio tallentuu, mutta sen määritelmä ei vielä ohjaa toistoa.
+- Projektimuutokset validoidaan ja julkaistaan vasta pysyvän journal-kuittauksen jälkeen.
+- Undo, palautus, vanhat .hahmo-muodot ja nykyiset moottorit säilytetään.
+- Lähtötestit: 292/292 läpäisi; testit ajetaan Node:n test runnerilla.
+- Uusi tiukka kielioppi erottaa tunnistamisen, resurssiedellytykset ja renderöintivarmennuksen.
+- 60 fps ja käynnistyminen puhtaalla Macilla vaativat todellista laitevarmennusta.

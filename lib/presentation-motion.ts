@@ -10,7 +10,8 @@ export function compileBodyMotion(a:Animation,q:QuickProfile,p:Presentation,spea
   if(e.value==='stop')continue;
   const seconds=e.duration??e.seconds??2,start=Math.round((e.at??0)*a.fps);if(seconds<.5||seconds>20)throw Error('Liikkeen kesto on 0,5–20 s.');
   const freeze=p.events.filter(c=>c.kind==='constraint'&&['still','release-still'].includes(c.value)&&[speaker,'scene'].includes(c.target)&&c.at!<=e.at!).at(-1);if(freeze?.value==='still')throw Error('Liike on ristiriidassa liikkumiskiellon kanssa (rivi '+freeze.sourceRef.line+').');
-  const overlap=p.events.find(other=>other.id!==e.id&&other.target===speaker&&other.kind==='action'&&productionMotions.includes(other.value as any)&&other.value!=='stop'&&other.at!<e.at!+seconds&&other.at!+other.duration!>e.at!);if(overlap)throw Error('Kaksi vartaloliikettä osuu päällekkäin: rivit '+e.sourceRef.line+' ja '+overlap.sourceRef.line+'.');
+  const channels=(value:string)=>value==='nod'?['head']:value==='wave'?['arms']:['root','arms','legs'];
+  const overlap=p.events.find(other=>other.id!==e.id&&other.target===speaker&&other.kind==='action'&&productionMotions.includes(other.value as any)&&other.value!=='stop'&&channels(e.value).some(c=>channels(other.value).includes(c))&&other.at!<e.at!+seconds&&other.at!+other.duration!>e.at!);if(overlap)throw Error('Kaksi vartaloliikettä osuu päällekkäin: rivit '+e.sourceRef.line+' ja '+overlap.sourceRef.line+'.');
   const small=p.direction?.noLargeGestures||p.events.some(c=>c.kind==='constraint'&&c.value==='small-gestures'&&[speaker,'scene'].includes(c.target)&&c.at!<=e.at!);
   if(small&&['jump','run-left','run-right','run-front'].includes(e.value))throw Error('Suuren liikkeen kielto on ristiriidassa hypyn tai juoksun kanssa. Muuta ohjetta tai valitse kävely/nyökkäys.');
   const view=viewAtFrame(q,next,Math.max(0,start-1)),roles=q.views?.[view]??q.roles,profile={...q,roles};

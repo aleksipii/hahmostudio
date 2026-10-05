@@ -8,7 +8,7 @@
     "PANTS": "<path d=\"M120 410h160v70h-65v-20h-30v20h-65z\" fill=\"#34485b\"/>",
     "LEG_LEFT": "<path d=\"M125 445v110h50V445\" fill=\"#34485b\"/><path d=\"M113 555q5-13 22-13h40q16 4 18 26v12h-80z\" fill=\"#24323d\"/>",
     "LEG_RIGHT": "<path d=\"M225 445v110h50V445\" fill=\"#34485b\"/><path d=\"M213 555q5-13 22-13h40q16 4 18 26v12h-80z\" fill=\"#24323d\"/>",
-    "TORSO": "<rect x=\"110\" y=\"245\" width=\"180\" height=\"195\" rx=\"8\" fill=\"#328e9f\"/><path d=\"M200 266v160\" fill=\"none\" stroke=\"#173441\"/><path d=\"M115 407h170v24H115z\" fill=\"#328e9f\"/><circle cx=\"210\" cy=\"295\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/><circle cx=\"210\" cy=\"325\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/><circle cx=\"210\" cy=\"355\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/><circle cx=\"210\" cy=\"385\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/><path d=\"M124 355h47v25h-47z\" fill=\"none\"/>",
+    "TORSO": "<rect x=\"110\" y=\"245\" width=\"180\" height=\"195\" rx=\"8\" fill=\"#328e9f\"/><path d=\"M200 266v160\" fill=\"none\" stroke=\"#173441\"/><path d=\"M115 407h170v24H115z\" fill=\"#328e9f\" stroke=\"none\"/><circle cx=\"210\" cy=\"295\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/><circle cx=\"210\" cy=\"325\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/><circle cx=\"210\" cy=\"355\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/><circle cx=\"210\" cy=\"385\" r=\"3\" fill=\"#f0d3a2\" stroke=\"none\"/>",
     "ARM_LEFT_UPPER": "<rect x=\"90\" y=\"270\" width=\"40\" height=\"148\" rx=\"20\" fill=\"#328e9f\"/><path d=\"M92 400h36v16h-36z\" fill=\"#29465d\"/>",
     "ARM_LEFT_HAND": "",
     "HAND_LEFT_DEFAULT": "<path d=\"M94 435q-18-18 0-32q7-11 20-2q20-3 21 15q-1 22-22 24z\" fill=\"#efc39d\"/>",

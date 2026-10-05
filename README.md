@@ -262,3 +262,63 @@ Hahmo → Piirtäminen sisältää rasterisiveltimen, pyyhkimen, pipetin, alueva
 ## Käsikirjoitus ja 3D-toon (0.10)
 
 Ohjauspöytä, vakaat päivitykset, kuvakortit, reaktiolukitukset, Roni/Salla-3D, 32 taustaa ja 20 esinettä: katso [käyttö ja todelliset rajat](DEVELOPMENT-0.10.md). Koko laajennus ja lopullinen äänellinen esittelyvideo eivät vielä ole valmiit. Paikallinen semanttinen malli ja KILSAT-repliikkiäänet puuttuvat.
+
+## KILSAT Studio 0.32 — tiukka käsikirjoitus ja toisto
+
+Mac Apple Silicon: pura `Hahmostudio-Mac-0.32.0-arm64.zip`, sulje vanha versio,
+siirrä `KILSAT Studio.app` Ohjelmat-kansioon ja avaa se Finderista.
+Nodea, npm:ää tai kehitystyökaluja ei tarvita jaettuun sovellukseen.
+Paketin natiivipalvelut on testattava erikseen GUI:n käynnistymisestä;
+puhtaan toisen Macin käyttöä ei tällä build-ympäristöllä todisteta.
+
+Animointi → Käsikirjoitus → Dialogi ja leikkaukset tukee vanhaa mallia sekä
+`#!kilsat`-alkuista tiukkaa kielioppia. Tunnista ja tarkista käsikirjoitus,
+yhdistä hahmot ja repliikkiäänet, korjaa kaikki ilmoitukset ja rakenna jakso.
+
+```text
+#!kilsat
+Hahmo: Kille
+Hahmo: Handu
+Kohtaus: Studiossa
+Tausta: studio 1 s
+Kille kävelee oikealle 2 s
+Samalla: Handu ilme: huolestunut 2 s
+Kamera: lähikuva Kille 1 s
+Kille sanoo: "Hei Handu!" 2 s
+Samalla: Handu katsoo: Kille 2 s
+Kohtaus: Puhelin
+Kille puhelin: esille 1 s
+hän katsoo: se 1 s
+Leikkaus: laaja 1 s
+Odota 1 s
+```
+
+Anna jokaiselle tapahtumalle 0,5–20 s kesto. Repliikkiäänen todellisen keston
+pitää vastata ohjetta; puhetta ei luoda tai nopeuteta. `Samalla:` viittaa
+edeltävän tapahtuman alkuun, ei kohtauksen alkuun. Hahmot ja puhelimen viite
+säilyvät kohtausrajojen yli. `hän` tarkoittaa viimeistä onnistuneen tapahtuman
+kohdehahmoa ja `se` viimeistä esinettä. Epäselvä viite tuottaa virheen.
+
+Tuettuja vartaloliikkeitä ovat kävely/juoksu vasemmalle, oikealle tai suoraan,
+vilkutus, nyökkäys, hyppy ja kyykistys. Tuetut kamerakoot ovat lähikuva,
+puolikuva ja laaja. Tiukan tilan 2D-kamera vaihtuu 0,35 s pehmeällä siirtymällä;
+`Leikkaus:` tekee suoran vaihdon. Ylhäältä, takaa, olan yli, istuminen,
+uudet esineet ja vapaamuotoiset lauseet eivät muutu vääriksi arvioiksi:
+niistä tulee näkyvä ilmoitus. Nykyiset vanhan mallin lisätoiminnot säilyvät.
+
+Toistopalkki: Toista, Tauko/Jatka, Pysäytä, Uudelleen alusta ja kohtausvalinta.
+Toisto etenee seuraavaan kohtaukseen automaattisesti ja pysähtyy jakson lopussa.
+FPS-raportin voi tallentaa toiston jälkeen. 60 fps -tavoite on laite-/projektikohtainen.
+
+Kehittäjä: `npm test`, `npm run typecheck`, `npm run desktop:package:mac`.
+`npm run grammar:coverage -- --verify --list` laskee, listaa ja varmentaa
+1 228 800 rajatun liikegrammatiikan lauseasua; lukema ei tarkoita miljoonaa
+itsenäistä toimintoa tai yleistä suomen kielen ymmärtämistä.
+
+## 0.33 – muotojen reunaviivat ja värit
+
+Hahmo → Piirtäminen → valitse taso. Uusien muotojen reunaviiva valitsee tulevien suorakulmioiden, ellipsien ja polkujen viivan. Ominaisuudet → Muokkaa vektoria → valitse muoto → Näytä reunaviiva pois. Täyttö vaihtaa sisävärin, Viiva reunavärin ja Viivan leveys paksuuden. Kumoa palauttaa edellisen projektimuutoksen. Muotoasetukset säilyvät .hahmo-tiedostossa.
+
+PSD/PNG:n rasteroitu viiva ei ole vektorimuoto: käytä pyyhekumia tai maskia. Uusissa Mr.Kille/Mr.Handu-pohjissa paidan ylimääräinen sisähelma/taskuruutu on poistettu; vanhat projektit säilyvät muuttumattomina.
+
+Mac 0.33: pura Hahmostudio-Mac-0.33.0-arm64.zip, sulje vanha app ja siirrä KILSAT Studio.app Ohjelmat-kansioon. Paikallinen Kilometrikirja-esimerkkivideo sisältää käyttäjän alkuperäisiä puheääniä ja suomenkieliset tekstitykset; yksityiset äänet eivät sisälly repositorioon.

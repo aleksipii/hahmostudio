@@ -1,9 +1,20 @@
+import {parseRuleScript} from './script-grammar.ts';
 import {phoneInstruction} from './phone-actions.ts';
 import {cameraInstruction,initProduction} from './production-model.ts';
 import {environmentId,enrichDirection} from './presentation-direction.ts';
 import {stableId,normalizeSpeaker,type Presentation,type Event,type Ref} from './presentation-model.ts';
 const clock=(s:string)=>{const [m,n]=s.split(':').map(Number);return m*60+n;};
 export function parsePresentation(original:string,aliases:Record<string,string>={}):Presentation{
+ if(original.trimStart().startsWith('#!kilsat')) {
+  const model=parseRuleScript(original);
+  const base=parsePresentation(model.characters.map(n=>'Hahmo '+n+':').join('\n')+'\nOdota 1 s',aliases);
+  base.original=original;base.id='strict-'+stableId(original);base.characters=model.characters.map(normalizeSpeaker);
+  base.sections=model.scenes.filter(s=>s.commands.length).map(s=>({id:s.id,name:s.name,start:Math.min(...s.commands.map(c=>c.at)),end:Math.max(...s.commands.map(c=>c.at+c.seconds)),sourceRef:s.commands[0].source}));
+  base.events=model.commands.map(c=>({id:c.id,kind:c.kind==='camera'?'shot':c.kind,target:c.target==='scene'?'scene':normalizeSpeaker(c.target),value:c.kind==='gaze'&&c.value!=='phone'?normalizeSpeaker(c.value):c.value,...(c.text!==undefined?{text:c.text}:{}),seconds:c.seconds,at:c.at,duration:c.seconds,sourceRef:c.source,basis:'rule',section:c.scene}));
+  base.seconds=Math.max(0,...model.commands.map(c=>c.at+c.seconds));base.metadata.target=Math.max(60,base.seconds);base.natural=true;
+  base.diagnostics=model.diagnostics.map(d=>({code:'strict-script',severity:'error',message:`Rivi ${d.line}: ${d.problem} ${d.suggestion}`}));
+  base.direction={targetMin:0,targetMax:base.metadata.target,profiles:[],requirements:[],noLargeGestures:false,noExtraProps:false};base.production=initProduction(base);return base;
+ }
  if(!original.trim()||original.length>60000)throw Error('Liitä käsikirjoitus (enintään 60 000 merkkiä).');
  const lines=original.replace(/\r\n?/g,'\n').split('\n'),p:Presentation={schemaVersion:1,id:'script-'+stableId(original),original,metadata:{series:'Käsikirjoitus',season:1,episode:1,title:'Kohtaus',target:60,purpose:'',environment:''},characters:[],assets:[{id:'phone-v1',kind:'prop'}],world:{width:1080,height:1920,background:'#ffffff',phone:{enabled:/puheli[mn]|phone/i.test(original),model:'phone-v1',carrier:'',hand:'leftHand',view:'front'}},sections:[],events:[],comments:[],bindings:[],audioClips:[],diagnostics:[],seconds:0,natural:false,source:'script'};
  const speakers=lines.flatMap((l,i)=>{const s=l.trim().replace(/\*\*/g,'');const next=lines.slice(i+1).find(l=>l.trim());const m=s.match(/^([\p{L}][\p{L}\s.]{0,35}):\s*(.*)$/u);return m&&(/^[“"„]/.test(m[2])||/^[“"„]/.test(next?.trim()??''))&&!/^(Jakson nimi|Title|Lopetus|Otsikkokortti|Title card|Ending)$/i.test(m[1])?[m[1]]:[];});
