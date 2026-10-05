@@ -699,3 +699,41 @@ summary:focus-visible {
 .studio .app-menubar,.studio .topbar {position:relative;z-index:100;}
 .studio .app-menu[open],.studio .view-menu[open] {z-index:200;}
 .studio .app-menu-content,.studio .view-menu>div {z-index:300;max-height:calc(100dvh - 80px);overflow:auto;}
+/* B: window-sized studio grid, independent scrolling and stable splitters. */
+html,body,#root {width:100%;height:100%;overflow:hidden;}
+.studio {width:100vw;height:100dvh;min-width:0;min-height:0;overflow:hidden;}
+.studio .workspace {min-width:0;min-height:0;overflow:hidden;}
+.studio .workspace>* {min-width:0;min-height:0;}
+.studio .layers-panel,.studio .details-panel {overflow:auto;padding:8px;}
+.studio .layer-container,.studio .script-container,.studio .quick-library {min-width:0;}
+.studio .timeline-container {height:var(--timeline-size);min-height:220px;max-height:50dvh;overflow:auto;flex-shrink:0;}
+.studio .panel-resizer.vertical {cursor:col-resize;}
+.studio .panel-resizer.horizontal {cursor:row-resize;}
+.studio .preview-panel {overflow:hidden;position:relative;z-index:0;}
+.studio .topbar {height:40px;min-height:40px;padding:4px 12px;gap:8px;backdrop-filter:none;}
+.studio .studio-logo {width:32px;height:32px;}
+.studio .timeline-settings>div {position:fixed;right:12px;bottom:54px;z-index:1000;max-height:70dvh;overflow:auto;}
+.studio .stage {padding:8px;}
+.studio .preview-footer {min-height:28px;padding:4px 8px;}
+.studio .stage-position {position:absolute;inset:0;width:100%;height:100%;z-index:3;touch-action:none;}
+.studio .stage-safe-area {fill:none;stroke:var(--text-dim);stroke-width:1;stroke-dasharray:8 6;opacity:.5;pointer-events:none;}
+.studio .character-drag-hit {fill:transparent;stroke:none;cursor:grab;}
+.studio .grabbing .character-drag-hit {cursor:grabbing;}
+.studio .stage-snap-line {stroke:var(--accent);stroke-width:1;pointer-events:none;}
+/* C: workspace tabs and one icon-only playback group. */
+.studio .topbar>.workspace-tabs {order:0;flex-shrink:0;}
+.studio .brand {order:1;}
+.studio .workspace-options {flex-shrink:0;height:26px;position:relative;z-index:20;background:var(--color-surface);}
+.studio .workspace-options>summary {font-size:11px;padding:4px 12px;}
+.studio .workspace-options>.workspace-bar {position:absolute;left:8px;top:26px;z-index:30;display:flex;flex-wrap:wrap;min-width:360px;height:auto;padding:8px;background:var(--color-surface);border:1px solid var(--border);}
+.studio .movement-bar button[aria-pressed=true] {color:var(--accent);border-color:var(--accent);background:var(--accent-subtle);}
+.studio .transport-controls button {height:26px;min-height:26px;padding:4px 8px;}
+.studio .transport-controls {min-height:32px;padding:4px 8px;}
+.studio .sr-only {position:absolute;clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden;white-space:nowrap;}
+/* D: collapsible property groups with two-column location inputs. */
+.studio .scene-section {padding:0;margin:0 0 8px;border-bottom:1px solid var(--border);}
+.studio .scene-section>summary {padding:8px 0;font-size:12px;font-weight:600;}
+.studio .scene-section>label,.studio .scene-section>.pose-fields {margin:0 0 8px;}
+.studio .camera-controls,.studio .details-content {padding:8px;min-width:0;}
+.studio .camera-controls label {display:grid;gap:4px;}
+.studio .scene-section input,.studio .scene-section select {width:100%;box-sizing:border-box;}
