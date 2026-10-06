@@ -152,14 +152,10 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 - **Varoitus:** hyväksytty kuva + muuttunut teksti → varoitus (lukitus → esto).
 - `DEVELOPMENT-0.42.md` · `npm test` 962.
 
-### 0.43 (valmis koodissa · ei pushattu)
-- Parse-vahvistusdialogi (`ScriptReparseConfirm`) hyväksytyille kuville.
-- Script UI Figma-pariteetti: focus/panel CSS, `docs/FIGMA-UI-PARITY.md`.
-- `DEVELOPMENT-0.43.md` · testit ajettava pushin yhteydessä.
-
-### 0.44 (valmis koodissa · ei pushattu)
-- Resolve-pariteetti: työvaihe 01–05, `resolve-shot-card`, `resolve-segmented`.
-- `docs/FIGMA-RESOLVE-PARITY.md` · `DEVELOPMENT-0.44.md`.
+### 0.43–0.44 (pushattu · `4df7551`)
+- **0.43:** Parse-vahvistusdialogi, script focus/panel CSS, `docs/FIGMA-UI-PARITY.md`, `DEVELOPMENT-0.43.md`.
+- **0.44:** Työvaihe 01–05, `resolve-shot-card`, `resolve-segmented`, `docs/FIGMA-RESOLVE-PARITY.md`, `DEVELOPMENT-0.44.md`.
+- `npm test` 963.
 
 ### Seuraava
 - Figma focus / Resolve -screenshot FigJamiin (käsin): `docs/FIGMA-SCRIPT-FOCUS.md` + `docs/FIGMA-RESOLVE-PARITY.md`.
