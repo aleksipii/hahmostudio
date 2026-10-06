@@ -21,6 +21,8 @@ export type DesktopBridge={
 };
 declare global{interface Window{hahmostudio?:DesktopBridge;}}
 export function desktop():DesktopBridge|undefined{return typeof window==='undefined'?undefined:window.hahmostudio;}
+/** Dialogit kuuluvat editorin kuoreen, jotta teema ja painikkeet periytyvät. */
+export function studioPortalHost():HTMLElement{return document.querySelector('main.studio')??document.body;}
 export function nativeFile(value:NativeFile):File{const type:Record<string,string>={png:'image/png',psd:'application/octet-stream',hahmo:'application/octet-stream',wav:'audio/wav',mp3:'audio/mpeg',ogg:'audio/ogg',m4a:'audio/mp4'};return new File([new Uint8Array(value.bytes)],value.name,{type:type[value.name.split('.').at(-1)!.toLowerCase()]??'application/octet-stream'});}
 export async function saveFile(blob:Blob,name:string,options:{kind?:'project'|'export';saveAs?:boolean}={}):Promise<boolean>{
  const bridge=desktop();if(bridge)return (await bridge.saveFile({name,bytes:new Uint8Array(await blob.arrayBuffer()),kind:options.kind??'export',saveAs:options.saveAs??false})).saved;

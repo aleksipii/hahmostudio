@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { studioPortalHost } from '../lib/platform';
 
 export default function ScriptReparseConfirm({
   open,
@@ -56,6 +57,6 @@ export default function ScriptReparseConfirm({
       </div>
     </div>
   );
-  if (typeof document !== 'undefined' && document.body) return createPortal(markup, document.body);
+  if (typeof document !== 'undefined' && document.body) return createPortal(markup, studioPortalHost());
   return markup;
 }

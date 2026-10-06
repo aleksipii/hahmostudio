@@ -1,0 +1,346 @@
+/* KILSAT Studio · viisi työvaihetta (luonnos 2026-10-06)
+   Visuaalinen kuori koko editorille. Logiikka pysyy React-komponenteissa. */
+
+.studio.kilsat-five-phase {
+  --font-ui: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-stack: var(--font-ui);
+  --bg-0: #0f0b17;
+  --bg-1: #171221;
+  --bg-2: #1f192c;
+  --bg-hover: #2a2340;
+  --border: #2c2440;
+  --text: #ece8f6;
+  --text-dim: #a79fba;
+  --accent: #7c3aed;
+  --accent-subtle: rgba(139, 92, 246, 0.16);
+  --color-accent: #7c3aed;
+  --color-accent-hover: #8b4ef2;
+  --color-accent-soft: rgba(139, 92, 246, 0.16);
+  --color-accent-contrast: #fff;
+  --script-violet: #7c3aed;
+  --script-violet-hover: #8b4ef2;
+  --script-violet-soft: rgba(139, 92, 246, 0.16);
+  --script-violet-text: #c4b0fb;
+  --bg: var(--bg-0);
+  --panel: var(--bg-1);
+  --surface: var(--bg-2);
+  --line: var(--border);
+  --muted: var(--text-dim);
+  --green: #7c3aed;
+  --green-bg: rgba(139, 92, 246, 0.16);
+  --field: var(--bg-2);
+  --focus: #b79cff;
+  font-family: var(--font-ui);
+  background: var(--bg-0);
+  color: var(--text);
+}
+
+:root[data-theme='light'] .studio.kilsat-five-phase {
+  --bg-0: #faf8ff;
+  --bg-1: #ffffff;
+  --bg-2: #f2eefb;
+  --bg-hover: #e8e0f6;
+  --border: #e0d9f0;
+  --text: #1b1530;
+  --text-dim: #5e5575;
+  --accent: #6d28d9;
+  --accent-subtle: rgba(109, 40, 217, 0.09);
+  --color-accent: #6d28d9;
+  --color-accent-hover: #5b21b6;
+  --script-violet: #6d28d9;
+  --script-violet-hover: #5b21b6;
+  --script-violet-soft: rgba(109, 40, 217, 0.09);
+  --script-violet-text: #5b21b6;
+  --green: #6d28d9;
+  --green-bg: rgba(109, 40, 217, 0.09);
+  --focus: #6d28d9;
+}
+
+.studio.kilsat-five-phase button:focus-visible,
+.studio.kilsat-five-phase a:focus-visible,
+.studio.kilsat-five-phase summary:focus-visible,
+.studio.kilsat-five-phase input:focus-visible,
+.studio.kilsat-five-phase textarea:focus-visible,
+.studio.kilsat-five-phase select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.studio.kilsat-five-phase .topbar,
+.studio.kilsat-five-phase .topbar--flow {
+  min-height: 52px;
+  height: auto;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+
+.studio.kilsat-five-phase .studio-flow-tabs {
+  justify-content: center;
+  gap: 2px;
+}
+
+.studio.kilsat-five-phase .studio-flow-tab {
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: transparent;
+}
+
+.studio.kilsat-five-phase .studio-flow-tab-index {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.studio.kilsat-five-phase .studio-flow-tab[aria-pressed='true'],
+.studio.kilsat-five-phase .studio-flow-tab[aria-current='page'] {
+  background: var(--accent-subtle);
+  color: var(--text);
+  font-weight: 600;
+  border-bottom-color: transparent;
+}
+
+.studio.kilsat-five-phase .studio-flow-tab:hover:not([aria-pressed='true']) {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.studio.kilsat-five-phase .primary {
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.studio.kilsat-five-phase .primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.studio.kilsat-five-phase .secondary,
+.studio.kilsat-five-phase .fit-button {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.studio.kilsat-five-phase .ghost-btn,
+.studio.kilsat-five-phase .text-button {
+  border-radius: 8px;
+  border: none;
+  color: var(--text-dim);
+  background: transparent;
+}
+
+.studio.kilsat-five-phase .secondary:hover:not(:disabled),
+.studio.kilsat-five-phase .fit-button:hover:not(:disabled),
+.studio.kilsat-five-phase .ghost-btn:hover:not(:disabled),
+.studio.kilsat-five-phase .text-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.studio.kilsat-five-phase .layers-panel,
+.studio.kilsat-five-phase .details-panel,
+.studio.kilsat-five-phase .preview-panel {
+  background: var(--bg-0);
+  border-color: var(--border);
+}
+
+.studio.kilsat-five-phase .library-tabs {
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--border);
+}
+
+.studio.kilsat-five-phase .library-tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--text-dim);
+  background: transparent;
+}
+
+.studio.kilsat-five-phase .library-tabs button.active,
+.studio.kilsat-five-phase .library-tabs button[aria-pressed='true'] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  background: transparent;
+}
+
+.studio.kilsat-five-phase .inspector-tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--text-dim);
+  background: transparent;
+}
+
+.studio.kilsat-five-phase .inspector-tabs button.active,
+.studio.kilsat-five-phase .inspector-tabs button[aria-pressed='true'] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  background: transparent;
+}
+
+.studio.kilsat-five-phase .timeline-dock,
+.studio.kilsat-five-phase .timeline-container,
+.studio.kilsat-five-phase .transport-controls {
+  background: var(--bg-0);
+  border-top: 1px solid var(--border);
+}
+
+.studio.kilsat-five-phase .statusbar {
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.studio.kilsat-five-phase input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+.studio.kilsat-five-phase textarea,
+.studio.kilsat-five-phase select {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  min-height: var(--studio-control-height);
+}
+
+.studio.kilsat-five-phase input:focus-visible,
+.studio.kilsat-five-phase textarea:focus-visible,
+.studio.kilsat-five-phase select:focus-visible {
+  border-color: var(--accent);
+}
+
+.studio.kilsat-five-phase .script-editor-field,
+.studio.kilsat-five-phase .script-line-field {
+  border: 0;
+  background: transparent;
+  min-height: 0;
+}
+
+.studio.kilsat-five-phase .studio-shots.grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.studio.kilsat-five-phase .resolve-shot-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.studio.kilsat-five-phase .resolve-shot-card__thumb {
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  background: var(--bg-2);
+}
+
+.studio.kilsat-five-phase .resolve-shot-card__status {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.studio.kilsat-five-phase .resolve-shot-card[data-shot-status='approved'] .resolve-shot-card__status {
+  background: var(--accent-subtle);
+  color: var(--script-violet-text);
+  border-color: transparent;
+}
+
+.studio.kilsat-five-phase .resolve-shot-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Yhteinen dialogi, virhepalkki ja legacy-harmaat pinnat */
+.studio.kilsat-five-phase .export-backdrop,
+.studio.kilsat-five-phase .studio-dialog-backdrop,
+.studio.kilsat-five-phase .modal-backdrop {
+  background: rgba(15, 11, 23, 0.72);
+}
+
+.studio.kilsat-five-phase .export-dialog {
+  width: min(var(--studio-export-width), 100%);
+  background: var(--bg-1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-panel);
+}
+
+.studio.kilsat-five-phase .studio-dialog,
+.studio.kilsat-five-phase .recovery-prompt-modal {
+  width: min(var(--studio-dialog-width), 100%);
+  background: var(--bg-1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-panel);
+}
+
+.studio.kilsat-five-phase .help-modal {
+  background: var(--bg-1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-panel);
+}
+
+.studio.kilsat-five-phase .error-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--color-error) 16%, var(--bg-1));
+  color: var(--text);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-error) 40%, transparent);
+}
+
+.studio.kilsat-five-phase .inspector-tabs,
+.studio.kilsat-five-phase .projectbar,
+.studio.kilsat-five-phase .audio-bar,
+.studio.kilsat-five-phase .workspace-options,
+.studio.kilsat-five-phase .workspace-options > .workspace-bar {
+  background: var(--bg-1);
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+
+.studio.kilsat-five-phase .guide-layout nav button {
+  background: var(--bg-2);
+  color: var(--text-dim);
+  border-radius: 8px;
+}
+
+.studio.kilsat-five-phase .guide-layout nav button[aria-current='page'] {
+  background: var(--accent-subtle);
+  color: var(--text);
+}
+
+.studio.kilsat-five-phase .animation-track.active {
+  background: var(--accent-subtle);
+  color: var(--text);
+}
+
+.studio.kilsat-five-phase .quick-controls select,
+.studio.kilsat-five-phase .file-menu summary {
+  background: var(--bg-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.studio.kilsat-five-phase .app-menu summary {
+  color: var(--text-dim);
+  background: transparent;
+  border-color: transparent;
+}
+
+.studio.kilsat-five-phase .studio-flow-tab {
+  border-radius: 999px;
+}

@@ -10,6 +10,140 @@ import {
 } from '../lib/script-line-annotations';
 const OVERSCAN = 8;
 
+function scriptLines(text: string): string[] {
+  const norm = text.replace(/\r\n?/g, '\n');
+  return norm.length ? norm.split('\n') : [''];
+}
+
+function replaceLine(text: string, index: number, next: string): string {
+  const lines = scriptLines(text);
+  lines[index] = next.replace(/\n/g, ' ');
+  const joined = lines.join('\n');
+  return joined.length > 60000 ? joined.slice(0, 60000) : joined;
+}
+
+function insertLine(text: string, index: number): string {
+  const lines = scriptLines(text);
+  lines.splice(index + 1, 0, '');
+  return lines.join('\n').slice(0, 60000);
+}
+
+function removeLine(text: string, index: number): string {
+  const lines = scriptLines(text);
+  if (lines.length < 2) return '';
+  lines.splice(index, 1);
+  return lines.join('\n');
+}
+
+/** Hero-näkymän rivieditori. Lähde on edelleen yksi merkkijono. */
+function ScriptLineSheet({
+  text,
+  locked,
+  annotations,
+  dividerLine,
+  dragging,
+  onDividerLine,
+  onDrag,
+  onTextChange,
+  onSlash,
+}: {
+  text: string;
+  locked: boolean;
+  annotations: ScriptLineAnnotation[];
+  dividerLine: number;
+  dragging: boolean;
+  onDividerLine: (line: number) => void;
+  onDrag: (dragging: boolean) => void;
+  onTextChange: (value: string) => void;
+  onSlash: () => void;
+}) {
+  const lines = scriptLines(text);
+  const byLine = new Map(annotations.map((a) => [a.line, a]));
+  const sheet = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dragging) return;
+    const move = (e: PointerEvent) => {
+      const rows = sheet.current?.querySelectorAll<HTMLElement>('[data-line]');
+      if (!rows?.length) return;
+      let line = lines.length;
+      for (const row of rows) {
+        const box = row.getBoundingClientRect();
+        if (e.clientY < box.top + box.height / 2) {
+          line = Number(row.dataset.line);
+          break;
+        }
+      }
+      onDividerLine(Math.max(1, Math.min(lines.length, line)));
+    };
+    const up = () => onDrag(false);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+  }, [dragging, lines.length, onDividerLine, onDrag]);
+
+  return (
+    <div className="script-line-sheet" ref={sheet}>
+      {lines.map((line, index) => {
+        const n = index + 1;
+        const ann = byLine.get(n);
+        const words = line.trim() ? line.trim().split(/\s+/).length : 0;
+        return (
+          <div key={n}>
+            {n === dividerLine && n > 1 && (
+              <div
+                className={`script-line-split${dragging ? ' is-dragging' : ''}`}
+                role="separator"
+                aria-orientation="horizontal"
+                tabIndex={0}
+                onPointerDown={(e) => {
+                  if (locked) return;
+                  e.preventDefault();
+                  onDrag(true);
+                }}
+              >
+                <span>Jakoviiva</span>
+              </div>
+            )}
+            <div className={`script-line-row${ann?.kind === 'scene' ? ' is-scene' : ''}`} data-line={n}>
+              <div className="script-line-gutter">
+                {ann?.kind === 'scene' && <strong>{ann.left ?? 'Kohtaus'}</strong>}
+                {(ann?.kind === 'speaker' || ann?.kind === 'character') && <span>{ann.right}</span>}
+              </div>
+              <textarea
+                className="script-line-field"
+                rows={1}
+                value={line}
+                disabled={locked}
+                aria-label={`Rivi ${n}`}
+                spellCheck
+                onChange={(e) => onTextChange(replaceLine(text, index, e.target.value))}
+                onKeyDown={(e) => {
+                  if (locked) return;
+                  if (e.key === '/' && line === '') {
+                    e.preventDefault();
+                    onSlash();
+                  } else if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    onTextChange(insertLine(text, index));
+                  } else if (e.key === 'Backspace' && line === '' && lines.length > 1) {
+                    e.preventDefault();
+                    onTextChange(removeLine(text, index));
+                  }
+                }}
+              />
+              <div className="script-line-meta">{words ? `${words} sanaa` : ''}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Jaettu käsikirjoituksen kirjoitusalue — focus, panel ja keskialue. */
 export default function ScriptComposeEditor({
   text,
@@ -294,6 +428,19 @@ export default function ScriptComposeEditor({
               </button>
             </div>
           )}
+          {uxHero ? (
+            <ScriptLineSheet
+              text={text}
+              locked={scriptLocked}
+              annotations={annotations}
+              dividerLine={dividerLine}
+              dragging={draggingDivider}
+              onDividerLine={setDividerLine}
+              onDrag={setDraggingDivider}
+              onTextChange={onTextChange}
+              onSlash={() => setPaletteOpen(true)}
+            />
+          ) : (
           <div className="script-compose-grid">
             {renderMarginSide('left')}
             <div className="script-main">
@@ -301,8 +448,8 @@ export default function ScriptComposeEditor({
                 <label className="sr-only" htmlFor={fieldId}>
                   Käsikirjoitus (.md / .txt)
                 </label>
-                {!empty && variant !== 'hero' && <label htmlFor={fieldId}>Käsikirjoitus (.md / .txt)</label>}
-                {variant !== 'hero' && !toolsHidden && (
+                {!empty && <label htmlFor={fieldId}>Käsikirjoitus (.md / .txt)</label>}
+                {!toolsHidden && (
                   <ScriptGuide empty={empty} disabled={scriptLocked} insert={onInsertGuide} />
                 )}
                 <div className="script-textarea-wrap">
@@ -311,10 +458,9 @@ export default function ScriptComposeEditor({
                     id={fieldId}
                     className="script-editor-field"
                     maxLength={60000}
-                    rows={variant === 'hero' ? 16 : 9}
+                    rows={9}
                     value={text}
                     disabled={scriptLocked}
-                    placeholder={variant === 'hero' ? 'Kirjoita käsikirjoitus tai liitä teksti…' : undefined}
                     onChange={(e) => onTextChange(e.target.value)}
                     onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
                     onKeyDown={handleKeyDown}
@@ -346,32 +492,33 @@ export default function ScriptComposeEditor({
                   )}
                 </div>
               </div>
-              <div className="script-status">
-                <p role="status">{message}</p>
-                {error && (
-                  <p role="alert" className="script-error">
-                    {error}
-                  </p>
-                )}
-                {working && (
-                  <button type="button" className="secondary" onClick={onAbort}>
-                    Peruuta käsittely
-                  </button>
-                )}
-              </div>
-              <div className="script-sticky-bar">
-                <button
-                  type="button"
-                  className="primary full"
-                  disabled={parseDisabled}
-                  title={parseTitle}
-                  onClick={onRequestParse}
-                >
-                  Jaa kohtauksiin
-                </button>
-              </div>
             </div>
             {renderMarginSide('right')}
+          </div>
+          )}
+          <div className="script-status">
+            <p role="status">{message}</p>
+            {error && (
+              <p role="alert" className="script-error">
+                {error}
+              </p>
+            )}
+            {working && (
+              <button type="button" className="secondary" onClick={onAbort}>
+                Peruuta käsittely
+              </button>
+            )}
+          </div>
+          <div className="script-sticky-bar">
+            <button
+              type="button"
+              className="primary full"
+              disabled={parseDisabled}
+              title={parseTitle}
+              onClick={onRequestParse}
+            >
+              Jaa kohtauksiin
+            </button>
           </div>
           {uxHero && (
             <footer className="script-compose-meta" aria-label="Käsikirjoituksen tilastot">

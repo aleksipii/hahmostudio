@@ -5,7 +5,7 @@ Interaktiivinen HTML-luonnos (kaikki työvaiheet) voidaan pitää erillisenä pr
 ## Sovelluksessa (React)
 
 - **Luokka:** `.script-ux-luonnos` (Käsikirjoitus-hero + focus-sivu)
-- **Tyylit:** [`styles/kilsat-script-ux.css`](../styles/kilsat-script-ux.css)
+- **Tyylit:** [`styles/kilsat-app.css`](../styles/kilsat-app.css) (script-UX inline; lähde kopio: `kilsat-script-ux.css`)
 - **Fontit:** Hanken Grotesk + Literata ([`index.html`](../index.html))
 - **Komponentit:** [`script-compose-editor.tsx`](../components/script-compose-editor.tsx), [`script-command-palette.tsx`](../components/script-command-palette.tsx)
 

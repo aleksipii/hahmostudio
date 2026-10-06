@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
+import { studioPortalHost } from '../lib/platform';
 import { flowTourSteps, type FlowTourStepId } from '../lib/studio-flow-tour';
 
 type Rect = { top: number; left: number; width: number; height: number };
@@ -131,6 +132,6 @@ export default function StudioFlowTour({
         </div>
       </section>
     </div>,
-    document.body,
+    studioPortalHost(),
   );
 }

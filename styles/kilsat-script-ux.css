@@ -6,10 +6,10 @@
   --script-measure: 68ch;
   --script-gutter-width: 7.5rem;
   --script-margin-gap: var(--space-8);
-  --script-violet: var(--color-accent, #a855f7);
-  --script-violet-hover: var(--color-accent-hover, #c084fc);
-  --script-violet-soft: var(--color-accent-soft, rgba(168, 85, 247, 0.16));
-  --script-violet-text: var(--color-accent-hover, #c084fc);
+  --script-violet: var(--color-accent, #7c3aed);
+  --script-violet-hover: var(--color-accent-hover, #8b4ef2);
+  --script-violet-soft: var(--color-accent-soft, rgba(139, 92, 246, 0.16));
+  --script-violet-text: var(--color-accent-hover, #c4b0fb);
   --script-line-height: 1.65;
   font-family: var(--font-ui);
 }
@@ -276,6 +276,81 @@
 
 .studio.script-ux-luonnos .script-command-kicker {
   display: none;
+}
+
+.studio.script-ux-luonnos .script-line-sheet {
+  padding: var(--space-3) var(--space-5) 12vh;
+}
+
+.studio.script-ux-luonnos .script-line-row {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 1fr) minmax(0, var(--script-measure)) minmax(6rem, 1fr);
+  column-gap: var(--script-margin-gap);
+  align-items: start;
+}
+
+.studio.script-ux-luonnos .script-line-gutter {
+  text-align: right;
+  padding-top: 8px;
+  font-size: var(--text-sm);
+  color: var(--script-violet-text);
+  font-weight: 600;
+}
+
+.studio.script-ux-luonnos .script-line-field {
+  width: 100%;
+  resize: none;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-script);
+  font-size: var(--text-xl);
+  line-height: 1.65;
+  padding: 4px 0;
+  min-height: 1.65em;
+  caret-color: var(--script-violet-text);
+}
+
+.studio.script-ux-luonnos .script-line-meta {
+  padding-top: 10px;
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.studio.script-ux-luonnos .script-line-split {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 1fr) minmax(0, var(--script-measure)) minmax(6rem, 1fr);
+  column-gap: var(--script-margin-gap);
+  align-items: center;
+  height: 20px;
+  cursor: ns-resize;
+}
+
+.studio.script-ux-luonnos .script-line-split span {
+  grid-column: 1;
+  justify-self: end;
+  font-size: var(--text-xs);
+  color: var(--script-violet-text);
+  opacity: 0;
+}
+
+.studio.script-ux-luonnos .script-line-split::after {
+  content: '';
+  grid-column: 2;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.studio.script-ux-luonnos .script-line-split:hover span,
+.studio.script-ux-luonnos .script-line-split.is-dragging span {
+  opacity: 1;
+}
+
+.studio.script-ux-luonnos .script-line-split:hover::after,
+.studio.script-ux-luonnos .script-line-split.is-dragging::after {
+  background: var(--script-violet);
 }
 
 @media (max-width: 960px) {
