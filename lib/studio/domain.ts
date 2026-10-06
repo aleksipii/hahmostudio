@@ -8,7 +8,7 @@ export const TIMEBASE=35_280_000;
 export function ticks(seconds:number){const value=Math.round(seconds*TIMEBASE);if(!Number.isFinite(seconds)||seconds<0||!Number.isSafeInteger(value))throw Error('Tuotannon aika on virheellinen.');return value;}
 export function seconds(value:number){if(!Number.isSafeInteger(value)||value<0)throw Error('Tuotannon aika on virheellinen.');return value/TIMEBASE;}
 export type ShotStatus='draft'|'approved'|'locked';
-export type StudioMetadata={schemaVersion:1;commandJournal?:CommandEntry[];shotTasks?:Record<string,ShotTask>;reviewComments?:ReviewComment[];episodeId:string;revision:number;rawScript?:string;sceneIds?:Record<string,string>;changes:{revision:number;reason:string;createdAt:string}[];shots:Record<string,{status:ShotStatus;approvedRevision?:number}>};
+export type StudioMetadata={schemaVersion:1;commandJournal?:CommandEntry[];shotTasks?:Record<string,ShotTask>;reviewComments?:ReviewComment[];speakerHandles?:Record<string,string>;episodeId:string;revision:number;rawScript?:string;sceneIds?:Record<string,string>;changes:{revision:number;reason:string;createdAt:string}[];shots:Record<string,{status:ShotStatus;approvedRevision?:number}>};
 export type Shot={id:string;sourceEventId:string;sceneId:string;name:string;at:number;duration:number;revision:number;status:ShotStatus;eventIds:string[];characterIds:string[];audioStatus:'missing'|'ready'|'silent';errors:{eventId?:string;message:string}[]};
 export type ProductionScene={id:string;sourceSectionId:string;episodeId:string;name:string;at:number;duration:number;shotIds:string[]};
 export type Episode={id:string;name:string;revision:number;timebase:typeof TIMEBASE;duration:number;scenes:ProductionScene[];shots:Shot[]};
@@ -22,6 +22,10 @@ export function readStudio(value:unknown):StudioMetadata{
  if(s.commandJournal!==undefined&&validateCommandJournal(s.commandJournal).some(e=>e.revisionAfter>s.revision))throw Error('Komentohistorian revisio ylittää projektin revision.');
  if(s.shotTasks!==undefined)validateShotTasks(s.shotTasks);
  if(s.reviewComments!==undefined)validateReviewComments(s.reviewComments,s.revision);
+ if(s.speakerHandles!==undefined){
+  if(typeof s.speakerHandles!=='object'||Array.isArray(s.speakerHandles)||Object.keys(s.speakerHandles).length>4)throw Error('Puhujan tunnukset ovat virheelliset.');
+  for(const [k,v] of Object.entries(s.speakerHandles))if(!/^[a-z0-9_.-]{1,32}$/.test(k)||typeof v!=='string'||v.length>100)throw Error('Puhujan tunnus on virheellinen.');
+ }
  return structuredClone(s);
 }
 export function studioMetadata(p:Presentation):StudioMetadata{const meta:StudioMetadata=p.production?.studio?readStudio(p.production.studio):{schemaVersion:1,episodeId:'episode:'+p.id,revision:1,changes:[],shots:{}};return{...meta,sceneIds:meta.sceneIds??Object.fromEntries([...new Set([...p.sections.map(s=>s.id),...p.events.map(e=>e.section)])].map(id=>[id,meta.episodeId+':scene:'+id]))};}

@@ -113,3 +113,31 @@ Lisätty paikallinen dialogikäsikirjoituksen tuonti, KILSAT-esimerkin alkuperä
 KILSATin nimisidokset poistettu toteutuslogiikasta; käyttäjä yhdistää nimet kirjaston hahmoihin. Yleinen ohjaussuunnitelma säilyttää tarkoituksen, hahmojen luonteen/suhteet, ympäristön, sijoittelun, toiminnan, äänet, kameran, tauot, kiellot ja lopetuksen sekä lähdeviitteet. Arviot vahvistetaan, puuttuvat olennaiset ohjeet estävät rakentamisen. Liikkeet yhdistetty nykyiseen screenplay-/IK-moottoriin. Taustan vaihdot, jatkuva maailmantila, aktiivisen kulman puhesuu, rajaus ja määräaikaiset otsikkokortit toimivat yhteisessä renderöinnissä.
 
 Toinen hyväksymissyöte: Mira/Niko autossa, eri miljööt ja ajat, vilkutus/kävely/nyökkäys ja oma lopetus. Kooditestit tarkistavat myös projektin roundtripin, puuttuvien resurssien eston, täsmälliset aikaristiriidat, käyttäjän arvioiden hyväksynnän ja live-datan puuttumisen vientirenderöinnistä. Tulkinta on paikallisiin sääntöihin perustuva; puhesynteesiä tai oikeaa valmista puhuttua videota ei ole mukana.
+
+## 6.10.2026 · 0.38 — KILSAT Studio UI-yhtenäistäminen (käsikirjoitus)
+
+### Kehitysvaihe
+Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaikki olemassa olevat toiminnot säilyvät. Viisi tuotantovaihetta on **navigointi** (`studio-flow-nav`), ei erillistä datamallia työtiloille 2–5.
+
+### Valmis (koodi)
+- Tokenit ja `ui-minimal.css`: tummat pinnat, accent, shot-kisko, export/tuotanto.
+- Resolve-hover tokenit (`--resolve-*`), työvaihe- ja kuvakorttien `:hover`; **tuotantokierros** (`localStorage` `hahmostudio-studio-flow-tour-v1`); **Ohje → Näytä tuotantokierros uudelleen**.
+- Työvaihe-pin + **Asetukset → Tuotantovaihe** (rajaus päälle/pois, nollaus); FigJam-copy: `docs/FIGJAM-STUDIO-FLOW.md`.
+- **Käsikirjoitus:** `script-compose` — toolbar (Tuo, Esimerkit), editori, status, sticky **Jaa kohtauksiin**; variantit `panel` | `focus` (`scriptPage`).
+- Aikajana piilotetaan käsikirjoitusvaiheessa ja focus-näkymässä.
+- Työvaihe-nav, tiiviimpi yläpalkki, import-kortin näkyvyys; `DEVELOPMENT-0.38.md` (px-spec).
+
+### UX / Figma
+- FigJam user flow: [KILSAT Script user flow](https://www.figma.com/board/RQ3kH9AAduLT7E3iJabv3e).
+- Figma Design: [KILSAT Script UI · 0.38](https://www.figma.com/design/FFy68Fynv4Ds2VgRANZoXc) — wireframe **00 Script** + localhost-capture [Script / Panel · 02 Draft (capture)](https://www.figma.com/design/FFy68Fynv4Ds2VgRANZoXc?node-id=2-2). Seuraavaksi: focus-näkymän toinen capture, FigJam-prototype-linkit.
+- Figma Resolve: [KILSAT Studio · UI Resolve](https://www.figma.com/design/vfBqIrcXhys0XoTODSbsI5) — 5 työvaihe-framea, **Comp / Työvaihe-kortti** ja **Comp / Shot-kortti** (default/hover/active|selected), **Opastus / Spotlight · 1–5** (prototype: Seuraava, Ohita, Avaa näkymä, nav-hitit → `01…05`, beacon → spotlight). Present-aluksi **Opastus / Spotlight · 1**.
+
+### Tarkistukset
+- `npm run typecheck`, `npm test` (952) koodissa.
+- Visuaalinen: `npm run desktop:dev` → Käsikirjoitus → toolbar + sticky CTA; yläpalkin Käsikirjoitus → focus, aikajana pois.
+
+### Seuraava työ
+- FigJam: **Pika-copy** -stickyt boardille (`docs/FIGJAM-STUDIO-FLOW.md`, ~15 min käsin). Valinnainen: Figma-widget → tiimi → automaattinen flow-kaavio.
+
+### 0.39 (valmis)
+- `@mira → MIRA`, `speakerHandles`, **SpeakerBindingTable** (teksti + pending @-rivit), **shot-guard** (pin ≠ Hyväksy/Lukitse), testit. Katso `DEVELOPMENT-0.39.md`. FigJam-board: käsin (`docs/FIGJAM-STUDIO-FLOW.md`).

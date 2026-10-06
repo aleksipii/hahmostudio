@@ -59,10 +59,11 @@ Koodipuoli: `screenplay-workflow.test.ts`, `closeScriptPage`/`commitSource`.
 **Ei vahvistettu:** satojen kuvien raskaan thumbnailin GUI-kuorma; Series/Season-hierarkia; selain/Electron-dekoodaus ilman oikeaa äänitiedostoa.
 
 ### Paketointi (Mac)
-- `npm run desktop:package:mac` → `release/KILSAT Studio-darwin-<arch>/KILSAT Studio.app` ja `release/Hahmostudio-Mac-<arch>.zip` (vaatii arm64/x64-yhteensopivan `.private-runtime/rhubarb/rhubarb`).
-- Node-smoke: `npm run desktop:test:package` (ELECTRON_RUN_AS_NODE + `runtime-smoke.mjs`).
-- **Finder-käynnistys:** kopioi `.app` esim. `~/Applications/`, sulje vanha instanssi, avaa uusi tuplaklikkauksella. Lähdekoodimuutokset eivät päivity asennettuun bundleen ennen uutta paketointia.
-- **Agenttiympäristö (2026-10-05):** `desktop:package:mac` keskeytyi, koska Rhubarb-binääri ei vastaa arm64:ää. Aja paketointi paikallisella Macilla, jossa native-runtime on valmis.
+- `npm run desktop:package:mac` → `release/KILSAT Studio-darwin-<arch>/KILSAT Studio.app` ja `release/Hahmostudio-Mac-<arch>.zip` (vaatii arm64/x64-yhteensopivan `.private-runtime/rhubarb/rhubarb` ja `native/`).
+- Node-smoke: `npm run desktop:test:package` → `ok: true`, Rhubarb fi/en (2026-10-05, arm64).
+- **Runtime ilman uutta käännöstä:** jos `.private-runtime` puuttuu mutta vanha asennus on olemassa, kopioi `Contents/Resources/rhubarb` ja `native` aiemmasta `KILSAT Studio.app`:sta repoon. Puhtaalta koneelta: `bash scripts/build-rhubarb-macos.sh` ja `npm run native:prepare`.
+- **Finder-käynnistys (2026-10-05):** `open release/KILSAT Studio-darwin-arm64/KILSAT Studio.app` käynnisti graafisen prosessin; pysyvään asennukseen kopioi `.app` → `~/Applications/` ja avaa Finderista.
+- Lähdekoodimuutokset eivät päivity asennettuun bundleen ennen uutta paketointia.
 
 ### Provenance v2 — kirjastopaketit
 - `npm run library:upgrade-provenance` päivittää CC0-kirjaston `.hahmo`-tiedostot (`origin: studio-library`, `version: 2`).
@@ -73,4 +74,4 @@ Koodipuoli: `screenplay-workflow.test.ts`, `closeScriptPage`/`commitSource`.
 - Ohjauspöydän kuvakortit käyttävät samaa `ShotThumb` + `shot-thumb-cache` -polkua kuin aikajana.
 
 ## Jäljellä
-- Graafinen Finder-käynnistys ja codesign-quarantine käyttäjän koneella (ei agenttiympäristössä).
+- Gatekeeper/quarantine-käytös, jos `.app` siirretään toiselle Macille (ad hoc -allekirjoitus, ei notarisoitu).
