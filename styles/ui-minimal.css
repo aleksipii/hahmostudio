@@ -1088,6 +1088,25 @@
   color: var(--text-dim);
 }
 
+.speaker-binding-table .speaker-binding-pack-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.speaker-binding-table .speaker-binding-pack-cell select {
+  flex: 1 1 120px;
+  min-width: 0;
+  font-size: var(--text-xs);
+}
+
+.speaker-binding-table .pack-suggestion {
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  font-style: italic;
+}
+
 .studio .script-preview-wrap {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

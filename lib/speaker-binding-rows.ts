@@ -1,6 +1,7 @@
 import type { PresentationAssets } from './presentation-compile.ts';
 import { normalizeSpeaker, type Presentation } from './presentation-model.ts';
 import { parseSpeakerHandleAliases } from './speaker-handle-aliases.ts';
+import { suggestPackForSpeaker } from './speaker-pack-options.ts';
 import { studioMetadata } from './studio/domain.ts';
 
 /** Committed metadata wins; käsikirjoituksen @-rivit täyttävät tyhjät ennen Jaa kohtauksiin -commitia. */
@@ -18,6 +19,7 @@ export type SpeakerBindingRow = {
   missing: boolean;
   /** @-tunnuksen kohde ennen Hahmo:-riviä / characters-listaa. */
   pendingCharacter?: boolean;
+  suggestedPack?: string;
 };
 
 function bindingTableSpeakers(model: Presentation, handles: Record<string, string>): string[] {
@@ -54,6 +56,8 @@ export function speakerBindingRows(
     const packId = binding?.asset ?? '';
     const pack = packId ? assets[packId] : undefined;
     const pendingCharacter = !characterNorms.has(norm);
+    const handleKey = Object.entries(handles).find(([, t]) => normalizeSpeaker(t) === norm)?.[0];
+    const suggestedPack = !packId ? suggestPackForSpeaker(speaker, handleKey ? `@${handleKey}` : undefined) : undefined;
     return {
       speaker,
       handle: handleForSpeaker(speaker),
@@ -61,6 +65,7 @@ export function speakerBindingRows(
       packLabel: pack?.doc.name?.replace(/\.psd$/i, '') ?? (packId || '—'),
       missing: !packId || !pack,
       pendingCharacter,
+      suggestedPack,
     };
   });
 }

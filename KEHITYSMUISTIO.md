@@ -136,8 +136,15 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 - `npm run typecheck`, `npm test` (952) koodissa.
 - Visuaalinen: `npm run desktop:dev` → Käsikirjoitus → toolbar + sticky CTA; yläpalkin Käsikirjoitus → focus, aikajana pois.
 
-### Seuraava työ
-- FigJam: **Pika-copy** -stickyt boardille (`docs/FIGJAM-STUDIO-FLOW.md`, ~15 min käsin). Valinnainen: Figma-widget → tiimi → automaattinen flow-kaavio.
+### 0.39 (valmis · pushattu)
+- `@mira → MIRA`, `speakerHandles`, **SpeakerBindingTable**, **shot-guard**, testit. GitHub `main`: `530b8d8` (2026-10-06).
+- FigJam stickyt: käsin (`docs/FIGJAM-STUDIO-FLOW.md`), ei repossa.
 
-### 0.39 (valmis)
-- `@mira → MIRA`, `speakerHandles`, **SpeakerBindingTable** (teksti + pending @-rivit), **shot-guard** (pin ≠ Hyväksy/Lukitse), testit. Katso `DEVELOPMENT-0.39.md`. FigJam-board: käsin (`docs/FIGJAM-STUDIO-FLOW.md`).
+### 0.40 (valmis koodissa · ei pushattu)
+- **@sidonta jatko:** `SpeakerBindingTable` — pudotus + Tuo `.hahmo` Käsikirjoitus-paneelissa; ehdotukset (`speaker-pack-options`); `patchSpeakerBinding`. Hahmot-vaihe: ehdotus + ohje avata Käsikirjoitus. `DEVELOPMENT-0.40.md`.
+- `npm test` 958.
+
+### Seuraava koodierä (0.41-ehdotus)
+- **Script UI:** focus-capture + `script-compose`-viimeistely (`DEVELOPMENT-0.38.md`).
+- **Editor:** pakettivalinta suoraan Hahmot-vaiheesta (jaettu `loadAsset`).
+- **Tuotanto:** shot-guard + `revise()`-estot lukituksessa.
