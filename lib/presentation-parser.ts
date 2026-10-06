@@ -1,10 +1,15 @@
 import {parseRuleScript} from './script-grammar.ts';
+import {mergeScriptResourceManifest} from './cutout/presentation-ir.ts';
+import {parseScriptResourceManifest,validateScriptResources} from './script-resource-manifest.ts';
 import {phoneInstruction} from './phone-actions.ts';
 import {cameraInstruction,initProduction} from './production-model.ts';
 import {environmentId,enrichDirection} from './presentation-direction.ts';
 import {stableId,normalizeSpeaker,type Presentation,type Event,type Ref} from './presentation-model.ts';
 const clock=(s:string)=>{const [m,n]=s.split(':').map(Number);return m*60+n;};
 export function parsePresentation(original:string,aliases:Record<string,string>={}):Presentation{
+ if(!original.trim()||original.length>60000)throw Error('Liitä käsikirjoitus (enintään 60 000 merkkiä).');
+ const resourceManifest=parseScriptResourceManifest(original);
+ for(const problem of validateScriptResources(resourceManifest))throw Error(problem);
  if(original.trimStart().startsWith('#!kilsat')) {
   const model=parseRuleScript(original);
   const base=parsePresentation(model.characters.map(n=>'Hahmo '+n+':').join('\n')+'\nOdota 1 s',aliases);
@@ -13,9 +18,8 @@ export function parsePresentation(original:string,aliases:Record<string,string>=
   base.events=model.commands.map(c=>({id:c.id,kind:c.kind==='camera'?'shot':c.kind,target:c.target==='scene'?'scene':normalizeSpeaker(c.target),value:c.kind==='gaze'&&c.value!=='phone'?normalizeSpeaker(c.value):c.value,...(c.text!==undefined?{text:c.text}:{}),seconds:c.seconds,at:c.at,duration:c.seconds,sourceRef:c.source,basis:'rule',section:c.scene}));
   base.seconds=Math.max(0,...model.commands.map(c=>c.at+c.seconds));base.metadata.target=Math.max(60,base.seconds);base.natural=true;
   base.diagnostics=model.diagnostics.map(d=>({code:'strict-script',severity:'error',message:`Rivi ${d.line}: ${d.problem} ${d.suggestion}`}));
-  base.direction={targetMin:0,targetMax:base.metadata.target,profiles:[],requirements:[],noLargeGestures:false,noExtraProps:false};base.production=initProduction(base);return base;
+  base.direction={targetMin:0,targetMax:base.metadata.target,profiles:[],requirements:[],noLargeGestures:false,noExtraProps:false};base.production=initProduction(base);return mergeScriptResourceManifest(base,resourceManifest);
  }
- if(!original.trim()||original.length>60000)throw Error('Liitä käsikirjoitus (enintään 60 000 merkkiä).');
  const lines=original.replace(/\r\n?/g,'\n').split('\n'),p:Presentation={schemaVersion:1,id:'script-'+stableId(original),original,metadata:{series:'Käsikirjoitus',season:1,episode:1,title:'Kohtaus',target:60,purpose:'',environment:''},characters:[],assets:[{id:'phone-v1',kind:'prop'}],world:{width:1080,height:1920,background:'#ffffff',phone:{enabled:/puheli[mn]|phone/i.test(original),model:'phone-v1',carrier:'',hand:'leftHand',view:'front'}},sections:[],events:[],comments:[],bindings:[],audioClips:[],diagnostics:[],seconds:0,natural:false,source:'script'};
  const speakers=lines.flatMap((l,i)=>{const s=l.trim().replace(/\*\*/g,'');const next=lines.slice(i+1).find(l=>l.trim());const m=s.match(/^([\p{L}][\p{L}\s.]{0,35}):\s*(.*)$/u);return m&&(/^[“"„]/.test(m[2])||/^[“"„]/.test(next?.trim()??''))&&!/^(Jakson nimi|Title|Lopetus|Otsikkokortti|Title card|Ending)$/i.test(m[1])?[m[1]]:[];});
  for(const line of lines){const m=line.trim().match(/^(?:Hahmo|Character)\s+([\p{L}][\p{L}\s.]{0,35}):/u);if(m&&!speakers.includes(m[1]))speakers.push(m[1]);}
@@ -55,11 +59,12 @@ export function parsePresentation(original:string,aliases:Record<string,string>=
   if(/puheli[mn]|phone/.test(low)&&/katsoo|vilkaisee|looks? at|glances?/.test(low)){add('gaze',target,'phone',ref);recognized=true;}
   else if(/katsoo|vilkaisee|tuijottaa|looks? at|glances?/.test(low)){const other=p.characters.find(s=>s!==target&&normalizeSpeaker(line).includes(s))??p.characters.find(s=>s!==target);if(other){add('gaze',target,other,ref);recognized=true;}}
   if(!phoneAction&&/näyttää puhelin|shows? (?:the |a )?phone/.test(low)){add('action',target,'show_phone',ref);recognized=true;}
-  const expr=/huolest|worried/.test(low)?'worried':/loukkaant|hurt/.test(low)?'mildly_hurt':/confused|miettii/.test(low)?'confused':/pokerinaam|ilmeetön|vain tuijottaa|dead stare/.test(low)?'dead_stare':/kulmakar|eyebrow/.test(low)?'eyebrow_raise':undefined;
+  const expr=/vihai|angry/.test(low)?'angry':/huolest|worried/.test(low)?'worried':/loukkaant|hurt/.test(low)?'mildly_hurt':/confused|miettii/.test(low)?'confused':/pokerinaam|ilmeetön|vain tuijottaa|dead stare/.test(low)?'dead_stare':/kulmakar|eyebrow/.test(low)?'eyebrow_raise':undefined;
   if(expr){add('expression',target,expr,ref,{after:/sanoo tämän/.test(low)?lastDialogue:undefined});recognized=true;}
   if(!recognized){add('note',target,line,ref);p.diagnostics.push({code:'review-instruction',severity:'warning',message:'Tarkistettava ohje: '+line});}
  }
  let shotTarget='scene';const ordered:Event[]=[];for(const e of p.events){if(e.kind==='shot')shotTarget=e.target;if(e.kind==='dialogue'&&shotTarget!==e.target){ordered.push({...e,id:'shot-'+e.id,kind:'shot',value:'medium',text:undefined,basis:'estimate'});shotTarget=e.target;}ordered.push(e);}p.events=ordered;
  const result=enrichDirection(p);if(!result.events.some(e=>['dialogue','action','title','hold'].includes(e.kind)))throw Error('Esitystapahtumia ei löytynyt. Käytä PUHUJA: ja lainattua repliikkiä tai nimettyjä hahmoja ja tuettuja liikeohjeita.');
- result.production=initProduction(result);return result;
+ result.production=initProduction(result);
+ return mergeScriptResourceManifest(result,resourceManifest);
 }

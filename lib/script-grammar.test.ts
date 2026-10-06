@@ -28,7 +28,8 @@ for(let i=0;i<500;i++)test(`strict corpus ${i+1}: scenes, source refs, ordered/p
 });
 test('coverage is finite and >1 million without storing generated sentences',()=>{assert.equal(grammarCoverage().recognizedMotionSentences,2457600);for(const v of [...verbs.walk,...verbs.run])assert.equal(parseRuleScript(`Hahmo: Kille\nKille ${v} suoraan 2 seconds`).diagnostics.length,0);});
 test('unknowns, negation, unsupported camera/motion, pronouns and invalid middle line are never guessed',()=>{
- for(const text of ['hän kävelee oikealle 2 s','Kille ei kävele oikealle 2 s','Kamera: ylhäältä 2 s','Kille istuu 2 s','Samalla: Kille kävelee oikealle 2 s','Kille kävelee oikealle','Kille katsoo: se 2 s'])assert.ok(parseRuleScript('Hahmo: Kille\n'+text).diagnostics.length,text);
+ for(const text of ['hän kävelee oikealle 2 s','Kille ei kävele oikealle 2 s','Kamera: ylhäältä 2 s','Samalla: Kille kävelee oikealle 2 s','Kille kävelee oikealle','Kille katsoo: se 2 s'])assert.ok(parseRuleScript('Hahmo: Kille\n'+text).diagnostics.length,text);
+ assert.equal(parseRuleScript('Hahmo: Kille\nKille istuu 2 s').commands.find(c=>c.kind==='action')?.value,'sit');
  const valid=parseRuleScript('Hahmo: Kille\nKille puhelin: esille 1 s\nKohtaus: Uusi\nhän katsoo: se 1 s');assert.equal(valid.diagnostics.length,0);assert.equal(valid.commands[1].value,'phone');
  const invalid=parseRuleScript('Hahmo: Kille\nKille nyökkää 1 s\nväärä rivi\nKille vilkuttaa 2 s');assert.equal(invalid.diagnostics.length,1);assert.equal(invalid.commands.length,2);assert.equal(invalid.diagnostics[0].line,3);
 });

@@ -45,5 +45,19 @@ Meanwhile: Handu waves 2 seconds
 Kille says: "Are you ready?" 2 seconds
 Handu says: "Let's begin." 2 seconds
 Meanwhile: Camera: close-up Handu 2 seconds
-Wait 1 second`}
+Wait 1 second`},
+ {id:'youtube-cutout',name:'YouTube · kartonkikohtaus',description:'KILSAT-cutout, resurssimanifesti, osoitus ja vihainen ilme. Liitä äänet ennen buildiä.',source:`#!kilsat
+Resurssi tausta: cutout-studio-v1
+Resurssi hahmo KILLE: kille
+Resurssi hahmo HANDU: handu
+Hahmo: Kille
+Hahmo: Handu
+Kohtaus: Studio
+Tausta: studio 0.5 s
+Kamera: laaja 0.5 s
+Kille sanoo: "Kuule, tästä tulee hyvä jakso." 3 s
+Samalla: Kille vilkuttaa 2 s
+Handu sanoo: "Jos muistat äänittää repliikit." 3 s
+Samalla: Handu osoittaa 2 s
+Odota 1 s`}
 ] as const;

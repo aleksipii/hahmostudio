@@ -6,7 +6,7 @@ export interface LayerNode {
  children: LayerNode[]; warnings: string[];
 }
 export interface PsdDocument {
- presentationAssets?: import("./presentation-compile.ts").PresentationAssets; presentationAudio?: Record<string,import("./presentation-audio.ts").PresentationAudio>;
+ presentationAssets?: import("./presentation-compile.ts").PresentationAssets; presentationAudio?: Record<string,import("./presentation-audio.ts").PresentationAudio>; presentationImages?: Record<string,import("./presentation-images.ts").PresentationImage>;
  quick?: import("./quick-animation.ts").QuickProfile; sourcePsd?: Blob;
  name: string; width: number; height: number; size: number; layers: LayerNode[];
  composite?: Blob; compositeUrl?: string; compositeImage?: HTMLImageElement; warnings: string[];
