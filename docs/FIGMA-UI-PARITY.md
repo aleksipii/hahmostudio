@@ -18,11 +18,16 @@ Design: [KILSAT Script UI · 0.38](https://www.figma.com/design/FFy68Fynv4Ds2VgR
 - Compose-kortti: varjo focus-tilassa, panel min-height 280px.
 - Parse-vahvistus: suomenkielinen dialogi hyväksytyille kuville.
 
+## 0.45 · linja A (issue → koodi)
+
+1. Täytä **[`FIGMA-PARITY-ISSUES-0.45.md`](FIGMA-PARITY-ISSUES-0.45.md)** (checklist + taulukko).
+2. Focus-screenshot → **Script / Focus · 03** (`FIGMA-SCRIPT-FOCUS.md`).
+3. FigJam: `FIGJAM-STUDIO-FLOW.md`.
+4. Korjattavat erot chatissa tai docissa → vasta sitten 0.45-koodi.
+
 ## Sinun käsin (ei automatisoidu)
 
-1. Focus-screenshot → Figma frame **Script / Focus · 03** (`docs/FIGMA-SCRIPT-FOCUS.md`).
-2. FigJam-linkit sticky 1 ↔ focus/panel (`docs/FIGJAM-STUDIO-FLOW.md`).
-3. Sivu vierekkäin: Figma frame vs. `npm run desktop:dev` — merkitse erot issue-listaan.
+Sama kuin yllä; vanha tapa “vapaat muistiinpanot” korvataan issue-taulukolla.
 
 ## Ei vielä 1:1
 

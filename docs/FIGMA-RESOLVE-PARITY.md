@@ -36,3 +36,5 @@ Design: [UI Resolve](https://www.figma.com/design/vfBqIrcXhys0XoTODSbsI5) · flo
 | Segmented | Kuvataulun tai ohjauspöydän tilavalitsin |
 
 Liitä FigJam-stickyyn linkki capture-frameen; pikselitarkkuus ei vaadita, mutta 01–05-järjestys ja korttipillit pitää näkyä.
+
+Havaitut uudet erot → **[`FIGMA-PARITY-ISSUES-0.45.md`](FIGMA-PARITY-ISSUES-0.45.md)** (0.45 · linja A).

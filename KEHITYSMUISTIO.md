@@ -157,5 +157,23 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 - **0.44:** Työvaihe 01–05, `resolve-shot-card`, `resolve-segmented`, `docs/FIGMA-RESOLVE-PARITY.md`, `DEVELOPMENT-0.44.md`.
 - `npm test` 963.
 
-### Seuraava
-- Figma focus / Resolve -screenshot FigJamiin (käsin): `docs/FIGMA-SCRIPT-FOCUS.md` + `docs/FIGMA-RESOLVE-PARITY.md`.
+### 0.44b — kartonki MP4 + PNG-tausta + FIST/istu (koodi)
+- Cutout-IR → **MP4-vienti** (`buildCutoutRenderContext`, `renderScene` cutout-haara).
+- **`Resurssi taustakuva:`** + `presentationImages` projektissa; tuonti käsikirjoitusnäkymässä.
+- Presetit **nyrkki/fist**, **istu/sit**; testit päivitetty.
+
+### 0.44c — desktop-vienti + reaktioklipit (koodi)
+- **ExportQueue:** `renderExport` + cutout preload (sama polku kuin selain-MP4).
+- **Reaktioklipit:** `reaktio: nyökkäys|hämmästys|vilkutus` → REACT_* (Kille/Handu).
+
+### 0.45–0.46 — manifesti, kooste, Figma CSS (koodi)
+- **Prop/tausta-manifesti:** koko `propLibrary` + merge `production.props`; taustakuva/alias kuten aiemmin.
+- **Vaihe E:** 1–5 jakson YouTube-MP4 (`episode-panel`, `DEVELOPMENT-0.46-phase-e.md`).
+- **Figma 0.45:** issue-doc täytetty; S-02/S-03 korjattu (sticky 56 px, focus compose min-height).
+- **Capture 0.45:** [`docs/FIGMA-CAPTURE-SESSION-0.45.md`](docs/FIGMA-CAPTURE-SESSION-0.45.md); S-04 z-index korjattu.
+- **Sarja-runbook:** [`docs/YOUTUBE-KARTONKI-SARJA-RUNBOOK.md`](docs/YOUTUBE-KARTONKI-SARJA-RUNBOOK.md) + `public/library/YouTube-kartonki-jaksot-1-5.md`.
+- **Seuraava:** käyttäjän 1440×900 Figma-capture (S-01); FigJam sticky.
+
+### 0.45 (linja A · valmistelu koodissa)
+- Issue-malli: `docs/FIGMA-PARITY-ISSUES-0.45.md` · `DEVELOPMENT-0.45.md`.
+- **Seuraava:** täytä issue-lista (capture + vertailu) → agentti korjaa vain `Korjaa: kyllä` -rivit.
