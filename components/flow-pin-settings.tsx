@@ -32,7 +32,7 @@ export default function FlowPinSettings() {
         Rajaa paneelit valitun työvaiheen mukaan
       </label>
       <p>
-        Kun päällä, vasemman reunan työvaihevalinta lukitsee välilehdet ja käsikirjoituslähde vaiheissa 2–5. Navigointi
+        Kun päällä, yläpalkin työvaihevalinta lukitsee vasemman paneelin välilehdet ja käsikirjoituslähteen vaiheissa 2–5. Navigointi
         toimii aina.
       </p>
       <button

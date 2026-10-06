@@ -225,6 +225,10 @@
 }
 
 /* —— Käsikirjoitus: yksi sarake, kevyet osiot —— */
+.studio.script-page-open .screenplay-page {
+  z-index: 40;
+}
+
 .screenplay-page {
   padding: 28px 20px 56px;
 }
@@ -352,6 +356,10 @@
   min-height: 360px;
 }
 
+.screenplay-page .script-compose[data-script-layout='focus'] {
+  min-height: min(530px, calc(100vh - 64px - 26px - 160px));
+}
+
 .screenplay-page .script-compose[data-script-layout='focus'] .script-editor-field {
   min-height: min(530px, calc(100vh - 64px - 26px - 280px));
 }
@@ -386,7 +394,7 @@
 }
 
 .studio .script-sticky-bar .primary.full {
-  min-height: 40px;
+  min-height: 56px;
   margin: 0;
 }
 
@@ -842,6 +850,78 @@
   font-size: 10px;
   line-height: 1.35;
   color: var(--text-dim);
+}
+
+/* Yläpalkin 5 työvaihetta (Resolve 01–05) */
+.studio .topbar--flow {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.studio-flow-tabs {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.studio-flow-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  min-height: 32px;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.studio-flow-tab-index {
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.studio-flow-tab[aria-pressed='true'],
+.studio-flow-tab[aria-current='page'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--resolve-bg-hover);
+}
+
+.studio-flow-tab[aria-pressed='true'] .studio-flow-tab-index,
+.studio-flow-tab[aria-current='page'] .studio-flow-tab-index {
+  color: var(--accent);
+}
+
+.studio-flow-tab:hover:not([aria-pressed='true']) {
+  color: var(--text);
+  background: var(--resolve-bg-hover);
+}
+
+.studio .topbar--flow .header-actions {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.studio .header-workspace-toggle {
+  flex-shrink: 0;
+}
+
+/* Selain: ei Tiedosto/Muokkaa-duplikaattia yläpalkissa; desktop käyttää natiivia valikkoa */
+.studio .topbar--flow .app-menubar:not(.extra-open) {
+  display: none;
 }
 
 /* —— Painikkeet: yhtenäinen ammattimainen tyyli —— */
