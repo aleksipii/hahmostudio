@@ -177,3 +177,45 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 ### 0.45 (linja A · valmistelu koodissa)
 - Issue-malli: `docs/FIGMA-PARITY-ISSUES-0.45.md` · `DEVELOPMENT-0.45.md`.
 - **Seuraava:** täytä issue-lista (capture + vertailu) → agentti korjaa vain `Korjaa: kyllä` -rivit.
+
+### 0.47 — KILSAT UI-yhtenäistäminen (ei logiikkamuutoksia)
+
+**Vaihe 0 (valmis):** kartoitus [`docs/UI-STYLE-MIGRATION-0.47.md`](docs/UI-STYLE-MIGRATION-0.47.md) — latausjärjestys (`style.css` → `studio-ui.css` → tokenit → `app-shell` → `ui-minimal`), päällekkäisyydet, siirtosuunnitelma.
+
+**Vaihe 1 + 1b (valmis):**
+- Kanoninen kerros [`styles/studio-components.css`](styles/studio-components.css), import viimeisenä.
+- `style.css`: trimmatut `.studio` primary/secondary/välilehdet/focus (→ komponenttikerros).
+- Tokenit: `--btn-ghost-*`, `--focus-ring`, `--studio-control-height` yhdistetty.
+
+**Vaihe 2–4 (0.47 jatko):**
+- UI-testit: komponenttikerros + trim + `selection-inspector` ([`server/ui.test.mjs`](server/ui.test.mjs)).
+- Käsikirjoitus: container 720/900 px + media 1280/1440/1920; focus max-width 680/720 px.
+- Inspector **Valinta**: `selection-inspector` ([`components/editor.tsx`](components/editor.tsx)).
+
+**S-01:** avoin — käyttäjän 1440×900 capture; ohje [`docs/FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md).
+
+**Riskejä:** `style.css` timeline/layout-säännöt yhä legacy-väreillä; `ui-minimal` osittain päällekkäin.
+**Seuraava:** vaihe 1c (timeline tokenit), visuaalinen tarkistus vaalea/tumma; S-01 capture → issue-lista.
+
+### 0.48 — Script Hero (keskialue · hyväksytty suositus 1–5)
+
+**Päätökset:** (1) näyttämö piiloon kirjoituksessa, mount säilyy · (2) kirjasto minimoitu · (3) jakaja MVP myöhemmin · (4) liikekäsikirjoitus vanhassa paikassa · (5) capture-checklist manuaalinen.
+
+**C1–C2 (koodi):**
+- `ScriptComposeEditor` + `ScriptToolbarRail` — yksi editori focus/panel/hero.
+- `PresentationPanel`: duplikaattityökalut poistettu; `scriptComposeTarget` / `scriptComposeVariant`.
+- `editor.tsx`: `script-hero-center` kun työvaihe Käsikirjoitus + dialogi + ei focus-overlay; compose `PanelDock` → `script-center-host`.
+- Tokenit: `--script-measure`, `--script-gutter-width`, `--script-line-height`.
+- Testit: 975+ (`script-compose-editor`, `script-center-host`).
+
+**C3–C5 (koodi):**
+- `lib/script-line-annotations.ts` — kevyt riviskannaus, debounce 320 ms, virtualisoidut marginaalit.
+- `/`-paletti (`script-command-palette.tsx`); hero: työkalurivi piilossa, tyhjä tila + primary **Kokeile esimerkkiä**.
+- Vedettävä `script-parse-divider` (snap kohtausrajoihin); **Jaa kohtauksiin** ennallaan (täysi parse).
+- Testit: `script-line-annotations.test.ts` (5000 riviä &lt; 100 ms), UI hero-empty.
+
+**Visuaalinen tarkistus (2026-10-06):** [`docs/FIGMA-VISUAL-SESSION-0.48.md`](docs/FIGMA-VISUAL-SESSION-0.48.md) — 1280/1440/1920 (CDP), vaalea/tumma, jakoviiva + padding-synkki, focus overlay täysleveys.
+
+**S-01:** koodi/speksi OK; **Figma 1440×900 capture** käyttäjälle ([`FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md)).
+
+**Seuraava:** vaihe 0.47 **1c** (timeline-tokenit `style.css`); FigJam sticky; S-01 import → issue-lista.
