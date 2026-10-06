@@ -1,0 +1,836 @@
+/* ============================================================================
+   KILSAT Studio 2.0 — visuaalinen järjestelmä ja kehys
+   Kehys: 44 px yläpalkki · vasen paneeli · näyttämö · oikea paneeli · tilarivi.
+   Viisi työvaihetta järjestää saman kehyksen sisällön (.phase-*).
+   Ladataan viimeisenä: kartoittaa vanhat tokenit uuteen palettiin, jolloin
+   kaikki paneelikomponentit saavat saman ilmeen ilman logiikkamuutoksia.
+   ============================================================================ */
+
+/* ─── Tokenit · tumma (oletus) ─── */
+.studio.kilsat-app.s2 {
+  color-scheme: dark;
+  --s2-bg0: #0d0e12;
+  --s2-bg1: #14151b;
+  --s2-bg2: #1b1c24;
+  --s2-bg3: #24252f;
+  --s2-line: #272834;
+  --s2-line2: #353645;
+  --s2-text: #ebeaf2;
+  --s2-muted: #9d9bb0;
+  --s2-faint: #6c6a80;
+  --s2-accent: #8f72f7;
+  --s2-accent-2: #a58cff;
+  --s2-accent-soft: rgba(143, 114, 247, 0.16);
+  --s2-accent-line: rgba(143, 114, 247, 0.45);
+  --s2-on-accent: #ffffff;
+  --s2-ok: #4cc38a;
+  --s2-ok-soft: rgba(76, 195, 138, 0.14);
+  --s2-warn: #e6b450;
+  --s2-warn-soft: rgba(230, 180, 80, 0.14);
+  --s2-err: #ef6a70;
+  --s2-err-soft: rgba(239, 106, 112, 0.14);
+  --s2-info: #5ba8f0;
+  --s2-info-soft: rgba(91, 168, 240, 0.14);
+  --s2-stage: #08090b;
+  --s2-dots: rgba(255, 255, 255, 0.035);
+  --s2-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --s2-font: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --s2-script: "Courier Prime", "Courier New", Courier, monospace;
+  --s2-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --s2-r: 6px;
+  --s2-top: 44px;
+
+  /* Vanhat tokenit → uusi paletti */
+  --bg-0: var(--s2-bg0);
+  --bg-1: var(--s2-bg1);
+  --bg-2: var(--s2-bg2);
+  --bg-hover: var(--s2-bg3);
+  --border: var(--s2-line);
+  --text: var(--s2-text);
+  --text-dim: var(--s2-muted);
+  --text-disabled: var(--s2-faint);
+  --accent: var(--s2-accent);
+  --accent-hover: var(--s2-accent-2);
+  --accent-press: var(--s2-accent);
+  --accent-subtle: var(--s2-accent-soft);
+  --on-accent: var(--s2-on-accent);
+  --focus: var(--s2-accent-2);
+  --focus-ring: 2px solid var(--s2-accent-2);
+  --playhead: var(--s2-err);
+  --bg: var(--s2-bg0);
+  --panel: var(--s2-bg1);
+  --surface: var(--s2-bg2);
+  --line: var(--s2-line);
+  --muted: var(--s2-muted);
+  --field: var(--s2-bg2);
+  --green: var(--s2-accent);
+  --green-bg: var(--s2-accent-soft);
+  --green-line: var(--s2-accent);
+  --color-bg: var(--s2-bg0);
+  --color-surface: var(--s2-bg1);
+  --color-surface-hover: var(--s2-bg2);
+  --color-border: var(--s2-line);
+  --color-text: var(--s2-text);
+  --color-text-secondary: var(--s2-muted);
+  --color-text-tertiary: var(--s2-faint);
+  --color-accent: var(--s2-accent);
+  --color-accent-hover: var(--s2-accent-2);
+  --color-accent-active: var(--s2-accent);
+  --color-accent-soft: var(--s2-accent-soft);
+  --color-accent-border: var(--s2-accent-line);
+  --color-accent-contrast: var(--s2-on-accent);
+  --color-success: var(--s2-ok);
+  --color-warning: var(--s2-warn);
+  --color-error: var(--s2-err);
+  --color-info: var(--s2-info);
+  --script-violet: var(--s2-accent);
+  --script-violet-hover: var(--s2-accent-2);
+  --script-violet-soft: var(--s2-accent-soft);
+  --script-violet-text: var(--s2-accent-2);
+  --resolve-bg-hover: var(--s2-bg3);
+  --resolve-border-hover: var(--s2-line2);
+  --resolve-shadow-hover: none;
+  --timeline-bg: var(--s2-bg1);
+  --timeline-track-surface: var(--s2-bg0);
+  --timeline-field-bg: var(--s2-bg2);
+  --timeline-field-border: var(--s2-line);
+  --timeline-track-active-bg: var(--s2-accent-soft);
+  --timeline-track-active-edge: var(--s2-accent);
+  --timeline-ruler-bg: var(--s2-bg0);
+  --track-blue: var(--s2-info);
+  --track-green: var(--s2-ok);
+  --track-purple: var(--s2-accent-2);
+  --track-gray: var(--s2-muted);
+  --font-ui: var(--s2-font);
+  --font-stack: var(--s2-font);
+  --font-script: var(--s2-script);
+  --font-mono: var(--s2-mono);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-card: 8px;
+  --studio-control-height: 28px;
+  --shadow-panel: var(--s2-shadow);
+  --shadow-xl: var(--s2-shadow);
+  font-family: var(--s2-font);
+  font-size: 12px;
+  background: var(--s2-bg0);
+  color: var(--s2-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Tokenit · vaalea ─── */
+:root[data-theme='light'] .studio.kilsat-app.s2 {
+  color-scheme: light;
+  --s2-bg0: #e9e8ee;
+  --s2-bg1: #f6f5f9;
+  --s2-bg2: #ffffff;
+  --s2-bg3: #ecebf2;
+  --s2-line: #dddbe6;
+  --s2-line2: #cfccdb;
+  --s2-text: #1c1b24;
+  --s2-muted: #5f5d72;
+  --s2-faint: #8d8aa0;
+  --s2-accent: #6d4ae6;
+  --s2-accent-2: #5a37d6;
+  --s2-accent-soft: rgba(109, 74, 230, 0.12);
+  --s2-accent-line: rgba(109, 74, 230, 0.4);
+  --s2-ok: #1f9a62;
+  --s2-warn: #b07a12;
+  --s2-err: #d1434a;
+  --s2-info: #2f7fcf;
+  --s2-stage: #d9d7e0;
+  --s2-dots: rgba(0, 0, 0, 0.05);
+  --s2-shadow: 0 16px 40px rgba(30, 24, 60, 0.16);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme='system'] .studio.kilsat-app.s2,
+  :root:not([data-theme]) .studio.kilsat-app.s2 {
+    color-scheme: light;
+    --s2-bg0: #e9e8ee;
+    --s2-bg1: #f6f5f9;
+    --s2-bg2: #ffffff;
+    --s2-bg3: #ecebf2;
+    --s2-line: #dddbe6;
+    --s2-line2: #cfccdb;
+    --s2-text: #1c1b24;
+    --s2-muted: #5f5d72;
+    --s2-faint: #8d8aa0;
+    --s2-accent: #6d4ae6;
+    --s2-accent-2: #5a37d6;
+    --s2-accent-soft: rgba(109, 74, 230, 0.12);
+    --s2-accent-line: rgba(109, 74, 230, 0.4);
+    --s2-ok: #1f9a62;
+    --s2-warn: #b07a12;
+    --s2-err: #d1434a;
+    --s2-info: #2f7fcf;
+    --s2-stage: #d9d7e0;
+    --s2-dots: rgba(0, 0, 0, 0.05);
+    --s2-shadow: 0 16px 40px rgba(30, 24, 60, 0.16);
+  }
+}
+:root[data-contrast='reduced'] .studio.kilsat-app.s2 {
+  --s2-line: #4a4b5c;
+  --s2-line2: #5d5e72;
+  --s2-muted: #c4c2d4;
+  --s2-faint: #a3a1b6;
+}
+html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
+
+/* ─── Perusprimitiivit ─── */
+.s2 :focus-visible { outline: 2px solid var(--s2-accent-2); outline-offset: 1px; }
+.s2 button, .s2 summary { font-family: inherit; cursor: pointer; }
+.s2 button:disabled { cursor: default; }
+.s2 kbd {
+  font: 500 10px/1 var(--s2-mono);
+  color: var(--s2-faint);
+  border: 1px solid var(--s2-line2);
+  border-radius: 4px;
+  padding: 2px 4px;
+  background: none;
+}
+.studio.s2 .secondary,
+.studio.s2 .ghost-btn {
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: var(--s2-r);
+  border: 1px solid var(--s2-line2);
+  background: var(--s2-bg2);
+  color: var(--s2-text);
+  font-weight: 500;
+  box-shadow: none;
+}
+.studio.s2 .secondary:hover:not(:disabled),
+.studio.s2 .ghost-btn:hover:not(:disabled) { background: var(--s2-bg3); border-color: var(--s2-line2); }
+.studio.s2 .secondary[aria-pressed='true'],
+.studio.s2 .ghost-btn[aria-pressed='true'] { background: var(--s2-accent-soft); border-color: var(--s2-accent-line); color: var(--s2-accent-2); }
+.studio.s2 .primary {
+  min-height: 28px;
+  padding: 4px 12px;
+  border-radius: var(--s2-r);
+  border: 1px solid var(--s2-accent);
+  background: var(--s2-accent);
+  color: var(--s2-on-accent);
+  font-weight: 600;
+}
+.studio.s2 .primary:hover:not(:disabled) { background: var(--s2-accent-2); border-color: var(--s2-accent-2); }
+.studio.s2 .text-button { background: none; border: 0; color: var(--s2-accent-2); padding: 2px 4px; min-height: 0; }
+.studio.s2 .text-button:hover:not(:disabled) { text-decoration: underline; }
+.studio.s2 button:disabled { opacity: 0.45; }
+.studio.s2 input:not([type=checkbox]):not([type=range]):not([type=file]):not([type=radio]),
+.studio.s2 select,
+.studio.s2 textarea {
+  background: var(--s2-bg2);
+  color: var(--s2-text);
+  border: 1px solid var(--s2-line);
+  border-radius: 5px;
+}
+.studio.s2 input:focus, .studio.s2 select:focus, .studio.s2 textarea:focus { outline: 1px solid var(--s2-accent); border-color: var(--s2-accent); }
+.studio.s2 input[type=checkbox], .studio.s2 input[type=radio], .studio.s2 input[type=range] { accent-color: var(--s2-accent); }
+.studio.s2 label { color: var(--s2-muted); }
+.studio.s2 details > summary { color: var(--s2-text); }
+.studio.s2 ::-webkit-scrollbar { width: 10px; height: 10px; }
+.studio.s2 ::-webkit-scrollbar-thumb { background: var(--s2-line2); border-radius: 6px; border: 2px solid transparent; background-clip: padding-box; }
+.studio.s2 ::-webkit-scrollbar-track { background: transparent; }
+.studio.s2 .eyebrow { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s2-faint); }
+
+/* Segmentoitu valinta (yhteinen) */
+.s2 .s2-seg,
+.s2 .resolve-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--s2-bg0);
+  border: 1px solid var(--s2-line);
+  flex: none;
+}
+.s2 .s2-seg button,
+.s2 .resolve-segmented button {
+  border: 0;
+  background: none;
+  color: var(--s2-muted);
+  min-height: 24px;
+  padding: 3px 11px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.s2 .s2-seg button:hover,
+.s2 .resolve-segmented button:hover { color: var(--s2-text); }
+.s2 .s2-seg button[aria-pressed='true'],
+.s2 .resolve-segmented button[aria-pressed='true'] { background: var(--s2-bg3); color: var(--s2-text); box-shadow: none; }
+
+/* ─── Kehys ─── */
+.s2.kilsat-frame { display: flex; flex-direction: column; width: 100vw; height: 100dvh; overflow: hidden; }
+.s2 .s2-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--s2-top);
+  min-height: var(--s2-top);
+  padding: 0 10px;
+  background: var(--s2-bg1);
+  border-bottom: 1px solid var(--s2-line);
+  position: relative;
+  z-index: 100;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+.s2 .s2-top button, .s2 .s2-top summary, .s2 .s2-top select, .s2 .s2-top details, .s2 .s2-top input { -webkit-app-region: no-drag; }
+.desktop-shell.s2 .s2-top { padding-left: 84px; }
+.s2 .s2-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: 0.02em; font-size: 13px; padding-right: 2px; flex: none; }
+.s2 .s2-mark {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--s2-accent); color: var(--s2-on-accent);
+  display: grid; place-items: center; font: 700 12px/1 var(--s2-font); font-style: normal;
+}
+.s2 .s2-body { flex: 1; min-height: 0; display: flex; }
+.s2 .s2-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Projektivalikko */
+.s2 .s2-project-menu { position: relative; flex: 0 1 auto; min-width: 0; }
+.s2 .s2-project-menu > summary {
+  list-style: none;
+  display: flex; align-items: center; gap: 7px;
+  height: 30px; padding: 0 9px; border-radius: var(--s2-r);
+  border: 1px solid transparent; color: var(--s2-text);
+  font-size: 12px; font-weight: 500; max-width: 260px;
+}
+.s2 .s2-project-menu > summary::-webkit-details-marker { display: none; }
+.s2 .s2-project-menu > summary:hover, .s2 .s2-project-menu[open] > summary { background: var(--s2-bg2); border-color: var(--s2-line); }
+.s2 .s2-project-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.s2 .s2-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--s2-ok); flex: none; }
+.s2 .s2-dot.dirty { background: var(--s2-warn); }
+.s2 .app-menu-content,
+.s2 .view-menu > div {
+  position: absolute;
+  top: calc(100% + 6px);
+  min-width: 270px;
+  max-height: calc(100dvh - 70px);
+  overflow: auto;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 6px;
+  background: var(--s2-bg1);
+  border: 1px solid var(--s2-line2);
+  border-radius: 10px;
+  box-shadow: var(--s2-shadow);
+  z-index: 300;
+}
+.s2 .s2-project-menu .app-menu-content { left: 0; }
+.s2 .view-menu > div { right: 0; }
+.s2 .app-menu-content > button,
+.s2 .app-menu-content .revision-trigger,
+.s2 .app-menu-content > .revision-panel > button,
+.s2 .s2-submenu > div > button,
+.s2 .view-menu > div > button {
+  display: flex; align-items: center; gap: 8px; justify-content: flex-start;
+  width: 100%; min-height: 28px; padding: 5px 10px;
+  border: 0; border-radius: 5px; background: none; color: var(--s2-text);
+  font-weight: 400; text-align: left;
+}
+.s2 .app-menu-content > button > kbd { margin-left: auto; }
+.s2 .app-menu-content button:hover:not(:disabled),
+.s2 .view-menu > div > button:hover:not(:disabled) { background: var(--s2-accent-soft); }
+.s2 .app-menu-content hr { border: 0; border-top: 1px solid var(--s2-line); margin: 5px 2px; }
+.s2 .s2-menu-head { margin: 4px 10px 2px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s2-faint); font-weight: 600; }
+.s2 .s2-submenu > summary { padding: 6px 10px; border-radius: 5px; font-size: 12px; font-weight: 400; color: var(--s2-text); }
+.s2 .s2-submenu > summary:hover { background: var(--s2-accent-soft); }
+.s2 .s2-submenu > div { display: flex; flex-direction: column; padding-left: 10px; border-left: 1px solid var(--s2-line); margin: 2px 0 4px 12px; }
+
+/* Työvaiheet */
+.s2 .s2-phases {
+  display: flex; gap: 2px; margin: 0 auto; padding: 2px;
+  background: var(--s2-bg0); border: 1px solid var(--s2-line); border-radius: 8px;
+  flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none;
+}
+.s2 .s2-phase {
+  display: flex; align-items: center; gap: 7px;
+  min-height: 28px; padding: 3px 12px; border: 0; border-radius: 6px;
+  background: none; color: var(--s2-muted); white-space: nowrap; font-size: 12px; font-weight: 500;
+}
+.s2 .s2-phase b {
+  font: 500 10px/15px var(--s2-mono); color: var(--s2-faint);
+  border: 1px solid var(--s2-line2); border-radius: 4px; padding: 0 4px;
+}
+.s2 .s2-phase:hover { color: var(--s2-text); background: var(--s2-bg2); }
+.s2 .s2-phase[aria-current='page'] { background: var(--s2-bg3); color: var(--s2-text); }
+.s2 .s2-phase[aria-current='page'] b { background: var(--s2-accent); border-color: var(--s2-accent); color: var(--s2-on-accent); }
+
+/* Työkalut oikealla */
+.s2 .s2-tools { display: flex; align-items: center; gap: 4px; flex: none; }
+.s2 .s2-search {
+  display: flex; align-items: center; gap: 8px;
+  height: 30px; min-width: 190px; padding: 0 6px 0 10px;
+  border: 1px solid var(--s2-line); border-radius: var(--s2-r);
+  background: var(--s2-bg0); color: var(--s2-faint); font-size: 12px;
+}
+.s2 .s2-search span { flex: 1; text-align: left; }
+.s2 .s2-search:hover { border-color: var(--s2-line2); color: var(--s2-muted); }
+.s2 .s2-icon {
+  display: inline-grid; place-items: center;
+  width: 30px; height: 30px; min-height: 30px; padding: 0;
+  border: 1px solid transparent; border-radius: var(--s2-r);
+  background: none; color: var(--s2-muted);
+}
+.s2 .s2-icon:hover:not(:disabled) { background: var(--s2-bg2); border-color: var(--s2-line); color: var(--s2-text); }
+.s2 .s2-tools .view-menu { position: relative; }
+.s2 .s2-tools .view-menu > summary {
+  list-style: none; height: 30px; display: flex; align-items: center;
+  padding: 0 10px; border-radius: var(--s2-r); border: 1px solid transparent;
+  color: var(--s2-muted); font-size: 12px; font-weight: 500;
+}
+.s2 .s2-tools .view-menu > summary::-webkit-details-marker { display: none; }
+.s2 .s2-tools .view-menu > summary:hover, .s2 .s2-tools .view-menu[open] > summary { background: var(--s2-bg2); border-color: var(--s2-line); color: var(--s2-text); }
+.s2 .view-menu > div label { display: flex; align-items: center; gap: 8px; padding: 5px 10px; color: var(--s2-text); font-size: 12px; border-radius: 5px; }
+.s2 .view-menu > div label:hover { background: var(--s2-accent-soft); }
+.s2 .view-menu > div p { margin: 6px 10px 2px; font-size: 11px; color: var(--s2-faint); line-height: 1.45; }
+.s2 .s2-save { height: 30px; }
+.s2 .s2-export > * > button:first-child,
+.s2 .s2-export > button { height: 30px; }
+.s2 .s2-export button:not(.secondary):not(.text-button):first-of-type {
+  background: var(--s2-accent); color: var(--s2-on-accent); border: 1px solid var(--s2-accent);
+  border-radius: var(--s2-r); padding: 0 14px; font-weight: 600;
+}
+
+/* ─── Työtila: vasen · näyttämö · oikea ─── */
+.studio.s2 .workspace {
+  display: grid;
+  grid-template-columns: var(--library-size) 1px minmax(0, 1fr) 1px var(--inspector-size);
+  flex: 1; min-height: 0; overflow: hidden; background: var(--s2-bg0);
+}
+.studio.s2.hide-library .workspace { grid-template-columns: minmax(0, 1fr) 1px var(--inspector-size); }
+.studio.s2.hide-inspector .workspace { grid-template-columns: var(--library-size) 1px minmax(0, 1fr); }
+.studio.s2.hide-library.hide-inspector .workspace { grid-template-columns: minmax(0, 1fr); }
+.studio.s2 .panel-resizer { background: var(--s2-line); position: relative; z-index: 4; }
+.studio.s2 .panel-resizer:hover, .studio.s2 .panel-resizer:focus-visible { background: var(--s2-accent); }
+.studio.s2 .panel-resizer.horizontal { height: 1px; min-height: 1px; }
+.studio.s2 .layers-panel,
+.studio.s2 .details-panel {
+  background: var(--s2-bg1);
+  border: 0;
+  padding: 0;
+  overflow: auto;
+  min-width: 0;
+}
+.studio.s2 .layers-panel > *:not(.library-tabs):not(.performance-navigation) { margin-left: 0; margin-right: 0; }
+.studio.s2 .flow-step-banner {
+  margin: 0; padding: 8px 12px; font-size: 11px; line-height: 1.45;
+  color: var(--s2-muted); background: var(--s2-bg0); border-bottom: 1px solid var(--s2-line);
+}
+
+/* Paneelien välilehdet: alleviivattu tyyli */
+.studio.s2 .library-tabs,
+.studio.s2 .details-panel .inspector-tabs,
+.studio.s2 .performance-navigation {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; gap: 0; padding: 0 6px; margin: 0;
+  background: var(--s2-bg1); border: 0; border-bottom: 1px solid var(--s2-line); border-radius: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.studio.s2 .library-tabs button,
+.studio.s2 .details-panel .inspector-tabs button,
+.studio.s2 .performance-navigation button {
+  flex: none; min-height: 38px; padding: 10px 9px 9px;
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  background: none; color: var(--s2-muted); font-size: 12px; font-weight: 500; box-shadow: none;
+}
+.studio.s2 .library-tabs button:hover,
+.studio.s2 .details-panel .inspector-tabs button:hover,
+.studio.s2 .performance-navigation button:hover { color: var(--s2-text); background: none; }
+.studio.s2 .library-tabs button.active,
+.studio.s2 .library-tabs button[aria-pressed='true'],
+.studio.s2 .details-panel .inspector-tabs button.active,
+.studio.s2 .details-panel .inspector-tabs button[aria-pressed='true'],
+.studio.s2 .performance-navigation button[aria-pressed='true'] {
+  color: var(--s2-text); background: none; border-bottom-color: var(--s2-accent);
+}
+.studio.s2 .performance-navigation + .performance-controls-dock { padding: 0; }
+.studio.s2 .inspector-section { padding: 0; }
+.studio.s2 .details-panel .inspector-title,
+.studio.s2 .panel-heading h2 {
+  display: flex; align-items: center; gap: 6px;
+  margin: 0; padding: 12px 12px 8px;
+  font-size: 10px !important; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--s2-faint); font-weight: 600;
+}
+.studio.s2 .panel-heading { display: flex; align-items: center; justify-content: space-between; padding-right: 12px; }
+.studio.s2 .panel-heading span { font: 11px var(--s2-mono); color: var(--s2-faint); }
+.studio.s2 .panel-note { padding: 0 12px; color: var(--s2-muted); }
+
+/* Kokoontaitettavat osiot paneeleissa */
+.studio.s2 .details-panel details,
+.studio.s2 .layers-panel details:not(.s2-submenu) {
+  border: 0;
+  border-bottom: 1px solid var(--s2-line);
+  border-radius: 0;
+  background: none;
+  margin: 0;
+}
+.studio.s2 .details-panel details > summary,
+.studio.s2 .layers-panel details > summary {
+  list-style: none;
+  display: flex; align-items: center; gap: 7px;
+  padding: 11px 12px; margin: 0;
+  font-size: 12px; font-weight: 600; color: var(--s2-text);
+}
+.studio.s2 .details-panel details > summary::-webkit-details-marker,
+.studio.s2 .layers-panel details > summary::-webkit-details-marker { display: none; }
+.studio.s2 .details-panel details > summary::before,
+.studio.s2 .layers-panel details > summary::before {
+  content: ""; flex: none; width: 0; height: 0;
+  border-left: 4px solid var(--s2-faint); border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+  transition: transform 0.15s;
+}
+.studio.s2 .details-panel details[open] > summary::before,
+.studio.s2 .layers-panel details[open] > summary::before { transform: rotate(90deg); }
+.studio.s2 .details-panel details > summary:hover,
+.studio.s2 .layers-panel details > summary:hover { background: var(--s2-bg2); }
+.studio.s2 .details-panel details[open] > :not(summary),
+.studio.s2 .layers-panel details[open] > :not(summary) { padding-left: 12px; padding-right: 12px; }
+.studio.s2 .details-panel details[open] { padding-bottom: 10px; }
+
+/* Valitun osan tiedot */
+.studio.s2 .selection-inspector-body { padding: 12px; display: grid; gap: 8px; }
+.studio.s2 .detail-preview { border-radius: 6px; border: 1px solid var(--s2-line); max-height: 160px; }
+.studio.s2 .selection-inspector-body h3 { font-size: 14px !important; margin: 0; }
+.studio.s2 .layer-path { font: 11px var(--s2-mono); color: var(--s2-faint); margin: 0; word-break: break-all; }
+.studio.s2 .properties { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }
+.studio.s2 .properties > div { display: contents; }
+.studio.s2 .properties dt { color: var(--s2-muted); }
+.studio.s2 .properties dd { margin: 0; text-align: right; font: 11px var(--s2-mono); }
+.studio.s2 .file-summary { margin: 0; padding: 12px; border-top: 1px solid var(--s2-line); }
+.studio.s2 .workflow-step { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.studio.s2 .workflow-step span { font: 10px var(--s2-mono); color: var(--s2-faint); }
+.studio.s2 .workflow-step svg { color: var(--s2-ok); }
+.studio.s2 .file-summary p { color: var(--s2-muted); margin: 0; line-height: 1.5; }
+.studio.s2 .layer-warning { color: var(--s2-warn); display: flex; gap: 6px; align-items: flex-start; margin: 0; }
+.studio.s2 .full { width: 100%; justify-content: center; }
+
+/* Esitys-yhteenveto */
+.studio.s2 .performance-summary { padding: 12px; display: grid; gap: 8px; border-bottom: 1px solid var(--s2-line); }
+.studio.s2 .performance-summary h2 { margin: 0; font-size: 10px !important; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s2-faint); }
+.studio.s2 .performance-summary > p { margin: 0; color: var(--s2-muted); }
+.studio.s2 .performance-summary dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0; }
+.studio.s2 .performance-summary dl > div { background: var(--s2-bg2); border-radius: 6px; padding: 6px 8px; display: grid; gap: 1px; }
+.studio.s2 .performance-summary dt { font-size: 10px; color: var(--s2-muted); }
+.studio.s2 .performance-summary dd { margin: 0; font-weight: 600; }
+.studio.s2 .performance-summary label { display: grid; gap: 4px; }
+.studio.s2 .performance-summary .motion-shortcuts { border: 1px solid var(--s2-line); border-radius: 6px; background: var(--s2-bg2); }
+.studio.s2 .performance-summary .motion-shortcuts > summary { padding: 8px 10px; }
+.studio.s2 .movement-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 10px 10px; align-items: flex-end; background: none; border: 0; }
+.studio.s2 .movement-bar small { flex-basis: 100%; color: var(--s2-faint); }
+
+/* ─── Kirjasto ja tasot (vasen paneeli) ─── */
+.studio.s2 .quick-library { padding: 0 0 12px; display: grid; gap: 10px; }
+.studio.s2 .quick-library > nav.asset-tabs {
+  display: flex; gap: 2px; margin: 10px 12px 0; padding: 2px;
+  background: var(--s2-bg0); border: 1px solid var(--s2-line); border-radius: 7px;
+}
+.studio.s2 .quick-library > nav.asset-tabs button {
+  flex: 1; border: 0; background: none; color: var(--s2-muted); min-height: 24px; padding: 3px 8px; border-radius: 5px; font-size: 12px;
+}
+.studio.s2 .quick-library > nav.asset-tabs button[aria-pressed='true'] { background: var(--s2-bg3); color: var(--s2-text); }
+.studio.s2 .quick-library > div { padding: 0 12px; }
+.studio.s2 .layer-search { padding: 10px 12px; display: grid; gap: 4px; }
+.studio.s2 .layer-search label { display: grid; gap: 4px; }
+.studio.s2 .layer-search input { width: 100%; }
+.studio.s2 .layer-tree { padding: 2px 0 8px; }
+.studio.s2 .layers-bottom { padding: 10px 12px; display: grid; gap: 8px; border-top: 1px solid var(--s2-line); color: var(--s2-faint); }
+.studio.s2 .panel-empty { padding: 32px 16px; text-align: center; color: var(--s2-muted); display: grid; justify-items: center; gap: 4px; }
+.studio.s2 .panel-empty svg { color: var(--s2-faint); }
+.studio.s2 .panel-empty p { margin: 6px 0 0; color: var(--s2-text); font-weight: 600; }
+
+/* ─── Näyttämö ─── */
+.studio.s2 .preview-panel {
+  display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background: var(--s2-bg0); overflow: hidden; position: relative;
+}
+.studio.s2 .s2-stagebar {
+  display: flex; align-items: center; justify-content: flex-start; gap: 8px;
+  height: 40px; min-height: 40px; padding: 0 10px; flex: none;
+  background: var(--s2-bg1); border-bottom: 1px solid var(--s2-line);
+  overflow-x: auto; scrollbar-width: none;
+}
+.studio.s2 .s2-stagebar > strong { font-size: 12px; font-weight: 600; white-space: nowrap; color: var(--s2-text); }
+.studio.s2 .s2-stagebar .s2-meta { font: 11px var(--s2-mono); color: var(--s2-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.studio.s2 .s2-stagebar .s2-spacer { flex: 1; }
+.studio.s2 .s2-stagebar .secondary { min-height: 26px; padding: 2px 9px; background: none; border-color: transparent; color: var(--s2-muted); white-space: nowrap; }
+.studio.s2 .s2-stagebar .secondary:hover:not(:disabled) { background: var(--s2-bg2); color: var(--s2-text); border-color: var(--s2-line); }
+.studio.s2 .s2-stagebar .secondary[aria-pressed='true'],
+.studio.s2 .s2-stagebar .secondary[aria-expanded='true'] { color: var(--s2-accent-2); background: var(--s2-accent-soft); }
+.studio.s2 .s2-stagebar .angle-choice { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--s2-muted); font-size: 12px; }
+.studio.s2 .s2-stagebar .angle-choice select { height: 26px; width: auto; }
+.studio.s2 .background-options { display: flex; gap: 4px; flex: none; }
+.studio.s2 .background-options .swatch {
+  width: 18px; height: 18px; min-height: 18px; padding: 0; border-radius: 4px; border: 1px solid var(--s2-line2);
+}
+.studio.s2 .background-options .swatch.checker { background: conic-gradient(#777 25%, #bbb 0 50%, #777 0 75%, #bbb 0) 0 0 / 8px 8px; }
+.studio.s2 .background-options .swatch.dark { background: #111; }
+.studio.s2 .background-options .swatch.white { background: #fff; }
+.studio.s2 .background-options .swatch.chosen { outline: 2px solid var(--s2-accent); outline-offset: 1px; }
+.studio.s2 .stage {
+  flex: 1; min-height: 0; position: relative; padding: 16px 16px 52px;
+  background-color: var(--s2-stage);
+  background-image: radial-gradient(circle at 1px 1px, var(--s2-dots) 1px, transparent 0);
+  background-size: 16px 16px; background-position: 0 0;
+}
+.studio.s2 .artboard { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), var(--s2-shadow); border-radius: 2px; padding: 0; }
+.studio.s2 .artboard canvas { box-shadow: none; border-radius: 0; }
+.studio.s2 .selection-box { border: 1.5px solid var(--s2-accent); border-radius: 2px; }
+
+/* Kelluva hahmotyökalurivi */
+.studio.s2 .s2-float {
+  position: absolute; top: 12px; left: 12px; z-index: 6;
+  display: flex; flex-direction: column; gap: 2px; padding: 3px;
+  background: var(--s2-bg1); border: 1px solid var(--s2-line2); border-radius: 9px; box-shadow: var(--s2-shadow);
+}
+.studio.s2 .s2-float button {
+  border: 0; background: none; color: var(--s2-muted); text-align: left;
+  min-height: 28px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+.studio.s2 .s2-float button:hover:not(:disabled) { background: var(--s2-bg2); color: var(--s2-text); }
+.studio.s2 .s2-float button[aria-pressed='true'] { background: var(--s2-accent-soft); color: var(--s2-accent-2); }
+
+/* Zoom-palkki näyttämön alareunassa */
+.studio.s2 .preview-footer {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 6px; min-height: 32px; padding: 3px 6px;
+  border: 1px solid var(--s2-line2); border-radius: 9px; background: var(--s2-bg1); box-shadow: var(--s2-shadow);
+  max-width: calc(100% - 24px); width: max-content;
+}
+.studio.s2 .zoom-controls { display: flex; align-items: center; gap: 2px; font: 11px var(--s2-mono); color: var(--s2-muted); }
+.studio.s2 .zoom-controls > span { min-width: 42px; text-align: center; }
+.studio.s2 .zoom-controls button,
+.studio.s2 .fit-button,
+.studio.s2 .tiny {
+  border: 0; background: none; color: var(--s2-muted); min-height: 26px; padding: 2px 8px; border-radius: 5px;
+  font: 500 12px var(--s2-font); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.studio.s2 .zoom-controls button:hover:not(:disabled),
+.studio.s2 .fit-button:hover:not(:disabled),
+.studio.s2 .tiny:hover:not(:disabled) { background: var(--s2-bg2); color: var(--s2-text); }
+
+/* Aloitusnäkymä (ei projektia) */
+.studio.s2 .import-card {
+  width: min(440px, 100%); padding: 28px 28px 22px;
+  display: grid; gap: 10px; justify-items: stretch; text-align: center;
+  background: var(--s2-bg1); border: 1px solid var(--s2-line); border-radius: 12px; box-shadow: var(--s2-shadow);
+  max-height: 100%; overflow: auto;
+}
+.studio.s2 .import-card .import-symbol { justify-self: center; display: grid; justify-items: center; gap: 4px; color: var(--s2-accent-2); }
+.studio.s2 .import-card .import-symbol span { font: 10px var(--s2-mono); color: var(--s2-faint); }
+.studio.s2 .import-card h2 { font-size: 20px !important; margin: 0 0 6px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.studio.s2 .import-card h3 { font-size: 11px !important; letter-spacing: 0.07em; text-transform: uppercase; color: var(--s2-faint); margin: 12px 0 0; }
+.studio.s2 .import-card p { margin: 0; color: var(--s2-muted); line-height: 1.5; }
+.studio.s2 .import-card .large { min-height: 36px; font-size: 13px; justify-content: center; display: inline-flex; align-items: center; gap: 8px; }
+.studio.s2 .import-card .drop-hint, .studio.s2 .import-card .format-note { color: var(--s2-faint); font-size: 11px; line-height: 1.5; }
+.studio.s2 .import-divider { height: 1px; background: var(--s2-line); margin: 6px 0; }
+.studio.s2 .recent-projects { display: grid; gap: 2px; text-align: left; }
+.studio.s2 .drop-overlay, .studio.s2 .busy-overlay {
+  position: absolute; inset: 12px; z-index: 20; display: grid; place-content: center; justify-items: center; gap: 10px;
+  border: 2px dashed var(--s2-accent); border-radius: 12px; background: color-mix(in srgb, var(--s2-bg0) 82%, transparent); color: var(--s2-text);
+}
+.studio.s2 .busy-overlay { border-style: solid; border-color: var(--s2-line2); }
+
+/* ─── Työvaihekohtainen asettelu ─── */
+/* Storyboard: kuvataulu täyttää keskialueen */
+.studio.s2.phase-storyboard .preview-panel .stage,
+.studio.s2.phase-storyboard .preview-panel .preview-footer { display: none; }
+.studio.s2.phase-storyboard .production-center-dock:not([hidden]) {
+  flex: 1; min-height: 0; max-height: none; overflow: auto; padding: 16px; border: 0; background: var(--s2-bg0);
+}
+/* Kuva: kuvanauha yläreunassa, kuvataulu piilossa */
+.studio.s2.phase-shot .production-center-dock { display: none; }
+.studio.s2 .s2-filmstrip { flex: none; border-bottom: 1px solid var(--s2-line); background: var(--s2-bg1); padding: 8px 10px; overflow-x: auto; }
+.studio.s2 .production-center-dock:not([hidden]) { border-top: 1px solid var(--s2-line); background: var(--s2-bg0); max-height: 46%; overflow: auto; padding: 12px; }
+
+/* Kuvakortit */
+.studio.s2 .studio-shots.grid { gap: 14px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.studio.s2 .resolve-shot-card,
+.studio.s2 .studio-shot {
+  border: 1px solid var(--s2-line); background: var(--s2-bg1); border-radius: 8px; overflow: hidden;
+}
+.studio.s2 .resolve-shot-card:hover,
+.studio.s2 .studio-shot:hover { border-color: var(--s2-line2); background: var(--s2-bg2); box-shadow: none; }
+.studio.s2 .resolve-shot-card.selected,
+.studio.s2 .resolve-shot-card[aria-selected='true'],
+.studio.s2 .studio-shot.selected { border-color: var(--s2-accent); box-shadow: 0 0 0 1px var(--s2-accent); }
+
+/* ─── Käsikirjoitus ─── */
+.studio.s2 .script-center-stage:not([hidden]) { flex: 1; min-height: 0; overflow: auto; background: var(--s2-bg0); }
+.studio.s2 .script-compose-editor textarea,
+.studio.s2 .script-line-sheet,
+.studio.s2 .script-source-editor textarea { font-family: var(--s2-script); font-size: 14px; line-height: 1.7; }
+.studio.s2 .script-parse-divider { background: var(--s2-accent); }
+
+/* ─── Aikajana ─── */
+.studio.s2 .timeline-dock { background: var(--s2-bg1); border-top: 1px solid var(--s2-line); }
+.studio.s2 .timeline-toggle {
+  display: flex; align-items: center; gap: 10px; min-height: 30px; padding: 2px 10px;
+  border-bottom: 1px solid var(--s2-line); background: var(--s2-bg1);
+}
+.studio.s2 .timeline-toggle .secondary { min-height: 22px; padding: 1px 8px; background: none; border-color: transparent; color: var(--s2-muted); }
+.studio.s2 .timeline-toggle .secondary:hover { color: var(--s2-text); background: var(--s2-bg2); }
+.studio.s2 .timeline-meta { font: 11px var(--s2-mono); color: var(--s2-faint); }
+.studio.s2 .transport-controls {
+  display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 4px 10px;
+  background: var(--s2-bg1); border-bottom: 1px solid var(--s2-line); font-size: 12px;
+}
+.studio.s2 .transport-status { font: 11px var(--s2-mono); color: var(--s2-muted); min-width: 72px; }
+.studio.s2 .transport-cluster { display: flex; gap: 2px; }
+.studio.s2 .transport-cluster .transport-icon { width: 30px; height: 28px; min-height: 28px; padding: 0; display: grid; place-items: center; background: none; border-color: transparent; color: var(--s2-muted); }
+.studio.s2 .transport-cluster .transport-icon:first-child { background: var(--s2-accent); border-color: var(--s2-accent); color: var(--s2-on-accent); }
+.studio.s2 .transport-cluster .transport-icon:hover:not(:disabled) { color: var(--s2-text); background: var(--s2-bg2); }
+.studio.s2 .transport-cluster .transport-icon:first-child:hover:not(:disabled) { background: var(--s2-accent-2); color: var(--s2-on-accent); }
+.studio.s2 .transport-scene { display: flex; align-items: center; gap: 6px; }
+.studio.s2 .transport-scene select { height: 26px; width: auto; }
+.studio.s2 .timeline-container { background: var(--s2-bg1); border-top: 0; }
+.studio.s2 .timeline { padding: 0; }
+.studio.s2 .timeline-heading { padding: 6px 10px; margin: 0; border-bottom: 1px solid var(--s2-line); background: var(--s2-bg1); }
+.studio.s2 .time-ruler { background: var(--s2-bg0); font: 10px var(--s2-mono); color: var(--s2-faint); }
+.studio.s2 .track-name { background: var(--s2-bg1); color: var(--s2-muted); font-size: 11px; }
+.studio.s2 .animation-track { border-bottom: 1px solid var(--s2-line); }
+.studio.s2 .animation-track.active { box-shadow: inset 2px 0 var(--s2-accent); background: var(--s2-accent-soft); }
+.studio.s2 .animation-track.active .track-name { color: var(--s2-text); background: var(--s2-accent-soft); }
+.studio.s2 .track-keys { background: var(--s2-bg0); }
+.studio.s2 .track-keys .current-key { color: var(--s2-warn); }
+
+/* ─── Tilarivi ─── */
+.studio.s2 .statusbar {
+  display: flex; align-items: center; gap: 14px; height: 26px; min-height: 26px; padding: 0 10px;
+  background: var(--s2-bg1); border-top: 1px solid var(--s2-line); color: var(--s2-muted);
+  font-size: 11px; white-space: nowrap; overflow: hidden; flex: none;
+}
+.studio.s2 .statusbar .device-status { display: contents; }
+.studio.s2 .statusbar .device-status > span { display: inline-flex; align-items: center; gap: 5px; }
+.studio.s2 .statusbar .device-status > span::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--s2-faint); }
+.studio.s2 .statusbar .device-status > strong { font-weight: 500; }
+.studio.s2 .statusbar button { min-height: 18px; height: 18px; padding: 0 2px; font-size: 11px; }
+.studio.s2 .statusbar > span:nth-last-child(2) { margin-left: auto; }
+.studio.s2 .statusbar .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--s2-ok); margin-right: 5px; }
+
+/* ─── Ilmoitukset ─── */
+.studio.s2 .error-bar {
+  display: flex; align-items: center; gap: 10px; margin: 0; padding: 7px 12px;
+  background: var(--s2-err-soft); color: var(--s2-text); border-bottom: 1px solid var(--s2-err);
+}
+.studio.s2 .error-bar > svg { color: var(--s2-err); flex: none; }
+.studio.s2 .error-bar > span { flex: 1; }
+.studio.s2 .warnings {
+  border-top: 1px solid var(--s2-line); background: var(--s2-warn-soft); padding: 0 10px; flex: none;
+}
+.studio.s2 .warnings > summary { display: flex; align-items: center; gap: 6px; padding: 6px 0; color: var(--s2-text); font-size: 12px; }
+.studio.s2 .warnings > summary svg { color: var(--s2-warn); }
+
+/* ─── Modaalit ─── */
+.studio.s2 .modal-backdrop { background: rgba(5, 5, 9, 0.6); }
+.studio.s2 .help-modal,
+.studio.s2 .recovery-prompt-modal {
+  background: var(--s2-bg1); color: var(--s2-text); border: 1px solid var(--s2-line2); border-radius: 12px; box-shadow: var(--s2-shadow);
+}
+.studio.s2 .modal-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--s2-line); }
+.studio.s2 .modal-heading h2 { font-size: 15px !important; margin: 0; }
+.studio.s2 .s2-settings { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 64px); overflow: auto; padding: 20px; display: grid; gap: 14px; }
+.studio.s2 .s2-settings fieldset { border: 1px solid var(--s2-line); border-radius: 8px; padding: 10px 12px 12px; margin: 0; display: grid; gap: 8px; }
+.studio.s2 .s2-settings legend { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s2-faint); font-weight: 600; padding: 0 4px; }
+.studio.s2 .s2-settings label { display: flex; align-items: center; gap: 8px; color: var(--s2-text); font-size: 12px; }
+.studio.s2 .s2-settings p { margin: 0; color: var(--s2-muted); font-size: 11px; line-height: 1.5; }
+.studio.s2 .s2-shortcuts dl { margin: 0; display: grid; gap: 4px; }
+.studio.s2 .s2-shortcuts dl > div { display: flex; justify-content: space-between; gap: 12px; }
+.studio.s2 .s2-shortcuts dt { font: 11px var(--s2-mono); color: var(--s2-accent-2); }
+.studio.s2 .s2-shortcuts dd { margin: 0; color: var(--s2-muted); }
+
+/* ─── Komentohaku ⌘K ─── */
+.s2 .s2-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  display: grid; place-items: start center; padding-top: 12vh;
+  background: rgba(5, 5, 9, 0.55);
+}
+.s2 .s2-palette {
+  width: min(620px, calc(100vw - 32px));
+  background: var(--s2-bg1); border: 1px solid var(--s2-line2); border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55); overflow: hidden;
+  display: flex; flex-direction: column; max-height: 70dvh;
+}
+.studio.s2 .s2-palette input {
+  height: 48px; padding: 0 16px; border: 0; border-bottom: 1px solid var(--s2-line); border-radius: 0;
+  background: none; font-size: 15px; outline: none; width: 100%;
+}
+.s2 .s2-palette-list { overflow: auto; padding: 6px; min-height: 0; }
+.s2 .s2-palette-group { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s2-faint); padding: 8px 10px 4px; font-weight: 600; }
+.s2 .s2-palette-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; color: var(--s2-text); cursor: pointer; font-size: 13px; }
+.s2 .s2-palette-item kbd { margin-left: auto; }
+.s2 .s2-palette-item[aria-selected='true'] { background: var(--s2-accent-soft); }
+.s2 .s2-palette-item[aria-disabled='true'] { opacity: 0.45; cursor: default; }
+.s2 .s2-palette-empty { padding: 14px; margin: 0; color: var(--s2-muted); }
+.s2 .s2-palette-foot { display: flex; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--s2-line); color: var(--s2-faint); font-size: 11px; }
+.s2 .s2-palette-foot span { display: inline-flex; gap: 4px; align-items: center; }
+
+/* ─── Kapea ikkuna ─── */
+@media (max-width: 1240px) {
+  .s2 .s2-search span, .s2 .s2-search kbd { display: none; }
+  .s2 .s2-search { min-width: 0; width: 30px; padding: 0; justify-content: center; }
+}
+@media (max-width: 1060px) {
+  .s2 .s2-phase .studio-flow-tab-label { display: none; }
+  .s2 .s2-phase { padding: 3px 8px; }
+  .s2 .s2-project-menu > summary { max-width: 160px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .s2 * { transition: none !important; animation: none !important; }
+}
+:root[data-motion='reduced'] .s2 * { transition: none !important; animation: none !important; }
+
+/* ─── Vasen paneeli: välilehdet ylös, myös Esitys-tilassa ─── */
+.studio.s2 .layers-panel:not([hidden]) { display: flex; flex-direction: column; }
+.studio.s2 .layers-panel > .flow-step-banner { order: -2; }
+.studio.s2 .layers-panel > .library-tabs { order: -1; flex: none; }
+.studio.s2.workspace-performance .library-tabs { display: flex; }
+.studio.s2 .layers-panel > [hidden] { display: none !important; }
+
+/* ─── Ohjauslähteet oikeassa paneelissa ─── */
+.studio.s2 .performance-controller { background: none; color: var(--s2-text); }
+.studio.s2 .performance-controller .quick-controls,
+.studio.s2 .performance-controller .camera-controls { padding: 12px; border-bottom: 1px solid var(--s2-line); background: none; }
+.studio.s2 .camera-panel, .studio.s2 .quick-panel, .studio.s2 .performance-tools { background: none; color: var(--s2-text); }
+.studio.s2 .camera-status, .studio.s2 .camera-empty, .studio.s2 .camera-placeholder {
+  background: var(--s2-bg2); color: var(--s2-text); border: 1px solid var(--s2-line); border-radius: 8px;
+}
+
+/* ─── Paneelien typografia ja välilehtirivit (voittaa vanhat grid-säännöt) ─── */
+.studio.s2 .layers-panel, .studio.s2 .details-panel { font-size: 12px; line-height: 1.45; }
+.studio.s2 .layers-panel p, .studio.s2 .details-panel p { font-size: 12px; line-height: 1.5; }
+.studio.s2 .layers-panel .library-tabs,
+.studio.s2 .details-panel .inspector-tabs { display: flex !important; flex-wrap: nowrap !important; grid-template-columns: none !important; }
+.studio.s2 .layers-panel .library-tabs button[hidden],
+.studio.s2 .details-panel .inspector-tabs button[hidden] { display: none !important; }
+.studio.s2 .layers-panel .library-tabs button,
+.studio.s2 .details-panel .inspector-tabs button { width: auto !important; flex: none !important; }
+.studio.s2 .quick-library > nav.asset-tabs { flex-wrap: nowrap; }
+.studio.s2 .quick-library > nav.asset-tabs button { flex: 1 1 auto; padding: 3px 6px; font-size: 11px; white-space: nowrap; }
+.studio.s2 .background-options .swatch { border: 1px solid var(--s2-line2) !important; }
+.studio.s2.script-hero-center .preview-footer,
+.studio.s2.phase-storyboard .preview-footer { display: none !important; }
+.studio.s2 .script-left-rail { background: none; border: 0; padding: 0; }
+.studio.s2 .script-mode-nav { display: flex; gap: 2px; margin: 10px 12px; padding: 2px; background: var(--s2-bg0); border: 1px solid var(--s2-line); border-radius: 7px; }
+.studio.s2 .script-mode-nav .script-mode-btn { flex: 1; border: 0; background: none; color: var(--s2-muted); border-radius: 5px; padding: 4px 8px; text-align: center; }
+.studio.s2 .script-mode-nav .script-mode-btn[aria-pressed='true'] { background: var(--s2-bg3); color: var(--s2-text); border: 0; }
+.studio.s2 .script-mode-sublabel { display: block; font-size: 10px; color: var(--s2-faint); }
+
+/* Käsikirjoituksen rivikentät: yksi rivi per kenttä (vanhat textarea-minimikorkeudet pois) */
+.studio.s2 .script-line-field { min-height: 0 !important; height: auto; resize: none; }
+.studio.s2 .script-line-row { grid-template-rows: auto !important; }
+
+/* Valikon rivit voittavat .secondary-tyylin */
+.studio.s2 .app-menu-content > button,
+.studio.s2 .app-menu-content > .revision-panel > button,
+.studio.s2 .s2-submenu > div > button,
+.studio.s2 .view-menu > div > button {
+  display: flex; align-items: center; gap: 8px; justify-content: flex-start;
+  width: 100%; min-height: 28px; padding: 5px 10px;
+  border: 0; border-radius: 5px; background: none; color: var(--s2-text); font-weight: 400; text-align: left;
+}
+.studio.s2 .app-menu-content button:hover:not(:disabled),
+.studio.s2 .view-menu > div > button:hover:not(:disabled) { background: var(--s2-accent-soft); }
+.studio.s2 .app-menu-content > button > kbd { margin-left: auto; }

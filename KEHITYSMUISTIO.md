@@ -227,3 +227,18 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Figma linja A (2026-10-06):** upload + layout ✅ · [`FIGMA-CAPTURE-PLACEMENT-2026-10-06.md`](docs/FIGMA-CAPTURE-PLACEMENT-2026-10-06.md). MCP `use_figma` estyi; FigJam design-linkit käsin ([`FIGJAM-STUDIO-FLOW.md`](docs/FIGJAM-STUDIO-FLOW.md)).
 
 **Seuraava (0.48):** linja A valmis. **Suositus:** **C** sarja/YouTube-vienti tai **D** 0.47d CSS — katso [`DEVELOPMENT-0.46-phase-e.md`](DEVELOPMENT-0.46-phase-e.md).
+
+### 2.0 — Studio 2.0 -käyttöliittymä (haara `ui-2.0`, 2026-10-07)
+
+**Kehitysvaihe:** uusi UI/UX hyväksytyn luonnoksen mukaan; toiminnallisuus ja `lib/` ennallaan.
+
+**Valmis:**
+- Uusi yläpalkki (`studio-shell.tsx`): projektivalikko, numeroidut työvaiheet 1–5, ⌘K-haku (`command-palette.tsx`, ~50 komentoa), kumoa/tee uudelleen, Näytä, Tallenna, Vie.
+- Työvaihekohtainen asettelu (`.phase-*`), kelluvat hahmotyökalut, ohjauslähteet oikeassa paneelissa, kuvanauha Kuva-vaiheessa, laajennettu Asetukset-ikkuna (ulkoasu, saavutettavuus, työvaihe, pikanäppäimet).
+- `styles/studio2.css`: tumma/vaalea token-järjestelmä, joka kartoittaa vanhat tokenit; tumma oletuksena.
+- Korjattu: komponenttien perustyylit palautettu (1.0-kuori rikkoi modaalit/tuotantokierroksen), ylimääräinen `}` `app-shell.css`/`kilsat-app.css` joka kaatoi `npm run build`in, käsikirjoitusrivien 280 px korkeus.
+- `npm test` 983/983, `npm run build` ja `npm run desktop:build` OK. Visuaalinen tarkistus Electronilla 1440×900 kaikista vaiheista esimerkkiprojektilla.
+
+**Ei testattu:** pakattu Mac-sovellus, kamera/mikrofoni oikealla laitteella, natiivivalikot.
+
+**Seuraava:** Käsikirjoitus-vaiheen oikea paneeli (Tarkistus/Roolitus/Ohjaus) PresentationPanelin sisältä; vanhojen CSS-kerrosten karsinta studio2.css:n alle.

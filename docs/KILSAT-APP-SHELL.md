@@ -1,25 +1,33 @@
-# KILSAT App Shell (uusi kuori)
+# KILSAT Studio 2.0 -kehys
 
-## Entry
+Hyväksytty luonnos: tumma ammattityökalu, viisi työvaihetta, ⌘K-haku (2026-10-07).
 
-`main.tsx` lataa vain:
+## Entry ja tyylikerrokset (`main.tsx`)
 
-- `styles/tokens.css`
-- `styles/kilsat-app.css` (yksi entry-CSS: kuori, layout, editor-primitiivit, script-UX)
+1. `style.css`, `studio-ui.css`, `styles/tokens.css`, `styles/app-shell.css`, `styles/ui-minimal.css`, `styles/studio-components.css` — paneelikomponenttien perustyylit (palautettu; 1.0-kuori jätti ne pois ja mm. modaalit ja tuotantokierros menivät rikki).
+2. `styles/kilsat-app.css` — KILSAT 1.0 -kerros.
+3. **`styles/studio2.css`** — Studio 2.0: tokenit (`--s2-*`, kartoittaa vanhat `--bg-*`, `--accent`, `--color-*`), kehys, paneelit, työvaiheasettelu (`.phase-*`), ⌘K. Ladataan viimeisenä.
 
-Vanhoja entry-importteja (`style.css`, `studio-ui.css`, `ui-minimal.css`, `studio-components.css`, `kilsat-five-phase.css`) **ei** enää käytetä käynnistyksessä.
+Tumma teema on oletus uudelle käyttäjälle; Järjestelmä/Vaalea/Tumma valitaan Asetuksista tai ⌘K-haulla.
 
 ## Rakenne
 
 | Tiedosto | Rooli |
 |----------|--------|
-| `components/kilsat-app-shell.tsx` | Brand, 5 vaihetta, sivuraili, valikkorivi |
-| `components/editor.tsx` | Moottori: PSD, palautus, paneelit, aikajana (sama logiikka) |
-| `lib/` | Projektimalli, studio, vienti — **ei koskettu** |
+| `components/studio-shell.tsx` | Yläpalkki: brand, projektivalikko, työvaiheet 1–5, haku, kumoa/tee uudelleen, Näytä, Tallenna, Vie |
+| `components/command-palette.tsx` | ⌘K-haku; komennot ajavat samat funktiot kuin painikkeet |
+| `components/app-menu.tsx` | Valikko (`summary`-, `className`-propit projektivalikolle) |
+| `components/editor.tsx` | Moottori ja asettelu; `paletteCommands`, `angleChoice`, `movementShortcuts` |
+| `lib/` | Ei muutoksia |
 
-## Seuraava työ
+## Toimintojen paikat
 
-- HTML-luonnoksen näyttämö-SVG, storyboard-protot ja aikajana (ei vielä React-portissa).
-- Inspector: Valinta / Näyttämö / Liikkeet / Esitys — välilehdet paneelin yläreunassa (`kilsat-app`).
+- Projektivalikko: avaa, viimeksi avatut, tallenna, tallenna nimellä, versiot, tuo kuva/PSD, lisää ääni, erilliset JSON-tiedostot, edellinen työ, asetukset, käyttöohje, tuotantokierros, kirjaudu ulos.
+- Näyttämön palkki: työvaiheen otsikko, Rakenna/Esitys (Hahmot), kuvakulma, Kuvakortit, Tarkista tuonti, Keskittymistila (Käsikirjoitus), esikatselun tausta.
+- Hahmotyökalut (Piirtäminen, Tasot, Nivelmääritys, Alkuperäinen PSD) kelluvat näyttämöllä Rakenna-tilassa.
+- Ohjauslähteet (kamera, mikrofoni, näppäimet, valmiit liikkeet) ovat oikeassa paneelissa Esitys-tilassa.
+- Storyboard: kuvataulu täyttää keskialueen. Kuva: kuvanauha näyttämön yläpuolella. Aikajana: kuvataulu suljetaan.
+- Asetukset-ikkuna: ulkoasu, saavutettavuus, työvaiheen rajaus, pikanäppäimet.
+- Pikanäppäimet: ⌘K haku, ⌥1–⌥5 työvaihe (ei kirjoituskentissä rajoitettu; QuickPanelin perusliikkeet ohittavat muokkausnäppäimet).
 
-`styles/app-shell.css` ja `styles/kilsat-script-ux.css` säilyvät referenssinä; käynnistyksessä ladataan vain `kilsat-app.css`.
+Poistettu päällekkäisinä: valikkorivi (Tiedosto/Muokkaa/Näytä/Asetukset/Ohje), sivuraili, Lisätyökalut, Työtila-asetukset, toistuva Hahmo/Esitys-kytkin yläpalkissa. Niiden toiminnot ovat yllä luetelluissa paikoissa.
