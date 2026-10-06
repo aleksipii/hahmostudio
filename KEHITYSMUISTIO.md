@@ -146,12 +146,20 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 ### 0.41 (pushattu · `e865e4f`)
 - Script focus, Hahmot-sidonta, lukitus-esto. `DEVELOPMENT-0.41.md`.
 
-### 0.42 (valmis koodissa · ei pushattu)
-- **Figma:** `docs/FIGMA-SCRIPT-FOCUS.md` (capture käsin).
+### 0.42 (pushattu · `ef68f6c`)
+- **Figma:** `docs/FIGMA-SCRIPT-FOCUS.md` (capture käsin FigJam/Figmaan).
 - **Journal:** `bind-cast`-komento editor + käsikirjoitus.
-- **Varoitus:** `scriptReparseApprovedWarning` (hyväksytty + muuttunut teksti).
+- **Varoitus:** hyväksytty kuva + muuttunut teksti → varoitus (lukitus → esto).
 - `DEVELOPMENT-0.42.md` · `npm test` 962.
 
-### Seuraava koodierä (0.43-ehdotus)
-- Figma focus -screenshot FigJam-linkkiin.
-- Parse-vahvistus hyväksytyille kuville (dialogi).
+### 0.43 (valmis koodissa · ei pushattu)
+- Parse-vahvistusdialogi (`ScriptReparseConfirm`) hyväksytyille kuville.
+- Script UI Figma-pariteetti: focus/panel CSS, `docs/FIGMA-UI-PARITY.md`.
+- `DEVELOPMENT-0.43.md` · testit ajettava pushin yhteydessä.
+
+### 0.44 (valmis koodissa · ei pushattu)
+- Resolve-pariteetti: työvaihe 01–05, `resolve-shot-card`, `resolve-segmented`.
+- `docs/FIGMA-RESOLVE-PARITY.md` · `DEVELOPMENT-0.44.md`.
+
+### Seuraava
+- Figma focus / Resolve -screenshot FigJamiin (käsin): `docs/FIGMA-SCRIPT-FOCUS.md` + `docs/FIGMA-RESOLVE-PARITY.md`.
