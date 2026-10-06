@@ -1,0 +1,591 @@
+/* KILSAT Studio · kanoninen komponenttikerros (0.47)
+   Ladataan viimeisenä — korvaa legacy style.css / studio-ui.css päällekkäisyydet .studio-scopessa. */
+
+/* Legacy globaali hover-kirkastus pois studiosta */
+.studio button:not(:disabled):hover,
+.studio .text-button:not(:disabled):hover {
+  filter: none;
+}
+
+.studio :is(button, a, input, select, textarea, summary):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* —— Painikkeet —— */
+.studio .primary,
+.studio button.primary {
+  min-height: var(--studio-control-height);
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.studio .primary:not(:disabled):hover {
+  background: var(--accent-hover);
+}
+
+.studio .primary:not(:disabled):active {
+  background: var(--accent-press);
+}
+
+.studio .primary:disabled,
+.studio .secondary:disabled,
+.studio .ghost-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.studio .secondary,
+.studio button.secondary,
+.studio .fit-button {
+  min-height: var(--studio-control-height);
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--btn-ghost-bg);
+  color: var(--text);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.studio .secondary:not(:disabled):hover,
+.studio .fit-button:not(:disabled):hover {
+  background: var(--btn-ghost-bg-hover);
+  color: var(--text);
+}
+
+.studio .ghost-btn,
+.studio .script-left-rail button.secondary,
+.studio .script-left-rail .script-file-import,
+.studio .script-left-rail .script-toolbar-more summary,
+.studio .script-left-rail .script-syntax-help summary {
+  min-height: 30px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--btn-ghost-bg);
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.25;
+  box-shadow: none;
+}
+
+.studio .ghost-btn:not(:disabled):hover,
+.studio .script-left-rail button.secondary:not(:disabled):hover,
+.studio .script-left-rail .script-file-import:hover,
+.studio .script-left-rail .script-toolbar-more summary:hover {
+  background: var(--btn-ghost-bg-hover);
+  color: var(--text);
+}
+
+.studio .ghost-btn[aria-pressed='true'],
+.studio .script-left-rail button[aria-pressed='true'] {
+  background: var(--btn-ghost-bg-active);
+  color: var(--accent-hover);
+}
+
+.studio button.danger,
+.studio .secondary.danger {
+  background: color-mix(in srgb, var(--color-error, #ff6b6b) 18%, var(--bg-2));
+  color: var(--text);
+}
+
+.studio button.danger:not(:disabled):hover {
+  background: color-mix(in srgb, var(--color-error, #ff6b6b) 28%, var(--bg-2));
+}
+
+.studio .text-button {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+}
+
+.studio .text-button:not(:disabled):hover {
+  background: var(--btn-ghost-bg-hover);
+  color: var(--text);
+}
+
+/* —— Välilehdet (kirjasto, inspector, flow) —— */
+.studio .library-tabs,
+.studio .inspector-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 6px 8px 8px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.studio .library-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.studio .inspector-tabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.studio .library-tabs button,
+.studio .inspector-tabs button {
+  min-height: 32px;
+  padding: 5px 6px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--btn-ghost-bg);
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.studio .library-tabs button.active,
+.studio .library-tabs button[aria-pressed='true'],
+.studio .inspector-tabs button.active,
+.studio .inspector-tabs button[aria-pressed='true'] {
+  background: var(--btn-ghost-bg-active);
+  color: var(--accent-hover);
+  font-weight: 600;
+  border-bottom: none;
+}
+
+/* —— Inspector —— */
+.studio .details-panel {
+  padding: 0;
+  overflow: auto;
+  scroll-padding-top: 0;
+}
+
+.studio .details-panel .inspector-section {
+  padding: 0 10px 14px;
+}
+
+.studio .details-panel .inspector-title {
+  margin: 0;
+  padding: 10px 10px 8px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.35;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.studio .details-panel .panel-note {
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.studio .stage-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+}
+
+.studio .selection-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: var(--space-3);
+}
+
+.studio .selection-inspector .selection-inspector-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0 10px 14px;
+}
+
+.studio .selection-inspector .detail-preview {
+  width: 100%;
+  max-height: 120px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-2);
+}
+
+.studio .selection-inspector .detail-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.studio .selection-inspector h3 {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.studio .selection-inspector .layer-path {
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+.studio .selection-inspector .properties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.studio .selection-inspector .technical-details {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  margin: 0;
+  background: color-mix(in srgb, var(--bg-2) 80%, transparent);
+}
+
+.studio .selection-inspector .panel-empty {
+  padding: 24px 14px;
+  text-align: center;
+}
+
+.studio .selection-inspector .secondary.full {
+  width: 100%;
+  justify-content: center;
+}
+
+.studio .file-menu summary {
+  min-height: var(--studio-control-height);
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--btn-ghost-bg);
+  color: var(--text);
+}
+
+/* —— Käsikirjoitus · kirjasto + focus —— */
+.studio.library-script-tab .layers-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.studio.library-script-tab .layers-panel .script-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.studio .script-docked-hint {
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--text-dim);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-2));
+  border: none;
+}
+
+.studio .screenplay-page {
+  padding: var(--space-6) var(--space-5) var(--space-10);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.studio.script-page-open .screenplay-page {
+  background: var(--bg-0);
+}
+
+.studio .script-compose {
+  box-shadow: var(--shadow-panel);
+}
+
+@container library-panel (max-width: 640px) {
+  .studio .script-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container library-panel (min-width: 720px) {
+  .studio.library-script-tab .script-shell {
+    grid-template-columns: minmax(188px, 36%) minmax(0, 1fr);
+  }
+}
+
+@container library-panel (min-width: 900px) {
+  .studio.library-script-tab .script-shell {
+    grid-template-columns: minmax(200px, 34%) minmax(0, 1fr);
+  }
+}
+
+/* Kirjaston leveys viewportissa (1280 / 1440 / 1920) */
+@media (min-width: 1280px) {
+  .studio.library-script-tab .script-shell-main textarea,
+  .studio.library-script-tab .script-compose textarea {
+    min-height: 280px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .studio.script-page-open .screenplay-page {
+    padding-top: var(--space-6);
+  }
+
+  .studio.script-page-open .screenplay-page .presentation-panel {
+    max-width: 680px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .studio.library-script-tab .script-shell {
+    gap: 16px;
+  }
+
+  .studio.script-page-open .screenplay-page .presentation-panel {
+    max-width: 720px;
+  }
+}
+
+/* Flow tabs yläpalkissa */
+.studio .studio-flow-tabs button {
+  border: none;
+  box-shadow: none;
+}
+
+/* Script Hero · keskialue (0.48) */
+.studio.script-hero-center .preview-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.studio .script-center-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-5);
+  overflow: hidden;
+}
+
+.studio .script-center-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.studio .script-compose-grid {
+  display: grid;
+  grid-template-columns: var(--script-gutter-width) minmax(0, var(--script-measure)) var(--script-gutter-width);
+  justify-content: center;
+  gap: var(--script-margin-gap);
+  flex: 1;
+  min-height: 0;
+}
+
+.studio .script-compose--hero {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.studio .script-compose--hero .script-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.studio .script-compose--hero .script-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.studio .script-compose--hero .script-editor-field {
+  flex: 1;
+  min-height: 12rem;
+  line-height: var(--script-line-height);
+  font-size: var(--text-base, 14px);
+  resize: none;
+  border: none;
+  background: transparent;
+  padding: var(--space-4) 0;
+}
+
+.studio .script-empty-hero {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+  padding: var(--space-6) var(--space-4);
+}
+
+.studio .script-textarea-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.studio .script-margin {
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.studio .script-margin-line {
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+  line-height: var(--script-line-height);
+}
+
+.studio .script-margin-line span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.studio .script-margin-line--scene span,
+.studio .script-margin-line--speaker span,
+.studio .script-margin-line--character span {
+  color: color-mix(in srgb, var(--text-dim) 92%, var(--accent));
+}
+
+.studio .script-margin-line--past-divider {
+  opacity: 0.45;
+}
+
+.studio .script-margin--left {
+  text-align: right;
+  padding-right: var(--space-2);
+}
+
+.studio .script-margin--right {
+  text-align: left;
+  padding-left: var(--space-2);
+}
+
+.studio .script-parse-divider {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--script-parse-divider-height);
+  margin: 0;
+  background: color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: var(--radius-sm);
+  cursor: ns-resize;
+  z-index: 2;
+  transition: box-shadow var(--motion-ui-fast) var(--motion-ease-out);
+}
+
+.studio .script-parse-divider:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.studio .script-parse-divider.is-dragging,
+.studio .script-parse-divider:hover {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.studio .script-command-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: color-mix(in srgb, var(--bg-0) 55%, transparent);
+  display: grid;
+  place-items: start center;
+  padding-top: 18vh;
+}
+
+.studio .script-command-palette {
+  width: min(360px, 92vw);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--bg-1);
+  box-shadow: var(--shadow-panel);
+}
+
+.studio .script-command-kicker {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.studio .script-command-palette ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.studio .script-command-palette li button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  gap: var(--space-2);
+}
+
+.studio .script-command-palette li small {
+  color: var(--text-dim);
+  font-size: var(--text-xs);
+}
+
+.studio .script-empty-hero .primary {
+  margin-top: var(--space-4);
+}
+
+.studio .script-empty-hint {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.studio .script-empty-hint kbd {
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--btn-ghost-bg);
+  font-size: var(--text-xs);
+}
+
+.studio.script-hero-center .script-toolbar-dock {
+  display: none;
+}
+
+.studio.script-hero-center .script-example-btn {
+  display: none;
+}
+
+.studio.script-hero-center .script-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.studio.script-hero-center .script-shell-main .script-panel--compose-hero > h2,
+.studio.script-hero-center .script-shell-main .script-panel--compose-hero > p:first-of-type,
+.studio.script-hero-center .script-shell-main .script-panel--compose-hero .screenplay-step-nav {
+  display: none;
+}
+
+.studio.script-hero-center .script-docked-hint {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio .script-parse-divider {
+    transition: none;
+  }
+}

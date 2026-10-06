@@ -18,13 +18,13 @@
   --color-gray-100: #e8ecf2;
   --color-white: #f5f7fa;
 
-  /* Accent — calm tool blue (Rive / Character Animator -tyylinen, ei korostevärinen) */
-  --color-accent: #6cb4ff;
-  --color-accent-contrast: #0f1113;
-  --color-accent-hover: #8cc4ff;
-  --color-accent-active: #4a9ae6;
-  --color-accent-soft: rgba(108, 180, 255, 0.12);
-  --color-accent-border: rgba(108, 180, 255, 0.38);
+  /* Accent — violetti (KILSAT Studio · musta tausta) */
+  --color-accent: #a855f7;
+  --color-accent-contrast: #0a060e;
+  --color-accent-hover: #c084fc;
+  --color-accent-active: #9333ea;
+  --color-accent-soft: rgba(168, 85, 247, 0.16);
+  --color-accent-border: rgba(192, 132, 252, 0.42);
 
   /* Semantic */
   --color-success: #5cc96f;
@@ -55,6 +55,15 @@
   --space-10: 48px;
   --space-11: 56px;
   --space-12: 64px;
+
+  /* Käsikirjoitus · Script Hero (0.48) */
+  --script-measure: 42rem;
+  --script-line-height: 1.65;
+  --script-gutter-width: 5.5rem;
+  --script-margin-gap: var(--space-4);
+  --script-parse-divider-height: 2px;
+  --motion-ui-fast: 180ms;
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* ─── SIZING ─── */
   --size-xs: 24px;
@@ -187,6 +196,6 @@
 /* Shared KILSAT workspace geometry; available in every theme. */
 :root {--studio-control-height:32px;--studio-toolbar-gap:8px;--studio-logo-size:52px;--studio-stage-gutter:20px;}
 
-:root {--resolve-bg-hover:#1a1d23;--resolve-border-hover:#343a45;--resolve-shadow-hover:0 2px 8px rgba(0,0,0,.25);--bg-0:#141518;--bg-1:#1c1e22;--bg-2:#25282e;--bg-hover:#2e3238;--border:#343840;--text:#eceef1;--text-dim:#9aa3ad;--text-disabled:#5c636c;--accent:var(--color-accent);--accent-hover:var(--color-accent-hover);--accent-press:var(--color-accent-active);--accent-subtle:var(--color-accent-soft);--on-accent:var(--color-accent-contrast);--playhead:#e5484d;--studio-control-height:26px;--radius-sm:4px;--radius-md:6px;--radius-lg:8px;--text-sm:12px;--text-xs:11px;--green:var(--accent);--green-bg:var(--accent-subtle);--green-line:var(--accent);--track-blue:#6cb4ff;--track-green:#6eaa8b;--track-purple:#a08bbd;--track-gray:#7c818c;--bg:var(--bg-0);--panel:var(--bg-1);--surface:var(--bg-2);--line:var(--border);--muted:var(--text-dim);--field:var(--bg-2);}
+:root {--resolve-bg-hover:#1a1524;--resolve-border-hover:#3d2f52;--resolve-shadow-hover:0 2px 12px rgba(0,0,0,.35);--bg-0:#08060c;--bg-1:#110e18;--bg-2:#1a1524;--bg-hover:#241c32;--border:#2f2640;--text:#eceef1;--text-dim:#9aa3ad;--text-disabled:#5c636c;--accent:var(--color-accent);--accent-hover:var(--color-accent-hover);--accent-press:var(--color-accent-active);--accent-subtle:var(--color-accent-soft);--on-accent:var(--color-accent-contrast);--playhead:#e5484d;--radius-sm:4px;--radius-md:6px;--radius-lg:8px;--text-sm:12px;--text-xs:11px;--green:var(--accent);--green-bg:var(--accent-subtle);--green-line:var(--accent);--track-blue:#6cb4ff;--track-green:#6eaa8b;--track-purple:#a08bbd;--track-gray:#7c818c;--bg:var(--bg-0);--panel:var(--bg-1);--surface:var(--bg-2);--line:var(--border);--muted:var(--text-dim);--field:var(--bg-2);--btn-ghost-bg:color-mix(in srgb, var(--bg-2) 55%, transparent);--btn-ghost-bg-hover:color-mix(in srgb, var(--accent) 12%, var(--bg-2));--btn-ghost-bg-active:color-mix(in srgb, var(--accent) 18%, var(--bg-1));--shadow-panel:0 12px 40px color-mix(in srgb, var(--bg-0) 65%, transparent);--focus-ring:2px solid var(--accent);}
 :root[data-theme=dark] {--color-bg:var(--bg-0);--color-surface:var(--bg-1);--color-surface-hover:var(--bg-hover);--color-border:var(--border);--color-text:var(--text);--color-text-secondary:var(--text-dim);}
 @media(prefers-color-scheme:dark){:root:not([data-theme]),:root[data-theme=system]{--color-bg:var(--bg-0);--color-surface:var(--bg-1);--color-surface-hover:var(--bg-hover);--color-border:var(--border);--color-text:var(--text);--color-text-secondary:var(--text-dim);}}

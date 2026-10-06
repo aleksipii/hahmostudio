@@ -226,7 +226,7 @@
 
 /* —— Käsikirjoitus: yksi sarake, kevyet osiot —— */
 .studio.script-page-open .screenplay-page {
-  z-index: 40;
+  z-index: 45;
 }
 
 .screenplay-page {
@@ -234,13 +234,13 @@
 }
 
 .screenplay-page > header {
-  max-width: 680px;
+  max-width: min(1200px, 100%);
   margin: 0 auto 20px;
   align-items: flex-start;
 }
 
 .screenplay-page .presentation-panel {
-  max-width: 680px;
+  max-width: min(1200px, 100%);
   margin: 0 auto;
   border: 0;
   background: transparent;
@@ -280,25 +280,194 @@
   opacity: 0.45;
 }
 
-/* Script / Editor + sticky bar (panel | focus) */
+/* Liquid glass — violetti / musta */
+.studio {
+  --glass-blur: 14px;
+  --glass-bg: color-mix(in srgb, var(--accent) 16%, rgba(12, 8, 18, 0.55));
+  --glass-bg-hover: color-mix(in srgb, var(--accent) 24%, rgba(20, 14, 28, 0.65));
+  --glass-bg-active: color-mix(in srgb, var(--accent) 32%, rgba(24, 16, 36, 0.78));
+  --glass-border: color-mix(in srgb, var(--accent) 42%, rgba(255, 255, 255, 0.1));
+  --glass-highlight: color-mix(in srgb, #fff 16%, transparent);
+}
+
+/* Haaleat “ghost”-painikkeet (vasen työkalurivi, näyttämö) */
+.studio .ghost-btn,
+.studio .script-left-rail button.secondary,
+.studio .script-left-rail .file-label.secondary,
+.studio .script-left-rail .script-file-import,
+.studio .script-left-rail .script-toolbar-more summary,
+.studio .script-left-rail .script-syntax-help summary {
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  background: color-mix(in srgb, var(--bg-2) 55%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: color-mix(in srgb, var(--text-dim) 92%, var(--text) 8%) !important;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1.25;
+  min-height: 30px;
+  padding: 5px 8px !important;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.studio .ghost-btn:hover:not(:disabled),
+.studio .script-left-rail button.secondary:hover:not(:disabled),
+.studio .script-left-rail .script-file-import:hover,
+.studio .script-left-rail .script-toolbar-more summary:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-2)) !important;
+  color: var(--text) !important;
+}
+
+.studio .ghost-btn[aria-pressed='true'],
+.studio .script-left-rail button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-1)) !important;
+  color: var(--accent-hover) !important;
+  box-shadow: none !important;
+}
+
+.studio .script-sticky-bar .primary.full {
+  border: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent) 88%, #fff 6%),
+    color-mix(in srgb, var(--accent-press) 92%, #000 8%)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
+    0 10px 28px color-mix(in srgb, var(--accent) 35%, rgba(0, 0, 0, 0.5));
+}
+
+.studio .script-left-rail .script-syntax-help {
+  border: 1px solid color-mix(in srgb, var(--border) 90%, var(--accent) 10%);
+  border-radius: var(--radius-md);
+  padding: 2px 6px;
+  background: transparent;
+}
+
+.studio .script-left-rail .script-toolbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  align-items: stretch;
+}
+
+.studio .script-left-rail .script-file-import,
+.studio .script-left-rail .script-toolbar-more,
+.studio .script-left-rail .script-syntax-help,
+.studio .script-left-rail .script-example-btn {
+  grid-column: 1 / -1;
+}
+
+.studio .script-left-rail .script-toolbar-more-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px 0 2px;
+}
+
+.studio .script-left-rail .script-toolbar-more-panel .secondary {
+  width: 100%;
+  font-size: 10px;
+  padding: 5px 6px !important;
+}
+
+.studio .script-shell-sidebar .script-mode-nav,
+.studio .script-container .script-mode-nav {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.studio .script-file-import {
+  padding: 6px 8px !important;
+  min-height: 30px;
+}
+
+.studio .script-file-import-title {
+  font-size: 11px;
+}
+
+.studio .script-file-import-hint {
+  font-size: 9px;
+}
+
+.studio.script-page-open .screenplay-page {
+  background: radial-gradient(
+    ellipse 130% 90% at 12% -10%,
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    var(--bg-0) 55%
+  );
+}
+
+/* Script / Editor + sticky bar (panel | focus) — vasen työkalupalkki + iso editori */
 .studio .script-compose {
+  display: grid;
+  grid-template-columns: min(240px, 34vw) minmax(0, 1fr);
+  margin: 0 0 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-1) 92%, var(--accent) 8%);
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
+  align-items: stretch;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.studio .script-compose[data-sidebar-docked='true'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.studio .script-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 0 0 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-1);
+  gap: 10px;
+  padding: 12px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-2);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.studio .script-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
   padding: 12px 14px 0;
+}
+
+.studio .script-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   min-height: 0;
 }
 
 .studio .script-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
-  min-height: 40px;
+  min-height: 0;
+}
+
+.studio .script-sidebar .script-toolbar .secondary,
+.studio .script-sidebar .script-toolbar .file-label.secondary,
+.studio .script-sidebar .script-toolbar-more summary {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.studio .script-sidebar .script-toolbar-more-panel .secondary {
+  width: 100%;
 }
 
 .studio .script-toolbar .file-label.secondary {
@@ -345,23 +514,25 @@
 }
 
 .studio .script-editor-field {
-  min-height: 240px;
+  flex: 1;
+  min-height: 280px;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.65;
   padding: 12px 14px;
+  resize: vertical;
 }
 
 .studio .script-compose[data-script-layout='focus'] .script-editor-field {
-  min-height: 360px;
+  min-height: 420px;
 }
 
 .screenplay-page .script-compose[data-script-layout='focus'] {
-  min-height: min(530px, calc(100vh - 64px - 26px - 160px));
+  min-height: calc(100vh - 220px);
 }
 
 .screenplay-page .script-compose[data-script-layout='focus'] .script-editor-field {
-  min-height: min(530px, calc(100vh - 64px - 26px - 280px));
+  min-height: calc(100vh - 340px);
 }
 
 .studio .script-syntax-help {
@@ -414,15 +585,15 @@
 }
 
 .screenplay-page .script-sticky-bar {
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
-  box-shadow: var(--shadow-lg);
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .screenplay-page .script-focus-hint {
-  max-width: 680px;
+  max-width: min(1200px, 100%);
   margin: -12px auto 16px;
   font-size: var(--text-xs);
   color: var(--text-dim);
@@ -947,7 +1118,7 @@
   border-radius: var(--radius-md);
   min-height: 32px;
   padding: 6px 12px;
-  border: 1px solid var(--border);
+  border: none;
   background: var(--bg-2);
   color: var(--text);
 }
@@ -955,7 +1126,33 @@
 .studio .secondary:not(:disabled):hover,
 .studio .fit-button:not(:disabled):hover {
   background: var(--bg-hover);
-  border-color: var(--color-gray-600);
+}
+
+/* Painikkeet ilman reunuksia (koko studio) */
+.studio button,
+.studio .primary,
+.studio .secondary,
+.studio .fit-button,
+.studio .ghost-btn,
+.studio .tiny,
+.studio .library-tabs button,
+.studio .inspector-tabs button,
+.studio .asset-tabs button,
+.studio .script-file-import,
+.studio .character-tools button {
+  border: none !important;
+  box-shadow: none;
+}
+
+.studio .primary {
+  border: none !important;
+}
+
+.studio .library-tabs button.active,
+.studio .inspector-tabs button.active,
+.studio .inspector-tabs button[aria-pressed='true'],
+.studio .asset-tabs button[aria-pressed='true'] {
+  box-shadow: none !important;
 }
 
 .studio .text-button {
@@ -1177,7 +1374,17 @@
 }
 
 .studio .layers-panel {
-  padding: 10px 12px;
+  padding: 8px 10px;
+  container-type: inline-size;
+  container-name: library-panel;
+}
+
+.studio .details-panel {
+  container-type: inline-size;
+  container-name: inspector-panel;
+  overflow: auto;
+  padding: 0;
+  scroll-padding-top: 0;
 }
 
 .studio .script-container {
@@ -1185,6 +1392,385 @@
   flex-direction: column;
   min-height: 0;
   flex: 1;
+  overflow: hidden;
+}
+
+.studio .script-shell {
+  display: grid;
+  grid-template-columns: minmax(168px, 38%) minmax(0, 1fr);
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+@container library-panel (max-width: 640px) {
+  .studio .script-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .studio .script-shell-main {
+    min-height: 220px;
+  }
+}
+
+@container library-panel (min-width: 641px) {
+  .studio .script-shell {
+    grid-template-columns: minmax(176px, 42%) minmax(0, 1fr);
+  }
+}
+
+.studio .script-shell-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: static;
+  padding: 4px 0;
+  min-width: 0;
+}
+
+.studio .script-toolbar-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.studio .script-toolbar-dock .script-sidebar,
+.studio .script-shell-sidebar .script-sidebar {
+  border-right: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.studio .script-shell-main {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.studio .script-container .script-mode-nav {
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+  border-bottom: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+.studio .script-container .script-mode-nav button {
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+  min-height: 30px;
+}
+
+.studio .script-example-btn {
+  white-space: normal;
+}
+
+.studio .script-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  white-space: normal;
+}
+
+.studio .script-mode-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.studio .script-mode-sublabel {
+  font-size: 9px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.studio .script-file-import {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1px;
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.studio .script-file-import input[type='file'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  font-size: 0;
+}
+
+.studio .script-file-import-title {
+  font-size: clamp(11px, 0.9rem, 13px);
+  font-weight: 600;
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.studio .script-file-import-hint {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.3;
+  pointer-events: none;
+}
+
+.studio .script-left-rail button.secondary,
+.studio .script-left-rail .script-toolbar-more summary {
+  white-space: normal;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.studio .script-syntax-help summary {
+  font-size: clamp(11px, 0.85rem, 12px);
+  line-height: 1.25;
+}
+
+.studio .script-panel--docked > h2,
+.studio .script-panel--docked > p:first-of-type,
+.studio .script-panel--docked > .screenplay-step-nav {
+  display: none;
+}
+
+.studio .script-docked-hint {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-dim);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-2));
+}
+
+.studio .script-panel--docked.presentation-panel {
+  min-width: 0;
+  padding: 0;
+}
+
+.studio .script-panel--docked .script-guide {
+  margin-top: 8px;
+}
+
+.studio .script-panel--docked .script-guide summary {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.studio .library-script-tab .layers-panel .library-tabs button {
+  font-size: clamp(10px, 2.8cqi, 12px);
+  padding: 8px 6px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.studio .details-panel .inspector-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 6px 8px 8px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.studio .details-panel .inspector-tabs button {
+  min-height: 32px;
+  padding: 5px 4px;
+  font-size: clamp(9px, 2.6cqi, 11px);
+  line-height: 1.2;
+  white-space: normal;
+  text-align: center;
+  hyphens: auto;
+  background: color-mix(in srgb, var(--bg-2) 70%, transparent) !important;
+  color: var(--text-dim) !important;
+}
+
+.studio .details-panel .inspector-tabs button.active,
+.studio .details-panel .inspector-tabs button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-2)) !important;
+  color: var(--accent-hover) !important;
+  font-weight: 600;
+}
+
+.studio .details-panel .inspector-section {
+  padding: 0 10px 14px;
+}
+
+.studio .details-panel .inspector-title {
+  margin: 0;
+  padding: 10px 10px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.studio .stage-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.studio .stage-field {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 0;
+}
+
+.studio .stage-field select,
+.studio .stage-field input[type='number'],
+.studio .stage-field input[type='color'] {
+  width: 100%;
+  min-height: 32px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.studio .stage-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px 10px;
+  margin: 0;
+  min-width: 0;
+}
+
+.studio .stage-block legend {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  padding: 0 4px;
+}
+
+.studio .stage-pose-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.studio .stage-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.studio .stage-inline-actions .ghost-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.studio .stage-advanced {
+  border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
+  border-radius: var(--radius-md);
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.studio .stage-advanced summary {
+  cursor: pointer;
+  padding: 6px 0;
+  color: var(--text-dim);
+  list-style: none;
+}
+
+.studio .stage-advanced summary::-webkit-details-marker {
+  display: none;
+}
+
+.studio .stage-check {
+  font-size: 11px;
+  color: var(--text-dim);
+  gap: 8px;
+}
+
+@container inspector-panel (max-width: 300px) {
+  .studio .stage-pose-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studio .details-panel .pose-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.studio .details-panel .pose-actions button {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 32px;
+  font-size: 11px;
+}
+
+.studio .details-panel .pose-actions button.primary {
+  background: color-mix(in srgb, var(--accent) 75%, var(--bg-1));
+}
+
+.studio .details-panel .pose-actions button.secondary {
+  background: color-mix(in srgb, var(--bg-2) 60%, transparent);
+  color: var(--text-dim);
+}
+
+.studio .details-panel .pose-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.studio .details-panel .pose-fields label {
+  min-width: 0;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.studio .details-panel .pose-fields input,
+.studio .details-panel .pose-fields select {
+  min-width: 0;
+  width: 100%;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.studio .details-panel .transform-panel summary,
+.studio .details-panel .performance-panel summary {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@container inspector-panel (max-width: 300px) {
+  .studio .details-panel .pose-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.screenplay-page .script-container {
+  max-width: min(1200px, 100%);
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* —— Ensimmäisen käynnistyksen tuotantokierros (spotlight) —— */

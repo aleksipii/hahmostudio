@@ -93,13 +93,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .studio .brand-mark{background:var(--green-bg);color:var(--green);border-color:var(--line)}
 .studio .brand-dot,.studio .eyebrow{color:var(--green)}
 .studio .header-actions{gap:8px}.studio .header-actions button{font-size:13px}
-.studio .primary{background:var(--green);color:var(--panel);border:1px solid var(--green);font-weight:600;box-shadow:none}
-.studio .secondary,.studio .file-menu summary{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px}
+/* .studio .primary / .secondary → styles/studio-components.css (0.47) */
+.studio .file-menu summary{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px}
 .studio .text-button{color:var(--green)}
 .studio button,.studio select,.studio input:not([type=checkbox]):not([type=range]){min-height:34px}
 .studio .tiny{min-height:30px}
 .studio :is(input,select){color:var(--text);background:var(--field);border-color:var(--line);font-size:14px;accent-color:var(--green)}
-.studio :is(button,a,input,select,summary):focus-visible{outline:3px solid var(--green);outline-offset:3px}
+/* .studio focus ring → styles/studio-components.css (0.47) */
 .workspace-bar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 20px}
 .workspace-tabs{display:flex;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:3px}
 .studio .workspace-tabs button{padding:8px 22px;font-size:14px;border:0;border-radius:7px;color:var(--muted);background:transparent;min-height:36px}
@@ -119,9 +119,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .studio .performance-panel,.studio .camera-options,.studio .quick-controls details,.studio .audio-bar,.studio .speech-bar{background:var(--surface);border-color:var(--line);color:var(--text)}
 .studio .performance-panel summary,.studio .quick-controls summary{font-size:14px;padding:12px}
 .studio .camera-placeholder{background:var(--field);color:var(--muted)}
-.studio .library-tabs,.studio .inspector-tabs{gap:4px;padding:8px;flex-wrap:wrap}
-.studio .library-tabs button,.studio .inspector-tabs button{color:var(--muted);font-size:13px;padding:7px 8px;border-radius:7px}
-.studio .library-tabs button.active,.studio .inspector-tabs button.active,.studio .character-tools button[aria-pressed=true]{background:var(--green-bg);color:var(--green);font-weight:600;border-color:var(--green)}
+.studio .character-tools button[aria-pressed=true]{background:var(--green-bg);color:var(--green);font-weight:600;border-color:var(--green)}
 .character-tools{display:flex;flex-wrap:wrap;gap:5px;padding:12px}.character-tools button{border:1px solid var(--line);border-radius:7px;font-size:13px;padding:6px 8px}
 .studio .layer-row.selected{background:var(--green-bg);box-shadow:inset 3px 0 var(--green)}
 .studio .layer-name,.studio .properties dd,.studio .layer-row .layer-select{color:var(--text)}
@@ -143,9 +141,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 @media(max-width:600px){.studio .workspace{display:flex;flex-direction:column}.studio .layers-panel{max-height:360px}.workspace-bar{padding:10px 14px}.studio .workspace-tabs{width:100%}.studio .workspace-tabs button{flex:1}.studio .header-actions{justify-content:flex-start}.studio .preview-panel{min-height:400px}.studio .stage{min-height:300px}.studio .details-content .full{width:100%}.timeline-toggle{flex-wrap:wrap}.device-status{padding:8px 14px}.studio .timeline-heading{gap:8px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 /* Calm, readable surfaces; the selected state remains distinguishable without colour alone. */
-.studio .library-tabs button,.studio .inspector-tabs button,.studio .character-tools button{background:var(--field);color:var(--text);border:1px solid var(--line);min-height:40px;line-height:1.35}
-.studio .library-tabs{display:grid;grid-template-columns:1fr 1fr}.studio .library-tabs button{white-space:normal}
-.studio button:disabled{opacity:.65;cursor:not-allowed}.studio button:focus-visible,.studio a:focus-visible,.studio input:focus-visible,.studio textarea:focus-visible,.studio select:focus-visible,.studio summary:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.studio .character-tools button{background:var(--field);color:var(--text);border:1px solid var(--line);min-height:40px;line-height:1.35}
+.studio button:disabled{opacity:.65;cursor:not-allowed}/* .studio :focus-visible → styles/studio-components.css (0.47) */
 .studio .asset-library h2,.studio .script-panel h2{font-size:20px;line-height:1.25;color:var(--text);margin:8px 0 12px}
 .studio .asset-library p,.studio .script-panel p{font-size:14px;line-height:1.6;color:var(--muted);margin:8px 0 14px}
 .studio .asset-library>.eyebrow{display:block;margin-top:20px;color:var(--green)}
@@ -153,7 +150,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .background-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.studio .background-card{display:flex;flex-direction:column;gap:6px;padding:9px;min-width:0;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;white-space:normal;text-align:left}.studio .background-card img{width:100%;height:80px;object-fit:cover;margin:0;border-radius:5px}.background-card strong{font-size:13px;line-height:1.3}.background-card small{font-size:12px;color:var(--muted)}.studio .background-card[aria-pressed=true]{border:2px solid var(--green);box-shadow:0 0 0 1px var(--green);background:var(--green-bg)}
 .studio .asset-library details,.studio .script-panel details,.studio .technical-details{border:1px solid var(--line);border-radius:8px;padding:12px;margin:14px 0;background:var(--surface)}.studio summary{cursor:pointer;line-height:1.5;min-height:28px}.asset-library details .text-button{display:block;white-space:normal;text-align:left;line-height:1.5;min-height:40px}
 .script-container{overflow:auto;min-height:0;flex:1}.script-panel{padding:16px}.script-panel label{display:block;font-weight:600;margin-bottom:8px}.studio .script-panel textarea{width:100%;min-height:220px;resize:vertical;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text);font:inherit;line-height:1.7;padding:12px}.script-beats{padding-left:22px;display:grid;gap:12px;font-size:14px}.script-beats span,.script-beats small{display:block;color:var(--muted);line-height:1.5}.studio .script-error{color:var(--text);border-left:4px solid #c44436;padding:10px;background:var(--surface)}
-.studio .attachment-note{border-left:3px solid var(--green);padding:10px;background:var(--green-bg)}.studio .detail-preview{max-height:130px}.studio .stage{padding:14px}.studio .inspector-tabs button[aria-pressed=true]{font-weight:700;border-bottom:3px solid var(--green)}.studio .layer-search label{color:var(--muted)}.studio .preview-footer button{min-width:34px;min-height:34px}
+.studio .attachment-note{border-left:3px solid var(--green);padding:10px;background:var(--green-bg)}.studio .detail-preview{max-height:130px}.studio .stage{padding:14px}.studio .layer-search label{color:var(--muted)}.studio .preview-footer button{min-width:34px;min-height:34px}
 @media(min-width:1101px){.studio .workspace{grid-template-columns:280px minmax(0,1fr) 320px}}
 @media(max-width:600px){.character-cards{grid-template-columns:1fr 1fr}.character-card{display:block}.studio .character-card img{height:90px;width:100%}.background-cards{grid-template-columns:1fr 1fr 1fr}.studio .background-card img{height:64px}}
 :root{--control-line:#758399;--warning:#f0cb85}:root[data-theme=light]{--control-line:#8794a6;--warning:#865500}
@@ -162,8 +159,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .studio .version,.studio .tiny,.studio .zoom-controls>span,.studio .fit-button,.studio .camera-placeholder small,.studio .inspector-section .panel-note,.studio .episodes .panel-note,.studio .episode-list small,.studio .statusbar>span:first-child{color:var(--muted)}
 .studio .save-state.saved{color:var(--green)}.studio .layer-warning,.studio .warning-icon{color:var(--warning)}
 .studio .pose-controls,.studio .time-ruler{background:var(--surface);color:var(--text)}.studio .panel-heading>span{background:var(--surface);color:var(--text)}
-.studio .secondary,.studio .library-tabs button,.studio .inspector-tabs button,.studio .character-tools button,.studio input,.studio select,.studio textarea,.studio .background-card{border-color:var(--control-line)}
-.studio .background-card[aria-pressed=true],.studio .library-tabs button.active,.studio .inspector-tabs button.active,.studio .character-tools button[aria-pressed=true]{border-color:var(--green)}
+.studio .secondary,.studio .character-tools button,.studio input,.studio select,.studio textarea,.studio .background-card{border-color:var(--control-line)}
+.studio .background-card[aria-pressed=true],.studio .character-tools button[aria-pressed=true]{border-color:var(--green)}
 .studio .layer-search label{font-size:13px}.studio .camera-controls summary,.studio .quick-controls summary{color:var(--text)}
 .view-menu{position:relative}.studio .view-menu>summary{list-style:none;border:1px solid var(--control-line);border-radius:8px;background:var(--surface);padding:8px 14px;font-weight:600;min-height:38px;color:var(--text)}.view-menu>div{position:absolute;top:calc(100% + 8px);left:0;z-index:40;width:290px;box-shadow:0 12px 32px #0003;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel)}.view-menu label{display:flex;align-items:center;gap:10px;padding:9px 0;line-height:1.4}.view-menu input{width:18px;height:18px}.view-menu p{font-size:13px;color:var(--muted);line-height:1.5}.angle-choice{display:flex;align-items:center;gap:8px;font-size:14px}.angle-choice select{border-radius:7px;padding:6px;border:1px solid var(--control-line)}
 @media(min-width:851px){.studio.hide-library .workspace{grid-template-columns:minmax(0,1fr) 320px}.studio.hide-inspector .workspace{grid-template-columns:280px minmax(0,1fr)}.studio.hide-library.hide-inspector .workspace{grid-template-columns:minmax(0,1fr)}}
@@ -193,7 +190,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 @media(max-width:850px){.panel-resizer{display:none}.studio .topbar{height:auto}.studio .app-menubar{order:2;width:100%}.studio .workspace-bar{flex-wrap:wrap}.studio .movement-bar{flex-wrap:wrap}.studio .preview-panel{min-height:450px}.studio .timeline-container{max-height:380px;overflow:auto}.studio .layers-panel,.studio .details-panel{max-height:450px;overflow:auto}.studio .preview-toolbar{top:4px}.studio .app-menu-content{max-height:60dvh}}
 .studio [hidden]{display:none!important}
 
-.studio .artboard{flex-shrink:0}.studio .layers-panel .library-tabs button{font-size:12px;padding:6px;min-height:34px}.studio .library-tabs{gap:3px;padding:5px}.studio .inspector-tabs{gap:3px;padding:5px}.studio .inspector-tabs button{font-size:12px;min-height:30px;padding:4px 7px}.studio button:disabled{opacity:.6}
+.studio .artboard{flex-shrink:0}.studio button:disabled{opacity:.6}
 
 .studio .preview-toolbar{height:auto}.studio .preview-footer{height:32px}.studio .stage-title strong{color:var(--text)}.studio .character-card details{margin-top:6px}.studio .character-card details>summary{font-size:12px;color:var(--muted);cursor:pointer}.studio .character-card details button{font-size:12px}
 .panel-resizer::before{content:'';position:absolute}.panel-resizer.vertical::before{inset:0 -9px}.panel-resizer.horizontal::before{inset:-9px 0}
