@@ -192,12 +192,12 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 - Käsikirjoitus: container 720/900 px + media 1280/1440/1920; focus max-width 680/720 px.
 - Inspector **Valinta**: `selection-inspector` ([`components/editor.tsx`](components/editor.tsx)).
 
-**S-01:** avoin — käyttäjän 1440×900 capture; ohje [`docs/FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md).
+**S-01:** valmis linja A — capture + layout Figmassa · [`docs/FIGMA-S-01-SESSION-2026-10-06.md`](docs/FIGMA-S-01-SESSION-2026-10-06.md).
 
 **Vaihe 1c (valmis):** `--timeline-*` tokenit + `studio-components.css` override (kentät, raidat, active-track, presentation-timeline).
 
 **Riskejä:** `style.css` minifi yhä sisältää vanhat hex-arvot ei-`.studio`-scopeen; poisto vasta 0.47d.
-**Seuraava:** S-01 Figma-import (käyttäjä); FigJam sticky; 0.47d timeline-erittely tarvittaessa.
+**Seuraava:** FigJam *Link to design* stickyihin (~2 min käsin); 0.47d timeline-erittely tarvittaessa.
 
 ### 0.48 — Script Hero (keskialue · hyväksytty suositus 1–5)
 
@@ -218,6 +218,12 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 
 **Visuaalinen tarkistus (2026-10-06):** [`docs/FIGMA-VISUAL-SESSION-0.48.md`](docs/FIGMA-VISUAL-SESSION-0.48.md) — 1280/1440/1920 (CDP), vaalea/tumma, jakoviiva + padding-synkki, focus overlay täysleveys.
 
-**S-01:** koodi/speksi OK; **Figma 1440×900 capture** käyttäjälle ([`FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md)).
+**S-01 (2026-10-06):** capture + overlay frame **03 Editor hero** (`6:2`) · FigJam kaavio Focus ↔ Panel · [`FIGMA-S-01-SESSION-2026-10-06.md`](docs/FIGMA-S-01-SESSION-2026-10-06.md). Ei uusia `Korjaa: kyllä` -issue-rivejä.
 
-**Seuraava:** S-01 Figma-import ([`FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md)); FigJam sticky.
+**Shot hover (2026-10-06):** Storyboard + 19 korttia; PNG agent store · [`FIGMA-SHOT-HOVER-SESSION-2026-10-06.md`](docs/FIGMA-SHOT-HOVER-SESSION-2026-10-06.md). Hover CDP-simulaatio (ei oikeaa `:hover`). Ei uusia issue-rivejä.
+
+**Overlay frame 03:** MCP-kiintiö → speksi+mittaus OK, ei uusia `Korjaa: kyllä` -rivejä · [`FIGMA-S-01-SESSION-2026-10-06.md`](docs/FIGMA-S-01-SESSION-2026-10-06.md).
+
+**Figma linja A (2026-10-06):** upload + layout ✅ · [`FIGMA-CAPTURE-PLACEMENT-2026-10-06.md`](docs/FIGMA-CAPTURE-PLACEMENT-2026-10-06.md). MCP `use_figma` estyi; FigJam design-linkit käsin ([`FIGJAM-STUDIO-FLOW.md`](docs/FIGJAM-STUDIO-FLOW.md)).
+
+**Seuraava (0.48):** linja A valmis. **Suositus:** **C** sarja/YouTube-vienti tai **D** 0.47d CSS — katso [`DEVELOPMENT-0.46-phase-e.md`](DEVELOPMENT-0.46-phase-e.md).

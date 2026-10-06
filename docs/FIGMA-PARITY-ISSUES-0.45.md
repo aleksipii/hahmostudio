@@ -13,10 +13,10 @@ FigJam: [Script user flow](https://www.figma.com/board/RQ3kH9AAduLT7E3iJabv3e)
 - [x] Koodipohja vs. [`FIGMA-SCRIPT-FOCUS.md`](FIGMA-SCRIPT-FOCUS.md) (px/token) — agentti 2026-10-06
 - [x] Resolve 01–05 vs. [`FIGMA-RESOLVE-PARITY.md`](FIGMA-RESOLVE-PARITY.md) — jo 0.44
 - [x] Desktop-dev + mittaus (agentti · [`FIGMA-CAPTURE-SESSION-0.45.md`](FIGMA-CAPTURE-SESSION-0.45.md))
-- [ ] 1440×900 hero-capture Figmaan (käyttäjä · [`FIGMA-S-01-CAPTURE.md`](FIGMA-S-01-CAPTURE.md))
-- [ ] Shot hover + valinta (capture)
-- [ ] FigJam sticky + design-linkit (käyttäjä)
-- [ ] Capture Figmaan / FigJamiin (ei repoon)
+- [x] 1440×900 hero-capture Figmaan — agentti 2026-10-06 · [`FIGMA-S-01-SESSION-2026-10-06.md`](FIGMA-S-01-SESSION-2026-10-06.md) · overlay frame **03 Editor hero** (käsin 2026-10-06)
+- [x] Shot hover + valinta (capture) — agentti 2026-10-06 · [`FIGMA-SHOT-HOVER-SESSION-2026-10-06.md`](FIGMA-SHOT-HOVER-SESSION-2026-10-06.md)
+- [x] FigJam Focus ↔ Panel -kaavio — agentti 2026-10-06 · board RQ3kH9AAduLT7E3iJabv3e · design-linkki stickyyn: [`FIGJAM-STUDIO-FLOW.md`](FIGJAM-STUDIO-FLOW.md) (2 min käsin)
+- [x] Capture Figmaan / FigJamiin (ei repoon)
 
 ---
 
@@ -26,7 +26,7 @@ FigJam: [Script user flow](https://www.figma.com/board/RQ3kH9AAduLT7E3iJabv3e)
 |----|---------------------------|----------------------------|---------------|---|--------|------|
 | S-02 | Script / Focus · 03 · sticky CTA | `.script-sticky-bar .primary.full` | Figma 56 px korkeus; sovelluksessa oli 40 px | P2 | kyllä | korjattu |
 | S-03 | Script / Focus · 03 · compose | `.script-compose[data-script-layout=focus]` | Focus-sarakkeella puuttui compose-kortin min-korkeus (360–530 px) | P2 | kyllä | korjattu |
-| S-01 | Script / Focus · 03 | `script-panel--focus` | 1440×900 Figma-hero: koodi/spec 680 px + 56 px OK; capture-ohje [`FIGMA-S-01-CAPTURE.md`](FIGMA-S-01-CAPTURE.md) | — | ei | avoin (capture) |
+| S-01 | Script / Focus · 03 | `script-panel--focus` | Capture overlay Figmassa (`6:2` frame 03 · 40 %) · [`FIGMA-CAPTURE-PLACEMENT-2026-10-06.md`](FIGMA-CAPTURE-PLACEMENT-2026-10-06.md) | — | ei | layout OK 2026-10-06 |
 | S-04 | Focus overlay | `.recovery-banner` vs `.screenplay-page` | Palautuspalkki peitti focus-näkymän (z-index) | P2 | kyllä | korjattu |
 | R-TH | Comp / Shot-kortti thumb | `.resolve-shot-card__thumb` | Näyttämön kuvasuhde vs. Figman kiinteä 16:9 | — | ei | hylätty |
 | R-SH | Koko app shell | `studio-flow-tabs` (yläpalkki) | Hahmo/Esitys/Animointi-välilehdet poistettu; 5 työvaihetta ylhäällä; Hahmo/Esitys vain Hahmot-vaiheessa | — | ei | korjattu |
@@ -47,5 +47,5 @@ Siirretty [`FIGMA-RESOLVE-PARITY.md`](FIGMA-RESOLVE-PARITY.md) / [`FIGMA-UI-PARI
 
 ## Seuraava
 
-1. Käyttäjä: checklist + capture → täydennä S-01 tai uudet rivit.
+1. Valinnainen: live-hover PNG devistä → Figma `Capture · hover (live)` · [`FIGMA-CAPTURE-PLACEMENT-2026-10-06.md`](FIGMA-CAPTURE-PLACEMENT-2026-10-06.md) vaihtoehto 3.
 2. Agentti: vain uudet `Korjaa: kyllä` -rivit → minimidiff + `npm test`.

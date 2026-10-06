@@ -48,4 +48,4 @@ Focus-overlay täysleveys korjattu (`.screenplay-page` ei enää `max-width: 120
 3. Aseta referenssikuva taustalle (opacity ~40 %) tai FigJam-linkkiin.
 4. Poista referenssikuva ennen julkaisua — **älä commitoi PNG:tä repoon**.
 
-Agentti: Figma MCP -kiintiö täynnä (2026-10-06); automaattista `upload_assets` ei ajettu.
+Agentti 2026-10-06: capture + `upload_assets` → design solmu `5:2` · istunto [`FIGMA-S-01-SESSION-2026-10-06.md`](FIGMA-S-01-SESSION-2026-10-06.md).

@@ -26,10 +26,14 @@ Manuaalinen: **Näytä → Ulkoasu → Vaalea/Tumma** ennen Figma-capturea.
 - **Jakoviiva:** `role="slider"`; snap kohtausrajoihin; parse = koko teksti.
 - **5k rivi:** `lib/script-line-annotations.test.ts` &lt; 100 ms.
 
-## S-01 (käyttäjä · Figma)
+## Linja A · Figma-capture (2026-10-06)
 
-1. [`FIGMA-S-01-Capture.md`](FIGMA-S-01-CAPTURE.md) — 1440×900, focus-overlay, ei repoon.
-2. Sulje palautusbanneri ennen kuvaa.
-3. Merkitse [`FIGMA-PARITY-ISSUES-0.45.md`](FIGMA-PARITY-ISSUES-0.45.md) checklist rivi 16 kun import tehty.
+| Vaihe | Tila |
+|-------|------|
+| Upload (Script `6:2`, Resolve `14:2`–`14:4`, `16:2`) | ✅ |
+| Layout (overlay frame 03, **Capture · shot states**) | ✅ käsin 2026-10-06 |
+| Live-hover PNG | ei Figmassa · sim `14:3` · live valinnainen käsin |
 
-**Agentin esikatselu:** focus compose + sticky 56 px speksin mukaisesti koodissa; pixel-vertailu vaatii käyttäjän Figma-importin.
+Ohje: [`FIGMA-CAPTURE-PLACEMENT-2026-10-06.md`](FIGMA-CAPTURE-PLACEMENT-2026-10-06.md) · istunto [`FIGMA-S-01-SESSION-2026-10-06.md`](FIGMA-S-01-SESSION-2026-10-06.md).
+
+**Koodi / issue-taulukko:** ei uusia `Korjaa: kyllä` -rivejä. CDP-esikatselu: focus compose + sticky 56 px OK.

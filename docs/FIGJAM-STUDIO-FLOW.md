@@ -3,6 +3,11 @@
 Board: [KILSAT Script user flow](https://www.figma.com/board/RQ3kH9AAduLT7E3iJabv3e)  
 Design: [KILSAT Script UI · 0.38](https://www.figma.com/design/FFy68Fynv4Ds2VgRANZoXc) · [KILSAT Studio · UI Resolve](https://www.figma.com/design/vfBqIrcXhys0XoTODSbsI5)
 
+## Pika · Focus ↔ Panel design-linkki (~2 min)
+
+1. Avaa [Script user flow](https://www.figma.com/board/RQ3kH9AAduLT7E3iJabv3e) · sticky **Focus ↔ Panel**.
+2. **Link to design** → [Script / Focus · 03 Editor hero](https://www.figma.com/design/FFy68Fynv4Ds2VgRANZoXc?node-id=6-2).
+
 ## Checklist (~15 min, käsin FigJamissa)
 
 1. Avaa board · zoomaa user flow -alueelle.
@@ -81,6 +86,14 @@ Sovellus: **Työvaihe → Aikajana** avaa aikajanan.
 | `03 Parsing` | toast onnistui | |
 | onnistui | `Storyboard / Grid · default` | Link design → `03 · Storyboard` |
 | `Script / Focus · 03 Editor hero` | panel | Yläpalkki **Käsikirjoitus** |
+
+**S-01 (2026-10-06):** boardiin lisätty kaavio *Script Focus ↔ Panel* · capture design-tiedostoon — [`FIGMA-S-01-SESSION-2026-10-06.md`](FIGMA-S-01-SESSION-2026-10-06.md).
+
+### Sticky — Focus ↔ Panel (S-01)
+
+**Otsikko:** Focus ↔ Panel  
+**Teksti:** Yläpalkki **Käsikirjoitus** → focus hero 1440×900. Esc / **Takaisin editoriin** → panel. **Jaa kohtauksiin** → parsing.  
+**Link design:** [Script / Focus · 03 Editor hero](https://www.figma.com/design/FFy68Fynv4Ds2VgRANZoXc?node-id=6-2) · overlay `6:2` (layout 2026-10-06).
 
 ---
 
