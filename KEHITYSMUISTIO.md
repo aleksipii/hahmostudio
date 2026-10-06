@@ -140,11 +140,15 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 - `@mira → MIRA`, `speakerHandles`, **SpeakerBindingTable**, **shot-guard**, testit. GitHub `main`: `530b8d8` (2026-10-06).
 - FigJam stickyt: käsin (`docs/FIGJAM-STUDIO-FLOW.md`), ei repossa.
 
-### 0.40 (valmis koodissa · ei pushattu)
-- **@sidonta jatko:** `SpeakerBindingTable` — pudotus + Tuo `.hahmo` Käsikirjoitus-paneelissa; ehdotukset (`speaker-pack-options`); `patchSpeakerBinding`. Hahmot-vaihe: ehdotus + ohje avata Käsikirjoitus. `DEVELOPMENT-0.40.md`.
-- `npm test` 958.
+### 0.40 (pushattu · `f35f9f2`)
+- Puhujan pakettivalinta taulukosta Käsikirjoituksessa. `DEVELOPMENT-0.40.md`.
 
-### Seuraava koodierä (0.41-ehdotus)
-- **Script UI:** focus-capture + `script-compose`-viimeistely (`DEVELOPMENT-0.38.md`).
-- **Editor:** pakettivalinta suoraan Hahmot-vaiheesta (jaettu `loadAsset`).
-- **Tuotanto:** shot-guard + `revise()`-estot lukituksessa.
+### 0.41 (valmis koodissa · ei pushattu)
+- **A Script:** focus-näkymä — Tab/Esc, `script-panel--focus`, compose-sticky.
+- **B Hahmot:** `loadPresentationCastPack` + sidonta Työvaihe Hahmot -taulukosta (`presentationDraft`).
+- **C Tuotanto:** `scriptReparseLockedBlock` — lukittu + muutettu teksti → esto + `role="alert"`.
+- `DEVELOPMENT-0.41.md`.
+
+### Seuraava koodierä (0.42-ehdotus)
+- Figma focus-capture; cast-sidonta journal-komennoksi editorista.
+- Hyväksyttyjen kuvien parse-varoitus (ei vain lukittu).

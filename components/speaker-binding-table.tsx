@@ -117,7 +117,7 @@ export default function SpeakerBindingTable({
       {rows.some(r => r.missing && !r.pendingCharacter && !canPick) && (
         <p role="status">Puuttuva paketti: valitse hahmo alla tai Hahmot-kirjastosta.</p>
       )}
-      {compact && !canPick && rows.some(r => r.suggestedPack && r.missing) && (
+      {compact && !canPick && rows.some(r => (r.suggestedPack || r.missing) && !r.packId) && (
         <p role="status">Avaa Käsikirjoitus-välilehti valitaksesi paketin taulukosta.</p>
       )}
     </div>

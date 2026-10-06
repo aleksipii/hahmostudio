@@ -4,7 +4,7 @@ import { parsePresentation } from './presentation-parser.ts';
 import { initProduction } from './production-model.ts';
 import { adaptPresentation, studioMetadata } from './studio/domain.ts';
 import { readFlowPinEnabled, writeFlowPinEnabled } from './studio-flow-scope.ts';
-import { scriptEditShotGuardMessage, shotGuardSummary } from './studio/shot-guard-summary.ts';
+import { scriptEditShotGuardMessage, scriptReparseLockedBlock, shotGuardSummary } from './studio/shot-guard-summary.ts';
 
 test('shot guard summary counts approved and locked shots', () => {
   const p = parsePresentation('Hahmo MIRA: test.\nMIRA: "Hei."');
@@ -25,6 +25,19 @@ test('shot guard summary counts approved and locked shots', () => {
   assert.equal(summary.protectedShots, 1);
   const msg = scriptEditShotGuardMessage(summary);
   assert.ok(msg?.includes('Työvaihe-pin'));
+});
+
+test('script reparse is blocked when locked shots exist and draft text changed', () => {
+  const p = parsePresentation('Hahmo MIRA: test.\nMIRA: "Hei."');
+  p.production = initProduction(p);
+  const shotId = adaptPresentation(p).shots[0]!.id;
+  p.production!.studio = {
+    ...studioMetadata(p),
+    rawScript: p.original,
+    shots: { [shotId]: { status: 'locked', approvedRevision: 1 } },
+  };
+  assert.equal(scriptReparseLockedBlock(p, p.original), null);
+  assert.ok(scriptReparseLockedBlock(p, p.original + '\nMIRA: "Muutos."')?.includes('lukittua'));
 });
 
 test('shot approval metadata is independent of työvaihe-pin setting', () => {

@@ -316,12 +316,31 @@
   margin: 0;
 }
 
+.studio .script-panel--focus > h2,
+.studio .script-panel--focus > p:first-of-type,
+.studio .script-panel--focus > .screenplay-step-nav {
+  display: none;
+}
+
+.studio .shot-guard-notice--block {
+  border-color: color-mix(in srgb, var(--color-danger, #c44) 35%, var(--border));
+  color: var(--text);
+}
+
 .screenplay-page .script-sticky-bar {
   max-width: 680px;
   margin-left: auto;
   margin-right: auto;
   box-shadow: var(--shadow-lg);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.screenplay-page .script-focus-hint {
+  max-width: 680px;
+  margin: -12px auto 16px;
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  text-align: center;
 }
 
 .studio .presentation-panel fieldset.presentation-steps {

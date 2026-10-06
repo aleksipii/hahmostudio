@@ -23,3 +23,13 @@ export function scriptEditShotGuardMessage(summary: ShotGuardSummary): string | 
   if (summary.locked) parts.push(`${summary.locked} lukittua`);
   return `Huomio: ${parts.join(' ja ')} kuvaa. Käsikirjoituksen muutos voi palauttaa kuvat luonnokseksi. Työvaihe-pin ei korvaa kuvan Hyväksy/Lukitse-toimintoa.`;
 }
+
+/** Estää Jaa kohtauksiin -uudelleenjaon, jos käsikirjoitus poikkeaa tallennetusta ja lukittuja kuvia on. */
+export function scriptReparseLockedBlock(model: Presentation | undefined, draftText: string): string | null {
+  if (!model) return null;
+  const summary = shotGuardSummary(model);
+  if (summary.locked === 0) return null;
+  const saved = (model.production?.studio?.rawScript ?? model.original ?? '').trim();
+  if (draftText.trim() === saved) return null;
+  return `${summary.locked} lukittua kuvaa: uudelleenjako on estetty, kunnes avaat lukituksen tai palautat viimeksi jaetun käsikirjoitustekstin.`;
+}
