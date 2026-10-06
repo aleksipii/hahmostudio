@@ -1,0 +1,289 @@
+/* KILSAT Script UX · luonnos 2026-10-06 — käsikirjoitus (hero + focus) */
+
+.studio.script-ux-luonnos {
+  --font-ui: 'Hanken Grotesk', var(--font-stack);
+  --font-script: 'Literata', Georgia, 'Times New Roman', serif;
+  --script-measure: 68ch;
+  --script-gutter-width: 7.5rem;
+  --script-margin-gap: var(--space-8);
+  --script-violet: var(--color-accent, #a855f7);
+  --script-violet-hover: var(--color-accent-hover, #c084fc);
+  --script-violet-soft: var(--color-accent-soft, rgba(168, 85, 247, 0.16));
+  --script-violet-text: var(--color-accent-hover, #c084fc);
+  --script-line-height: 1.65;
+  font-family: var(--font-ui);
+}
+
+.studio.script-ux-luonnos.script-hero-center,
+.studio.script-ux-luonnos.script-page-open .screenplay-page {
+  --accent: var(--script-violet);
+  --accent-subtle: var(--script-violet-soft);
+  --color-accent: var(--script-violet);
+  --color-accent-hover: var(--script-violet-hover);
+  --color-accent-soft: var(--script-violet-soft);
+}
+
+.studio.script-ux-luonnos.script-hero-center {
+  --bg-0: #0f0b17;
+  --bg-1: #171221;
+  --bg-2: #1f192c;
+  --border: #2c2440;
+  --text: #ece8f6;
+  --text-dim: #a79fba;
+  --field: #1f192c;
+}
+
+:root[data-theme='light'] .studio.script-ux-luonnos.script-hero-center {
+  --bg-0: #faf8ff;
+  --bg-1: #ffffff;
+  --bg-2: #f2eefb;
+  --border: #e0d9f0;
+  --text: #1b1530;
+  --text-dim: #5e5575;
+  --script-violet: var(--color-accent-active, #9333ea);
+  --script-violet-hover: var(--color-accent-active, #9333ea);
+  --script-violet-soft: var(--color-accent-soft, rgba(109, 40, 217, 0.09));
+  --script-violet-text: var(--color-accent-active, #9333ea);
+}
+
+.studio.script-ux-luonnos .script-compose-grid {
+  grid-template-columns: minmax(7.5rem, 1fr) minmax(0, var(--script-measure)) minmax(6.875rem, 1fr);
+  column-gap: var(--script-margin-gap);
+}
+
+.studio.script-ux-luonnos .script-compose--hero {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.studio.script-ux-luonnos .script-compose--hero .script-main {
+  padding: 0;
+}
+
+.studio.script-ux-luonnos .script-compose-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scroll-padding-top: 4rem;
+}
+
+.studio.script-ux-luonnos .script-compose-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: linear-gradient(var(--bg-0) 70%, transparent);
+}
+
+.studio.script-ux-luonnos .script-compose-bar__title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.studio.script-ux-luonnos .script-compose-bar__grow {
+  flex: 1;
+}
+
+.studio.script-ux-luonnos .script-compose-bar .ghost-btn {
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.studio.script-ux-luonnos .script-compose-bar .ghost-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.studio.script-ux-luonnos .script-compose-bar kbd,
+.studio.script-ux-luonnos .script-empty-hint kbd {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 6px;
+  color: var(--text-dim);
+  background: var(--bg-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.studio.script-ux-luonnos .script-compose--hero .script-editor-field {
+  font-family: var(--font-script);
+  font-size: var(--text-xl);
+  line-height: var(--script-line-height);
+  caret-color: var(--script-violet-text);
+}
+
+.studio.script-ux-luonnos .script-margin-line--speaker span,
+.studio.script-ux-luonnos .script-margin-line--character span {
+  color: var(--script-violet-text);
+  font-weight: 600;
+}
+
+.studio.script-ux-luonnos .script-margin-line--scene span {
+  color: var(--script-violet-text);
+  font-weight: 700;
+}
+
+.studio.script-ux-luonnos .script-parse-divider:hover,
+.studio.script-ux-luonnos .script-parse-divider.is-dragging {
+  background: var(--script-violet);
+  box-shadow: none;
+}
+
+.studio.script-ux-luonnos .script-sticky-bar {
+  margin: 0;
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: none;
+  background: linear-gradient(to top, var(--bg-0) 85%, transparent);
+}
+
+.studio.script-ux-luonnos .script-sticky-bar .primary.full {
+  min-height: 48px;
+  border-radius: 10px;
+  background: var(--script-violet);
+  font-weight: 600;
+}
+
+.studio.script-ux-luonnos .script-sticky-bar .primary.full:hover:not(:disabled) {
+  background: var(--script-violet-hover);
+}
+
+.studio.script-ux-luonnos .script-empty-hero {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-7) var(--space-5);
+}
+
+.studio.script-ux-luonnos .script-empty-drop {
+  width: min(560px, 100%);
+  border: 1.5px dashed var(--border);
+  border-radius: 14px;
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+  transition: border-color var(--transition-base), background var(--transition-base);
+}
+
+.studio.script-ux-luonnos .script-empty-drop.is-dragover {
+  border-color: var(--script-violet);
+  background: var(--script-violet-soft);
+}
+
+.studio.script-ux-luonnos .script-empty-drop h2 {
+  font-size: var(--text-3xl);
+  line-height: var(--line-tight);
+  margin: 0 0 var(--space-3);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.studio.script-ux-luonnos .script-empty-drop > p {
+  color: var(--text-dim);
+  margin: 0 auto var(--space-5);
+  max-width: 42ch;
+  line-height: 1.5;
+}
+
+.studio.script-ux-luonnos .script-empty-acts {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.studio.script-ux-luonnos .script-empty-acts .primary {
+  background: var(--script-violet);
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.studio.script-ux-luonnos .script-empty-acts .primary:hover:not(:disabled) {
+  background: var(--script-violet-hover);
+}
+
+.studio.script-ux-luonnos .script-empty-acts .ghost-btn {
+  font-weight: 500;
+  color: var(--text-dim);
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+
+.studio.script-ux-luonnos .script-empty-hint {
+  margin-top: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.studio.script-ux-luonnos .script-command-backdrop {
+  background: rgba(10, 6, 18, 0.45);
+  padding-top: 12vh;
+}
+
+:root[data-theme='light'] .studio.script-ux-luonnos .script-command-backdrop {
+  background: rgba(27, 21, 48, 0.25);
+}
+
+.studio.script-ux-luonnos .script-command-palette {
+  width: min(480px, 92vw);
+  padding: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.studio.script-ux-luonnos .script-command-search {
+  width: 100%;
+  box-sizing: border-box;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-4);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-lg);
+  outline: none;
+}
+
+.studio.script-ux-luonnos .script-command-search:focus-visible {
+  box-shadow: inset 0 -2px 0 var(--script-violet);
+}
+
+.studio.script-ux-luonnos .script-command-palette ul {
+  padding: var(--space-2);
+  gap: 0;
+}
+
+.studio.script-ux-luonnos .script-command-palette li button {
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text-dim);
+}
+
+.studio.script-ux-luonnos .script-command-palette li button:hover,
+.studio.script-ux-luonnos .script-command-palette li button:focus-visible {
+  background: var(--script-violet-soft);
+  color: var(--text);
+}
+
+.studio.script-ux-luonnos .script-command-kicker {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .studio.script-ux-luonnos .script-compose-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .studio.script-ux-luonnos .script-margin--right {
+    display: none;
+  }
+}

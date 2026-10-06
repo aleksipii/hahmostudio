@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 
 export type ScriptCommandId = 'import' | 'example-kilsat' | 'example-auto' | 'syntax' | 'new-scene';
 
@@ -20,8 +20,18 @@ export default function ScriptCommandPalette({
   onPick: (id: ScriptCommandId) => void;
 }) {
   const dialog = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState('');
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((c) => c.label.toLowerCase().includes(q) || c.hint?.toLowerCase().includes(q));
+  }, [query]);
+
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setQuery('');
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -29,9 +39,10 @@ export default function ScriptCommandPalette({
       }
     };
     document.addEventListener('keydown', onKey);
-    dialog.current?.focus();
+    dialog.current?.querySelector<HTMLInputElement>('.script-command-search')?.focus();
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
+
   if (!open) return null;
   return (
     <div className="script-command-backdrop" onClick={onClose}>
@@ -44,9 +55,22 @@ export default function ScriptCommandPalette({
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="script-command-kicker">Kirjoita / avataksesi · Esc sulkee</p>
+        <input
+          className="script-command-search"
+          type="search"
+          placeholder="Hae työkalua…"
+          aria-label="Hae työkalua"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && filtered[0]) {
+              e.preventDefault();
+              onPick(filtered[0].id);
+            }
+          }}
+        />
         <ul>
-          {items.map((item) => (
+          {filtered.map((item) => (
             <li key={item.id}>
               <button type="button" className="ghost-btn" onClick={() => onPick(item.id)}>
                 <span>{item.label}</span>

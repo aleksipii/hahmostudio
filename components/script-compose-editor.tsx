@@ -5,10 +5,9 @@ import {
   scanScriptLineAnnotations,
   scriptSceneBoundaryLines,
   snapDividerLine,
+  SCRIPT_ANNOTATE_DEBOUNCE_MS,
   type ScriptLineAnnotation,
 } from '../lib/script-line-annotations';
-
-const ANNOTATE_DEBOUNCE_MS = 320;
 const OVERSCAN = 8;
 
 /** Jaettu käsikirjoituksen kirjoitusalue — focus, panel ja keskialue. */
@@ -52,6 +51,9 @@ export default function ScriptComposeEditor({
   onTryExample?: () => void;
 }) {
   const empty = !text.trim();
+  const uxHero = variant === 'hero';
+  const [emptyDrag, setEmptyDrag] = useState(false);
+  const [startedBlank, setStartedBlank] = useState(false);
   const fieldId = variant === 'hero' ? 'dialogue-script-hero' : 'dialogue-script';
   const lineCount = useMemo(() => (text ? text.replace(/\r\n?/g, '\n').split('\n').length : 1), [text]);
 
@@ -74,7 +76,14 @@ export default function ScriptComposeEditor({
   }, [lineCount, boundaries]);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setAnnotations(scanScriptLineAnnotations(text)), ANNOTATE_DEBOUNCE_MS);
+    if (!empty) setStartedBlank(false);
+  }, [empty]);
+
+  useEffect(() => {
+    const t = window.setTimeout(
+      () => setAnnotations(scanScriptLineAnnotations(text)),
+      SCRIPT_ANNOTATE_DEBOUNCE_MS,
+    );
     return () => window.clearTimeout(t);
   }, [text]);
 
@@ -127,6 +136,14 @@ export default function ScriptComposeEditor({
       window.removeEventListener('pointerup', up);
     };
   }, [draggingDivider, lineFromPointer]);
+
+  const importTextFile = (file: File) => {
+    if (!onImportFile) return;
+    void (async () => {
+      if (file.size > 150000) throw Error('Tekstitiedosto on liian suuri.');
+      await onImportFile(new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer()));
+    })().catch(() => {});
+  };
 
   const handleCommand = (id: ScriptCommandId) => {
     setPaletteOpen(false);
@@ -211,102 +228,163 @@ export default function ScriptComposeEditor({
         onChange={(e) => {
           const f = e.target.files?.[0];
           e.target.value = '';
-          if (!f || !onImportFile) return;
-          void (async () => {
-            if (f.size > 150000) throw Error('Tekstitiedosto on liian suuri.');
-            await onImportFile(new TextDecoder('utf-8', { fatal: true }).decode(await f.arrayBuffer()));
-          })().catch(() => {});
+          if (!f) return;
+          importTextFile(f);
         }}
       />
       <ScriptCommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onPick={handleCommand} />
-      <div className="script-compose-grid">
-        {renderMarginSide('left')}
-        <div className="script-main">
-          <div className="script-editor">
-            <label className="sr-only" htmlFor={fieldId}>
-              Käsikirjoitus (.md / .txt)
-            </label>
-            {empty && variant === 'hero' && (
-              <div className="script-empty-hero" role="status">
-                <p>Vedä käsikirjoitus tähän tai kokeile esimerkkiä.</p>
-                {onTryExample && (
-                  <button type="button" className="primary" disabled={scriptLocked} onClick={onTryExample}>
-                    Kokeile esimerkkiä
-                  </button>
-                )}
-                <p className="script-empty-hint">Tai paina <kbd>/</kbd> avataksesi komennot.</p>
-              </div>
-            )}
-            {!empty && variant !== 'hero' && <label htmlFor={fieldId}>Käsikirjoitus (.md / .txt)</label>}
-            {variant !== 'hero' && !toolsHidden && (
-              <ScriptGuide empty={empty} disabled={scriptLocked} insert={onInsertGuide} />
-            )}
-            <div className="script-textarea-wrap">
-              <textarea
-                ref={textareaRef}
-                id={fieldId}
-                className="script-editor-field"
-                maxLength={60000}
-                rows={variant === 'hero' ? 16 : 9}
-                value={text}
-                disabled={scriptLocked}
-                placeholder={variant === 'hero' ? 'Kirjoita käsikirjoitus tai liitä teksti…' : undefined}
-                onChange={(e) => onTextChange(e.target.value)}
-                onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-                onKeyDown={handleKeyDown}
-                spellCheck
-              />
-              <div
-                className={`script-parse-divider script-parse-divider--live${draggingDivider ? ' is-dragging' : ''}`}
-                style={{ top: Math.max(0, dividerTop) }}
-                role="slider"
-                aria-orientation="horizontal"
-                aria-valuenow={dividerLine}
-                aria-valuemin={1}
-                aria-valuemax={lineCount}
-                aria-label="Jakoviiva ennen Jaa kohtauksiin -toimintoa"
-                tabIndex={0}
-                onPointerDown={(e) => {
-                  if (scriptLocked) return;
-                  e.preventDefault();
-                  setDraggingDivider(true);
-                  setDividerLine(lineFromPointer(e.clientY));
-                }}
-                onKeyDown={(e) => {
-                  if (scriptLocked) return;
-                  if (e.key === 'ArrowUp') setDividerLine((l) => snapDividerLine(l - 1, boundaries, lineCount));
-                  if (e.key === 'ArrowDown') setDividerLine((l) => snapDividerLine(l + 1, boundaries, lineCount));
-                }}
-              />
-            </div>
-          </div>
-          <div className="script-status">
-            <p role="status">{message}</p>
-            {error && (
-              <p role="alert" className="script-error">
-                {error}
-              </p>
-            )}
-            {working && (
-              <button type="button" className="secondary" onClick={onAbort}>
-                Peruuta käsittely
+      {empty && uxHero && !startedBlank ? (
+        <div className="script-empty-hero" role="status">
+          <div
+            className={`script-empty-drop${emptyDrag ? ' is-dragover' : ''}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setEmptyDrag(true);
+            }}
+            onDragLeave={() => setEmptyDrag(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setEmptyDrag(false);
+              if (scriptLocked) return;
+              const file = e.dataTransfer.files[0];
+              if (file && /\.(md|txt)$/i.test(file.name)) importTextFile(file);
+            }}
+          >
+            <h2>Vedä käsikirjoitus tähän</h2>
+            <p>Tuo valmis teksti tai aloita esimerkki. Puhujat ja kohtaukset tunnistetaan automaattisesti.</p>
+            <div className="script-empty-acts">
+              {onTryExample && (
+                <button type="button" className="primary" disabled={scriptLocked} onClick={onTryExample}>
+                  Kokeile esimerkkiä
+                </button>
+              )}
+              <button
+                type="button"
+                className="ghost-btn"
+                disabled={scriptLocked || !onImportFile}
+                onClick={() => fileRef.current?.click()}
+              >
+                Tuo tiedosto
               </button>
-            )}
-          </div>
-          <div className="script-sticky-bar">
-            <button
-              type="button"
-              className="primary full"
-              disabled={parseDisabled}
-              title={parseTitle}
-              onClick={onRequestParse}
-            >
-              Jaa kohtauksiin
-            </button>
+              <button
+                type="button"
+                className="ghost-btn"
+                disabled={scriptLocked}
+                onClick={() => {
+                  setStartedBlank(true);
+                  onTextChange('');
+                }}
+              >
+                Aloita tyhjästä
+              </button>
+            </div>
+            <p className="script-empty-hint">
+              Tai kirjoita alusta: paina <kbd>/</kbd> työkaluille
+            </p>
           </div>
         </div>
-        {renderMarginSide('right')}
-      </div>
+      ) : (
+        <div className={uxHero ? 'script-compose-scroll' : undefined}>
+          {uxHero && !empty && (
+            <div className="script-compose-bar">
+              <span className="script-compose-bar__title">Käsikirjoitus</span>
+              <span className="script-compose-bar__grow" />
+              <button type="button" className="ghost-btn" disabled={scriptLocked} onClick={() => setPaletteOpen(true)}>
+                Työkalut <kbd>/</kbd>
+              </button>
+            </div>
+          )}
+          <div className="script-compose-grid">
+            {renderMarginSide('left')}
+            <div className="script-main">
+              <div className="script-editor">
+                <label className="sr-only" htmlFor={fieldId}>
+                  Käsikirjoitus (.md / .txt)
+                </label>
+                {!empty && variant !== 'hero' && <label htmlFor={fieldId}>Käsikirjoitus (.md / .txt)</label>}
+                {variant !== 'hero' && !toolsHidden && (
+                  <ScriptGuide empty={empty} disabled={scriptLocked} insert={onInsertGuide} />
+                )}
+                <div className="script-textarea-wrap">
+                  <textarea
+                    ref={textareaRef}
+                    id={fieldId}
+                    className="script-editor-field"
+                    maxLength={60000}
+                    rows={variant === 'hero' ? 16 : 9}
+                    value={text}
+                    disabled={scriptLocked}
+                    placeholder={variant === 'hero' ? 'Kirjoita käsikirjoitus tai liitä teksti…' : undefined}
+                    onChange={(e) => onTextChange(e.target.value)}
+                    onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+                    onKeyDown={handleKeyDown}
+                    spellCheck
+                  />
+                  {!empty && (
+                    <div
+                      className={`script-parse-divider script-parse-divider--live${draggingDivider ? ' is-dragging' : ''}`}
+                      style={{ top: Math.max(0, dividerTop) }}
+                      role="slider"
+                      aria-orientation="horizontal"
+                      aria-valuenow={dividerLine}
+                      aria-valuemin={1}
+                      aria-valuemax={lineCount}
+                      aria-label="Jakoviiva ennen Jaa kohtauksiin -toimintoa"
+                      tabIndex={0}
+                      onPointerDown={(e) => {
+                        if (scriptLocked) return;
+                        e.preventDefault();
+                        setDraggingDivider(true);
+                        setDividerLine(lineFromPointer(e.clientY));
+                      }}
+                      onKeyDown={(e) => {
+                        if (scriptLocked) return;
+                        if (e.key === 'ArrowUp') setDividerLine((l) => snapDividerLine(l - 1, boundaries, lineCount));
+                        if (e.key === 'ArrowDown') setDividerLine((l) => snapDividerLine(l + 1, boundaries, lineCount));
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="script-status">
+                <p role="status">{message}</p>
+                {error && (
+                  <p role="alert" className="script-error">
+                    {error}
+                  </p>
+                )}
+                {working && (
+                  <button type="button" className="secondary" onClick={onAbort}>
+                    Peruuta käsittely
+                  </button>
+                )}
+              </div>
+              <div className="script-sticky-bar">
+                <button
+                  type="button"
+                  className="primary full"
+                  disabled={parseDisabled}
+                  title={parseTitle}
+                  onClick={onRequestParse}
+                >
+                  Jaa kohtauksiin
+                </button>
+              </div>
+            </div>
+            {renderMarginSide('right')}
+          </div>
+          {uxHero && (
+            <footer className="script-compose-meta" aria-label="Käsikirjoituksen tilastot">
+              <span>{lineCount} riviä</span>
+              <span aria-hidden>·</span>
+              <span>{text.length} merkkiä</span>
+              <span className="script-compose-meta__hint">
+                <kbd>/</kbd> työkalut
+              </span>
+            </footer>
+          )}
+        </div>
+      )}
     </div>
   );
 }

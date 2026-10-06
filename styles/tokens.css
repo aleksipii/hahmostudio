@@ -62,6 +62,10 @@
   --script-gutter-width: 5.5rem;
   --script-margin-gap: var(--space-4);
   --script-parse-divider-height: 2px;
+  --script-violet: var(--color-accent);
+  --script-violet-hover: var(--color-accent-hover);
+  --script-violet-soft: var(--color-accent-soft);
+  --script-violet-text: var(--color-accent-hover);
 
   /* Aikajana (0.47 · 1c) */
   --timeline-bg: var(--bg-1);

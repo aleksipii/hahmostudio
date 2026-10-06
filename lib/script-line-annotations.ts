@@ -1,3 +1,6 @@
+/** Debounce live-marginaaliskannaukselle (ms) — alle ~100 ms tuntuva viive pitkissä teksteissä. */
+export const SCRIPT_ANNOTATE_DEBOUNCE_MS = 150;
+
 /** Johdettu rivikohtainen skannaus käsikirjoituksen marginaaleihin — ei muuta parse-moottoria. */
 
 export type ScriptLineAnnotation = {
