@@ -62,6 +62,16 @@
   --script-gutter-width: 5.5rem;
   --script-margin-gap: var(--space-4);
   --script-parse-divider-height: 2px;
+
+  /* Aikajana (0.47 · 1c) */
+  --timeline-bg: var(--bg-1);
+  --timeline-track-surface: var(--bg-0);
+  --timeline-field-bg: var(--field);
+  --timeline-field-border: var(--border);
+  --timeline-track-active-bg: var(--accent-subtle);
+  --timeline-track-active-edge: var(--accent);
+  --timeline-ruler-bg: var(--surface);
+
   --motion-ui-fast: 180ms;
   --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 

@@ -40,3 +40,12 @@ Koodi on linjassa speksin kanssa (680 px content, 56 px sticky CTA, focus piilot
 Raportti: [`FIGMA-VISUAL-SESSION-0.48.md`](FIGMA-VISUAL-SESSION-0.48.md) · sticky 56 px · focus compose · step-nav piilossa.  
 Focus-overlay täysleveys korjattu (`.screenplay-page` ei enää `max-width: 1200px`).  
 **Figma-import** ja checklist-ruksi pysyvät käyttäjän tehtävinä (kuva ei repoon).
+
+### Figma-import (manuaalinen)
+
+1. Ota kuva 1440×900 (focus-overlay, ks. yllä).
+2. Figma → frame **Script / Focus · 03 Editor hero** → **Place image** / paste.
+3. Aseta referenssikuva taustalle (opacity ~40 %) tai FigJam-linkkiin.
+4. Poista referenssikuva ennen julkaisua — **älä commitoi PNG:tä repoon**.
+
+Agentti: Figma MCP -kiintiö täynnä (2026-10-06); automaattista `upload_assets` ei ajettu.

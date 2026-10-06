@@ -11,7 +11,9 @@
 
 **Vaihe 1b (2026-10-06):** Poistettu päällekkäiset `.studio .primary`, välilehdet, focus-outline ja tab border-bottom -säännöt `style.css`:stä (kommentti viittaa `studio-components.css`).
 
-**Ei vielä:** timeline/quick-controls kovakoodatut värit `style.css`:ssä; täysi legacy-minifi poisto myöhemmin.
+**Vaihe 1c (2026-10-06):** Aikajana-tokenit (`--timeline-*`) `tokens.css`:ssä; kanoniset override `.studio .timeline` / track / field `studio-components.css`:ssä (legacy `style.css` minifi jää taustalle).
+
+**Ei vielä:** täysi legacy-minifi poisto / `style.css` pilkkominen (0.47d–e).
 
 ## Latausjärjestys (`main.tsx`)
 

@@ -589,3 +589,53 @@
     transition: none;
   }
 }
+
+/* Aikajana · token override (0.47 · 1c) — voittaa style.css legacy-kovakoodit */
+.studio .timeline-container,
+.studio .timeline {
+  background: var(--timeline-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.studio .timeline input:not([type='range']),
+.studio .timeline select,
+.studio .timeline-heading input:not([type='range']) {
+  background: var(--timeline-field-bg);
+  color: var(--text);
+  border: 1px solid var(--timeline-field-border);
+  border-radius: var(--radius-sm);
+}
+
+.studio .timeline .time-slider,
+.studio .timeline-zoom input {
+  accent-color: var(--accent);
+}
+
+.studio .animation-track {
+  border-color: var(--border);
+}
+
+.studio .animation-track.active {
+  background: var(--timeline-track-active-bg);
+  box-shadow: inset 3px 0 var(--timeline-track-active-edge);
+}
+
+.studio .track-keys {
+  background: var(--timeline-track-surface);
+}
+
+.studio .time-ruler,
+.studio .pose-controls {
+  background: var(--timeline-ruler-bg);
+  color: var(--text);
+}
+
+.studio .presentation-timeline {
+  background: var(--timeline-bg);
+  color: var(--text);
+}
+
+.studio .presentation-track > div {
+  background: var(--timeline-track-surface);
+}

@@ -194,8 +194,10 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 
 **S-01:** avoin — käyttäjän 1440×900 capture; ohje [`docs/FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md).
 
-**Riskejä:** `style.css` timeline/layout-säännöt yhä legacy-väreillä; `ui-minimal` osittain päällekkäin.
-**Seuraava:** vaihe 1c (timeline tokenit), visuaalinen tarkistus vaalea/tumma; S-01 capture → issue-lista.
+**Vaihe 1c (valmis):** `--timeline-*` tokenit + `studio-components.css` override (kentät, raidat, active-track, presentation-timeline).
+
+**Riskejä:** `style.css` minifi yhä sisältää vanhat hex-arvot ei-`.studio`-scopeen; poisto vasta 0.47d.
+**Seuraava:** S-01 Figma-import (käyttäjä); FigJam sticky; 0.47d timeline-erittely tarvittaessa.
 
 ### 0.48 — Script Hero (keskialue · hyväksytty suositus 1–5)
 
@@ -218,4 +220,4 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 
 **S-01:** koodi/speksi OK; **Figma 1440×900 capture** käyttäjälle ([`FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md)).
 
-**Seuraava:** vaihe 0.47 **1c** (timeline-tokenit `style.css`); FigJam sticky; S-01 import → issue-lista.
+**Seuraava:** S-01 Figma-import ([`FIGMA-S-01-CAPTURE.md`](docs/FIGMA-S-01-CAPTURE.md)); FigJam sticky.
