@@ -33,3 +33,13 @@ export function scriptReparseLockedBlock(model: Presentation | undefined, draftT
   if (draftText.trim() === saved) return null;
   return `${summary.locked} lukittua kuvaa: uudelleenjako on estetty, kunnes avaat lukituksen tai palautat viimeksi jaetun käsikirjoitustekstin.`;
 }
+
+/** Varoitus ennen uudelleenjakoa, kun hyväksyttyjä (ei lukittuja) kuvia on ja teksti on muuttunut. */
+export function scriptReparseApprovedWarning(model: Presentation | undefined, draftText: string): string | null {
+  if (!model) return null;
+  const summary = shotGuardSummary(model);
+  if (summary.approved === 0 || summary.locked > 0) return null;
+  const saved = (model.production?.studio?.rawScript ?? model.original ?? '').trim();
+  if (draftText.trim() === saved) return null;
+  return `${summary.approved} hyväksyttyä kuvaa palautuu luonnokseksi, jos jaat kohtauksiin uudelleen. Tarkista kuvataulu ennen jatkamista.`;
+}

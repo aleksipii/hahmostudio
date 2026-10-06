@@ -327,6 +327,10 @@
   color: var(--text);
 }
 
+.studio .shot-guard-notice--approved {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--border));
+}
+
 .screenplay-page .script-sticky-bar {
   max-width: 680px;
   margin-left: auto;

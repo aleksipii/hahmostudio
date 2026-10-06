@@ -143,12 +143,15 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 ### 0.40 (pushattu · `f35f9f2`)
 - Puhujan pakettivalinta taulukosta Käsikirjoituksessa. `DEVELOPMENT-0.40.md`.
 
-### 0.41 (valmis koodissa · ei pushattu)
-- **A Script:** focus-näkymä — Tab/Esc, `script-panel--focus`, compose-sticky.
-- **B Hahmot:** `loadPresentationCastPack` + sidonta Työvaihe Hahmot -taulukosta (`presentationDraft`).
-- **C Tuotanto:** `scriptReparseLockedBlock` — lukittu + muutettu teksti → esto + `role="alert"`.
-- `DEVELOPMENT-0.41.md`.
+### 0.41 (pushattu · `e865e4f`)
+- Script focus, Hahmot-sidonta, lukitus-esto. `DEVELOPMENT-0.41.md`.
 
-### Seuraava koodierä (0.42-ehdotus)
-- Figma focus-capture; cast-sidonta journal-komennoksi editorista.
-- Hyväksyttyjen kuvien parse-varoitus (ei vain lukittu).
+### 0.42 (valmis koodissa · ei pushattu)
+- **Figma:** `docs/FIGMA-SCRIPT-FOCUS.md` (capture käsin).
+- **Journal:** `bind-cast`-komento editor + käsikirjoitus.
+- **Varoitus:** `scriptReparseApprovedWarning` (hyväksytty + muuttunut teksti).
+- `DEVELOPMENT-0.42.md` · `npm test` 962.
+
+### Seuraava koodierä (0.43-ehdotus)
+- Figma focus -screenshot FigJam-linkkiin.
+- Parse-vahvistus hyväksytyille kuville (dialogi).

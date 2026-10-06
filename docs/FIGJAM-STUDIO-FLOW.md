@@ -23,7 +23,7 @@ Sovellusvastine: työvaihe-pin (**Asetukset → Tuotantovaihe**), tuotantokierro
 Käyttäjä kirjoittaa tai tuo .md/.txt-käsikirjoituksen. **Jaa kohtauksiin** tunnistaa repliikit ja kuvat paikallisesti (ei pilveä).  
 Sovellus: Animointi → Käsikirjoitus, vasen **Työvaihe → Käsikirjoitus** (teksti ei lukittu).
 
-**Link:** Resolve `01 · Käsikirjoitus` · Script UI capture `node-id=2-2`
+**Link:** Resolve `01 · Käsikirjoitus` · Script UI capture `node-id=2-2` · Focus hero: `docs/FIGMA-SCRIPT-FOCUS.md`
 
 ---
 

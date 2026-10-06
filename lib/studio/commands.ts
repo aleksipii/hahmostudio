@@ -1,3 +1,4 @@
+import {patchSpeakerBinding} from '../presentation-speaker-binding.ts';
 import type {AudioClip,Presentation} from '../presentation-model.ts';
 import {validatePresentation} from '../presentation-model.ts';
 import {initProduction} from '../production-model.ts';
@@ -26,6 +27,13 @@ export function replaceDialogueVoice(state:ProductionState,clip:AudioClip,voice:
  const production=next.production??initProduction(next);
  next.production={...production,studio:revise(compilePresentation(structuredClone(p),assets,fps),next,'Repliikkiäänen vaihto: '+event.id)};
  return{...state,model:validatePresentation(next),voices:{...state.voices,[clip.asset]:voice}};
+}
+
+/** Puhujan .hahmo-sidonta tuotantokomennon kautta (journal: bind-cast). */
+export function bindCastSpeaker(before:Presentation,speaker:string,assetId:string,assets:PresentationAssets,fps:number,expectedRevision:number):Presentation{
+ if(!before.characters.includes(speaker))throw Error('Puhujaa ei löydy: '+speaker+'.');
+ if(!assets[assetId]?.doc.quick)throw Error('Hahmopaketissa puuttuu pikaanimoinnin sidokset.');
+ return editProduction(before,patchSpeakerBinding(before,speaker,assetId),assets,fps,expectedRevision);
 }
 
 /** Central boundary for ordinary production edits; all derived tracks validate before commit. */
