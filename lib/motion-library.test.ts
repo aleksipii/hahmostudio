@@ -73,3 +73,16 @@ test('lepoelämä: silmät räpäyttävät 2,8–4,6 s välein ja hengitys liiku
  const again=build('Pipsa','Mira odottaa 12 s.',r).animationPerActor.MIRA;assert.deepEqual(again.tracks.find(t=>t.key===q.roles.leftBlink),blink,'deterministinen');
  const view=viewAtFrame(q,a,0);assert.equal(view,'front');void (a as Animation);void footPoint;
 });
+
+test('juoksussa on lentovaihe (molemmat jalat ilmassa), kävelyssä ei; kohti kameraa kävellessä hahmo kasvaa ja jalat pysyvät maassa',async()=>{
+ for(const name of ['Pipsa','Roni-Monikulma','Ville-3D']){
+  const r=await pack(name),q=r.doc.quick!;
+  const flightFrames=(line:string)=>{const a=build(name,'Mira '+line+'.',r).animationPerActor.MIRA,pts=(['left','right'] as const).map(s=>Array.from({length:a.duration},(_,f)=>footPoint(r.doc,a,f,s)));
+   const floor=Math.max(...pts.flat().map(p=>p?.y??-1e9));let n=0;for(let f=0;f<a.duration;f++){const l=pts[0][f],rt=pts[1][f];if(l&&rt&&floor-l.y>2.5&&floor-rt.y>2.5)n++;}return n;};
+  assert.ok(flightFrames('juoksee oikealle 2 s')>=3,`${name}: juoksun lentovaihe`);
+  assert.equal(flightFrames('kävelee oikealle 2 s'),0,`${name}: kävelyssä ei lentovaihetta`);
+  const a=build(name,'Mira kävelee suoraan 2 s.',r).animationPerActor.MIRA,root=a.tracks.find(t=>t.key===q.roles.root)!;
+  const scales=root.frames.map(k=>k.scale);assert.ok(Math.max(...scales)>1.05&&Math.max(...scales)<1.2,`${name}: kasvu ${Math.max(...scales)}`);assert.ok(scales.every((v,i)=>i===0||v>=scales[i-1]-1e-9),`${name}: kasvu on monotoninen`);
+  const side=build(name,'Mira kävelee oikealle 2 s.',r).animationPerActor.MIRA.tracks.find(t=>t.key===q.roles.root)!;assert.ok(side.frames.every(k=>k.scale===1),`${name}: sivuttain kävely ei skaalaa`);
+ }
+});

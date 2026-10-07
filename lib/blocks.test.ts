@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 import {readProject} from './project-file.ts';
 import {buildEpisode,catalogFromNames,type EpisodeLibrary} from './episode-builder.ts';
 import {CHARACTER_PACK_OPTIONS} from './speaker-pack-options.ts';
-import {presentationBlocks,blocksToScript,updateBlock,stretchBlock,moveBlock,deleteBlock,duplicateBlock,insertBlock,blockSentence,blockLibrary,BlockConflict,lockedShotConflict,type Block} from './blocks.ts';
+import {presentationBlocks,blocksToScript,updateBlock,stretchBlock,moveBlock,placeBlock,deleteBlocks,duplicateBlocks,moveBlocks,deleteBlock,duplicateBlock,insertBlock,blockSentence,blockLibrary,BlockConflict,lockedShotConflict,type Block} from './blocks.ts';
 import {recognizeScript} from './script-recognizer.ts';
 import {sfxInstruction} from './soundtrack.ts';
 import {initProduction} from './production-model.ts';
@@ -80,4 +80,51 @@ test('palikkamuutos → uusi esitys alle 100 ms (pilvikone, mediaani 5 ajosta)',
  const l=await library(),p=buildEpisode(example,l).presentation,blocks=presentationBlocks(p),walk=blocks.find(b=>b.value==='walk-right')!;buildEpisode(example,l);
  const times:number[]=[];for(let i=0;i<5;i++){const t=performance.now();const edit=stretchBlock(example,walk,2+i*.5);buildEpisode(edit.text,l,{previous:p});times.push(performance.now()-t);}
  times.sort((a,b)=>a-b);assert.ok(times[2]<100,`${times[2].toFixed(1)} ms`);
+});
+
+const timing=`Mira seisoo.
+Odota 2 s.
+Mira hymyilee.
+Niko kävelee oikealle kaksi sekuntia.
+Mira nyökkää.`;
+const startOf=(blocks:Block[],pred:(b:Block)=>boolean)=>blocks.find(pred)!.start;
+
+test('vapaa ajoitus: tauon sisälle jaetaan tauko ja palikka alkaa pudotuskohdassa',async()=>{
+ const blocks=presentationBlocks(await build(timing)),nod=blocks.find(b=>b.value==='nod')!;
+ const edit=placeBlock(timing,blocks,nod,.8);
+ assert.equal(edit.placedAt,.8);assert.match(edit.note??'',/jaettiin/);
+ const after=presentationBlocks(await build(edit.text));
+ assert.ok(Math.abs(startOf(after,b=>b.value==='nod')-.8)<.02,'nod alkaa 0,8 s');
+ const pauses=after.filter(b=>b.kind==='tauko');assert.equal(pauses.length,2);assert.ok(Math.abs(pauses[0].duration+pauses[1].duration-2)<.02,'kokonaiskesto säilyy');
+ assert.ok(Math.abs(startOf(after,b=>b.value==='walk-right')-(2+(nod.duration)))<.1,'myöhemmät sisällöt siirtyvät vain palikan keston verran');
+});
+
+test('vapaa ajoitus: kaiken sisällön jälkeen lisätään tauko; käynnissä olevan liikkeen sisälle ei jaeta',async()=>{
+ const blocks=presentationBlocks(await build(timing)),smile=blocks.find(b=>b.value==='happy')!,end=Math.max(...blocks.filter(b=>b.editable).map(b=>b.start+b.duration));
+ const late=placeBlock(timing,blocks,smile,end+1.5);assert.match(late.note??'',/tauko/);
+ const after=presentationBlocks(await build(late.text));assert.ok(Math.abs(startOf(after,b=>b.value==='happy')-(end+1.5))<.1);
+ const walk=blocks.find(b=>b.value==='walk-right')!,mid=placeBlock(timing,blocks,smile,walk.start+walk.duration/2);
+ assert.match(mid.note??'',/Napsahti/);assert.ok(Math.abs(mid.placedAt-walk.start)<.01||Math.abs(mid.placedAt-(walk.start+walk.duration))<.01||mid.placedAt>=0);
+});
+
+test('Samalla: palikka alkaa repliikin kanssa yhtä aikaa; muualle ei',async()=>{
+ const src='MIRA:\n“Siirsitkö auton eilen?”\n\nNiko kävelee oikealle kaksi sekuntia.\nNiko nyökkää.';
+ const blocks=presentationBlocks(await build(src)),nod=blocks.find(b=>b.value==='nod')!,say=blocks.find(b=>b.kind==='repliikki')!;
+ const edit=placeBlock(src,blocks,nod,say.start+.2,'together');
+ assert.match(edit.text,/Samalla Niko nyökkää( 1 s)?\./);
+ const after=presentationBlocks(await build(edit.text));assert.ok(Math.abs(startOf(after,b=>b.value==='nod')-say.start)<.02);
+ assert.throws(()=>placeBlock(src,blocks,nod,say.start+say.duration+.5,'together'),BlockConflict);
+});
+
+test('ryhmäkomennot: poisto, kopio ja siirto säilyttävät rivijärjestyksen; jaettu rivi estetään',async()=>{
+ const src='Mira hymyilee.\nMira nyökkää.\n\nNiko kävelee oikealle kaksi sekuntia.\nNiko istuu.\nMira vilkuttaa.';
+ const blocks=presentationBlocks(await build(src)),pick=(v:string)=>blocks.find(b=>b.value===v)!;
+ const ids=[pick('happy').id,pick('nod').id];
+ assert.equal(deleteBlocks(src,blocks,ids).text.split('\n').slice(0,2).join('|'),'|Niko kävelee oikealle kaksi sekuntia.');
+ const dup=duplicateBlocks(src,blocks,ids);assert.equal(dup.text.split('\n').slice(0,4).join('|'),'Mira hymyilee.|Mira nyökkää.|Mira hymyilee.|Mira nyökkää.');
+ const moved=moveBlocks(src,blocks,ids,pick('wave').start+pick('wave').duration+1);
+ const after=presentationBlocks(await build(moved.text));
+ const order=after.filter(b=>b.editable).map(b=>b.value);assert.ok(order.indexOf('happy')+1===order.indexOf('nod'),'järjestys säilyy');assert.ok(order.indexOf('wave')<order.indexOf('happy'));
+ const shared='Mira hymyilee ja nyökkää.';const sb=presentationBlocks(await build(shared));
+ assert.throws(()=>deleteBlocks(shared,sb,[sb.find(b=>b.value==='happy')!.id]),BlockConflict);
 });

@@ -1,7 +1,8 @@
 import {sceneBackgrounds} from './svg-renderer.ts';
-import {validateRig,type Actor,type Rig,type Timeline,type TimedEvent,type Viseme,visemes} from './model.ts';
+import {validateRig,type CutoutHeld,type Actor,type Rig,type Timeline,type TimedEvent,type Viseme,visemes} from './model.ts';
 import {actorPlacement,type PresentationAssets} from '../presentation-compile.ts';
-import {stageActor} from '../presentation-stage.ts';
+import {stageActor,stageState} from '../presentation-stage.ts';
+import {heldProp} from '../held-props.ts';
 import type {Presentation,Event} from '../presentation-model.ts';
 import {packSupportsReaction,presentationReaction,type CutoutReactionId} from './pack-reactions.ts';
 import {resolveManifestProp} from '../script-resource-manifest.ts';
@@ -90,7 +91,9 @@ export function buildCutoutTimelineFromPresentation(p:Presentation,assets:Presen
   }
  }
  const duration=Math.max(1,...events.map(ev=>ev.end),1);
- return {format:'kilsat-cutout',version:1,fps:24,source:p.original,events,duration,actors,width:w,height:h,cadence};
+ // Käteen annetut esineet (kirjaston esineet; puhelin kulkee omaa reittiään).
+ const held:CutoutHeld[]=stageState(p,p.seconds+60).held.filter(h=>heldProp(h.id)&&actors.some(a=>a.id===h.carrier)).map(h=>({id:h.id,actor:h.carrier,hand:h.hand,start:Math.round(h.at*fps),...(h.releasedAt!==undefined?{end:Math.round(h.releasedAt*fps)}:{})}));
+ return {format:'kilsat-cutout',version:1,fps:24,source:p.original,events,duration,actors,...(held.length?{held}:{}),width:w,height:h,cadence};
 }
 
 export function mergeScriptResourceManifest(p:Presentation,manifest:import('../script-resource-manifest.ts').ScriptResourceManifest){

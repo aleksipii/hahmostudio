@@ -140,8 +140,8 @@ type Rule<T> = { value: T; fi?: RegExp; en?: RegExp };
 
 /** Suomen verbit kokonaisina sanoina (taivutusmuodot), englanti sanamuotoina. */
 const motionRules: Rule<'walk' | 'run' | 'jump' | 'crouch' | 'sit' | 'wave' | 'nod' | 'point' | 'fist' | 'stop' | 'surprise'>[] = [
-  { value: 'run', fi: /^(juoks\p{L}*|juos(?:ta|tiin|taan|ten)|ryntä\p{L}*|ryntäs\p{L}*|kirmaa\p{L}*|kirmasi\p{L}*|pinkoo|pinkoi|pinkovat)$/u, en: /^(run|runs|ran|running|sprints?|sprinted|sprinting|dash(?:es|ed|ing)?|rush(?:es|ed|ing)|jogs?|jogged|jogging)$/ },
-  { value: 'walk', fi: /^(kävel\p{L}*|kävele|astel\p{L}*|kulke\p{L}*|kulki\p{L}*|kulje|kuljen|kuljet\p{L}*|harppo\p{L}*|marssi\p{L}*)$/u, en: /^(walk|walks|walked|walking|strolls?|strolled|strolling|steps?|stepped|stepping|paces?|paced|pacing|wanders?|wandered|wandering|marche[sd]|marching)$/ },
+  { value: 'run', fi: /^(juoks\p{L}*|juos(?:ta|tiin|taan|ten)|ryntä\p{L}*|ryntäs\p{L}*|säntä\p{L}*|syöksy\p{L}*|kirmaa\p{L}*|kirmasi\p{L}*|pinkoo|pinkoi|pinkovat)$/u, en: /^(run|runs|ran|running|sprints?|sprinted|sprinting|dash(?:es|ed|ing)?|rush(?:es|ed|ing)|jogs?|jogged|jogging)$/ },
+  { value: 'walk', fi: /^(kävel\p{L}*|kävele|astel\p{L}*|vaelt\p{L}*|vaelsi|kulke\p{L}*|kulki\p{L}*|kulje|kuljen|kuljet\p{L}*|harppo\p{L}*|marssi\p{L}*)$/u, en: /^(walk|walks|walked|walking|strolls?|strolled|strolling|steps?|stepped|stepping|paces?|paced|pacing|wanders?|wandered|wandering|marche[sd]|marching)$/ },
   { value: 'jump', fi: /^(hyppä\p{L}*|hyppää|hyppäsi|hypätä|hypähtä\p{L}*|hypähti|loikka\p{L}*|loikkasi)$/u, en: /^(jump|jumps|jumped|jumping|hops?|hopped|hopping|leaps?|leapt|leaped|leaping)$/ },
   { value: 'crouch', fi: /^(kyykist\p{L}*|kyykky\p{L}*|kyykkää|kyykkäsi|kyyristy\p{L}*|kyyristyi)$/u, en: /^(crouch|crouches|crouched|crouching|squats?|squatted|squatting|ducks|ducked|ducking)$/ },
   { value: 'sit', fi: /^(istuu|istui|istuvat|istuivat|istu|istuutuu|istuutui|istuutuvat|istahtaa|istahti|istahtavat|istuutua|istumaan)$/u, en: /^(sit|sits|sat|sitting)$/ },
@@ -156,7 +156,7 @@ const motionRules: Rule<'walk' | 'run' | 'jump' | 'crouch' | 'sit' | 'wave' | 'n
 const expressionRules: Rule<SupportedExpression>[] = [
   { value: 'angry', fi: /^(vihai\p{L}*|suuttu\p{L}*|suuttuu|suuttui|raivo\p{L}*|ärtyny\p{L}*|ärsyyntyy|ärsyyntyi|kiukkui\p{L}*)$/u, en: /^(angry|angrily|furious|mad|annoyed|irritated|frowns?|frowned|scowls?|scowled)$/ },
   { value: 'worried', fi: /^(huolestu\p{L}*|huolissaan|hermostu\p{L}*|levottom\p{L}*|huolestuneena)$/u, en: /^(worried|worries|anxious|anxiously|nervous|nervously|concerned)$/ },
-  { value: 'confused', fi: /^(hämmenty\p{L}*|ymmällään|ymmällä|miettii|mietti|pohtii|pohti|epävarm\p{L}*)$/u, en: /^(confused|puzzled|baffled|perplexed|unsure|ponders?|pondered)$/ },
+  { value: 'confused', fi: /^(hämmenty\p{L}*|ymmällään|ymmällä|miettii|mietti|pohtii|pohti|ihmettel\p{L}*|ihmetteli|epävarm\p{L}*)$/u, en: /^(confused|puzzled|baffled|perplexed|unsure|ponders?|pondered)$/ },
   { value: 'mildly_hurt', fi: /^(loukkaantu\p{L}*|loukkaantuneelta|pahoittaa|pahoitti|nolostu\p{L}*|murjottaa|murjotti)$/u, en: /^(hurt|offended|sulks?|sulked|pouts?|pouted|embarrassed)$/ },
   { value: 'dead_stare', fi: /^(pokerinaama\p{L}*|ilmeettöm\p{L}*|ilmeetön|tuijottaa|tuijotti|tuijottavat)$/u, en: /^(deadpan|expressionless|stares?|stared|staring|blankly)$/ },
   { value: 'eyebrow_raise', fi: /^(kulmakarv\p{L}*|kulmiaan|kulmia)$/u, en: /^(eyebrows?|brows?)$/ },
@@ -168,7 +168,7 @@ const expressionRules: Rule<SupportedExpression>[] = [
 const unsupportedExpressionRules: { label: string; fi: RegExp; en: RegExp }[] = [
 ];
 
-const gazeVerb = { fi: /^(katse|katseen|katseella|tuijottaa|tuijotti|tuijottavat|katsoo|katsoi|katsovat|katsoivat|katso|katsoen|vilkaisee|vilkaisi|vilkaisevat|vilkuilee|vilkuili|silmäilee|silmäili|tähyilee|kääntää\s+katseensa)$/u, en: /^(stares?|stared|staring|looks?|looked|looking|glances?|glanced|glancing|eyes|eyed|peeks?|peeked|peers?|peered)$/ };
+const gazeVerb = { fi: /^(katse|katseen|katseella|tuijottaa|tuijotti|tuijottavat|katsoo|katsoi|katsovat|katsoivat|katso|katsoen|vilkaisee|vilkaisi|vilkaisevat|vilkuilee|vilkuili|silmäilee|silmäili|tähyilee|kääntyy|kääntyi|kääntyvät|kääntää\s+katseensa)$/u, en: /^(stares?|stared|staring|looks?|looked|looking|glances?|glanced|glancing|eyes|eyed|peeks?|peeked|peers?|peered|turns|turned|turning)$/ };
 const phoneNoun = { fi: /^(puhelin|puhelinta|puhelimen|puhelimeen|puhelimesta|puhelimessa|puhelimella|puhelimelle|puhelintaan|puhelimeensa|puhelimeensä|puhelimestaan|kännykkä\p{L}*|kännykän|kännyä)$/u, en: /^(phone|phones|cellphone|smartphone|mobile)$/ };
 const cameraNoun = { fi: /^(kameraan|kameraa|kameralle|katsojaan|katsojaa|katsojia|yleisöön)$/u, en: /^(camera|audience|viewer|viewers|lens)$/ };
 
@@ -643,6 +643,7 @@ export class ScriptRecognizer {
     if (has(/^(seisoo|seisoi|seisovat|odottaa|odotti|istuu\s+jo)$/u, /^(stands|stood|standing|waits|waiting)$/) && !motionRules.some(r => has(r.fi, r.en))) return { type: 'note', text: s };
 
     // Liikkeet.
+    if (isFi && /(?<![\p{L}])näyttää\s+sormella(?![\p{L}])/u.test(low)) return { type: 'motion', actor, value: 'point', seconds: duration?.seconds, estimated: !duration, text: s };
     for (const rule of motionRules) {
       if (!has(rule.fi, rule.en)) continue;
       if (rule.value === 'point' && isFi && /osoitte|osoitteen/.test(low)) continue;

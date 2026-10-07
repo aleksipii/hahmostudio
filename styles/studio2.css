@@ -909,3 +909,13 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
 /* Aloituspohjat tyhjässä tilassa */
 .studio .script-templates { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin-top: 14px; }
 .studio .script-templates__title { font-size: 11px; color: var(--s2-faint, var(--muted)); text-transform: uppercase; letter-spacing: .06em; }
+
+.review-suggestions ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.review-suggestions li{display:grid;gap:4px;padding:8px 10px;border:1px solid var(--line,#8884);border-radius:8px}
+.review-suggestions__diff{font-size:12px;overflow-wrap:anywhere}
+.review-suggestions__diff del{opacity:.7}
+.review-suggestions__diff ins{text-decoration:none;font-weight:600}
+
+.rig-suggest{max-width:min(860px,94vw)}
+.rig-suggest__table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+.rig-suggest__table th,.rig-suggest__table td{padding:4px 6px;text-align:left;border-bottom:1px solid var(--line,#8883)}

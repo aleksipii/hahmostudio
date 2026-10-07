@@ -14,12 +14,22 @@ const onePole=(cut:number,rate:number)=>1-Math.exp(-2*Math.PI*cut/rate);
 const env=(t:number,attack:number,decay:number)=>t<attack?t/attack:Math.exp(-(t-attack)/decay);
 
 /** Tehosteen näytteet. `variant` vaihtelee askelia ja koputuksia hieman (ei kahta täysin samaa askelta peräkkäin). */
-export function synthSfx(id:SfxId,variant=0,rate=SOUND_RATE):Float32Array{
+/** Lattia: vaikuttaa vain askeliin. `oletus` on alkuperäinen askel (studio, tuntematon ympäristö). */
+export const surfaces=['oletus','puu','kova','nurmi'] as const;
+export type Surface=typeof surfaces[number];
+export const surfaceNames:Record<Surface,string>={oletus:'Oletus',puu:'Puulattia',kova:'Kova pinta (katu, laatta)',nurmi:'Nurmi'};
+const stepParams:Record<Surface,{cut:number;attack:number;decay:number;body:number;bodyGain:number;bodyDecay:number;gain:number}>={
+ oletus:{cut:700,attack:.002,decay:.035,body:85,bodyGain:.55,bodyDecay:.045,gain:1.6},
+ puu:{cut:1250,attack:.0015,decay:.03,body:120,bodyGain:.5,bodyDecay:.05,gain:1.25},
+ kova:{cut:2700,attack:.0008,decay:.018,body:70,bodyGain:.3,bodyDecay:.03,gain:1},
+ nurmi:{cut:380,attack:.004,decay:.06,body:58,bodyGain:.25,bodyDecay:.07,gain:1.3},
+};
+export function synthSfx(id:SfxId,variant=0,rate=SOUND_RATE,surface:Surface='oletus'):Float32Array{
  const seconds={askel:.22,napautus:.08,varina:1.2,soitto:2,ovi:.9,koputus:.75,whoosh:.45,istuutuminen:.45}[id],n=Math.round(seconds*rate),out=new Float32Array(n),rnd=noise(1009+sfxIds.indexOf(id)*7919+variant*104729);
  let lp=0,lp2=0;const a=(f:number)=>onePole(f,rate);
  for(let i=0;i<n;i++){const t=i/rate;let v=0;
   switch(id){
-   case'askel':{const x=rnd();lp+=a(700+variant%3*90)*(x-lp);v=lp*env(t,.002,.035)*1.6+Math.sin(2*Math.PI*(85+variant%4*6)*t)*env(t,.003,.045)*.55;break;}
+   case'askel':{const sp=stepParams[surface],x=rnd();lp+=a(sp.cut+variant%3*90)*(x-lp);v=lp*env(t,sp.attack,sp.decay)*sp.gain+Math.sin(2*Math.PI*(sp.body+variant%4*6)*t)*env(t,.003,sp.bodyDecay)*sp.bodyGain;break;}
    case'napautus':{const x=rnd();lp+=a(3500)*(x-lp);v=(x-lp)*env(t,.0005,.006)*.9+Math.sin(2*Math.PI*1900*t)*env(t,.001,.018)*.35;break;}
    case'varina':{const on=(t%.4)<.3?1:0,f=172;v=Math.sign(Math.sin(2*Math.PI*f*t))*.22*on*(.75+.25*Math.sin(2*Math.PI*9*t));lp+=a(900)*(v-lp);v=lp;break;}
    case'soitto':{const notes=[1318.5,1046.5,1318.5,1567.98],k=Math.floor(t/.25)%8,f=notes[k%4],local=t%.25,on=k<4?1:0;v=(Math.sin(2*Math.PI*f*t)*.6+Math.sin(4*Math.PI*f*t)*.15)*env(local,.008,.09)*on*.5;break;}
@@ -32,6 +42,22 @@ export function synthSfx(id:SfxId,variant=0,rate=SOUND_RATE):Float32Array{
  }
  // Lyhyt häivytys reunoihin: ei napsahduksia.
  const fade=Math.min(n>>1,Math.round(.003*rate));for(let i=0;i<fade;i++){const g=i/fade;out[i]*=g;out[n-1-i]*=g;}
+ return out;
+}
+
+/** Huoneen kaiku tehosteille: wet = märän signaalin osuus, decay = kaiun kesto (s). Yksinkertainen deterministinen Schroeder-kaiku. */
+export type Room={wet:number;decay:number};
+export function applyRoom(pcm:Float32Array,rate:number,room:Room):Float32Array{
+ if(room.wet<=0||!pcm.length)return pcm;
+ const tail=Math.round(room.decay*rate),out=new Float32Array(pcm.length+tail),dry=new Float32Array(out.length);dry.set(pcm);
+ // Rinnakkaiset kampasuodattimet (palaute) sekä kaksi sarjaan kytkettyä läpipäästösuodatinta.
+ const combs=[29.7,37.1,41.1,43.7].map(ms=>({d:Math.round(ms/1000*rate),g:Math.pow(10,-3*(ms/1000)/room.decay),buf:new Float32Array(Math.round(ms/1000*rate)),pos:0}));
+ const mix=new Float32Array(out.length);
+ for(let i=0;i<out.length;i++){let sum=0;for(const c of combs){const y=c.buf[c.pos];c.buf[c.pos]=dry[i]+y*c.g;c.pos=(c.pos+1)%c.d;sum+=y;}mix[i]=sum/combs.length;}
+ for(const ms of [5,1.7]){const d=Math.round(ms/1000*rate),buf=new Float32Array(d);let pos=0;for(let i=0;i<mix.length;i++){const y=buf[pos],x=mix[i]+y*.7;buf[pos]=x;pos=(pos+1)%d;mix[i]=y-x*.7;}}
+ // Hännän häivytys: kaiku loppuu nollaan ilman napsahdusta.
+ const fade=Math.min(tail,Math.round(.03*rate));
+ for(let i=0;i<out.length;i++){const end=out.length-1-i,g=end<fade?end/fade:1;out[i]=dry[i]+mix[i]*room.wet*2.2*g;}
  return out;
 }
 

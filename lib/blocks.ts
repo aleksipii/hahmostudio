@@ -142,6 +142,98 @@ export function stretchBlock(text:string,b:Block,seconds:number):TextEdit{
  if(b.kind!=='liike'&&b.kind!=='tauko')throw new BlockConflict('Vain liikkeen ja tauon kestoa voi venyttää; muiden kesto määräytyy sisällöstä.');
  const s=Math.round(Math.max(b.kind==='liike'?.5:.1,Math.min(b.kind==='liike'?20:60,seconds))*10)/10;return updateBlock(text,b,{params:{seconds:s}});
 }
+/* ───────────────────────── Vapaa ajoitus ja ryhmäkomennot ───────────────────────── */
+
+export type PlaceEdit=TextEdit&{placedAt:number;note?:string};
+const timelineBlocks=(blocks:Block[],skip:Set<string>)=>blocks.filter(x=>!skip.has(x.id)&&x.editable&&x.line>0&&x.kind!=='ääni'&&x.kind!=='tausta');
+/** Poistettujen palikoiden vaikutus muiden alkuaikoihin (peräkkäinen kursori etenee palikan keston verran). */
+const shifted=(x:Block,removed:Block[])=>x.start-removed.filter(r=>r.line<x.line).reduce((sum,r)=>sum+r.duration,0);
+const roundSec=(n:number)=>Math.round(n*100)/100;
+/**
+ * Sijoitus mihin tahansa ajanhetkeen. Käsikirjoituksen ajoitus on peräkkäinen, joten tarkka hetki on mahdollinen
+ * kolmessa tapauksessa: tauon sisällä (tauko jaetaan kahtia ja palikka asetetaan väliin), kaiken sisällön jälkeen
+ * (lisätään tauko) sekä `together`-tilassa repliikin kanssa yhtä aikaa (`Samalla`-rivi). Muuten palikka napsahtaa
+ * lähimmälle tapahtumarajalle (kuten moveBlock) ja muutoksen huomautus kertoo sen.
+ * Aika tulkitaan siirron jälkeisellä aikajanalla: palikka alkaa pudotuskohdassa.
+ */
+export function placeBlock(text:string,blocks:Block[],b:Block,time:number,mode:'sequence'|'together'='sequence'):PlaceEdit{
+ if(!b.editable)throw new BlockConflict('Johdettua palikkaa ei voi siirtää.');if(b.kind==='repliikki')throw new BlockConflict('Repliikin paikka muutetaan käsikirjoitustekstissä.');
+ const others=timelineBlocks(blocks,new Set([b.id])),t=Math.max(0,time);
+ const indent=(text.split('\n')[b.line-1].match(/^\s*/)?.[0]??'');
+ if(mode==='together'){
+  if(!['liike','ilme','katse','esine'].includes(b.kind))throw new BlockConflict('Samalla toimii liikkeelle, ilmeelle, katseelle ja esineelle.');
+  const d=others.find(x=>x.kind==='repliikki'&&t>=shifted(x,[b])-1e-6&&t<shifted(x,[b])+x.duration);
+  if(!d)throw new BlockConflict('Samalla alkaa repliikin kanssa yhtä aikaa: pudota palikka repliikin päälle.');
+  const removed=replaceClause(text,b,null),lines=split(removed.text),lineRemoved=split(text).length!==lines.length;
+  const at=d.line-(lineRemoved&&d.line>b.line?1:0);
+  lines.splice(at,0,indent+'Samalla '+blockSentence(b)+'.');
+  return {text:lines.join('\n'),changedLines:[at+1],placedAt:roundSec(shifted(d,[b])),note:`Alkaa samaan aikaan repliikin kanssa (${roundSec(shifted(d,[b]))} s).`};
+ }
+ const pause=others.find(x=>x.kind==='tauko'&&x.params.seconds!==undefined&&t>shifted(x,[b])+.05&&t<shifted(x,[b])+x.duration-.05);
+ if(pause){
+  const start=shifted(pause,[b]),first=roundSec(t-start),second=roundSec(pause.duration-first);
+  if(first>=.1&&second>=.1){
+   const removed=replaceClause(text,b,null),lines0=split(removed.text),lineRemoved=split(text).length!==lines0.length;
+   const pLine=pause.line-(lineRemoved&&pause.line>b.line?1:0),fresh={...pause,line:pLine,lineText:lines0[pLine-1]??''};
+   const first_=updateBlock(removed.text,fresh,{params:{seconds:first}}),lines=split(first_.text);
+   const tail=indent+blockSentence({...pause,params:{...pause.params,seconds:second}})+'.';
+   lines.splice(pLine,0,indent+blockSentence(b)+(b.kind==='kamera'||b.kind==='siirtymä'?'':'.'),tail);
+   return {text:lines.join('\n'),changedLines:[pLine+1],placedAt:roundSec(t),note:`Tauko jaettiin (${first} s + ${second} s); palikka alkaa kohdassa ${roundSec(t)} s.`};
+  }
+ }
+ const content=others.filter(x=>['liike','ilme','katse','esine','tauko','repliikki'].includes(x.kind));
+ const end=content.reduce((m,x)=>Math.max(m,shifted(x,[b])+x.duration),0),last=content.reduce<Block|undefined>((m,x)=>!m||x.line>m.line?x:m,undefined);
+ if(last&&t>end+.05){
+  const removed=replaceClause(text,b,null),lines=split(removed.text),lineRemoved=split(text).length!==lines.length;
+  const at=last.line-(lineRemoved&&last.line>b.line?1:0),gap=roundSec(t-end);
+  lines.splice(at,0,indent+blockSentence({kind:'tauko',lane:'scene',value:'pause',params:{seconds:gap}})+'.',indent+blockSentence(b)+(b.kind==='kamera'||b.kind==='siirtymä'?'':'.'));
+  return {text:lines.join('\n'),changedLines:[at+1,at+2],placedAt:roundSec(t),note:`Lisättiin ${gap} s tauko; palikka alkaa kohdassa ${roundSec(t)} s.`};
+ }
+ const snapped=moveBlock(text,blocks,b,t),anchor=anchorFor(blocks.filter(x=>x.id!==b.id),t),landed=roundSec(anchor?shifted(anchor,[b]):end);
+ return {...snapped,placedAt:landed,note:Math.abs(landed-t)>.05?`Napsahti tapahtumarajalle ${landed} s: käynnissä olevaa liikettä tai repliikkiä ei voi jakaa. Pudota tauon päälle, kaiken jälkeen tai pidä Alt (Samalla) repliikin päällä.`:undefined};
+}
+
+/** Rivit, jotka kuuluvat palikkaan (repliikillä myös edeltävä puhujarivi). */
+function blockLines(text:string,b:Block):number[]{
+ if(b.kind!=='repliikki')return [b.line];
+ const r=recognizeScript(text,[],{discoverActors:true}),lines=[b.line];
+ let at=b.line-1;while(at>0&&r.lines[at-1]?.kind==='cue'){lines.unshift(at);at--;}
+ return lines;
+}
+function groupLines(text:string,group:Block[]):number[]{
+ if(!group.length)throw new BlockConflict('Valitse ensin palikoita.');
+ const lines=split(text),all=new Set<number>(),count=new Map<number,number>();
+ for(const b of group){
+  if(!b.editable)throw new BlockConflict('Valinnassa on johdettu palikka (automaattinen kuva tai tehoste). Poista se valinnasta.');
+  checkFresh(lines,b);
+  if(b.kind!=='repliikki'&&lineClauses(text,b.line).filter(c=>c.type!=='note').length>1)throw new BlockConflict(`Rivillä ${b.line} on useita lauseita. Ryhmäkomennot toimivat vain riveille, joilla on yksi palikka; muokkaa riviä yksittäin.`);
+  for(const n of blockLines(text,b)){all.add(n);count.set(n,(count.get(n)??0)+1);}
+ }
+ if([...count.values()].some(c=>c>1))throw new BlockConflict('Kaksi valittua palikkaa jakaa saman rivin. Valitse ne yksitellen.');
+ return [...all].sort((a,b)=>a-b);
+}
+export function deleteBlocks(text:string,blocks:Block[],ids:string[]):TextEdit{
+ const group=blocks.filter(b=>ids.includes(b.id)),idx=groupLines(text,group),lines=split(text);
+ for(const n of [...idx].reverse())lines.splice(n-1,1);
+ return {text:lines.join('\n'),changedLines:[Math.max(1,idx[0])]};
+}
+/** Ryhmän kopio heti viimeisen valitun rivin perään samassa järjestyksessä (vain repliikittömät ryhmät). */
+export function duplicateBlocks(text:string,blocks:Block[],ids:string[]):TextEdit{
+ const group=blocks.filter(b=>ids.includes(b.id));if(group.some(b=>b.kind==='repliikki'))throw new BlockConflict('Repliikkejä ei kopioida palikoina. Poista repliikit valinnasta.');
+ const idx=groupLines(text,group),lines=split(text),copy=idx.map(n=>lines[n-1]),at=idx[idx.length-1];
+ lines.splice(at,0,...copy);return {text:lines.join('\n'),changedLines:copy.map((_,i)=>at+1+i)};
+}
+/** Ryhmän siirto: valitut rivit (repliikeillä myös puhujarivi) säilyttävät järjestyksensä ja menevät yhtenä lohkona tapahtumarajalle. */
+export function moveBlocks(text:string,blocks:Block[],ids:string[],time:number):PlaceEdit{
+ const group=blocks.filter(b=>ids.includes(b.id)),idx=groupLines(text,group),lines=split(text),moved=idx.map(n=>lines[n-1]);
+ const others=timelineBlocks(blocks,new Set(ids)),anchor=anchorFor(others.map(x=>({...x,start:shifted(x,group)})),Math.max(0,time));
+ const remaining=lines.filter((_,i)=>!idx.includes(i+1));
+ let at=anchor?anchor.line-1-idx.filter(n=>n<anchor.line).length:remaining.length;
+ if(anchor?.kind==='repliikki'){const r=recognizeScript(remaining.join('\n'),[],{discoverActors:true});while(at>0&&r.lines[at-1]?.kind==='cue')at--;}
+ remaining.splice(at,0,...moved);
+ const landed=roundSec(anchor?anchor.start:others.reduce((m,x)=>Math.max(m,x.start+x.duration),0));
+ return {text:remaining.join('\n'),changedLines:[at+1],placedAt:landed,note:`Ryhmä (${group.length} palikkaa) siirrettiin kohtaan ${landed} s.`};
+}
 /** Kirjaston palikat (vedä aikajanalle). */
 export const blockLibrary:{label:string;kind:BlockKind;value:string;params:BlockParams}[]=[
  {label:'Vilkuta',kind:'liike',value:'wave',params:{seconds:2}},{label:'Nyökkää',kind:'liike',value:'nod',params:{seconds:1}},{label:'Osoita',kind:'liike',value:'point',params:{seconds:1.6}},

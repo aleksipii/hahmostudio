@@ -28,6 +28,7 @@
     "library:upgrade-provenance": "node --experimental-strip-types scripts/upgrade-library-provenance.mjs",
     "assets:cutout-kids": "python3 scripts/create-cutout-kids.py && node scripts/create-cutout-kids.mjs",
     "grammar:coverage": "node --experimental-strip-types scripts/grammar-coverage.ts",
+    "vocabulary:gaps": "node --experimental-strip-types scripts/vocabulary-gaps.ts",
     "kokoro:prepare": "node scripts/prepare-kokoro-runtime.mjs"
   },
   "dependencies": {

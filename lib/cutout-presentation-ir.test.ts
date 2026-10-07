@@ -118,3 +118,22 @@ Samalla: Kille reaktio: nyökkäys 0.7 s`;
  const timeline=buildCutoutTimelineFromPresentation(p,assets,packs);
  assert.ok(timeline.events.some(e=>e.kind==='action'&&e.value==='REACT_NOD'));
 });
+
+test('käteen annetut esineet piirtyvät kartonkihahmon kämmeneen, seuraavat sitä ja vapautettu esine jää paikalleen',async()=>{
+ const kille=await readProject(new Blob([readFileSync(new URL('../public/library/Mr.Kille.hahmo',import.meta.url))]));
+ const assets={kille:{doc:kille.doc,animation:kille.animation}};
+ let p=parsePresentation(`#!kilsat\nResurssi hahmo KILLE: kille\nHahmo: Kille\nKohtaus: Studio\nTausta: studio 0.5 s\nKille sanoo: "Hei!" 2 s\nKille osoittaa 2 s\nOdota 2 s`);
+ p.bindings=[{speaker:'KILLE',asset:'kille',voice:'Oma',side:'left',functions:Object.fromEntries(functions.map(f=>[f,f==='show_phone'?'none':'supported']))}];
+ p=compilePresentation(p,assets,24);
+ const ref={line:1,text:''},mk=(id:string,value:string,at:number):import('./presentation-model.ts').Event=>({id,kind:'prop',target:'KILLE',value,text:'rightHand',at,duration:0,sourceRef:ref,basis:'explicit',section:'x'} as never);
+ p.events.push(mk('h1','hold:mug-prop-v1',.5),mk('h2','drop:mug-prop-v1',3));
+ const packs={'Mr.Kille':{asset:'Mr.Kille' as const,rig:readRig('Mr.Kille')}},timeline=buildCutoutTimelineFromPresentation(p,assets,packs);
+ assert.deepEqual(timeline.held,[{id:'mug-prop-v1',actor:'KILLE',hand:'rightHand',start:12,end:72}]);
+ const art=JSON.parse(readFileSync(new URL('../public/library/cutout/Mr.Kille.art.json',import.meta.url),'utf8'));
+ const {renderFrameSvg}=await import('./cutout/svg-renderer.ts');
+ const frames=[2,20,40,80].map(f=>renderFrameSvg(timeline,f,{'Mr.Kille':art}));
+ const count=(s:string)=>(s.match(/<ellipse/g)??[]).length;
+ assert.ok(count(frames[1])>count(frames[0]),'esine näkyy kädessä');
+ assert.ok(count(frames[3])>count(frames[0]),'vapautettu esine jää näkyviin');
+ assert.notEqual(frames[1].match(/matrix\([^)]*\)" opacity="[^"]*" stroke="#000" stroke-width="0\.\d+"/)?.[0],undefined,'esineryhmä käyttää kämmenen matriisia');
+});

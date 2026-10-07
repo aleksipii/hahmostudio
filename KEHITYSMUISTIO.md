@@ -404,3 +404,56 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson kahtia (tyhjä esijakso). `splitEpisodes` liittää pelkät resurssi-/asetusrivit seuraavaan jaksoon (testi). `npm test` 1147 (1146 läpi, 1 ohitettu). Kuva `docs/ui-checks/03-aloituspohjat.png`.
 
 **Seuraava:** palikkamuutoksen kokonaisviive (661 ms dev), tarkistuksen yhden napin korjausehdotukset, vapaa ajoitus/monivalinta palikoille, Mac-tarkistus.
+
+### 2.13 — CI, vakaa aikarajatesti, korjausehdotukset ja nivelehdotus (2026-10-07)
+
+**Valmis:**
+- `.github/workflows/ci.yml`: typecheck, `npm test` ja `build:private` jokaisessa PR:ssä (Node 24, ubuntu). Ei ole vielä ajettu GitHubissa.
+- `studio example playback render stays within regression budget`: mittaus käyttää `process.cpuUsage()` -CPU-aikaa seinäkellon sijaan, joten rinnakkaiskuorma ei kasvata näytteitä. Raja-arvot ennallaan.
+- Palikkamuutos: rakennus ohittaa vaiheanimaation (`nextFrame`-odotukset) ja viesti näyttää rakennus- ja tallennusajan erikseen.
+- `lib/review-suggestions.ts` + `components/review-suggestions.tsx`: tuntematon tausta → lähin kirjaston tausta (vain läheiset vastineet), yli neljä hahmoa → “Jakso 2:” -otsikko ehdotettuun kohtaan, puuttuva ääni → äänityksen avaus / Kokoro. Näyttää tarkan rivimuutoksen, vaatii napin, yksi kumottava rakennus.
+- `lib/rig-suggest.ts` + `components/rig-suggest-dialog.tsx` (valikkokomento “Ehdota nivelet tasojen nimistä…”): roolit suomen/englannin tasonimistä, liitokset, pivotit, nivelkohdat ja kämmenen tartuntapiste. Koskee oletuksena vain roolittomiin osiin; nimeämätöntä ei arvata.
+- `npm test` 1195 läpi.
+
+**Ei todennettu:** palikkamuutoksen viive tuotantokoonnilla (UI-profilointi ei onnistunut: portti 5179 oli toisen istunnon käytössä), GitHub Actions -ajo, Electron/Mac, käyttöliittymän selaimessa tehty käyttötesti uusille paneeleille. Alle 100 ms -tavoitetta ei ole saavutettu todennetusti; tallennus (journal) on edelleen kuittauksen takana.
+
+**Rajat:** nivelehdotus ei tunnista kuvaa eikä tee QuickProfile-tartuntoja; se näyttää ne vain tarkistettavaksi. Jaon ehdotus ei takaa, että ensimmäinen jakso jää alle neljän hahmon.
+
+**Seuraava:** viiveen mittaus oikealla UI:lla (rakennus workeriin tarvittaessa), Mac-tarkistus, vapaa ajoitus/monivalinta (kohta 8), ensikäytön yksinkertaistus (kohta 9).
+
+### 2.14 — Viiveen mittaus, vapaa ajoitus, monivalinta ja ensikäyttö (2026-10-07)
+
+**Mitattu (Vite dev, Chromium-paneeli, pieni jakso):** palikan venytys 101–112 ms (rakennus 22–31 ms, tallennus 71–81 ms), seinäaika pudotuksesta 117–166 ms. Aiempi 661 ms johtui pääosin rakennuksen vaiheanimaation ruutuodotuksista (`quiet`-tila ohittaa ne) . Tavoite “alle 100 ms” ei täyty tarkasti: tallennuskuittaus (~75 ms) on pakollinen ja se on jäljellä. Tuotantokoontia ei mitattu.
+
+**Valmis:**
+- `placeBlock` (lib/blocks.ts): tauon sisälle pudotus jakaa tauon ja asettaa palikan tarkasti; kaiken sisällön jälkeen lisätään tauko; Alt+pudotus repliikin päälle kirjoittaa `Samalla`-rivin; muuten napsahdus rajalle ja huomautus kertoo sen. Aika tulkitaan siirron jälkeisellä aikajanalla.
+- Monivalinta (Vaihto/⌘/Ctrl-klikkaus, Valitse kaikki): `moveBlocks`, `deleteBlocks`, `duplicateBlocks`. Toimivat vain riveille, joilla on yksi palikka (repliikillä puhujarivi mukana); jaettu rivi tai johdettu palikka estetään selkeällä virheellä. Ryhmän siirto napsahtaa tapahtumarajalle.
+- Ensikäynnistys: peittävä esittely ei aukea itsestään; Käsikirjoitus-vaiheen tyhjä tila (esimerkki, tuonti, aloituspohjat) on keskellä. Esittely löytyy edelleen Ohje-valikosta.
+- `npm test` 1199 läpi.
+
+**Rajat:** `Samalla` toimii vain repliikin kanssa (rakentajan sääntö). Käynnissä olevaa liikettä tai repliikkiä ei voi jakaa, joten sijoitus sen sisään napsahtaa rajalle. Ryhmän vapaata ajoitusta ei ole. Vasen ja oikea paneeli näkyvät ensikäynnistyksessä edelleen. Electron/Mac, oikea trackpad-veto ja tuotantokoonti todentamatta.
+
+**Seuraava:** Mac-tarkistus (kohta 1), tallennuksen keventäminen viiveen alentamiseksi, kohdat 10–15.
+
+### 2.15 — Juoksun lentovaihe, kohti kameraa kävelyn perspektiivi, esineet 3D- ja kartonkihahmoille, parempi ääni (2026-10-07)
+
+**Valmis:**
+- **Juoksu** (`applyGait`, `gaitParams.run.flight`): lentovaihe askelrajoilla, lantio nousee 3,5 % ja jalkaterät 7 % jalan pituudesta. Mittaritestit (kiihtyvyys, jerk, tukijalka < 1 px) läpäisevät kaikilla paketeilla; uusi testi varmistaa, että molemmat jalat ovat ilmassa juostessa eivätkä kävellessä.
+- **Kohti kameraa kävely/juoksu** (`front`): juuren `scale` kasvaa 10 % (kävely) / 14 % (juoksu) pivotin ympäri; translaatio ja IK-kohde huomioivat skaalan, joten jalat pysyvät täsmälleen maassa. Sivusuunnassa scale pysyy 1:ssä. Skaala jää voimaan kävelyn jälkeen ja myöhemmät kävelyt jatkavat siitä.
+- **Esineet toon3d-hahmoille** (`lib/toon-props.ts`, `toon-render.ts`): kahvikuppi, kirja, laukku ja sateenvarjo suljettuina verkkoina käsiluuhun skinnattuina; vapautettu esine jää vapautuskohtaan. Puhelin kulkee ennallaan omaa reittiään.
+- **Esineet kartonkihahmoille** (Mr.Kille/Handu, `lib/cutout`): `Timeline.held` (valinnainen) rakennetaan esitystapahtumista; SVG-piirto asettaa esineen `ARM_*_HAND`-kerroksen matriisiin ja vapautettu esine seuraa kameraa. `stageState`-kädessä-listaan lisättiin `at`.
+- **Ääni**: askeleen lattia ympäristön mukaan (puu sisällä, kova pinta ulkona, nurmi puistossa, studio ennallaan), huonekaiku generoiduille tehosteille (Schroeder, deterministinen; studio kuiva), tuodun musiikin silmukka ristihäivytyksellä, musiikin häivytys kohdan alussa/lopussa ja kuvasiirtymien (häivytys mustaan/sisään) ohjaama musiikin vaimennus. Repliikkejä ja tuotuja ääniä ei kaiuteta eikä muuteta.
+- `npm test` 1208 läpi.
+
+**Rajat / todentamatta:** Perspektiivi on 2D-approksimaatio; istuminen tai hyppy kasvun jälkeen käyttää skaalaamatonta IK:ta (jalat voivat liukua muutaman pikselin). Lentovaihe on matala, koska kulmakiihtyvyysrajat (testit) rajaavat nousun. 3D-esineillä ei ole fysiikkaa eikä sormiotetta (vain puhelimella). Kartonkihahmoilla esine piirretään edestä kämmenen päälle, ei kerrosjärjestyksessä sormien taakse. Cutout3D-polun esineet eivät saaneet omaa testiä. Askelpinnan ja kaiun sointia ei ole kuunneltu oikealla laitteella; testit mittaavat vain kirkkautta, vaimenemista ja determinismiä. Mac/VideoToolbox ja vientiketju (WAV/MP4) todentamatta oikealla laitteella.
+
+**Seuraava:** Mac-tarkistus (kohta 1), tallennuksen keventäminen, kohdat 13–15.
+
+### 2.16 — Sanastomittaus, koodin jako ja AGENTS.md:n tiivistys (2026-10-07)
+
+**Valmis:**
+- **Tunnistimen sanasto mitattuna:** `tests/fixtures/vocabulary-corpus.txt` (≈125 lausetta suomeksi ja englanniksi; odotettu tulos tai “-” = ei saa tulkita) ja `lib/vocabulary-corpus.ts`. Lähtötilanne 90/111 tuettua lausetta (81 %); löydetyt aukot lisättiin (ihmettelee, vaeltaa, säntää/syöksyy, “näyttää sormella”, “kääntyy X:n puoleen”/turns to X, nappaa/lukee + esine) → 111/111, ja kaikki tarkoituksella tunnistamattomat (tanssii, lentää, kääntyy ympäri, turns on the light…) pysyvät tunnistamattomina. `npm run vocabulary:gaps -- <kansio>` listaa oman käsikirjoituskansion tunnistamattomat rivit yleisyysjärjestyksessä (nimet → NIMI) rakentajan oman tunnistuksen mukaan. Repon omat esimerkit ja pohjat eivät paljastaneet aukkoja (vain dokumentaatioproosaa).
+- **Koodin jako:** `episode-builder.ts` 415 → 160 riviä (`lib/episode/`: source, environment, cast, music, spoken-props, recognize) ja `motion-library.ts` 269 → 22 riviä (`lib/motion/`: core, gestures, gait, lower-body, idle). Rajapinta ennallaan (re-export), käyttäytymistä ei muutettu; testit 1210/1210.
+- **AGENTS.md** tiivistetty 3100 → ~1500 sanaan alueittain ja ristiriidat ratkaistu (asettelu, push-rajoitus, pilvi/TTS-poikkeukset, selaintestit). Alkuperäinen koko teksti on `docs/AGENTS-HISTORIA.md`.
+
+**Ei tehty:** vanhan etähaaran `cloud/kasikirjoitus-sarjaksi` poisto (PR #1 ja #3 on yhdistetty, haara on kokonaan mainissa), koska työkalun oikeustarkistus esti `git push --delete`; se jää käyttäjän päätettäväksi. Oikeita omia käsikirjoituksia ei ollut saatavilla, joten korpus on laadittu tyypillisistä ilmauksista, ei mitatuista omista lauseista.
