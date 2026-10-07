@@ -267,7 +267,9 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
  const counts:Record<string,number>={};
  let section='intro',lastActor=characters[0]??'',speaker='',dialogue:Event|undefined,hasShot=false,durationSet=false,targetMin=0;
  const require=(category:Category,ref:Ref,status:Requirement['status'],events:string[])=>{const id='r-'+stableId(category+'|'+ref.line+'|'+ref.text);const old=requirements.find(r=>r.id===id);if(old){old.events.push(...events.filter(e=>!old.events.includes(e)));if(status==='missing'||(status==='estimated'&&old.status==='implemented'))old.status=status;}else requirements.push({id,category,detail:ref.text,sourceRef:ref,events:[...events],status});};
- const add=(kind:Event['kind'],target:string,value:string,ref:Ref,extra:Partial<Event>={}):Event=>{const sig=[kind,target,value,ref.line].join('|'),n=counts[sig]=(counts[sig]??0)+1;const e:Event={id:'e-'+stableId(sig+'|'+n),kind,target,value,sourceRef:ref,basis:'rule',section,...extra};p.events.push(e);return e;};
+ // Tunniste rivin sisällöstä (ei rivinumerosta): rivien lisäys tai siirto ei vaihda muiden tapahtumien tunnisteita,
+ // joten äänileikkeet, hyväksynnät ja lukitukset pysyvät kiinni.
+ const add=(kind:Event['kind'],target:string,value:string,ref:Ref,extra:Partial<Event>={}):Event=>{const sig=[kind,target,value,ref.text.trim().replace(/\s+/g,' ')].join('|'),n=counts[sig]=(counts[sig]??0)+1;const e:Event={id:'e-'+stableId(sig+'|'+n),kind,target,value,sourceRef:ref,basis:'rule',section,...extra};p.events.push(e);return e;};
  const actorOf=(a:string|undefined)=>{if(!a)return lastActor;if(a==='*')return '*';const n=resolveName(a);return characters.includes(n)?n:'';};
  const warnUnknown=(ref:Ref,text:string,reason='Sääntö ei tunnista lausetta; sitä ei animoida eikä arvata.')=>diagnostics.push({code:'unrecognized-line',severity:'warning',message:`Rivi ${ref.line+(options.firstLine??1)-1}: ${reason} “${text}”`});
  const clauseEvents=(clauses:Clause[],ref:Ref,afterDialogue?:string):{events:string[];unknown:number}=>{

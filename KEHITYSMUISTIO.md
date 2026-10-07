@@ -343,3 +343,17 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Rajat / todentamatta:** puhesynteesiä ei ole (vain tuodut/äänitetyt repliikit). MP4:n AAC-koodaus (WebCodecs/VideoToolbox/FFmpeg) ja kuuntelu oikealla Macilla todentamatta pilvessä; testattu PCM/WAV-taso. Tehosteiden ja musiikin äänenlaatu on yksinkertaista synteesiä.
 
 **Seuraava:** vaihe F — palikkaeditori (tapahtuma = palikka, kaksisuuntainen synkronointi tekstiin).
+
+### 2.9 — Vaihe F: palikkaeditori (2026-10-07)
+
+**Valmis:**
+- `lib/blocks.ts`: jokainen tapahtuma (liike, ilme, katse, esine, kamera, tausta, tauko, repliikki, siirtymä) ja äänimerkintä on palikka raidalla (hahmo / kamera / näyttämö / ääni). Komennot: siirto (napsahtaa tapahtumarajoille = rivijärjestys), venytys (kesto), kopio, poisto, parametrimuutos, uusi palikka kirjastosta.
+- Kaksisuuntainen synkronointi: käsikirjoitusteksti on totuuslähde. Palikan muutos kirjoittaa vain vastaavan rivin; kesto- ja suuntamuutos korvaa vain kesto-/suuntasanan (esim. “sisään vasemmalta kaksi sekuntia” → “… 3 s”). Monen lauseen rivillä muut lauseet säilyvät. Vanhentunut palikka (rivi muuttunut) → `BlockConflict`, ei hiljaista ratkaisua. Repliikkien sanoja ei muuteta palikoista.
+- Tapahtumatunnisteet perustuvat rivin sisältöön, joten rivien lisäys/siirto ei irrota äänileikkeitä, hyväksyntöjä tai lukituksia.
+- Lukitut kuvat: rakennus/palikkamuutos estetään kuvakohtaisella vaikutustarkistuksella (`affectedShots`), muut muutokset sallitaan.
+- `components/block-timeline.tsx`: aikajana, vedä/venytä hiirellä, näppäimistö (←/→ siirto, Vaihto+←/→ kesto ±0,5 s, Delete, Ctrl/⌘+D, Enter), ruudunlukijan nimet, vedettävä palikkakirjasto, inspector ja hahmojen tilakone (`lib/character-states.ts`: lepo, puhe, kävely, juoksu, ele, reaktio, istuu + siirtymäehdot).
+- Testit: palikka → teksti → palikka identtinen, pienin rivimuutos, siirto/kopio/poisto/lisäys, äänileike säilyy, ristiriidat, lukitussuoja, alle 100 ms uudelleenrakennus, UI-merkinnät.
+
+**Rajat:** siirto napsahtaa tapahtumarajoille (vapaa ajoitus sekunnin murto-osiin vaatii tauko-palikan). Tilakone on johdettu näkymä, ei erillinen ohjausdata. Hiiren veto ja näppäinkäyttö todennettu merkintätasolla, ei oikealla laitteella.
+
+**Seuraava:** vaihe G — nopeus, ensikäyttö (Esimerkki → Rakenna jakso → Vie) ja raportointi.
