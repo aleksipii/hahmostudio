@@ -26,7 +26,7 @@ Käyttäjä voi muokata tulosta **palikoilla** (Rive-tyyliin): jokainen käsikir
 | Renderöinti ja vienti | `lib/presentation-render.ts`, `lib/scene-render.ts`, `lib/toon-render.ts`, `lib/toon3d.ts`, `lib/mp4-export.ts`, `desktop/export-*.mjs` | 2D-leikkaushahmot, Cutout3D-paperitasot, toon3d, MP4 (H.264/AAC), Macin vientijono |
 | Taustat, esineet | `lib/backgrounds.ts`, `lib/environment-library.ts`, `lib/prop-library.ts` | 2D-taustat ja -esineet |
 | Hahmokirjasto | `public/library/*.hahmo`, `components/asset-library.tsx`, generaattorit `scripts/create-*.py/.mjs` | Mm. Pipsa, Ville, Taru, Ukko (2D + 3 kuvakulmaa) |
-| Ääni | `lib/audio-analysis.ts`, `lib/presentation-audio.ts`, `components/dialogue-recorder.tsx`, Rhubarb-suunliike | Tuodut ja äänitetyt repliikit, suuasennot äänestä; **ei musiikkia, ei äänitehosteita, ei puhesynteesiä** |
+| Ääni | `lib/audio-analysis.ts`, `lib/presentation-audio.ts`, `components/dialogue-recorder.tsx`, Rhubarb-suunliike | Tuodut ja äänitetyt repliikit, suuasennot äänestä; **ei musiikkia, ei äänitehosteita, ei puhesynteesiä** (vaihe E0 lisää vain paikallisen Kokoro-synteesin) |
 | Tuotantotyökalut | `lib/studio/*`, storyboard/kuva/aikajana-vaiheet | Hyväksyntä, lukitus, kommentit, revisiot, palautus |
 | Käyttöliittymä | `components/studio-shell.tsx`, `components/editor.tsx`, `styles/studio2.css` | Viisi työvaihetta, ⌘K-haku |
 | Tilakone- ja käyräeditori | `components/state-editor.tsx`, `components/easing-editor.tsx`, `lib/state-machine-model.ts`, `lib/easing-model.ts` | Perusversio |
@@ -36,7 +36,7 @@ Nykyiset testit: `npm test` (yli 1000, kaikki läpi). Tyypit: `npm run typecheck
 ## 3. Pysyvät rajoitteet (AGENTS.md:stä, älä riko)
 
 - Kaikki käsittely paikallisesti: ei backendiä, tilejä, pilvilatauksia eikä ulkoisia malli-API-kutsuja.
-- Älä keksi repliikkejä äläkä syntetisoi puhetta ilman käyttäjän erillistä päätöstä. Repliikkiäänet ovat käyttäjän tuomia tai äänittämiä. Jos ääni puuttuu, jakso rakentuu silti, mutta puuttuva ääni näkyy tarkistuksessa.
+- Älä keksi repliikkejä. Puhesynteesi on sallittu **vain paikallisella Kokorolla** (vaihe E0) ja vain käyttäjän luvalla; pilvipalvelut ja muut synteesimoottorit ovat kiellettyjä. Itse äänitetty tai tuotu repliikki ei koskaan ylikirjoitu synteesillä. Jos ääni puuttuu, jakso rakentuu silti, mutta puuttuva ääni näkyy tarkistuksessa.
 - Musiikki ja äänitehosteet: vain omaa, ohjelmallisesti tuotettua (CC0) tai käyttäjän tuomaa. Ei kopioitua tai lisensoimatonta materiaalia.
 - `.hahmo` v1–v5 ja `.sarja` pitää edelleen lukea. Vanhoja raitoja, ääniä ja hyväksyntöjä ei saa ylikirjoittaa hiljaa.
 - Käsikirjoituksen teksti ei koskaan suorita koodia.
@@ -86,12 +86,26 @@ Tee vaiheet järjestyksessä. Jokainen vaihe on oma committinsa testeineen. Päi
 
 **Hyväksyntä:** testit hahmojen jalkojen y-koordinaatille lattiaviivalla (±2 px), esineen ja käden kokosuhteelle sekä lähikuvan silmälinjalle (±5 % kuvan korkeudesta).
 
+### Vaihe E0 — Paikallinen puhesynteesi (Kokoro), ennen äänitehosteita ja musiikkia
+
+Tee tämä vaihe ennen vaihetta E. Se kumoaa aiemman ehdottoman puhesynteesikiellon **vain Kokoron osalta** (ks. AGENTS.md, merkintä E0).
+
+1. **Moottori ja malli.** Puhesynteesi tehdään paikallisella Kokoro-moottorilla. Malli **ladataan käyttäjän nimenomaisella luvalla sovelluksen tietokansioon** (ei projektikansioon). Mallia ei lisätä sovelluspakettiin (`.app`), repoon, `.hahmo`-/`.sarja`-tiedostoihin eikä `public/`-kansioon. Lataus on ainoa verkkoyhteys, ja se alkaa vain käyttäjän vahvistuksesta (näytä lähde, koko ja lisenssi). Tarkista ladatun tiedoston tarkistussumma ja kirjaa malliversio. Lataus on peruttavissa ja mallin voi poistaa asetuksista. Ilman mallia kaikki muu toimii ennallaan.
+2. **Merkintä.** Jokainen syntetisoitu rivi merkitään näkyvästi **Kokoro · synteettinen** (aikajana, repliikkilista, tarkistuslista ja vientiraportti). Merkintä ja malliversio tallentuvat `AudioClip`-metatietoon (valinnainen kenttä; vanhat projektit ilman sitä pysyvät luettavina).
+3. **Suoja äänitettyä ja tuotua ääntä vastaan.** Itse äänitetty tai tuotu repliikki ei koskaan ylikirjoitu synteesillä: synteesi luo vain rivin, jolla ei vielä ole ääntä, tai erillisen uuden version, jonka käyttäjä hyväksyy erikseen. Palautus alkuperäiseen toimii (nykyinen SHA-256-polku). Synteesi on kumottava transaktio.
+4. **Tuntemattomat tunteet ja ohjeet.** Tunteet ja lausumisohjeet, joita Kokoro ei osaa (esim. `(whispers)`), **näytetään huomautuksena eikä niitä arvata tai approksimoida**. Rivi syntetisoidaan neutraalisti vain, jos käyttäjä hyväksyy huomautuksen. Kielituki tarkistetaan mallin dokumentaatiosta (esim. suomen kielen tuki ei saa olla oletus): tukematon kieli estetään huomautuksella eikä ääntä arvata.
+5. **Testit.** Testeissä käytetään **korvaavaa testimoottoria** (deterministinen, ei verkkoa, ei mallitiedostoa), jotta pilvi-ympäristö ei lataa mallia. Testaa: lupa ennen latausta, vanhan ääniresurssin säilyminen, merkintä, tukemattoman tunteen huomautus, `.hahmo`-roundtrip ja peruutus.
+6. **Mittaus.** Muistin ja nopeuden mittaus jää käyttäjän Macille. Pilvessä niitä ei mitata eikä niille anneta lukuja; kirjaa ne `docs/benchmarks/`-kansioon todentamattomina, kunnes käyttäjä on ajanut ne.
+7. **Rajaus.** Ei pilvisynteesiä, ei äänen kloonausta, ei muita moottoreita ja ei keksittyjä repliikkejä. Synteesi toimii vain olemassa olevista repliikkiriveistä.
+
+**Hyväksyntä:** testimoottorilla syntetisoitu rivi saa merkinnän, ei ylikirjoita äänitettyä tai tuotua ääntä, tukematon tunne tuottaa huomautuksen, eikä mikään testi tee verkkopyyntöä. Mallin lataus, muisti ja nopeus ilmoitetaan todentamattomina Macilla.
+
 ### Vaihe E — Äänet ja musiikki
 
 1. Äänitehostekirjasto: ohjelmallisesti tuotetut (Web Audio, offline-render) askeleet, ovi, puhelimen värinä ja soitto, napautus, whoosh ja istuutuminen. Tunnistin liittää tehosteet liikkeisiin ja esineisiin automaattisesti (askel kävelyn tukivaiheeseen).
 2. Taustamusiikki: ohjelmallinen, alkuperäinen (CC0) musiikkigeneraattori tunnelmilla (iloinen, jännittävä, rauhallinen, surullinen) ja `Musiikki: iloinen` -ohje käsikirjoitukseen, tai käyttäjän tuoma tiedosto. Ducking: musiikki hiljenee repliikkien alle.
 3. Miksaus vientiin: repliikit, tehosteet ja musiikki omina raitoinaan (`AudioClip` + uusi `soundCues`-kenttä, valinnainen).
-4. Repliikit: tuodut tai äänitetyt (nykyinen polku). Puhesynteesi vain, jos käyttäjä erikseen hyväksyy paikallisen offline-moottorin; tällöin se merkitään selvästi synteettiseksi.
+4. Repliikit: tuodut, äänitetyt tai vaiheen E0 paikallisella Kokorolla syntetisoidut (merkintä **Kokoro · synteettinen**). Mikään muu synteesi ei ole sallittu.
 
 **Hyväksyntä:** vienti tuottaa MP4:n, jossa on kolme miksattua lähdettä. Testit tehosteiden ajoitukselle (askel ±1 ruutu tukivaiheen alusta) ja duckingille.
 
