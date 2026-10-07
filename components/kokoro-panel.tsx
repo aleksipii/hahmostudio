@@ -22,6 +22,7 @@ export default function KokoroPanel({
   disabled,
   setVoice,
   commit,
+  runToken = 0,
 }: {
   model: Presentation;
   voices: Record<string, PresentationAudio>;
@@ -29,6 +30,8 @@ export default function KokoroPanel({
   setVoice: (speaker: string, voice: string) => Promise<void>;
   /** Liittää yhden rivin äänen yhtenä kumottavana muutoksena ja palaa vasta, kun malli on päivittynyt. */
   commit: (dialogue: string, file: File, synthetic: NonNullable<AudioClip['synthetic']>) => Promise<void>;
+  /** Kasvava luku käynnistää synteesin puuttuville riveille (Rakenna jakso -jälkeinen painike). Oma ääni ei koskaan ylikirjoitu. */
+  runToken?: number;
 }) {
   const bridge = desktop();
   const [status, setStatus] = useState<KokoroStatus>();
@@ -54,6 +57,13 @@ export default function KokoroPanel({
       player.current?.pause();
     };
   }, [bridge]);
+  const handled = useRef(0), startMissing = useRef<() => void>(() => undefined), idleRef = useRef(false);
+  useEffect(() => {
+    if (!runToken || handled.current === runToken || !status?.installed || !idleRef.current) return;
+    handled.current = runToken;
+    startMissing.current();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runToken, status?.installed, busy, disabled]);
   if (!bridge) {
     return (
       <section className="performance-panel kokoro-panel">
@@ -130,6 +140,12 @@ export default function KokoroPanel({
     void audio.play().catch(() => URL.revokeObjectURL(url));
   };
   const idle = !busy && !disabled;
+  startMissing.current = () => {
+    const missing = dialogue.filter(e => !clipOf(e.id)).map(e => e.id);
+    if (missing.length) void run(missing);
+    else setMessage('Kaikilla repliikeillä on jo ääni.');
+  };
+  idleRef.current = idle;
   return (
     <section className="performance-panel kokoro-panel" aria-labelledby="kokoro-title">
       <h3 id="kokoro-title">Kokoro-puhe · paikallinen, englanti</h3>

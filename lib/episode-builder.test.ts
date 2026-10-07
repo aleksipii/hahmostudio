@@ -132,3 +132,18 @@ test('kielioppidokumentin kanoniset lauseet tunnistuvat kaikki ilman huomautuksi
  const lib=await library('Mira vilkuttaa.\nNiko vilkuttaa.');
  for(const s of sentences){const text=`Mira odottaa 0,5 s.\nNiko odottaa 0,5 s.\nMIRA:\n“Hei.”\n${s}`,b=buildEpisode(text,lib);const bad=b.diagnostics.filter(d=>['unrecognized-line','note-line','build-failed'].includes(d.code)||(d.severity==='error'&&!['missing-audio','phone-table-missing'].includes(d.code)));assert.deepEqual(bad.map(d=>d.message),[],s);assert.ok(b.lines.at(-1)!.outcome==='event',s);}
 });
+
+test('Kokoro-yhteispeli: oletusäänet, tuotettavuusarvio rivikohtaisesti, oma ääni säilyy ja suomea ei lausuta englantilaisella äänellä',async()=>{
+ const {synthesizeLines,createTestEngine}=await import('./kokoro.ts');
+ const text='Resurssi hahmo MIRA: Pipsa\nResurssi hahmo NIKO: Ville\nINT. KEITTIÖ\nMIRA:\n“Did you move the car?”\nNIKO:\n“Siirsitkö auton eilen?”\nMIRA:\n“(whispers) I did.”\nMIRA:\n“Okay then.”';
+ const b=buildEpisode(text,await library(text)),p=b.presentation;
+ assert.deepEqual(p.bindings.map(x=>x.kokoroVoice),['af_heart','am_adam']);
+ assert.deepEqual(b.audioPlan.dialogue.map(d=>d.synth),['possible','unsupported-language','possible','possible']);
+ assert.ok(b.diagnostics.some(d=>d.code==='voices-synth'&&d.message.startsWith('3 ')));assert.ok(b.diagnostics.some(d=>d.code==='voices-own'&&d.message.startsWith('1 ')));
+ // Oma ääni ensimmäisellä rivillä: se säilyy, muut tuotetaan; (whispers) vaatii hyväksynnän eikä arvata.
+ const lines=p.events.filter(e=>e.kind==='dialogue').map(e=>({id:e.id,speaker:e.target,text:e.text??''})),own=new Set([lines[0].id]),engine=createTestEngine();
+ const out=await synthesizeLines({lines,engine,voiceFor:s=>p.bindings.find(x=>x.speaker===s)?.kokoroVoice,hasOwnAudio:id=>own.has(id)});
+ assert.deepEqual(out.map(r=>r.status),['kept-own-audio','unsupported-language','needs-review','synthesized']);assert.equal(engine.calls.length,1);assert.equal(engine.calls[0].text,'Okay then.');
+ // Uudelleenrakennus säilyttää käyttäjän valitseman äänen.
+ const changed=structuredClone(p);changed.bindings[0].kokoroVoice='bf_emma';assert.equal(buildEpisode(text,await library(text),{previous:changed}).presentation.bindings[0].kokoroVoice,'bf_emma');
+});

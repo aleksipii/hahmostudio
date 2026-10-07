@@ -20,6 +20,7 @@ import {phoneActions} from './phone-actions.ts';
 import {functions,stableId,normalizeSpeaker,validatePresentation,type Presentation,type Event,type Ref,type Diagnostic,type Binding} from './presentation-model.ts';
 import type {Animation} from './animation-model.ts';
 import {heldPropFromWord} from './held-props.ts';
+import {parseSpokenText,isEnglishLine,KOKORO_MAX_LINE} from './kokoro.ts';
 import {defaultMotionSeconds} from './motion-library.ts';
 import {composeBinding,screenDirectionDiagnostics,measureCharacter} from './stage-composition.ts';
 import {defaultSafeArea} from './stage-bounds.ts';
@@ -142,7 +143,7 @@ export function parseMusicLine(text:string):Omit<MusicCue,'line'>|undefined{
  return{mood,text:v};
 }
 export type EpisodeAudioPlan={
- dialogue:{event:string;speaker:string;text:string;line:number;status:'linked'|'missing'}[];
+ dialogue:{event:string;speaker:string;text:string;line:number;status:'linked'|'missing';/** Kokoro voi tuottaa rivin (englanti, Mac-sovellus); muuten tuo tai äänitä. */synth:'possible'|'unsupported-language'|'empty'|'linked'}[];
  music:(MusicCue&{at:number;status:'generated'|'imported'|'stopped'|'unknown'})[];
 };
 
@@ -203,6 +204,8 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
   // Yhteinen mittakaava (aikuinen 1,0 · lapsi 0,72 · robotti 0,9) ja jalkapohjat taustan lattiaviivalle; käyttäjän sijoitus säilyy.
   if(old?.y!==undefined||old?.scale!==undefined){binding.x=old.x;binding.y=old.y;binding.scale=old.scale;}
   else Object.assign(binding,composeBinding(binding,library.assets[c.pack].doc,p.world.width,p.world.height,p.world.design??environmentId(p.events.find(e=>e.kind==='environment')?.value??'')??undefined,binding.x,undefined,library.assets[c.pack].animation.rig));
+  // Kokoro-oletusääni (vain valinta; ääntä ei tuoteta ennen kuin käyttäjä käynnistää synteesin). Aiempi valinta säilyy.
+  binding.kokoroVoice=old?.kokoroVoice??kokoroDefaultVoice(i);
   p.bindings.push(binding);
  }
  // Säilytä aiemmat äänileikkeet, jos sama repliikki (sama tunniste) on edelleen olemassa.
@@ -237,14 +240,15 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
   compiled.soundCues=[...autoSoundCues(compiled,library.assets,fps),...explicit,...music.cues,...kept];}
  const dialogueLines=compiled.events.filter(e=>e.kind==='dialogue');
  let at=0;const music=musicCues.map(m=>{const next=compiled.events.find(e=>e.sourceRef.line>m.line);at=next?.at??compiled.seconds;return {...m,at,status:(m.off?'stopped':m.file?'imported':m.mood?'generated':'unknown') as EpisodeAudioPlan['music'][number]['status']};});
- const audioPlan:EpisodeAudioPlan={dialogue:dialogueLines.map(e=>({event:e.id,speaker:e.target,text:e.text??'',line:e.sourceRef.line,status:compiled.audioClips.some(a=>a.dialogue===e.id)?'linked':'missing'})),music};
+ const audioPlan:EpisodeAudioPlan={dialogue:dialogueLines.map(e=>({event:e.id,speaker:e.target,text:e.text??'',line:e.sourceRef.line,status:compiled.audioClips.some(a=>a.dialogue===e.id)?'linked':'missing',synth:compiled.audioClips.some(a=>a.dialogue===e.id)?'linked':synthPossibility(e.text??'')})),music};
+ const missingLines=audioPlan.dialogue.filter(d=>d.status==='missing'),canSynth=missingLines.filter(d=>d.synth==='possible').length,needOwn=missingLines.length-canSynth;
+ if(canSynth)diagnostics.push({code:'voices-synth',severity:'warning',message:`${canSynth} englanninkieliselle repliikille voi luoda äänen Kokorolla (Mac-sovellus, merkitään synteettiseksi). Äänittämäsi tai tuomasi ääni on aina etusijalla.`});
+ if(needOwn)diagnostics.push({code:'voices-own',severity:'warning',message:`${needOwn} repliikille ei voi luoda ääntä automaattisesti (suomi tai tyhjä rivi): äänitä tai tuo ääni.`});
  for(const m of music)if(m.status==='imported')diagnostics.push({code:'music-file',severity:'warning',message:`Rivi ${m.line}: tuo musiikkitiedosto ${m.file} jakson ääniin.`});
  const audioMissing=compiled.diagnostics.some(d=>d.code==='missing-audio');
  for(const d of compiled.diagnostics)if(d.code==='target-underrun'&&audioMissing){d.severity='warning';d.message+=' (Arvio: repliikkiäänet puuttuvat, todellinen kesto selviää äänistä.)';}
  const own=compiled.diagnostics.filter(d=>!(d.code==='requirement-missing'&&d.event&&compiled.diagnostics.some(x=>x!==d&&x.event===d.event&&x.code==='missing-audio')));
  compiled.diagnostics=[...diagnostics.map(d=>({...d})),...own.filter(d=>!diagnostics.some(x=>x.code===d.code&&x.message===d.message))];
- onStage?.('done');
- return {presentation:compiled,assets:[...new Set(compiled.bindings.map(b=>b.asset))],cast,animationPerActor:compiled.actorAnimations??{},audioPlan,diagnostics:compiled.diagnostics,lines:lineOut};
  onStage?.('done');
  return {presentation:compiled,assets:[...new Set(compiled.bindings.map(b=>b.asset))],cast,animationPerActor:compiled.actorAnimations??{},audioPlan,diagnostics:compiled.diagnostics,lines:lineOut};
 }
@@ -376,6 +380,10 @@ export function buildSeries(scriptText:string,library:EpisodeLibrary,options:Bui
 }
 
 const e2x=(value:string)=>value.endsWith('left')?-1:value.endsWith('right')?1:0;
+/** Oletusäänet vuorotellen nainen/mies, jotta kaksi hahmoa ei kuulosta samalta. */
+export const kokoroDefaultVoices=['af_heart','am_adam','af_bella','am_michael'];
+export const kokoroDefaultVoice=(index:number)=>kokoroDefaultVoices[index%kokoroDefaultVoices.length];
+export function synthPossibility(text:string):'possible'|'unsupported-language'|'empty'{const spoken=parseSpokenText(text);return !spoken.text?'empty':spoken.text.length>KOKORO_MAX_LINE||!isEnglishLine(spoken.text)?'unsupported-language':'possible';}
 /** Sidosfunktio on tuettu vain, jos paketissa on sen tarvitsemat osat (samat vaatimukset kuin kääntäjässä). */
 export function packFunctions(roles:Record<string,string|undefined>|undefined,hand:'leftHand'|'rightHand'):Record<string,string>{const need:Record<string,string[]>={neutral_talk:['mouthNeutral','mouthOpen'],worried:['leftBrow','rightBrow'],confused:['leftBrow','rightBrow'],mildly_hurt:['leftBrow','rightBrow'],angry:['leftBrow','rightBrow'],look_at_phone:['leftPupil','rightPupil'],look_at_other_character:['leftPupil','rightPupil'],show_phone:[hand==='leftHand'?'leftArm':'rightArm',hand==='leftHand'?'leftForearm':'rightForearm',hand],eyebrow_raise:['leftBrow'],dead_stare:['root','head']};return Object.fromEntries(functions.map(f=>[f,roles&&(need[f]??[]).every(k=>roles[k])?'supported':'none']));}
 const holdVerb=/^(pitää|pitelee|piteli|pitävät|kantaa|kantoi|kantavat|ottaa|otti|ottavat|nostaa|nosti|tarttuu|tarttui|kädessä|kädessään|käteensä|holds|held|holding|carries|carried|carrying|takes|took|grabs|grabbed|picks|picked|with)$/u;
