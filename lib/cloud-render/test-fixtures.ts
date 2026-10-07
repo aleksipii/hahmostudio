@@ -10,6 +10,7 @@ import {CharacterReferenceSystem} from './character-refs.ts';
 import {ZERO_COST_POLICY} from './compute.ts';
 import type {MockRenderBackend} from './mock-backend.ts';
 import {PNG_1X1} from './mock-backend.ts';
+import type {LiveVerificationLedger} from './live-verification.ts';
 
 export const canon=():CanonicalState=>({
  schemaVersion:1,projectId:'project_001',revision:1,
@@ -25,13 +26,13 @@ export const canon=():CanonicalState=>({
 export const goodSuggestion=():any=>({sceneId:'scene_001',camera:{shot:'medium',movement:'slow_pan_left'},characterActions:[{id:'alice',action:'look_at',target:'cup_01',at:2,claims:{hair:'black',outfit:'red_jacket'},claimedLocation:'kitchen'}],environment:{location:'kitchen'},lighting:{style:'warm'},visualStyle:{style:'anime'},promptFragments:['subtle hand movement','soft glow']});
 export const REV='a'.repeat(40),SHA='b'.repeat(64);
 export const goodModel=(over:Partial<ModelDefinition>={}):ModelDefinition=>({id:'test-model',name:'Test',source:'huggingface:test/model',revision:REV,license:'apache-2.0',commercialUse:'allowed',modelCostEur:0,capabilities:['text-to-image','reference-image'],compatibleWorkflows:['text_to_image','character_reference'],licenseEvidenceUrl:'https://example.org/license',licenseCheckedAt:'2026-10-07',files:[{path:'sd.safetensors',sha256:SHA,comfyFolder:'checkpoints',role:'checkpoint'} as never],...over});
-export async function harness(backends:MockRenderBackend[],o:{models?:ModelDefinition[];requireLock?:boolean;director?:ServiceDeps['director'];mode?:ServiceDeps['modelMode']}={}){
- const storage=new InMemoryStorage(),projects=new ProjectStore(storage),reg=new BackendRegistry();for(const b of backends)reg.register(b);
+export async function harness(backends:MockRenderBackend[],o:{models?:ModelDefinition[];requireLock?:boolean;director?:ServiceDeps['director'];mode?:ServiceDeps['modelMode'];requireFp?:boolean;ledger?:(storage:InMemoryStorage,models:ModelRegistry)=>LiveVerificationLedger;wrapStorage?:(s:InMemoryStorage)=>InMemoryStorage}={}){
+ const storage=(o.wrapStorage??((x:InMemoryStorage)=>x))(new InMemoryStorage()),models=new ModelRegistry(o.models??[goodModel()]),ledger=o.ledger?.(storage,models),projects=new ProjectStore(storage),reg=new BackendRegistry();for(const b of backends)reg.register(b);
  const refs=new CharacterReferenceSystem(storage);
- const service=new RenderService({projects,storage,backends:reg,router:new ModelRouter(new ModelRegistry(o.models??[goodModel()])),workflows:new WorkflowRegistry(),policy:ZERO_COST_POLICY,modelMode:o.mode??'PRODUCTION_SAFE',director:o.director,refs,requireSceneLock:o.requireLock??true});
+ const service=new RenderService({projects,storage,backends:reg,router:new ModelRouter(models),workflows:new WorkflowRegistry(),policy:ZERO_COST_POLICY,modelMode:o.mode??'PRODUCTION_SAFE',director:o.director,refs,requireSceneLock:o.requireLock??true,requireAuthorizationFingerprint:o.requireFp??false,ledger});
  await projects.put(canon());await projects.lock('project_001','scene_001','tester');
  const ref=await storage.uploadAsset('project_001','references','alice.png',PNG_1X1,'image/png');
  await refs.register('project_001',{characterId:'alice',assetId:'alice_ref',label:'front',mime:'image/png',storageRef:ref});
- return{storage,projects,service,refs};
+ return{storage,projects,service,refs,models,ledger};
 }
 export const req=(o:Record<string,unknown>={})=>({projectId:'project_001',sceneId:'scene_001',workflowId:'text_to_image',requestedBy:'tester',params:{width:1,height:1},...o}) as never;

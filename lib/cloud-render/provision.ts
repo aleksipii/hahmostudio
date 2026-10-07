@@ -11,7 +11,7 @@ export function buildProvisionManifest(m:ModelDefinition,mode:ModelMode,policy:C
  const a=assessModel(m,mode,policy);if(!a.ok)throw new Blocked('model-license',a.reasons.join(' '));
  if(!m.revision||!m.files?.length)throw new Blocked('model-files',`Model "${m.id}" needs a pinned revision and file checksums to be provisioned.`);
  if(!m.source.startsWith('huggingface:'))throw new Blocked('model-source',`Unsupported model source "${m.source}".`);
- const repo=m.source.slice('huggingface:'.length);if(!/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(repo))throw new Blocked('model-source','Invalid repository id.');
+ const repo=m.source.slice('huggingface:'.length);if(!/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(repo)||repo.split('/').some(x=>/^\.+$/.test(x)))throw new Blocked('model-source','Invalid repository id.');
  for(const f of m.files){if(!(COMFY_FOLDERS as readonly string[]).includes(f.comfyFolder)||f.path.split('/').includes('..')||f.path.startsWith('/'))throw new Blocked('model-files',`Invalid file entry "${f.path}".`);}
  return{schema:1,modelId:m.id,repo,revision:m.revision,files:m.files.map(f=>({path:f.path,sha256:f.sha256,comfyFolder:f.comfyFolder}))};
 }

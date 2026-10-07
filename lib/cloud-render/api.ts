@@ -9,10 +9,15 @@ import type {WorkflowRegistry} from './workflows.ts';
 import {parseRenderRequest,type ProjectStore,type RenderService} from './pipeline.ts';
 import {own,RuleViolation,RULE_ENGINE_VERSION} from './canonical.ts';
 import type {RenderJob} from './types.ts';
+import type {LiveVerificationLedger} from './live-verification.ts';
+import {smokeCheck} from './smoke.ts';
+import type {CharacterReferenceSystem} from './character-refs.ts';
+import type {StorageBackend} from './storage.ts';
+import {sha256} from '../studio/hash.ts';
 
 export type ApiRequest={method:string;path:string;query?:URLSearchParams;body?:unknown;user:string};
 export type ApiResponse={status:number;body:unknown};
-export type ApiDeps={service:RenderService;projects:ProjectStore;models:ModelRegistry;workflows:WorkflowRegistry;backends:BackendRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;storageId:string};
+export type ApiDeps={service:RenderService;projects:ProjectStore;models:ModelRegistry;workflows:WorkflowRegistry;backends:BackendRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;storageId:string;ledger:LiveVerificationLedger;refs:CharacterReferenceSystem;storage:StorageBackend};
 const ok=(body:unknown,status=200):ApiResponse=>({status,body});
 const err=(status:number,code:string,message:string):ApiResponse=>({status,body:{error:message,code}});
 const seg=(p:string)=>p.replace(/^\/api\//,'').split('/').map(decodeURIComponent);
@@ -43,7 +48,7 @@ export function createCloudRenderApi(d:ApiDeps){
    }
    if(s[0]==='backends'&&m==='GET'){
     const out=[];for(const b of d.backends.list()){const e=await b.estimateCost({} as RenderJob).catch(()=>({estimatedCostEur:null,confidence:'unknown' as const,billingProvider:'unknown'}));out.push({...b.descriptor,declaredCost:e,eligibleUnderPolicy:costViolations(b.descriptor,e,d.policy).length===0,capabilities:await b.getCapabilities()});}
-    return ok({backends:out,workflows:d.workflows.list().map(w=>({id:w.id,revision:w.revision,title:w.title,implemented:w.implemented,liveVerified:w.liveVerified}))});
+    return ok({backends:out,workflows:await Promise.all(d.workflows.list().map(async w=>({id:w.id,revision:w.revision,title:w.title,implemented:w.implemented,liveVerified:await d.ledger.isVerified(w.id)})))});
    }
    if(s[0]==='projects'){
     if(!s[1]&&m==='GET')return ok({projects:d.projects.list()});
@@ -51,6 +56,18 @@ export function createCloudRenderApi(d:ApiDeps){
     const st=s[1]?d.projects.get(s[1]):undefined;
     if(s[1]&&!st)return err(404,'project-unknown','Unknown project.');
     if(st&&!s[2]&&m==='GET')return ok(st);
+    if(st&&s[2]==='characters'&&s[3]&&s[4]==='reference'&&m==='POST'){
+     // Approved reference image for a canonical character. Validated by content, stored in the project's references folder (not weights).
+     if(!own(st.characters,s[3]))return err(404,'character-unknown','Unknown character.');
+     const b=r.body as {mime?:string;dataBase64?:string;label?:string}|undefined;
+     if(!b||typeof b.dataBase64!=='string'||typeof b.mime!=='string'||b.dataBase64.length>11_200_000||!/^[A-Za-z0-9+/=]+$/.test(b.dataBase64))return err(400,'bad-request','Invalid image upload.');
+     const bytes=new Uint8Array(Buffer.from(b.dataBase64,'base64')),is=(sig:number[],off=0)=>sig.every((x,i)=>bytes[off+i]===x);
+     const kind=is([0x89,0x50,0x4e,0x47])?'png':is([0xff,0xd8,0xff])?'jpeg':is([0x52,0x49,0x46,0x46])&&is([0x57,0x45,0x42,0x50],8)?'webp':undefined;
+     if(!kind||b.mime!=='image/'+kind||bytes.length>8*1024*1024)return err(400,'bad-image','Reference must be a PNG, JPEG or WebP image of at most 8 MiB whose content matches its type.');
+     const assetId=`${s[3]}_ref_${(await sha256(bytes)).slice(0,10)}`,ref=await d.storage.uploadAsset(st.projectId,'references',`${assetId}.${kind==='jpeg'?'jpg':kind}`,bytes,b.mime);
+     await d.refs.register(st.projectId,{characterId:s[3],assetId,label:typeof b.label==='string'?b.label.slice(0,80):'reference',mime:b.mime,storageRef:ref});
+     return ok({assetId,size:bytes.length});
+    }
     if(st&&s[2]==='scenes'&&!s[3]&&m==='GET')return ok({scenes:Object.values(st.scenes).map(x=>({id:x.id,locationId:x.locationId,start:x.start,end:x.end,characterIds:x.characterIds,locked:!!d.projects.getLock(st.projectId,x.id)}))});
     if(st&&s[2]==='scenes'&&s[3]&&s[4]==='lock'&&m==='POST'){if(!own(st.scenes,s[3]))return err(404,'scene-unknown','Unknown scene.');const l=await d.projects.lock(st.projectId,s[3],r.user);return ok({id:l.id,hash:l.hash,lockedAt:l.lockedAt});}
     if(st&&s[2]==='scenes'&&s[3]&&s[4]==='lock'&&m==='DELETE'){return ok({unlocked:d.projects.unlock(st.projectId,s[3])});}
@@ -68,7 +85,19 @@ export function createCloudRenderApi(d:ApiDeps){
     }
     return err(404,'not-found','Not found.');
    }
+   if(s[0]==='live-verification'){
+    if(!s[1]&&m==='GET')return ok(d.ledger.list());
+    if(s[1]==='smoke'&&m==='POST'){
+     const id=(r.body as {backendId?:string}|undefined)?.backendId??d.backends.list().find(b=>b.descriptor.enabled)?.descriptor.id,b=id?d.backends.get(id):undefined;if(!b)return err(404,'backend-unknown','Unknown backend.');
+     const out=await smokeCheck(b,d.models,d.workflows,d.policy,d.modelMode);
+     if(!out.authorized)return ok({authorized:false,reasons:out.reasons,rows:[],note:'Blocked by the cost gate/firewall. No provider was contacted.'});
+     const recorded=await d.ledger.recordSmoke(b.descriptor.id,b.descriptor.provider,out.rows);
+     return ok({authorized:true,rows:out.rows,recorded,note:'Render-free check. A workflow becomes liveVerified only after a completed, uploaded, audited render.'});
+    }
+    return err(405,'live-verification-readonly','liveVerified cannot be set through the API.');
+   }
    if(s[0]==='render'){
+    if(s[1]==='preflight'&&m==='POST')return ok(await d.service.preflight(parseRenderRequest(r.body,r.user)));
     if(!s[1]&&m==='POST'){const q=parseRenderRequest(r.body,r.user);const {jobId,done}=d.service.start(q);done.catch(()=>{});return ok({jobId,record:d.service.get(jobId)},202);}
     if(!s[1]&&m==='GET')return ok({jobs:d.service.list()});
     if(s[1]&&!s[2]&&m==='GET'){const x=d.service.get(s[1]);return x?ok(x):err(404,'job-unknown','Unknown job.');}

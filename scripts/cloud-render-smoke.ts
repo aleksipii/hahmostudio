@@ -1,3 +1,4 @@
+// DIAGNOSTIC ONLY: results from this script do not count toward liveVerified (use the server's /api/live-verification/smoke).
 // Usage (operator, with the same env as the server): node --experimental-strip-types scripts/cloud-render-smoke.ts
 import {createCloudRender} from '../lib/cloud-render/server.ts';
 import {smokeCheck} from '../lib/cloud-render/smoke.ts';

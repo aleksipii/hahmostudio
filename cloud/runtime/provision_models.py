@@ -22,8 +22,8 @@ def sha256_file(path):
     return h.hexdigest()
 
 
-def provision(manifest, comfy_dir, base_url="https://huggingface.co", token=None):
-    if manifest.get("schema") != 1 or not REPO.match(manifest.get("repo", "")) or not REV.match(manifest.get("revision", "")):
+def provision(manifest, comfy_dir, base_url="https://huggingface.co", token=None, receipt=None):
+    if manifest.get("schema") != 1 or not REPO.match(manifest.get("repo", "")) or any(set(x) == {"."} for x in manifest["repo"].split("/")) or not REV.match(manifest.get("revision", "")):
         raise SystemExit("manifest rejected: repo/revision invalid (an exact 40-hex commit is required)")
     root = os.path.realpath(os.path.join(comfy_dir, "models"))
     for f in manifest["files"]:
@@ -52,12 +52,17 @@ def provision(manifest, comfy_dir, base_url="https://huggingface.co", token=None
             raise SystemExit("checksum mismatch for %s: refusing to keep the file" % f["path"])
         os.replace(tmp, target)
         print("verified", target)
+    if receipt:
+        # Written only after EVERY file matched its pinned SHA-256. The server compares it with its own pin before trusting it.
+        with open(receipt, "w") as out:
+            json.dump({"schema": 1, "repo": manifest["repo"], "revision": manifest["revision"], "files": [{"path": f["path"], "sha256": f["sha256"]} for f in manifest["files"]]}, out)
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("manifest")
     ap.add_argument("--comfy-dir", required=True)
+    ap.add_argument("--receipt", help="write a provision receipt here after all checksums verified")
     ap.add_argument("--base-url", default="https://huggingface.co")
     a = ap.parse_args()
-    provision(json.load(open(a.manifest)), a.comfy_dir, a.base_url, os.environ.get("HF_TOKEN"))
+    provision(json.load(open(a.manifest)), a.comfy_dir, a.base_url, os.environ.get("HF_TOKEN"), a.receipt)

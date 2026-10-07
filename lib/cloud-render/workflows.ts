@@ -3,7 +3,7 @@ import {Blocked} from './types.ts';
 import type {ModelFile} from './models.ts';
 
 export type ComfyGraph=Record<string,{class_type:string;inputs:Record<string,unknown>}>;
-export type WorkflowDefinition={id:string;revision:number;title:string;kind:'image'|'video';requiredCapability:string;requiresCharacterReference:boolean;requiresSourceImage:boolean;implemented:boolean;/** True only after a run against a live ComfyUI was recorded. */liveVerified:boolean;buildGraph?:(job:RenderJob,model:ModelDefinition)=>ComfyGraph};
+export type WorkflowDefinition={id:string;revision:number;title:string;kind:'image'|'video';requiredCapability:string;requiresCharacterReference:boolean;requiresSourceImage:boolean;implemented:boolean;/** True only after a run against a live ComfyUI was recorded. */liveVerified:boolean;buildGraph?:(job:RenderJob,model:ModelDefinition)=>ComfyGraph;/** Orchestrated by RenderService as several single-job runs; has no graph of its own. */composite?:boolean};
 const file=(m:ModelDefinition,role:ModelFile['role'])=>{const f=(m.files as ModelFile[]|undefined)?.find(x=>x.role===role);return f?f.path.split('/').pop() as string:undefined;};
 const need=(m:ModelDefinition,role:ModelFile['role'])=>{const f=file(m,role);if(!f)throw new Blocked('model-files',`Model "${m.id}" has no pinned "${role}" file; the workflow cannot be built.`);return f;};
 const seedOf=(j:RenderJob)=>{if(j.seed===undefined)throw new Blocked('seed-missing','Seed must be fixed before submission for reproducibility.');return j.seed;};
@@ -43,7 +43,7 @@ export const SEED_WORKFLOWS:WorkflowDefinition[]=[
  {id:'image_to_image',revision:1,title:'Image to image',kind:'image',requiredCapability:'image-to-image',requiresCharacterReference:false,requiresSourceImage:true,implemented:true,liveVerified:false,buildGraph:(j,m)=>imageGraph(j,m,true,0.65)},
  {id:'character_reference',revision:1,title:'Reference-conditioned image (img2img; no identity adapter)',kind:'image',requiredCapability:'reference-image',requiresCharacterReference:true,requiresSourceImage:false,implemented:true,liveVerified:false,buildGraph:(j,m)=>imageGraph(j,m,true,0.55)},
  {id:'image_to_video',revision:1,title:'Image to video',kind:'video',requiredCapability:'image-to-video',requiresCharacterReference:false,requiresSourceImage:true,implemented:true,liveVerified:false,buildGraph:videoGraph},
- {id:'character_animation',revision:0,title:'Character animation (not implemented)',kind:'video',requiredCapability:'image-to-video',requiresCharacterReference:true,requiresSourceImage:true,implemented:false,liveVerified:false},
+ {id:'character_animation',revision:1,title:'Character animation (ordered image_to_video clips per approved event)',kind:'video',requiredCapability:'image-to-video',requiresCharacterReference:true,requiresSourceImage:true,implemented:true,liveVerified:false,composite:true},
 ];
 export class WorkflowRegistry{
  private readonly items=new Map<string,WorkflowDefinition>();

@@ -44,12 +44,36 @@ test('project, lock, direct, validate and render endpoints enforce the pipeline'
   assert.equal(((await call('POST','/api/ai/validate',{projectId:'project_001',sceneId:'scene_001',suggestion:goodSuggestion()})).body as any).status,'APPROVED');
   // override attempts
   const o=await call('POST','/api/render',{projectId:'project_001',sceneId:'scene_001',workflowId:'text_to_image',maxCostEur:10});assert.equal(o.status,400);assert.equal((o.body as any).code,'client-policy-override');
-  // not locked → blocked job; no usable backend either way
+  // render without an authorized preflight fingerprint is refused by the server
   const r=await call('POST','/api/render',{projectId:'project_001',sceneId:'scene_001',workflowId:'text_to_image'});assert.equal(r.status,202);
-  const id=(r.body as any).jobId;await new Promise(x=>setTimeout(x,50));const job=(await call('GET','/api/render/'+id)).body as any;assert.equal(job.state,'BLOCKED');assert.equal(job.blocked.code,'lock-missing');assert.equal(job.providerContacted,false);
+  await new Promise(x=>setTimeout(x,50));const job=(await call('GET','/api/render/'+(r.body as any).jobId)).body as any;assert.equal(job.state,'BLOCKED');assert.equal(job.blocked.code,'authorization-required');assert.equal(job.providerContacted,false);
+  // preflight: not locked -> BLOCKED card with no fingerprint
+  const pf=(await call('POST','/api/render/preflight',{projectId:'project_001',sceneId:'scene_001',workflowId:'text_to_image'})).body as any;assert.equal(pf.status,'BLOCKED');assert.equal(pf.fingerprint,undefined);assert.match(pf.reasons[0],/not approved and locked/);assert.equal(pf.paidFallback,'DISABLED');
   assert.equal((await call('POST','/api/projects/project_001/scenes/scene_001/lock')).status,200);
-  const r2=await call('POST','/api/render',{projectId:'project_001',sceneId:'scene_001',workflowId:'text_to_image'});await new Promise(x=>setTimeout(x,80));
+  const pf2=(await call('POST','/api/render/preflight',{projectId:'project_001',sceneId:'scene_001',workflowId:'text_to_image'})).body as any;assert.equal(pf2.status,'BLOCKED');assert.equal(pf2.stage,'plan');
+  const r2=await call('POST','/api/render',{projectId:'project_001',sceneId:'scene_001',workflowId:'text_to_image',authorizationFingerprint:'0'.repeat(64)});await new Promise(x=>setTimeout(x,80));
   const j2=(await call('GET','/api/render/'+(r2.body as any).jobId)).body as any;assert.equal(j2.state,'BLOCKED');assert.match(j2.blocked.banner,/RENDER BLOCKED/);assert.equal(j2.providerContacted,false);
   assert.equal((await call('GET','/api/render/nope')).status,404);
+ }finally{await done();}
+});
+
+test('palette inspector is opt-in and its threshold is validated',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'hs-insp-'));try{
+  assert.doesNotThrow(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_OUTPUT_INSPECTOR:'palette',HAHMOSTUDIO_PALETTE_THRESHOLD:'0.6'},dir));
+  for(const bad of ['0.01','1','abc'])assert.throws(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_PALETTE_THRESHOLD:bad},dir),/THRESHOLD/);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test('character reference upload is validated by content and registered',async()=>{
+ const {c,call,done}=await setup();try{
+  assert.equal((await call('PUT','/api/projects/project_001',canon())).status,200);
+  const {PNG_1X1}=await import('./mock-backend.ts'),b64=Buffer.from(PNG_1X1).toString('base64'),url='/api/projects/project_001/characters/alice/reference';
+  const ok=await call('POST',url,{mime:'image/png',dataBase64:b64});assert.equal(ok.status,200);assert.match((ok.body as any).assetId,/^alice_ref_[0-9a-f]{10}$/);
+  assert.equal(c.refs.list('project_001','alice').length,1);assert.ok((await c.storage.listProjectAssets('project_001','references')).some(a=>a.name.endsWith('.png')));
+  assert.equal((await call('POST',url,{mime:'image/jpeg',dataBase64:b64})).status,400,'type must match content');
+  assert.equal((await call('POST',url,{mime:'image/png',dataBase64:Buffer.from('not an image').toString('base64')})).status,400);
+  assert.equal((await call('POST',url,{mime:'image/png',dataBase64:'***'})).status,400);
+  assert.equal((await call('POST','/api/projects/project_001/characters/bob/reference',{mime:'image/png',dataBase64:b64})).status,404);
+  assert.equal((await call('POST','/api/projects/project_001/characters/constructor/reference',{mime:'image/png',dataBase64:b64})).status,404);
  }finally{await done();}
 });
