@@ -1,3 +1,4 @@
+import {ScriptRecognizer,detectLanguage} from './script-recognizer.ts';
 /** Strict, finite grammar. No substring matching, guessed subjects or generated speech. */
 export const verbs={walk:['kävelee','kävele','käveli','kävelen','kävellään','walk','walks','walking'],run:['juoksee','juokse','juoksi','juoksen','juostaan','run','runs','running']} as const;
 export const directions={left:['vasemmalle','left'],right:['oikealle','right'],front:['suoraan','forward']} as const;
@@ -31,12 +32,13 @@ export function parseRuleScript(text:string):StructuredScript{
   else if((match=t.match(/^(.+?)\s+(vilkuttaa|nyökkää|hyppää|kyykistyy|osoittaa|points?|nyrkki|fist|istuu|istu|sits?|waves|nods|jumps|crouches)$/iu))){target=actor(match[1]);kind='action';value=({vilkuttaa:'wave','nyökkää':'nod',hyppää:'jump',kyykistyy:'crouch',osoittaa:'point',point:'point',points:'point',nyrkki:'fist',fist:'fist',istuu:'sit',istu:'sit',sit:'sit',sits:'sit',waves:'wave',nods:'nod',jumps:'jump',crouches:'crouch'} as Record<string,string>)[match[2].toLowerCase()];}
   else if((match=t.match(/^(.+?)\s+(?:sanoo|says):\s*"([^"]*)"$/iu))){target=actor(match[1]);kind='dialogue';value='neutral_talk';spoken=match[2];if(!spoken.trim())fail(line,'Repliikki on tyhjä.');}
   else if((match=t.match(/^(?:Kamera|Camera):\s*(lähikuva|puolikuva|laaja|close-up|medium|wide)(?:\s+(.+))?$/iu))){kind='camera';value=({lähikuva:'close',puolikuva:'medium',laaja:'wide','close-up':'close',medium:'medium',wide:'wide'} as Record<string,string>)[match[1].toLowerCase()];target=match[2]?actor(match[2]):'scene';if(value!=='wide'&&target==='scene')fail(line,'Lähi- tai puolikuva tarvitsee nimetyn hahmon.');}
-  else if((match=t.match(/^(.+?)\s+(?:ilme|expression):\s*(vihainen|huolestunut|hämmentynyt|loukkaantunut|kulmakarvat ylös|angry|worried|confused|hurt|eyebrows raised)$/iu))){target=actor(match[1]);kind='expression';value=({vihainen:'angry',huolestunut:'worried',hämmentynyt:'confused',loukkaantunut:'mildly_hurt','kulmakarvat ylös':'eyebrow_raise',angry:'angry',worried:'worried',confused:'confused',hurt:'mildly_hurt','eyebrows raised':'eyebrow_raise'} as Record<string,string>)[match[2].toLowerCase()];}
-  else if((match=t.match(/^(.+?)\s+(?:katsoo|looks at):\s*(.+)$/iu))){target=actor(match[1]);kind='gaze';const object=['se','it'].includes(match[2].toLowerCase())?lastProp:match[2];if(!object)fail(line,'Pronominilla se ei ole esinettä.');value=['puhelin','phone'].includes(object.toLowerCase())?'phone':actor(object);}
+  else if((match=t.match(/^(.+?)\s+(?:ilme|expression):\s*(vihainen|huolestunut|hämmentynyt|loukkaantunut|kulmakarvat ylös|iloinen|hymy|surullinen|peloissaan|pelokas|angry|worried|confused|hurt|eyebrows raised|happy|smile|sad|scared|afraid)$/iu))){target=actor(match[1]);kind='expression';value=({vihainen:'angry',huolestunut:'worried',hämmentynyt:'confused',loukkaantunut:'mildly_hurt','kulmakarvat ylös':'eyebrow_raise',angry:'angry',worried:'worried',confused:'confused',hurt:'mildly_hurt','eyebrows raised':'eyebrow_raise',iloinen:'happy',hymy:'happy',surullinen:'sad',peloissaan:'scared',pelokas:'scared',happy:'happy',smile:'happy',sad:'sad',scared:'scared',afraid:'scared'} as Record<string,string>)[match[2].toLowerCase()];}
+  else if((match=t.match(/^(.+?)\s+(?:katsoo|looks at):\s*(.+)$/iu))){target=actor(match[1]);kind='gaze';const object=['se','it'].includes(match[2].toLowerCase())?lastProp:match[2];if(!object)fail(line,'Pronominilla se ei ole esinettä.');value=['puhelin','phone'].includes(object.toLowerCase())?'phone':['kamera','kameraan','camera','katsoja','katsojaan','viewer'].includes(object.toLowerCase())?'camera':actor(object);}
   else if((match=t.match(/^(?:Tausta|Background):\s*(.+)$/iu))){target='scene';kind='environment';const key=match[1].trim();value=({studio:'studio-v1',olohuone:'apartment-v1','kaupunki ilta':'city-evening-v1','auto moderni':'car-interior-v2','living room':'apartment-v1','city evening':'city-evening-v1','modern car':'car-interior-v2','kartonkikatu':'cutout-street-v1'} as Record<string,string>)[key.toLowerCase()]??key;}
   else if((match=t.match(/^(.+?)\s+(?:puhelin|phone):\s*(esille|pois|edestä|takaa|sivulta|show|hide|front|back|side)$/iu))){target=actor(match[1]);kind='prop';value=['pois','hide'].includes(match[2].toLowerCase())?'phone-off':'phone-on';spoken=['takaa','back'].includes(match[2].toLowerCase())?'back':['sivulta','side'].includes(match[2].toLowerCase())?'side':'front';}
   else if(/^(?:Odota|Wait)$/i.test(t)){kind='hold';target='scene';value='pause';}
-  else{fail(line,`Riviä ei tunnistettu: ${raw}`, 'Esimerkiksi Kille kävelee oikealle 2 s. Istuminen, ylä-/takakuva ja uudet esineet tarvitsevat erillisen toteutuksen.');continue;}
+  else if((match=strictFromRecognizer(t,[...names.values()]))){target=match[1];kind=match[2] as Command['kind'];value=match[3];}
+  else{const hint=recognizerHint(t,[...names.values()],!!duration);fail(line,`Riviä ei tunnistettu: ${raw}`, hint??'Esimerkiksi Kille kävelee oikealle 2 s. Istuminen, ylä-/takakuva ja uudet esineet tarvitsevat erillisen toteutuksen.');continue;}
   if(!duration){fail(line,'Tapahtumalta puuttuu täsmällinen kesto.');continue;}
   if(failed){failed=false;continue;}
   const anchor=result.commands.at(-1);if(parallel&&!anchor){fail(line,'Samalla tarvitsee edeltävän tapahtuman.');failed=false;continue;}
@@ -46,4 +48,27 @@ export function parseRuleScript(text:string):StructuredScript{
  }
  if(!result.commands.length&&!result.diagnostics.length)result.diagnostics.push({line:1,problem:'Käsikirjoitus on tyhjä.',suggestion:'Lisää hahmomääritys ja tapahtuma.'});
  return result;
+}
+
+const strictMotions=new Set(['walk-left','walk-right','walk-front','run-left','run-right','run-front','wave','nod','jump','crouch','point','fist','sit','react-nod','react-surprise','react-wave']);
+/** Taivutusmuodot tunnistimen sanastosta ("Kille juoksi vasemmalle", "Mira nyökkäsi"), vain nimetylle hahmolle ja yhdelle tuetulle tapahtumalle. */
+function strictFromRecognizer(text:string,characters:string[]):RegExpMatchArray|null{
+ if(!characters.length)return null;const r=new ScriptRecognizer(characters),lang=detectLanguage(text),first=(text.match(/^[\p{L}]+/u)?.[0])??'';
+ const subject=r.resolveActor(first,lang);if(!subject||!characters.some(c=>c.toLocaleUpperCase('fi-FI')===subject))return null;
+ const clauses=r.clauses(text,lang);if(clauses.length!==1)return null;const c=clauses[0];
+ const name=characters.find(n=>n.toLocaleUpperCase('fi-FI')===subject)!;
+ const hit=(kind:string,value:string)=>Object.assign([text,name,kind,value],{index:0,input:text}) as unknown as RegExpMatchArray;
+ if(c.type==='motion'&&c.actor===subject&&strictMotions.has(c.value)&&(!/^(walk|run)-/.test(c.value)||/vasem|oikea|suoraan|eteenpäin|kohti|left|right|forward|toward/i.test(text)))return hit('action',c.value);
+ if(c.type==='expression'&&c.actor===subject)return hit('expression',c.value);
+ if(c.type==='gaze'&&c.actor===subject){const target=c.target==='phone'||c.target==='camera'?c.target:characters.find(n=>n.toLocaleUpperCase('fi-FI')===c.target);if(target)return hit('gaze',target);}
+ return null;
+}
+/** Ehdotus hylätylle riville: kerrotaan mitä tunnistettiin ja mitä puuttuu. */
+function recognizerHint(text:string,characters:string[],hasDuration:boolean):string|undefined{
+ const r=new ScriptRecognizer(characters),clauses=r.clauses(text,detectLanguage(text));const c=clauses[0];if(!c||c.type==='unknown')return undefined;
+ if(c.type==='unsupported')return c.reason;
+ if(c.type==='motion'&&/^(walk|run)-/.test(c.value)&&c.estimated&&!/vasem|oikea|suoraan|left|right|forward/i.test(text))return 'Tunnistettiin liike. Lisää suunta (vasemmalle, oikealle tai suoraan) ja kesto, esim. "… oikealle 2 s".';
+ if(!hasDuration)return 'Tunnistettiin tapahtuma. Lisää täsmällinen kesto rivin loppuun, esim. "2 s".';
+ if('actor' in c&&!characters.some(n=>n.toLocaleUpperCase('fi-FI')===c.actor))return 'Nimeä hahmo rivin alussa ja määrittele se rivillä Hahmo: Nimi.';
+ return undefined;
 }

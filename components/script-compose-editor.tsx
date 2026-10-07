@@ -135,7 +135,7 @@ function ScriptLineSheet({
                   }
                 }}
               />
-              <div className="script-line-meta">{words ? `${words} sanaa` : ''}</div>
+              <div className={`script-line-meta${ann?.unrecognized ? ' is-unknown' : ann?.kind === 'body' && ann.right ? ' is-recognized' : ''}`} title={ann?.kind === 'body' && ann.right ? 'Sääntötunnistin: ' + ann.right : undefined}>{ann?.kind === 'body' && ann.right ? ann.right : words ? `${words} sanaa` : ''}</div>
             </div>
           </div>
         );

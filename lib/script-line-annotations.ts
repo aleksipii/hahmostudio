@@ -1,3 +1,5 @@
+import { recognizeScript, describeLine } from './script-recognizer.ts';
+
 /** Debounce live-marginaaliskannaukselle (ms) — alle ~100 ms tuntuva viive pitkissä teksteissä. */
 export const SCRIPT_ANNOTATE_DEBOUNCE_MS = 150;
 
@@ -8,6 +10,8 @@ export type ScriptLineAnnotation = {
   left?: string;
   right?: string;
   kind: 'empty' | 'scene' | 'speaker' | 'character' | 'time' | 'heading' | 'comment' | 'body';
+  /** Sääntötunnistin ei ymmärtänyt riviä: näytetään varoituksena marginaalissa. */
+  unrecognized?: boolean;
 };
 
 const sceneRe = /^(?:Kohtaus|Scene):\s*(.*)$/i;
@@ -77,6 +81,20 @@ export function scanScriptLineAnnotations(text: string): ScriptLineAnnotation[] 
       continue;
     }
     out.push({ line: n, kind: 'body' });
+  }
+  // Lainattu repliikki: merkitään suoraan, ei tarvita tunnistinta.
+  for (const a of out) if (a.kind === 'body' && !a.right && /^[“"„«].*[”"»]?\.?$/.test(lines[a.line - 1].trim())) a.right = 'Repliikki';
+  // Ohjerivit: sääntöpohjainen tunnistin kertoo marginaalissa, mitä rivi tekee (tai ettei sitä tunnistettu).
+  if (out.some((a) => a.kind === 'body' && !a.right)) {
+    const recognized = recognizeScript(text).lines;
+    for (const a of out) {
+      if (a.kind !== 'body' || a.right) continue;
+      const r = recognized[a.line - 1];
+      if (!r || r.kind === 'empty') continue;
+      const label = describeLine(r);
+      if (label) a.right = label.length > 28 ? label.slice(0, 26) + '…' : label;
+      if (r.kind === 'unknown') a.unrecognized = true;
+    }
   }
   return out;
 }

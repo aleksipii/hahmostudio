@@ -26,6 +26,7 @@
     "benchmark": "node --experimental-strip-types scripts/benchmark-studio.ts",
     "playback:benchmark": "node --experimental-strip-types scripts/playback-benchmark.ts",
     "library:upgrade-provenance": "node --experimental-strip-types scripts/upgrade-library-provenance.mjs",
+    "assets:cutout-kids": "python3 scripts/create-cutout-kids.py && node scripts/create-cutout-kids.mjs",
     "grammar:coverage": "node --experimental-strip-types scripts/grammar-coverage.ts"
   },
   "dependencies": {

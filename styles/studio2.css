@@ -834,3 +834,25 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
 .studio.s2 .app-menu-content button:hover:not(:disabled),
 .studio.s2 .view-menu > div > button:hover:not(:disabled) { background: var(--s2-accent-soft); }
 .studio.s2 .app-menu-content > button > kbd { margin-left: auto; }
+
+/* ─── Paneelien koonsäätökahvat: näkyvä tartunta-alue ja kahva kaikilla reunoilla ─── */
+.studio.s2 .panel-resizer { position: relative; z-index: 6; flex: none; background: var(--s2-line); touch-action: none; user-select: none; }
+.studio.s2 .panel-resizer.vertical { width: 1px; min-width: 1px; cursor: col-resize; }
+.studio.s2 .panel-resizer.horizontal { height: 1px; min-height: 1px; width: 100%; cursor: row-resize; }
+.studio.s2 .panel-resizer::before { content: ''; position: absolute; }
+.studio.s2 .panel-resizer.vertical::before { inset: 0 -5px; }
+.studio.s2 .panel-resizer.horizontal::before { inset: -5px 0; }
+.studio.s2 .panel-resizer::after {
+  content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  border-radius: 3px; background: var(--s2-line2); transition: background 0.15s;
+}
+.studio.s2 .panel-resizer.vertical::after { width: 4px; height: 32px; }
+.studio.s2 .panel-resizer.horizontal::after { width: 40px; height: 4px; }
+.studio.s2 .panel-resizer:hover, .studio.s2 .panel-resizer:focus-visible, .studio.s2 .panel-resizer:active { background: var(--s2-accent); }
+.studio.s2 .panel-resizer:hover::after, .studio.s2 .panel-resizer:focus-visible::after, .studio.s2 .panel-resizer:active::after { background: var(--s2-accent-2); }
+.studio.s2 .panel-resizer[hidden] { display: none; }
+
+/* Käsikirjoituksen marginaali: sääntötunnistimen tulkinta rivin vieressä */
+.studio.s2 .script-line-meta { font: 10px var(--s2-mono); color: var(--s2-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.studio.s2 .script-line-meta.is-recognized { color: var(--s2-ok); }
+.studio.s2 .script-line-meta.is-unknown { color: var(--s2-warn); }

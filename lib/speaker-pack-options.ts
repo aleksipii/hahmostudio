@@ -13,6 +13,14 @@ export const CHARACTER_PACK_OPTIONS = [
   'Otto-Monikulma',
   'Aino',
   'Otto',
+  'Pipsa-3D',
+  'Ville-3D',
+  'Taru-3D',
+  'Ukko-3D',
+  'Pipsa',
+  'Ville',
+  'Taru',
+  'Ukko',
 ] as const;
 
 export function packOptionsForAssets(assets: PresentationAssets): string[] {

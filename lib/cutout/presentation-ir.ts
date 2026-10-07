@@ -26,7 +26,7 @@ export const cutoutPresetActions={
 
 const presentationAction:Record<string,string>={'walk-left':'WALK_LEFT','walk-right':'WALK_RIGHT','run-left':'RUN_LEFT','run-right':'RUN_RIGHT',wave:'HAND_WAVE',point:'POINT',fist:'FIST',sit:'SIT',stop:'IDLE',...presentationReaction};
 const shotCamera:Record<string,string>={wide:'WIDE_SHOT',medium:'MEDIUM_TWO_SHOT',close:'CLOSE_UP'};
-const expressionEmotion:Record<string,string>={angry:'ANGRY',worried:'SQUINT',confused:'SQUINT',mildly_hurt:'SQUINT',dead_stare:'NORMAL',eyebrow_raise:'NORMAL'};
+const expressionEmotion:Record<string,string>={angry:'ANGRY',worried:'SQUINT',confused:'SQUINT',mildly_hurt:'SQUINT',dead_stare:'NORMAL',eyebrow_raise:'NORMAL',happy:'HAPPY',sad:'SQUINT',scared:'NORMAL'};
 
 const backgroundScene:Record<string,string>={};
 for(const [scene,id] of Object.entries(sceneBackgrounds))backgroundScene[id]=scene;

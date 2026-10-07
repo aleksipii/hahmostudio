@@ -1,3 +1,4 @@
+import {ScriptRecognizer,detectLanguage,ALL_ACTORS} from './script-recognizer.ts';
 import {environmentLibrary} from './environment-library.ts';
 import {backgrounds,type BackgroundId} from './backgrounds.ts';
 import {stableId,normalizeSpeaker,type Presentation,type Event,type Ref} from './presentation-model.ts';
@@ -34,13 +35,24 @@ export function enrichDirection(p:Presentation):Presentation{
   if(/Tarkoitus:|Hahmo |Character |Luonne |Personality |sanoo.*pokerinaam|dead stare|kuivasti|dry|vähäele|huolest|puolust|worried/i.test(line))for(const profile of profiles){if(!normalizeSpeaker(line).includes(profile.speaker))continue;const fragments=line.split(/[.!]/).filter(s=>normalizeSpeaker(s).includes(profile.speaker));const text=fragments.join('. ')||line;if(!profile.personality)profile.personality=text;if(/kuiv|dry|pokerinaam|dead stare|rauhalli|calm|vähäele/.test(text.toLowerCase())){profile.intensity=.45;profile.still=true;}else if(/huolest|worried|puolust/.test(text.toLowerCase()))profile.intensity=.7;if(!profile.delivery)profile.delivery=profile.still?'Rauhallinen ja vähäeleinen':'Käsikirjoituksen mukainen';if(!profile.sourceRefs.some(r=>r.line===ref.line))profile.sourceRefs.push(ref);}
  }
  // Transform only known safe directions; unsupported requirements remain visible and block readiness.
- const next:Event[]=[];
+ const next:Event[]=[];const recognizer=new ScriptRecognizer(p.characters);
  for(const e of p.events){if(e.kind!=='note'){next.push(e);continue;}const line=clean(e.value),low=line.toLowerCase(),ref=e.sourceRef,target=named(line)??e.target;
   if(/^(Hahmo|Character|Luonne|Personality|Suhde|Relationship|Ääni|Voice)\s+/i.test(line))continue;
   if(/liikkumiskielto pois|saa liikkua|allow motion/i.test(line)){next.push({...e,kind:'constraint',target,value:'release-still'});add('restriction',ref,'implemented',[e.id]);continue;}
   const restriction=/^(?:ei|älä|no|do not|don't)(?=\s|[.!:]|$)/i.test(line)||/ei isoa elettä/i.test(line);
   if(restriction){const known=/ei (isoa|isoja) ele|ei ylimäär|ei dialogia|älä (?:liikuta|käytä dissolve)|no extra props|no (?:big|large) gestures|no camera (?:movement|motion)|ei kameraliik|do not move|don't move/i.test(line);next.push({...e,kind:'constraint',target:/ei kameraliik|no camera (?:movement|motion)/.test(low)?'scene':target,value:/ei kameraliik|no camera (?:movement|motion)/.test(low)?'camera-still':/liikuta|(?:do not|don't) move/.test(low)?'still':/dissolve/.test(low)?'hard-cuts':/ylimäär|extra props/.test(low)?'no-extra-props':'small-gestures'});add('restriction',ref,known?'implemented':'missing',[e.id]);continue;}
   if(/odota|wait|tauko|pause|silence/i.test(line)){const seconds=duration(line);next.push({...e,kind:'hold',target,value:/silence|hiljaisuus|dead stare/.test(low)?'dead_stare':'pause',seconds:seconds??.25,protected:seconds!==undefined,basis:seconds!==undefined?'rule':'estimate'});add('timing',ref,seconds!==undefined?'implemented':'estimated',[e.id]);continue;}
+  // Sääntöpohjainen tunnistin (sanasto + taivutus + kielto) ennen vanhaa osamerkkijonohakua.
+  const recognized=recognizer.clauses(line,detectLanguage(line),target).filter(c=>c.type!=='note');
+  if(recognized.length&&recognized.every(c=>c.type==='motion'||c.type==='gaze'||c.type==='expression')){
+   const after=/samalla|puhuessaan|while speaking|during dialogue/i.test(line)?p.events.filter(d=>d.kind==='dialogue'&&d.sourceRef.line<ref.line).at(-1)?.id:undefined;let n=0;
+   for(const c of recognized){if(!('actor' in c))continue;const actors=c.actor===ALL_ACTORS?p.characters:[p.characters.includes(c.actor)?c.actor:target];
+    for(const who of actors){const id=n++?e.id+'-'+n:e.id;
+     if(c.type==='motion'){next.push({...e,id,kind:'action',target:who,value:c.value,seconds:c.seconds??(c.value==='stop'?0:2),basis:c.seconds!==undefined||c.value==='stop'?'rule':'estimate',after});add('action',ref,c.seconds!==undefined||c.value==='stop'?'implemented':'estimated',[id]);}
+     else if(c.type==='gaze'&&(c.target==='phone'||c.target==='camera'||p.characters.includes(c.target))){next.push({...e,id,kind:'gaze',target:who,value:c.target});add('gaze',ref,'implemented',[id]);}
+     else if(c.type==='expression'){next.push({...e,id,kind:'expression',target:who,value:c.value});add('expression',ref,'implemented',[id]);}}}
+   if(n)continue;
+  }
   const react=/reaktio|reaction/.test(low)?(/hämmä|surprise|shock/.test(low)?'react-surprise':/vilk|wave/.test(low)?'react-wave':'react-nod'):undefined;
   const motion=react??(/juok|run/.test(low)?(/vasem|left/.test(low)?'run-left':/suoraan|front|forward|kohti/.test(low)?'run-front':'run-right'):/kävel|kävele|walk/.test(low)?(/vasem|left/.test(low)?'walk-left':/suoraan|front|forward|kohti/.test(low)?'walk-front':'walk-right'):/vilkut|vilkuta|heilut|wave/.test(low)?'wave':/osoitt|points?\b/.test(low)?'point':/nyrkk|fist/.test(low)?'fist':/istu|istuu|sits?\b/.test(low)?'sit':/hypp|jump/.test(low)?'jump':/kyyk|crouch/.test(low)?'crouch':/nyökk|nyökä|nod/.test(low)?'nod':/pysäht|pysähdy|stop/.test(low)?'stop':undefined);
   if(motion){next.push({...e,kind:'action',target,value:motion,seconds:duration(line)??(motion==='stop'?0:2),basis:duration(line)!==undefined||motion==='stop'?'rule':'estimate',after:/samalla|puhuessaan|while speaking|during dialogue/i.test(line)?p.events.filter(d=>d.kind==='dialogue'&&d.sourceRef.line<ref.line).at(-1)?.id:undefined});add('action',ref,duration(line)!==undefined||motion==='stop'?'implemented':'estimated',[e.id]);continue;}

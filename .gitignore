@@ -24,3 +24,5 @@ release/
 .paper-character-build/
 
 .paper-character-studio-build/
+
+.cutout-kids-build/

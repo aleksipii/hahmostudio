@@ -57,9 +57,10 @@ export function parsePresentation(original:string,aliases:Record<string,string>=
   if(/^(ei|älä|do not|don't)(?=\s|[.!:]|$)/.test(low)){add('note',target,line,ref);continue;}
   if(/ei isoa elettä|älä liikuta|ei dissolve|ei dialogia|ei vihaiselta/.test(low)&&!low.includes('loukkaantuneelta')){add('note',target,line,ref);recognized=true;}
   if(/puheli[mn]|phone/.test(low)&&/katsoo|vilkaisee|looks? at|glances?/.test(low)){add('gaze',target,'phone',ref);recognized=true;}
+  else if(/kamera|katsoja|yleisö|camera|viewer|audience|lens/.test(low)&&/katso|vilkais|tuijott|katse|looks?|glances?|stares?/.test(low)){add('gaze',target,'camera',ref);recognized=true;}
   else if(/katsoo|vilkaisee|tuijottaa|looks? at|glances?/.test(low)){const other=p.characters.find(s=>s!==target&&normalizeSpeaker(line).includes(s))??p.characters.find(s=>s!==target);if(other){add('gaze',target,other,ref);recognized=true;}}
   if(!phoneAction&&/näyttää puhelin|shows? (?:the |a )?phone/.test(low)){add('action',target,'show_phone',ref);recognized=true;}
-  const expr=/vihai|angry/.test(low)?'angry':/huolest|worried/.test(low)?'worried':/loukkaant|hurt/.test(low)?'mildly_hurt':/confused|miettii/.test(low)?'confused':/pokerinaam|ilmeetön|vain tuijottaa|dead stare/.test(low)?'dead_stare':/kulmakar|eyebrow/.test(low)?'eyebrow_raise':undefined;
+  const expr=/vihai|angry/.test(low)?'angry':/huolest|worried/.test(low)?'worried':/loukkaant|hurt/.test(low)?'mildly_hurt':/confused|miettii/.test(low)?'confused':/pokerinaam|ilmeetön|vain tuijottaa|dead stare/.test(low)?'dead_stare':/kulmakar|eyebrow/.test(low)?'eyebrow_raise':/hymyil|iloi|nauraa|nauroi|virnist|smil|grin|laugh|cheerful/.test(low)&&!/(?:^|\s)(ei|not|never)\s+\S*\s*(hymyil|smil)/.test(low)?'happy':/pelk[äa]|pelästy|peloissa|pelokas|kauhistu|scared|afraid|frighten|terrified/.test(low)?'scared':/surullis|murheellis|alakulois|itkee|itki|suree|\bsad\b|cries|crying|tearful/.test(low)?'sad':undefined;
   if(expr){add('expression',target,expr,ref,{after:/sanoo tämän/.test(low)?lastDialogue:undefined});recognized=true;}
   if(!recognized){add('note',target,line,ref);p.diagnostics.push({code:'review-instruction',severity:'warning',message:'Tarkistettava ohje: '+line});}
  }
