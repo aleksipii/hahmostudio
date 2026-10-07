@@ -382,3 +382,18 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Ei todennettu pilvessä:** M1-Mac, oikea canvas-piirto 60 fps, VideoToolbox-vienti, pakattu .app, kamera/mikrofoni, hiiren veto oikealla laitteella. `studio example playback render stays within regression budget` -aikarajatesti voi ylittyä raskaassa rinnakkaiskuormassa (ohimenevä, läpäisee yksinään).
 
 **Seuraava:** oikean Macin tarkistus (pakattu sovellus, vienti, ääni), juoksun lentovaihe, palikoiden vapaa sekuntiajoitus ja monivalinta, toon3d/kartonkipolun esineet.
+
+### 2.11 — Kokoro-yhteispeli ja käyttötesti oikealla käyttöliittymällä (2026-10-07)
+
+**Valmis:**
+- Rakentaja asettaa hahmoille Kokoro-oletusäänet (säilyttää käyttäjän valinnan) ja arvioi rivikohtaisesti `audioPlan.dialogue[].synth` (englanti = tuotettavissa, suomi/tyhjä = oma ääni). Tarkistukseen `voices-synth`/`voices-own`.
+- Käsikirjoitusnäkymään **Puuttuvat repliikkiäänet** -osio: *Luo puuttuvat repliikit Kokorolla* (vain Mac-sovellus; selaimessa vihje). Käynnistää paneelin synteesin vain riveille, joilla ei ole ääntä; oma/tuotu ääni ei koskaan ylikirjoitu, synteettiset merkitään.
+- Käyttötesti oikealla UI:lla (Playwright + Chromium, Vite dev, ei Electronia): löysi ja korjasi (1) marginaalin “Ei tunnistettu” rivillä “Hän pysähtyy ja katsoo Miraa.” (marginaali ei käyttänyt rakentajan hahmolöytöä), (2) palikkaeditori oli 280 px sivupalkissa → keskialueelle, (3) hetkelliset palikat 18 px ja päällekkäiset peittivät toisensa → rivitys raidan sisällä + minimileveys, (4) rakentajan vanha kuollut kaksoispalautus. Kuvat ja kulku `docs/ui-checks/`.
+- Todennettu oikeassa UI:ssa: Kokeile esimerkkiä → Rakenna jakso (2 hahmoa, 14 tapahtumaa, 7,2 s) → Vaihto+→ pidentää kestoa 0,5 s ja kirjoittaa rivin → hiiren veto venytyskahvasta → inspector.
+- `npm test` 1145 (1144 läpi, 1 ohitettu).
+
+**Mitattu:** palikkamuutoksen kokonaisviive UI:ssa 661 ms (dev-palvelin; tallennus + rakennus + renderöinti). Pelkkä rakennus < 100 ms. Tavoite “esikatselu alle 100 ms” täyttyy siis vain rakennuksen osalta; kokonaisviive vaatii optimointia (rakennus workeriin, kevyempi persistointi) ja mittauksen tuotantokoonnilla.
+
+**Ei todennettu:** Electron/Mac, Kokoro-synteesi oikealla mallilla (vain testimoottori), tuotantokoonti, trackpad-veto.
+
+**Seuraava:** mallipohjat (kohta 7), palikkamuutoksen viiveen pienentäminen, tarkistuksen yhden napin korjausehdotukset.

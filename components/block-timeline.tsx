@@ -11,6 +11,11 @@ export type BlockCommand=
  |{kind:'update';id:string;change:{value?:string;params?:Partial<BlockParams>}}
  |{kind:'insert';item:number;lane:string;time:number};
 
+const ROW_HEIGHT=28;
+/** Hetkelliset palikat (ilme, katse, kuva) saavat luettavan minimileveyden nimen pituuden mukaan. */
+const minWidth=(b:Block)=>Math.max(28,Math.min(150,b.label.length*7+18));
+/** Päällekkäiset palikat samalla raidalla jaetaan omille riveilleen (ahne pakkaus alkuajan mukaan). */
+export function packLane(list:Block[],pps:number){const rowsEnd:number[]=[],items:{b:Block;row:number}[]=[];for(const b of [...list].sort((x,y)=>x.start-y.start||x.line-y.line)){const left=b.start*pps,w=Math.max(minWidth(b),(b.duration||.3)*pps);let row=rowsEnd.findIndex(end=>end<=left+1);if(row<0){row=rowsEnd.length;rowsEnd.push(0);}rowsEnd[row]=left+w+2;items.push({b,row});}return {rows:Math.max(1,rowsEnd.length),items};}
 const fmt=(n:number)=>(Math.round(n*100)/100).toString().replace('.',',');
 const laneName=(lane:string)=>lane==='kamera'?'Kamera':lane==='näyttämö'?'Näyttämö':lane==='ääni'?'Ääni':displayName(lane);
 /** Ruudunlukijan nimi: hahmo · tyyppi: nimi · alku · kesto. */
@@ -54,10 +59,10 @@ export default function BlockTimeline({presentation,selected,onSelect,onCommand,
    {lanes.map(lane=><div key={lane} className="block-lane" data-lane={lane} role="group" aria-label={'Raita: '+laneName(lane)} onDragOver={e=>{if(e.dataTransfer.types.includes('application/x-hahmo-block')){e.preventDefault();e.dataTransfer.dropEffect='copy';}}} onDrop={e=>drop(e,lane)}>
     <span className="block-lane__name">{laneName(lane)}</span>
     <div className="block-lane__track" style={{width}}>
-     {blocks.filter(b=>b.lane===lane).map(b=>{const d=drag?.id===b.id?drag:undefined,left=b.start*pixelsPerSecond+(d?.mode==='move'?d.dx:0),w=Math.max(18,(b.duration||.3)*pixelsPerSecond+(d?.mode==='stretch'?d.dx:0));
-      return <div key={b.id} className={`block block--${b.kind}${b.id===selected?' is-selected':''}${b.editable?'':' is-derived'}`} style={{left,width:w}} role="button" tabIndex={0} aria-pressed={b.id===selected} aria-label={blockAria(b)} aria-keyshortcuts="Enter ArrowLeft ArrowRight Shift+ArrowLeft Shift+ArrowRight Delete Control+D Meta+D" title={b.editable?b.lineText.trim():'Johdettu palikka (automaattinen kuva tai tehoste)'} onKeyDown={e=>onKey(e,b)} onClick={()=>onSelect(b.id)} onPointerDown={e=>down(e,b,'move')}>
+     {(()=>{const {rows,items}=packLane(blocks.filter(b=>b.lane===lane),pixelsPerSecond);return <div style={{height:rows*ROW_HEIGHT}}>{items.map(({b,row})=>{const d=drag?.id===b.id?drag:undefined,left=b.start*pixelsPerSecond+(d?.mode==='move'?d.dx:0),w=Math.max(minWidth(b),(b.duration||.3)*pixelsPerSecond+(d?.mode==='stretch'?d.dx:0));
+      return <div key={b.id} className={`block block--${b.kind}${b.id===selected?' is-selected':''}${b.editable?'':' is-derived'}`} style={{left,width:w,top:row*ROW_HEIGHT+3,height:ROW_HEIGHT-6}} role="button" tabIndex={0} aria-pressed={b.id===selected} aria-label={blockAria(b)} aria-keyshortcuts="Enter ArrowLeft ArrowRight Shift+ArrowLeft Shift+ArrowRight Delete Control+D Meta+D" title={b.editable?b.lineText.trim():'Johdettu palikka (automaattinen kuva tai tehoste)'} onKeyDown={e=>onKey(e,b)} onClick={()=>onSelect(b.id)} onPointerDown={e=>down(e,b,'move')}>
        <span className="block__label">{b.label}</span>{b.editable&&b.params.seconds!==undefined&&<span className="block__handle" aria-hidden="true" onPointerDown={e=>down(e,b,'stretch')}/>}
-      </div>;})}
+      </div>;})}</div>;})()}
     </div>
    </div>)}
   </div>
