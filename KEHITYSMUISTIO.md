@@ -288,3 +288,17 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Rajat:** äänitehosteita ja musiikkia ei vielä tuoteta (musiikkiohje kirjataan `audioPlan`iin). Muut esineet kuin puhelin mainitaan tarkistuksessa mutta eivät vielä kiinnity käteen. Tunnistin on sääntöpohjainen, ei vapaan kielen ymmärrys.
 
 **Seuraava:** vaihe B — esineiden tartuntapisteet (grip) ja käden maailmamatriisi joka ruudussa.
+
+### 2.5 — Vaihe B: esineet oikeasti kädessä (2026-10-07)
+
+**Valmis:**
+- `lib/held-props.ts`: tartuntapiste (grip) ja kulma esineen omassa koordinaatistossa; käden tartuntapiste `QuickProfile.grips` (valinnainen, validoitu, vanhat paketit toimivat — oletus on käsikerroksen keskipiste). Esineen matriisi = käden lopullinen maailmanmatriisi (`animationTransforms`) · grip · kulma · koko · (−esineen grip), joka ruudussa.
+- Kirjasto: puhelin, kahvikuppi, kirja, laukku, sateenvarjo — kukin alkuperäisenä 2D-vektoritaiteena kolmena näkymänä (edestä, sivulta, takaa). Profiilinäkymä valitsee sivunäkymän automaattisesti.
+- Piirtojärjestys: `paintAnimatedLayers(…, beneath)` piirtää esineen juuri käsikerroksen alle, joten sormet ovat esineen päällä. Laskettu esine jää laskuhetken paikkaan.
+- Käsikirjoitus: “Mira pitää kahvikuppia (oikeassa kädessä)”, “Niko ottaa kirjan vasempaan käteen”, “laskee kupin pöydälle”, “holds an umbrella” → `prop`-tapahtumat `hold:`/`drop:`. Resurssirivin pöytä sijoitetaan laskevan käden ulottuville laskuhetkellä (kaksi käännöstä, merkintä tarkistukseen).
+- Korjattu: puhelin-IK:n kohteet eivät seuranneet juuren siirtymää kävelyn jälkeen (kaikki puhelintoiminnot olivat “ulottumattomissa”); mikä tahansa rekvisiittatapahtuma kytki puhelimen pois; resurssirivin kalusteet katosivat 1 s jälkeen; vanha `scene.phone`-polku käyttää nyt samaa tartuntapistettä ja kiertyy käden mukana.
+- Hyväksyntätesti `lib/held-props.test.ts`: oikean `renderPresentation`-polun läpi mallikontekstilla jokainen ruutu, etu- ja sivunäkymä, molemmat kädet, siirto kädestä toiseen ja pöydälle lasku. Suurin etäisyys < 1e‑6 px (raja 0,5 px).
+
+**Rajat:** toon3d skinnaa puhelimen käsiluuhun (oli jo ennestään); muita esineitä toon3d- ja Mr.Kille/Handu-kartonkipolku ei vielä piirrä. Esineiden taide on yksinkertaista vektoria.
+
+**Seuraava:** vaihe C — liikekirjasto (ennakointi → toiminta → jälkiliike → asettuminen) ja laatumittarit.

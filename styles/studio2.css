@@ -871,3 +871,8 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
 .studio .series-builds li { display: flex; align-items: center; gap: 8px; }
 .studio .series-builds button[aria-current="true"] { border-color: var(--s2-accent, var(--accent)); }
 .studio .series-builds__meta { font: 11px var(--s2-mono, monospace); color: var(--s2-faint, var(--muted)); }
+/* Käteen otettavat esineet: kolme näkymää rinnakkain */
+.studio .held-prop-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; }
+.studio .held-prop-gallery li { display: grid; gap: 4px; padding: 6px; border: 1px solid var(--s2-line, var(--border)); border-radius: var(--s2-r, 6px); }
+.studio .held-prop-gallery span { display: flex; gap: 4px; }
+.studio .held-prop-gallery img { background: var(--s2-bg2, var(--bg-2)); border-radius: 4px; }

@@ -19,6 +19,10 @@ import {propLibrary} from './prop-library.ts';
 import {phoneActions} from './phone-actions.ts';
 import {functions,stableId,normalizeSpeaker,validatePresentation,type Presentation,type Event,type Ref,type Diagnostic,type Binding} from './presentation-model.ts';
 import type {Animation} from './animation-model.ts';
+import {heldPropFromWord} from './held-props.ts';
+import {stageActor,stageState} from './presentation-stage.ts';
+import {viewAtFrame} from './character-view.ts';
+import {animationTransforms} from './animation-transform.ts';
 
 /* ───────────────────────── Jaksojako ───────────────────────── */
 
@@ -179,6 +183,8 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
  const built=prepared.trimStart().startsWith('#!kilsat')?strictPresentation(prepared,aliasMap,options,diagnostics):recognizedPresentation(prepared,manifest,aliasMap,options,diagnostics);
  onStage?.('cast');
  const {p,lineOut,musicCues}=built,characters=p.characters;
+ // Resurssiriveillä lisätyt kalusteet pysyvät näyttämöllä koko jakson (kesto ei ole vielä tiedossa jäsennyksessä).
+ for(const prop of p.production?.props??[])if(prop.id.startsWith('res-manifest-'))prop.end=1200;
  if(options.width||options.height){p.world.width=options.width??p.world.width;p.world.height=options.height??p.world.height;}
  // Roolitus.
  const cast=planCast(characters,library.packs,{resources,handles,defaults:library.defaults});
@@ -195,7 +201,14 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
  if(options.previous)p.audioClips=structuredClone(options.previous.audioClips.filter(a=>p.events.some(e=>e.id===a.dialogue&&e.kind==='dialogue')));
  onStage?.('motion');
  const validated=validatePresentation(p);
- const compiled=compilePresentation(validated,library.assets,fps);
+ let compiled=compilePresentation(validated,library.assets,fps);
+ // Resurssirivin pöytä ilman sijaintia sijoitetaan laskevan käden ulottuville laskuhetkellä (kaksi käännöstä, deterministinen).
+ const table=validated.production?.props?.find(v=>v.asset==='table-prop-v1'&&v.id.startsWith('res-manifest-')),dropper=compiled.events.find(e=>(e.kind==='action'&&e.value==='phone_down')||(e.kind==='prop'&&e.value.startsWith('drop:')));
+ if(table&&dropper){const b=compiled.bindings.find(x=>x.speaker===dropper.target),asset=b?library.assets[b.asset]:undefined,a=b?compiled.actorAnimations?.[b.speaker]:undefined,q=asset?.doc.quick;
+  if(b&&asset&&a&&q){const t=dropper.at??0,frame=Math.max(0,Math.min(a.duration-1,Math.round(t*fps))),world=stageState(compiled,t),hand=dropper.kind==='action'?world.phone.hand:world.held.find(h=>h.carrier===b.speaker&&h.id===dropper.value.slice(5))?.hand??'rightHand',roles=q.views?.[viewAtFrame(q,a,frame)]??q.roles,part=a.rig.parts.find(x=>x.key===roles[hand]),m=part?animationTransforms(a,frame).get(part.key):undefined;
+   if(part&&m){const r=stageActor(compiled,b,t),size=Math.min(compiled.world.width,compiled.world.height)*table.scale,hx=m.a*part.pivot.x+m.c*part.pivot.y+m.e,hy=m.b*part.pivot.x+m.d*part.pivot.y+m.f,target={x:hx+(hx>asset.doc.width/2?25:-25),y:hy-15};
+    table.x=Math.max(.05,Math.min(.95,(r.x+(target.x-asset.doc.width/2)*r.scale)/compiled.world.width));table.y=Math.max(.05,Math.min(.98,(r.y+(target.y-asset.doc.height/2)*r.scale+size*.25+20*r.scale)/compiled.world.height));
+    compiled=compilePresentation(validated,library.assets,fps);diagnostics.push({code:'table-placed',severity:'warning',message:`Pöytä sijoitettiin hahmon ${b.speaker} ulottuville laskuhetkellä. Siirrä pöytää tarvittaessa näyttämöllä.`});}}}
  onStage?.('audio');
  const dialogueLines=compiled.events.filter(e=>e.kind==='dialogue');
  let at=0;const music=musicCues.map(m=>{const next=compiled.events.find(e=>e.sourceRef.line>m.line);at=next?.at??compiled.seconds;return {...m,at,status:(m.off?'stopped':m.file?'imported':m.mood?'generated':'unknown') as EpisodeAudioPlan['music'][number]['status']};});
@@ -218,7 +231,7 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
  const rawLines=prepared.replace(/\r\n?/g,'\n').split('\n');
  let characters=[...new Set(recognized.characters.map(resolveName))];
  // Vain hahmot, joilla on repliikki tai toimintaa, tulevat näyttämölle.
- const active=new Set<string>();for(const l of recognized.lines){if(l.speaker)active.add(resolveName(l.speaker));for(const c of l.clauses)if('actor' in c&&c.actor&&c.actor!=='*')active.add(resolveName(c.actor));for(const s of l.shot??[])if(s.target)active.add(resolveName(s.target));}
+ const active=new Set<string>();for(const l of recognized.lines){if(l.speaker)active.add(resolveName(l.speaker));for(const c of l.clauses)if('actor' in c&&c.actor&&c.actor!=='*')active.add(resolveName(c.actor));for(const s of l.shot??[])if(s.target)active.add(resolveName(s.target));if(l.kind==='direction'||l.kind==='unknown'){const first=l.text.match(/^([\p{Lu}][\p{L}'-]*)/u)?.[1];if(first&&characters.includes(resolveName(first)))active.add(resolveName(first));}}
  characters=characters.filter(c=>active.has(c));
  if(characters.length>4){diagnostics.push({code:'too-many-characters',severity:'error',message:'Jaksossa voi olla enintään neljä hahmoa näyttämöllä. Mukana: '+characters.slice(0,4).join(', ')+'. Ohitettu: '+characters.slice(4).join(', ')+'. Jaa kohtaus tai jakso.'});characters=characters.slice(0,4);}
  const title=options.title??recognized.lines.find(l=>l.metadata&&['title','episode'].includes(l.metadata.key))?.metadata?.value??'Jakso';
@@ -285,7 +298,15 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
    case'dialogue':{const who=l.speaker?actorOf(l.speaker):speaker;const text=(l.dialogue??l.text).replace(/^[“"„«]|[”"»]$/g,'').trim();if(!who||who==='*'){warnUnknown(ref,l.text,'Repliikin puhujaa ei tunnistettu.');outcome='unrecognized';break;}
     if(dialogue&&dialogue.target===who&&!/^[“"„«]/.test(l.text)){dialogue.text=(dialogue.text+' '+text).trim();lineOut.push({line:l.line,kind:l.kind,outcome:'event',events:[dialogue.id]});continue;}
     const e=add('dialogue',who,'neutral_talk',ref,{text,basis:'estimate'});dialogue=e;lastActor=who;require('dialogue',ref,'estimated',[e.id]);break;}
-   case'direction':case'unknown':{const r=clauseEvents(l.clauses,ref,/^(samalla|meanwhile)\b/i.test(l.text)?p.events.filter(e=>e.kind==='dialogue').at(-1)?.id:undefined);if(!l.clauses.length){warnUnknown(ref,l.text);outcome='unrecognized';}else if(r.unknown&&!r.events.length)outcome='unrecognized';break;}
+   case'direction':case'unknown':{
+    // Käteen otettavat esineet (kahvikuppi, kirja, laukku, sateenvarjo): suljettu sanasto, ei osamerkkijonoja.
+    const rest:Clause[]=[];let heldEvents=0;
+    for(const c of l.clauses){const held=heldPropClause(c.text);if(!held||(c.type!=='unknown'&&c.type!=='note'&&!(c.type==='phone'&&held.id!=='phone-v1'))){rest.push(c);continue;}
+     const named=('actor' in c&&c.actor?actorOf(c.actor):'')||characters.find(n=>(c.text.toLocaleLowerCase('fi-FI').match(/[\p{L}]+/gu)??[]).some(w=>stemMatch(w,n.toLocaleLowerCase('fi-FI'))))||(/^(hän|he|she)\b/i.test(c.text)?lastActor:'')||lastActor;
+     if(!named||named==='*'){rest.push(c);continue;}lastActor=named;
+     const e=add('prop',named,held.verb+':'+held.id,ref,held.hand?{text:held.hand}:{});heldEvents++;require('prop',ref,'implemented',[e.id]);}
+    if(heldEvents&&!rest.length)break;
+    const r=clauseEvents(rest,ref,/^(samalla|meanwhile)\b/i.test(l.text)?p.events.filter(e=>e.kind==='dialogue').at(-1)?.id:undefined);if(!l.clauses.length){warnUnknown(ref,l.text);outcome='unrecognized';}else if(r.unknown&&!r.events.length)outcome='unrecognized';break;}
   }
   const created=p.events.slice(before).map(e=>e.id);
   lineOut.push({line:l.line,kind:l.kind,outcome:created.length?'event':outcome,events:created});
@@ -293,7 +314,7 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
  // Resurssi-, tunnus- ja aliasrivit: roolitus ja taustat.
  for(const r of manifest.resources)if(r.kind==='prop'&&!resolveManifestProp(r.propId??r.label))diagnostics.push({code:'prop-missing',severity:'error',message:`Rivi ${r.sourceLine}: esinettä ei ole kirjastossa: ${r.label}`});
  // Esineet, jotka mainitaan mutta joita ei vielä kiinnitetä käteen (puhelin on erikseen).
- const mentioned=new Set<string>();for(const l of recognized.lines){if(l.kind!=='direction'&&l.kind!=='unknown')continue;const tokens=l.text.toLocaleLowerCase('fi-FI').match(/[\p{L}]+/gu)??[];for(const prop of propLibrary){if(prop.id==='phone-prop-v1')continue;const name=prop.name.toLocaleLowerCase('fi-FI');if(tokens.some(w=>w.startsWith(name)&&caseTail.test(w.slice(name.length))))mentioned.add(prop.name);}}
+ const mentioned=new Set<string>();for(const l of recognized.lines){if(l.kind!=='direction'&&l.kind!=='unknown')continue;if(p.events.some(e=>e.kind==='prop'&&e.sourceRef.line===l.line&&/^(hold|drop):/.test(e.value)))continue;const tokens=l.text.toLocaleLowerCase('fi-FI').match(/[\p{L}]+/gu)??[];for(const prop of propLibrary){if(prop.id==='phone-prop-v1')continue;const name=prop.name.toLocaleLowerCase('fi-FI');if(tokens.some(w=>w.startsWith(name)&&caseTail.test(w.slice(name.length))))mentioned.add(prop.name);}}
  for(const name of mentioned)diagnostics.push({code:'prop-mention',severity:'warning',message:'Esine “'+name+'” mainitaan ohjeessa. Lisää se tarvittaessa rivillä “Resurssi esine: '+name+'”.'});
  // Oletuskuvat: ilman yhtään kuvaohjetta yleiskuva alkuun ja puolikuva puhujanvaihdoissa (merkitty arvioiduiksi).
  if(!hasShot&&p.events.length){const ordered:Event[]=[];let current='';const first=p.events.find(e=>e.kind!=='environment')??p.events[0];for(const e of p.events){if(e===first){ordered.push({...e,id:'shot-wide-'+e.id,kind:'shot',target:'scene',value:'wide',text:undefined,seconds:undefined,after:undefined,basis:'estimate'});current='scene';}if(e.kind==='dialogue'&&current!==e.target&&characters.length>1){ordered.push({...e,id:'shot-'+e.id,kind:'shot',value:'medium',text:undefined,basis:'estimate'});current=e.target;}ordered.push(e);}p.events=ordered;}
@@ -325,6 +346,16 @@ export function buildSeries(scriptText:string,library:EpisodeLibrary,options:Bui
 
 /** Sidosfunktio on tuettu vain, jos paketissa on sen tarvitsemat osat (samat vaatimukset kuin kääntäjässä). */
 export function packFunctions(roles:Record<string,string|undefined>|undefined,hand:'leftHand'|'rightHand'):Record<string,string>{const need:Record<string,string[]>={neutral_talk:['mouthNeutral','mouthOpen'],worried:['leftBrow','rightBrow'],confused:['leftBrow','rightBrow'],mildly_hurt:['leftBrow','rightBrow'],angry:['leftBrow','rightBrow'],look_at_phone:['leftPupil','rightPupil'],look_at_other_character:['leftPupil','rightPupil'],show_phone:[hand==='leftHand'?'leftArm':'rightArm',hand==='leftHand'?'leftForearm':'rightForearm',hand],eyebrow_raise:['leftBrow'],dead_stare:['root','head']};return Object.fromEntries(functions.map(f=>[f,roles&&(need[f]??[]).every(k=>roles[k])?'supported':'none']));}
+const holdVerb=/^(pitää|pitelee|piteli|pitävät|kantaa|kantoi|kantavat|ottaa|otti|ottavat|nostaa|nosti|tarttuu|tarttui|kädessä|kädessään|käteensä|holds|held|holding|carries|carried|carrying|takes|took|grabs|grabbed|picks|picked|with)$/u;
+const dropVerb=/^(laskee|laski|laskevat|jättää|jätti|pudottaa|pudotti|panee|pani|asettaa|asetti|puts|put|sets|set|drops|dropped|leaves|left)$/u;
+/** “Mira pitää kahvikuppia” → hold:mug-prop-v1, “Mira laskee kirjan pöydälle” → drop:book-prop-v1. Puhelin kulkee omaa reittiään. */
+export function heldPropClause(text:string):{verb:'hold'|'drop';id:string;hand?:'leftHand'|'rightHand'}|undefined{
+ const words=text.toLocaleLowerCase('fi-FI').match(/[\p{L}]+/gu)??[];
+ const prop=words.map(w=>heldPropFromWord(w)).find(h=>h&&h.id!=='phone-v1');if(!prop)return;
+ const drop=words.some(w=>dropVerb.test(w))&&!/\bleft hand\b/i.test(text),hold=words.some(w=>holdVerb.test(w));if(!drop&&!hold)return;
+ const hand=/vasem\p{L}*\s+kä|left hand/iu.test(text)?'leftHand':/oike\p{L}*\s+kä|right hand/iu.test(text)?'rightHand':undefined;
+ return {verb:drop?'drop':'hold',id:prop.id,...(hand?{hand}:{})};
+}
 /** Kirjaston hahmopaketit roolitusta varten (nimet ilman tiedostopäätettä). */
 export function catalogFromNames(names:readonly string[]):CastPack[]{return [...new Set([...names,...Object.keys(castPackAliases)])].map(id=>({id,name:id.replace(/-(3D|Monikulma|Studio|Oma)$/i,''),aliases:castPackAliases[id]}));}
 /** Ne paketit, jotka käsikirjoitus tarvitsee (UI lataa ne ennen rakennusta). */
@@ -334,7 +365,7 @@ export function packsNeeded(scriptText:string,packs:CastPack[],defaults?:string[
   const handles=parseSpeakerHandleAliases(source.text),prepared=applySpeakerHandlesToScript(source.text,handles),aliases=speakerHandlesToPresentationAliases(handles);
   const r=recognizeScript(prepared,[],{discoverActors:true}),resolve=(n:string)=>{const k=normalizeSpeaker(n);return normalizeSpeaker(aliases[k]??k);};
   const resources:Record<string,string>={};for(const x of parseScriptResourceManifest(prepared).resources)if(x.kind==='character'&&x.speaker&&x.assetKey)resources[resolve(x.speaker)]=x.assetKey;
-  const active=new Set<string>();for(const l of r.lines){if(l.speaker)active.add(resolve(l.speaker));for(const c of l.clauses)if('actor' in c&&c.actor&&c.actor!=='*')active.add(resolve(c.actor));}
+  const all=[...new Set(r.characters.map(resolve))],active=new Set<string>();for(const l of r.lines){if(l.speaker)active.add(resolve(l.speaker));for(const c of l.clauses)if('actor' in c&&c.actor&&c.actor!=='*')active.add(resolve(c.actor));for(const s of l.shot??[])if(s.target)active.add(resolve(s.target));if(l.kind==='direction'||l.kind==='unknown'){const first=l.text.match(/^([\p{Lu}][\p{L}'-]*)/u)?.[1];if(first&&all.includes(resolve(first)))active.add(resolve(first));}}
   for(const c of planCast([...new Set(r.characters.map(resolve))].filter(c=>active.has(c)).slice(0,4),packs,{resources,handles,defaults}))if(c.pack&&packs.some(p=>p.id===c.pack))out.add(c.pack);
  }
  return [...out].sort();
