@@ -1,3 +1,7 @@
+# Unreleased
+
+- Pilvirenderöinti (tekoäly) lisäosana: kanoninen tila, deterministinen tarkistus, nollakustannuskytkin, ComfyUI-/Mock-taustajärjestelmät, Google Drive -tallennus ja suomenkielinen valintaikkuna. Dokumentaatio: docs/cloud-render/.
+
 # 0.35.0
 
 - Ammattimainen kompakti oranssi työpöytäasettelu ja natiivivalikot.

@@ -270,6 +270,15 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 
 **Seuraava:** cloud-tehtävän vaihe A (yhden painalluksen jaksonrakennus).
 
+### E0 — Paikallinen Kokoro-puhe (2026-10-07)
+
+**Kehitysvaihe:** E0, ennen äänitehosteita ja musiikkia.
+
+**Valmis (kooditestit, testimoottori):** Kokoro-ydin (`lib/kokoro.ts`), malli käyttäjän luvalla tietokansioon, työprosessimoottori ja kapea IPC, Kokoro-paneeli (ääni hahmolle, Tuota ääninauha, Tuota uudelleen, huomautukset), merkintä Kokoro · synteettinen, `AudioClip.synthetic` ja `Binding.kokoroVoice`. Oma ääni ei ylikirjoitu. Katso DEVELOPMENT-E0.md.
+
+**Todentamatta:** ajo oikealla mallilla, mallin lataus, muisti ja nopeus (Mac), pakettiin liittäminen.
+
+**Seuraava:** mittaus ja tarkisteiden kiinnitys Macilla; sitten vaihe E.
 ### 2.4 — Cloud-tehtävä vaihe A: Rakenna jakso yhdellä painalluksella (haara `cloud/kasikirjoitus-sarjaksi`, 2026-10-07)
 
 **Kehitysvaihe:** käsikirjoituksesta katsottava jakso yhdellä kumottavalla muutoksella.
@@ -340,7 +349,7 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 - Korjattu samalla: istumisen IK nosti vinossa olevan jalan 40 px ilmaan; etunäkymän kävely taivutti polvet eri suuntaan kuin istuminen (jalka painui lattian alle noustessa).
 - Testit `lib/soundtrack.test.ts`: askel ±1 ruutu tukivaiheen alusta (riippumaton tunnistus), ducking > 8 dB, kolme lähdettä miksauksessa ja viennin WAV-polussa, determinismi.
 
-**Rajat / todentamatta:** puhesynteesiä ei ole (vain tuodut/äänitetyt repliikit). MP4:n AAC-koodaus (WebCodecs/VideoToolbox/FFmpeg) ja kuuntelu oikealla Macilla todentamatta pilvessä; testattu PCM/WAV-taso. Tehosteiden ja musiikin äänenlaatu on yksinkertaista synteesiä.
+**Rajat / todentamatta:** tämä vaihe ei tuota repliikkejä; repliikit ovat tuotuja, äänitettyjä tai erillisen Kokoro-vaiheen (E0) synteettisiä. MP4:n AAC-koodaus (WebCodecs/VideoToolbox/FFmpeg) ja kuuntelu oikealla Macilla todentamatta pilvessä; testattu PCM/WAV-taso. Tehosteiden ja musiikin äänenlaatu on yksinkertaista synteesiä.
 
 **Seuraava:** vaihe F — palikkaeditori (tapahtuma = palikka, kaksisuuntainen synkronointi tekstiin).
 
