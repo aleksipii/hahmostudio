@@ -2,7 +2,7 @@
 
 `ModelDefinition` records `source`, `revision`, `license`, `commercialUse` (`allowed|restricted|unknown|not-allowed`), `licenseEvidenceUrl`, `licenseCheckedAt`, optional file checksums.
 
-PRODUCTION_SAFE requires: `commercialUse==="allowed"`, evidence URL, check date, a pinned 40-hex revision, and (when present) valid SHA-256s. DEVELOPMENT mode relaxes only the licence/evidence/pin requirements, never cost.
+PRODUCTION_SAFE requires: `commercialUse==="allowed"`, evidence URL, check date, a pinned 40-hex revision, **and pinned files with valid SHA-256s** (unknown checksum = not production-safe). DEVELOPMENT mode relaxes only the licence/evidence/pin requirements, never cost.
 
 Rules enforced by tests:
 - Apache-2.0 is accepted only when the metadata says `allowed` with evidence; an `apache-2.0` string alone is not trusted.

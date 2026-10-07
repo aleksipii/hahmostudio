@@ -7,21 +7,24 @@ import {validateSuggestion} from './ai-validator.ts';
 import {validateContinuity} from './continuity.ts';
 import {compilePrompt,PROMPT_COMPILER_VERSION} from './prompt-compiler.ts';
 import {lockMatches,lockScene,type SceneLock} from './scene-lock.ts';
-import {ModelRouter,assessModel} from './models.ts';
+import {ModelRouter,assessModel,type ModelRegistry} from './models.ts';
 import {WorkflowRegistry} from './workflows.ts';
 import {BackendRegistry} from './backends.ts';
 import {ComputeCostGate,PaidComputeFirewall,assertPolicyInvariant,blockedMessage,costViolations,type ExecutionToken} from './compute.ts';
 import {CharacterReferenceSystem} from './character-refs.ts';
 import {AuditLog,type RenderRecord} from './audit.ts';
+import type {Issue} from './continuity.ts';
+import type {Check} from './ai-validator.ts';
 import {validateOutput,type OutputInspector,type OutputStrictness} from './output-validation.ts';
+import {LiveVerificationLedger} from './live-verification.ts';
 import {getJson,putJson,type AssetRef,type StorageBackend} from './storage.ts';
 
-export type RenderRequest={projectId:string;sceneId:string;workflowId:string;modelId?:string;backendId?:string;useAI?:boolean;seed?:number;outputFormat?:string;params?:Partial<RenderParams>;requestedBy:string};
+export type RenderRequest={projectId:string;sceneId:string;workflowId:string;modelId?:string;backendId?:string;useAI?:boolean;seed?:number;outputFormat?:string;params?:Partial<RenderParams>;requestedBy:string;/** Fingerprint from /api/render/preflight; binds the render to the authorization the user saw. */authorizationFingerprint?:string};
 const POLICY_KEYS=/policy|cost|paid|fallback|budget|license|commercial|mode|canon|state|prompt|verify|lock/i;
 /** Strict request parsing. Policy-like fields are rejected loudly, not ignored: the client cannot influence server policy. */
 export function parseRenderRequest(raw:unknown,requestedBy:string):RenderRequest{
  if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Blocked('bad-request','Request must be an object.');
- const o=raw as Record<string,unknown>,allowed=['projectId','sceneId','workflowId','modelId','backendId','useAI','seed','outputFormat','params'];
+ const o=raw as Record<string,unknown>,allowed=['projectId','sceneId','workflowId','modelId','backendId','useAI','seed','outputFormat','params','authorizationFingerprint'];
  for(const k of Object.keys(o))if(!allowed.includes(k))throw new Blocked(POLICY_KEYS.test(k)?'client-policy-override':'bad-request',POLICY_KEYS.test(k)?`Field "${k}" is server-side policy and cannot be set by the client.`:`Unknown field "${k}".`);
  const id=(v:unknown,k:string,opt=false)=>{if(v===undefined&&opt)return undefined;if(typeof v!=='string'||!/^[A-Za-z0-9_.:-]{1,100}$/.test(v))throw new Blocked('bad-request',`Invalid ${k}.`);return v;};
  const p=(o.params??{}) as Record<string,unknown>;if(typeof p!=='object'||Array.isArray(p))throw new Blocked('bad-request','Invalid params.');
@@ -34,7 +37,13 @@ export function parseRenderRequest(raw:unknown,requestedBy:string):RenderRequest
  if(o.seed!==undefined&&(!Number.isSafeInteger(o.seed)||(o.seed as number)<0))throw new Blocked('bad-request','Invalid seed.');
  if(o.useAI!==undefined&&typeof o.useAI!=='boolean')throw new Blocked('bad-request','Invalid useAI.');
  const fmt=o.outputFormat===undefined?undefined:String(o.outputFormat);if(fmt!==undefined&&!['png','jpg','webp','mp4','webm','image','video'].includes(fmt))throw new Blocked('bad-request','Invalid outputFormat.');
- return{projectId:id(o.projectId,'projectId') as string,sceneId:id(o.sceneId,'sceneId') as string,workflowId:id(o.workflowId,'workflowId') as string,modelId:id(o.modelId,'modelId',true),backendId:id(o.backendId,'backendId',true),useAI:o.useAI as boolean|undefined,seed:o.seed as number|undefined,outputFormat:fmt,params,requestedBy};
+ if(o.authorizationFingerprint!==undefined&&!(typeof o.authorizationFingerprint==='string'&&/^[0-9a-f]{64}$/.test(o.authorizationFingerprint)))throw new Blocked('bad-request','Invalid authorizationFingerprint.');
+ return{authorizationFingerprint:o.authorizationFingerprint as string|undefined,projectId:id(o.projectId,'projectId') as string,sceneId:id(o.sceneId,'sceneId') as string,workflowId:id(o.workflowId,'workflowId') as string,modelId:id(o.modelId,'modelId',true),backendId:id(o.backendId,'backendId',true),useAI:o.useAI as boolean|undefined,seed:o.seed as number|undefined,outputFormat:fmt,params,requestedBy};
+}
+export type AuthorizationCard={status:'AUTHORIZED'|'BLOCKED';stage:string;reasons:string[];fingerprint?:string;workflowId:string;workflowRevision?:number;backend:{id:string;class:string;provider:string;enabled:boolean}|null;estimate:{estimatedCostEur:number|null;confidence:string;billingProvider:string}|null;maxCostEur:number;paidCompute:'ENABLED'|'DISABLED';paidFallback:'DISABLED';model:{id:string;revision?:string;license:string;commercialUse:string;checksumsPinned:boolean}|null;validation?:{status:string;issues:Issue[];checks:Check[]}};
+/** Hash of everything the user is shown. Computed only on the server; a client cannot forge a different policy by sending it. */
+export async function authorizationFingerprint(c:Pick<AuthorizationCard,'backend'|'estimate'|'maxCostEur'|'paidCompute'|'model'|'workflowId'|'workflowRevision'>&{policyMode:string;files:string[];projectId:string;sceneId:string}){
+ return sha256(new TextEncoder().encode(canonicalJson({b:c.backend,e:c.estimate,m:c.maxCostEur,p:c.paidCompute,model:c.model,f:c.files,w:c.workflowId,r:c.workflowRevision,pm:c.policyMode,proj:c.projectId,scene:c.sceneId})));
 }
 export class ProjectStore{
  private states=new Map<string,CanonicalState>();private locks=new Map<string,SceneLock>();
@@ -49,7 +58,7 @@ export class ProjectStore{
  unlock(projectId:string,sceneId:string){return this.locks.delete(projectId+'\0'+sceneId);}
  async restore(projectId:string){if(!this.storage)return;const a=await this.storage.listProjectAssets(projectId,'metadata');const f=a.find(x=>x.name==='canonical-state.json');if(f)this.states.set(projectId,validateCanonicalState(await getJson(this.storage,f)));}
 }
-export type ServiceDeps={projects:ProjectStore;storage:StorageBackend;backends:BackendRegistry;router:ModelRouter;workflows:WorkflowRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;refs:CharacterReferenceSystem;audit?:AuditLog;requireSceneLock?:boolean;inspector?:OutputInspector;strictness?:OutputStrictness;now?:()=>Date;maxActive?:number};
+export type ServiceDeps={projects:ProjectStore;storage:StorageBackend;backends:BackendRegistry;router:ModelRouter;workflows:WorkflowRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;refs:CharacterReferenceSystem;audit?:AuditLog;requireSceneLock?:boolean;inspector?:OutputInspector;strictness?:OutputStrictness;now?:()=>Date;maxActive?:number;/** Server config: a render must carry the fingerprint of a preflight that was AUTHORIZED. */requireAuthorizationFingerprint?:boolean;ledger?:LiveVerificationLedger};
 const HEX=(n:number)=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
 export class RenderService{
  readonly audit:AuditLog;private records=new Map<string,RenderRecord>();private active=new Map<string,{cancelled:boolean;backendId?:string;token?:ExecutionToken}>();
@@ -72,6 +81,31 @@ export class RenderService{
   const a=this.active.get(jobId);if(!a)return false;a.cancelled=true;
   const b=a.backendId?this.d.backends.get(a.backendId):undefined;if(b)await b.cancel(jobId,a.token).catch(()=>{});return true;
  }
+
+ /**
+  * Read-only authorization preview shown BEFORE execution. Runs the same planning and gate as a render, but contacts no provider,
+  * mints no execution token, writes nothing and downloads nothing.
+  */
+ async preflight(req:RenderRequest):Promise<AuthorizationCard>{
+  const now=(this.d.now??(()=>new Date()))().toISOString();
+  const job:RenderJob={id:'preflight',projectId:req.projectId,sceneId:req.sceneId,workflowId:req.workflowId,modelId:req.modelId??'',backendId:req.backendId,prompt:'',inputs:[],outputFormat:req.outputFormat??'image',requestedBy:req.requestedBy,createdAt:now,params:{width:1024,height:1024,steps:20,sampler:'euler',scheduler:'normal',cfg:5}};
+  const rec:RenderRecord={job,state:'QUEUED',history:[],versions:{ruleEngine:RULE_ENGINE_VERSION,aiDirector:AI_DIRECTOR_VERSION,promptCompiler:PROMPT_COMPILER_VERSION,aiDirectorId:'none'},scene:{revision:0},outputs:[],errors:[],providerContacted:false};
+  const policy=this.d.policy,base={workflowId:req.workflowId,maxCostEur:policy.maxCostEur,paidCompute:(policy.allowPaidCompute?'ENABLED':'DISABLED') as 'ENABLED'|'DISABLED',paidFallback:'DISABLED' as const};
+  const view=(m?:ReturnType<ModelRegistry['get']>)=>m?{id:m.id,revision:m.revision,license:m.license,commercialUse:m.commercialUse,checksumsPinned:!!m.files?.length}:null;
+  let stage='plan',model=req.modelId?this.d.router.registry.get(req.modelId):undefined,backendView:AuthorizationCard['backend']=null,estimate:AuthorizationCard['estimate']=null,wfRev:number|undefined=this.d.workflows.get(req.workflowId)?.revision;
+  const card=(status:'AUTHORIZED'|'BLOCKED',reasons:string[],extra:Partial<AuthorizationCard>={}):AuthorizationCard=>({status,stage,reasons,...base,workflowRevision:wfRev,backend:backendView,estimate,model:view(model),validation:rec.validation,...extra});
+  try{
+   const p=await this.plan(req,rec,true);model=p.model;wfRev=p.wf.revision;
+   backendView={id:p.backend.descriptor.id,class:p.backend.descriptor.class,provider:p.backend.descriptor.provider,enabled:p.backend.descriptor.enabled};
+   stage='cost';const auth=await this.gate.authorize(rec.job,p.backend,policy);estimate={estimatedCostEur:auth.estimate.estimatedCostEur,confidence:auth.estimate.confidence,billingProvider:auth.estimate.billingProvider};
+   if(!auth.authorized)return card('BLOCKED',auth.reasons);
+   const fp=await authorizationFingerprint({backend:backendView,estimate,maxCostEur:policy.maxCostEur,paidCompute:base.paidCompute,model:view(model),workflowId:p.wf.id,workflowRevision:p.wf.revision,policyMode:policy.mode,files:(p.model.files??[]).map(f=>f.sha256),projectId:req.projectId,sceneId:req.sceneId});
+   stage='authorized';return card('AUTHORIZED',[],{fingerprint:fp});
+  }catch(e){
+   if(e instanceof Blocked){const b=this.d.backends.get(req.backendId??'');if(b&&!backendView){backendView={id:b.descriptor.id,class:b.descriptor.class,provider:b.descriptor.provider,enabled:b.descriptor.enabled};}return card('BLOCKED',[e.message],{});}
+   return card('BLOCKED',['Preflight failed.']);
+  }
+ }
  private async set(rec:RenderRecord,state:RenderState){rec.state=state;rec.history.push({state,at:(this.d.now??(()=>new Date()))().toISOString()});await this.audit.append(rec.job.id,'state',{state});}
  private async block(rec:RenderRecord,e:Blocked,extra?:string[]){
   rec.blocked={code:e.code,banner:blockedMessage([...(extra??[]),e.message],rec.providerContacted)};rec.errors.push(e.message);await this.set(rec,'BLOCKED');
@@ -80,51 +114,14 @@ export class RenderService{
   const job=rec.job,ctl=this.active.get(job.id)!;
   try{
    await this.audit.append(job.id,'request',{...req});
+   if(this.d.requireAuthorizationFingerprint&&!req.authorizationFingerprint)throw new Blocked('authorization-required','A render must be started from an AUTHORIZED preflight (authorizationFingerprint is missing).');
    await this.set(rec,'VALIDATING');
-   // 2-4 canonical state, scene, scene validation, scene lock
-   const live=this.d.projects.get(req.projectId);if(!live)throw new Blocked('project-unknown',`Unknown project "${req.projectId}".`);
-   if(!own(live.scenes,req.sceneId))throw new Blocked('scene-unknown',`Unknown scene "${req.sceneId}".`);
-   const sceneIssues=validateContinuity(live,req.sceneId);if(sceneIssues.length)throw new Blocked('scene-invalid','Scene failed validation: '+sceneIssues.map(i=>i.message).join(' '));
-   const lock=this.d.projects.getLock(req.projectId,req.sceneId);let canon=live;
-   if(lock){if(!await lockMatches(lock,live))throw new Blocked('lock-stale','The approved scene lock no longer matches canon. Unlock and re-approve the scene.');canon=lock.snapshot;rec.scene={revision:live.revision,lockId:lock.id,lockHash:lock.hash};}
-   else if(this.d.requireSceneLock!==false)throw new Blocked('lock-missing','The scene is not approved and locked.');
-   else rec.scene={revision:live.revision};
-   // 5-8 AI context, suggestion, deterministic validation
-   const ctx=buildAIContext(canon,req.sceneId);
-   let director:AIDirector;if(req.useAI){if(!this.d.director)throw new Blocked('director-unavailable','No AI Director is configured.');director=this.d.director;}else director=new RuleBasedDirector();
-   rec.versions.aiDirector=director.version;rec.versions.aiDirectorId=director.id;
-   let raw:unknown;try{raw=await director.suggest(ctx);}catch{throw new Blocked('director-failed','The AI Director failed; nothing was rendered.');}
-   await this.audit.append(job.id,'ai-suggestion',{director:director.id,raw});
-   const v=validateSuggestion(canon,req.sceneId,raw);rec.validation={status:v.status,issues:v.issues,checks:v.checks};
-   await this.audit.append(job.id,'hallucination-checks',{status:v.status,issues:v.issues,checks:v.checks});
-   if(v.status!=='APPROVED'||!v.approved)throw new Blocked('ai-rejected','AI suggestion rejected: '+v.issues.map(i=>i.message).join(' '));
-   // 9 deterministic prompt
-   const prompt=compilePrompt(v.approved,canon,lock);job.prompt=prompt.prompt;job.negativePrompt=prompt.negativePrompt;
-   // 10-11 workflow, model, license
-   const wf=this.d.workflows.require(req.workflowId);rec.workflow={id:wf.id,revision:wf.revision};
-   const model=this.d.router.select({workflowId:req.workflowId,modelId:req.modelId,mode:this.d.modelMode,policy:this.d.policy});
-   if(!model.capabilities.includes(wf.requiredCapability))throw new Blocked('model-capability',`Model "${model.id}" lacks capability "${wf.requiredCapability}".`);
-   const m=assessModel(model,this.d.modelMode,this.d.policy);if(!m.ok)throw new Blocked('model-license',m.reasons.join(' '));
-   job.modelId=model.id;rec.model={id:model.id,revision:model.revision,license:model.license,commercialUse:model.commercialUse,source:model.source};
-   job.params={...job.params,...model.defaults,...req.params};
-   job.seed=req.seed??parseInt(HEX(4),16);
-   // inputs (storage only, no compute)
-   await this.d.refs.load(req.projectId,canon.scenes[req.sceneId].characterIds);
-   job.inputs=this.d.refs.resolve(req.projectId,canon.scenes[req.sceneId].characterIds,wf.requiresCharacterReference);
-   if(wf.requiresSourceImage&&!job.inputs.length)throw new Blocked('input-missing',`Workflow "${wf.id}" needs an approved reference image as source.`);
-   const bytes=new Map<string,Uint8Array>();for(const i of job.inputs){const ref=JSON.parse(i.storageRef??'null') as AssetRef|null;if(!ref)throw new Blocked('input-missing','Input has no storage reference.');bytes.set(i.assetId,await this.d.storage.downloadAsset(ref));}
-   if(job.outputFormat==='image'&&wf.kind==='video')job.outputFormat='video';
-   if(job.outputFormat==='image'&&wf.kind==='image')job.outputFormat='png';
-   if(job.outputFormat==='video')job.outputFormat='mp4';
-   // 12 backend
-   const backend=this.d.backends.select(req.backendId,d=>d.enabled&&this.d.policy.allowedBackendClasses.includes(d.class));
-   job.backendId=backend.descriptor.id;ctl.backendId=job.backendId;rec.backend={id:job.backendId,class:backend.descriptor.class,provider:backend.descriptor.provider};
-   const caps=await backend.getCapabilities();if(!caps.workflows.includes(wf.id))throw new Blocked('backend-capability',`Backend "${job.backendId}" does not support workflow "${wf.id}".`);
-   const sp=backend.staticValidate?.(job)??[];if(sp.length)throw new Blocked('backend-static',sp.join(' '));
+   const {model,backend,bytes}=await this.plan(req,rec,false);
    // 13-15 cost, gate, firewall
    await this.set(rec,'COST_CHECK');
    const auth=await this.gate.authorize(job,backend,this.d.policy);rec.cost=auth;await this.audit.append(job.id,'cost-authorization',auth);
    if(!auth.authorized)throw new Blocked('cost-blocked','Compute authorization failed.');
+   if(req.authorizationFingerprint){const live=await authorizationFingerprint({backend:{id:backend.descriptor.id,class:backend.descriptor.class,provider:backend.descriptor.provider,enabled:backend.descriptor.enabled},estimate:{estimatedCostEur:auth.estimate.estimatedCostEur,confidence:auth.estimate.confidence,billingProvider:auth.estimate.billingProvider},maxCostEur:this.d.policy.maxCostEur,paidCompute:this.d.policy.allowPaidCompute?'ENABLED':'DISABLED',model:{id:model.id,revision:model.revision,license:model.license,commercialUse:model.commercialUse,checksumsPinned:!!model.files?.length},workflowId:rec.workflow!.id,workflowRevision:rec.workflow!.revision,policyMode:this.d.policy.mode,files:(model.files??[]).map(f=>f.sha256),projectId:job.projectId,sceneId:job.sceneId});if(live!==req.authorizationFingerprint)throw new Blocked('authorization-changed','What was authorized no longer matches (backend, cost, model, workflow or policy changed). Run the preflight again.');}
    await this.set(rec,'AUTHORIZED');
    const token=await this.firewall.clear(job,backend,auth,this.d.policy);ctl.token=token;
    rec.reproducibility=await this.repro(job,rec,model.revision);await this.audit.append(job.id,'reproducibility',rec.reproducibility);
@@ -147,6 +144,11 @@ export class RenderService{
    await this.audit.append(job.id,'outputs',rec.outputs);
    await this.set(rec,'COMPLETED');
    await this.persist(rec);
+   if(this.d.ledger){
+    // liveVerified can only follow a fully completed, uploaded and audited render; the ledger re-checks all of it itself.
+    const r=await this.d.ledger.evaluate(rec,backend.descriptor.provider);rec.liveVerification=r;
+    await this.audit.append(job.id,'live-verification',r);await this.persist(rec);
+   }
    return rec;
   }catch(e){
    if(e instanceof Blocked&&!(ctl.cancelled)){
@@ -157,6 +159,51 @@ export class RenderService{
    await this.persist(rec).catch(()=>{});
    return rec;
   }
+ }
+ /** Steps 2-12 (no provider contact, no gate). With dry=true nothing is audited or downloaded. */
+ private async plan(req:RenderRequest,rec:RenderRecord,dry:boolean){
+  const job=rec.job,ctl=this.active.get(job.id),note=async(t:string,d:unknown)=>{if(!dry)await this.audit.append(job.id,t,d);};
+   // 2-4 canonical state, scene, scene validation, scene lock
+   const live=this.d.projects.get(req.projectId);if(!live)throw new Blocked('project-unknown',`Unknown project "${req.projectId}".`);
+   if(!own(live.scenes,req.sceneId))throw new Blocked('scene-unknown',`Unknown scene "${req.sceneId}".`);
+   const sceneIssues=validateContinuity(live,req.sceneId);if(sceneIssues.length)throw new Blocked('scene-invalid','Scene failed validation: '+sceneIssues.map(i=>i.message).join(' '));
+   const lock=this.d.projects.getLock(req.projectId,req.sceneId);let canon=live;
+   if(lock){if(!await lockMatches(lock,live))throw new Blocked('lock-stale','The approved scene lock no longer matches canon. Unlock and re-approve the scene.');canon=lock.snapshot;rec.scene={revision:live.revision,lockId:lock.id,lockHash:lock.hash};}
+   else if(this.d.requireSceneLock!==false)throw new Blocked('lock-missing','The scene is not approved and locked.');
+   else rec.scene={revision:live.revision};
+   // 5-8 AI context, suggestion, deterministic validation
+   const ctx=buildAIContext(canon,req.sceneId);
+   let director:AIDirector;if(req.useAI){if(!this.d.director)throw new Blocked('director-unavailable','No AI Director is configured.');director=this.d.director;}else director=new RuleBasedDirector();
+   rec.versions.aiDirector=director.version;rec.versions.aiDirectorId=director.id;
+   let raw:unknown;try{raw=await director.suggest(ctx);}catch{throw new Blocked('director-failed','The AI Director failed; nothing was rendered.');}
+   await note('ai-suggestion',{director:director.id,raw});
+   const v=validateSuggestion(canon,req.sceneId,raw);rec.validation={status:v.status,issues:v.issues,checks:v.checks};
+   await note('hallucination-checks',{status:v.status,issues:v.issues,checks:v.checks});
+   if(v.status!=='APPROVED'||!v.approved)throw new Blocked('ai-rejected','AI suggestion rejected: '+v.issues.map(i=>i.message).join(' '));
+   // 9 deterministic prompt
+   const prompt=compilePrompt(v.approved,canon,lock);job.prompt=prompt.prompt;job.negativePrompt=prompt.negativePrompt;
+   // 10-11 workflow, model, license
+   const wf=this.d.workflows.require(req.workflowId);rec.workflow={id:wf.id,revision:wf.revision};
+   const model=this.d.router.select({workflowId:req.workflowId,modelId:req.modelId,mode:this.d.modelMode,policy:this.d.policy});
+   if(!model.capabilities.includes(wf.requiredCapability))throw new Blocked('model-capability',`Model "${model.id}" lacks capability "${wf.requiredCapability}".`);
+   const m=assessModel(model,this.d.modelMode,this.d.policy);if(!m.ok)throw new Blocked('model-license',m.reasons.join(' '));
+   job.modelId=model.id;rec.model={id:model.id,revision:model.revision,license:model.license,commercialUse:model.commercialUse,source:model.source};
+   job.params={...job.params,...model.defaults,...req.params};
+   job.seed=req.seed??parseInt(HEX(4),16);
+   // inputs (storage only, no compute)
+   await this.d.refs.load(req.projectId,canon.scenes[req.sceneId].characterIds);
+   job.inputs=this.d.refs.resolve(req.projectId,canon.scenes[req.sceneId].characterIds,wf.requiresCharacterReference);
+   if(wf.requiresSourceImage&&!job.inputs.length)throw new Blocked('input-missing',`Workflow "${wf.id}" needs an approved reference image as source.`);
+   const bytes=new Map<string,Uint8Array>();if(!dry)for(const i of job.inputs){const ref=JSON.parse(i.storageRef??'null') as AssetRef|null;if(!ref)throw new Blocked('input-missing','Input has no storage reference.');bytes.set(i.assetId,await this.d.storage.downloadAsset(ref));}
+   if(job.outputFormat==='image'&&wf.kind==='video')job.outputFormat='video';
+   if(job.outputFormat==='image'&&wf.kind==='image')job.outputFormat='png';
+   if(job.outputFormat==='video')job.outputFormat='mp4';
+   // 12 backend
+   const backend=this.d.backends.select(req.backendId,d=>d.enabled&&this.d.policy.allowedBackendClasses.includes(d.class));
+   job.backendId=backend.descriptor.id;if(ctl)ctl.backendId=job.backendId;rec.backend={id:job.backendId,class:backend.descriptor.class,provider:backend.descriptor.provider};
+   const caps=await backend.getCapabilities();if(!caps.workflows.includes(wf.id))throw new Blocked('backend-capability',`Backend "${job.backendId}" does not support workflow "${wf.id}".`);
+   const sp=backend.staticValidate?.(job)??[];if(sp.length)throw new Blocked('backend-static',sp.join(' '));
+   return{canon,lock,model,wf,backend,bytes};
  }
  private async repro(job:RenderJob,rec:RenderRecord,revision?:string){
   const promptHash=await sha256(new TextEncoder().encode(job.prompt+'\0'+(job.negativePrompt??'')));

@@ -32,4 +32,5 @@ export type RenderRecord={
  reproducibility?:Record<string,unknown>;
  outputs:AssetRef[];errors:string[];blocked?:{code:string;banner:string};
  providerContacted:boolean;
+ liveVerification?:{promoted:boolean;missing:string[]};
 };

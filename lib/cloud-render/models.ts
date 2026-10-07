@@ -28,6 +28,7 @@ export function assessModel(m:ModelDefinition,mode:ModelMode,policy:ComputePolic
   if(m.commercialUse!=='allowed')r.push(`Commercial use is "${m.commercialUse}"; PRODUCTION_SAFE requires "allowed".`);
   if(!m.licenseEvidenceUrl||!m.licenseCheckedAt||Number.isNaN(Date.parse(m.licenseCheckedAt)))r.push('License evidence URL or check date is missing.');
   if(!m.revision)r.push('Model revision is not pinned.');
+  if(!m.files?.length)r.push('Model checksums are unknown: no pinned files with SHA-256.');
  }
  return{ok:!r.length,reasons:r};
 }

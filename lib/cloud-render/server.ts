@@ -1,4 +1,4 @@
-import {readFileSync} from 'node:fs';
+import {readFileSync,readdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {BackendRegistry,DisabledBackend} from './backends.ts';
 import {ComfyUIBackend} from './comfyui-backend.ts';
@@ -12,6 +12,7 @@ import {CharacterReferenceSystem} from './character-refs.ts';
 import {ProjectStore,RenderService} from './pipeline.ts';
 import {createCloudRenderApi} from './api.ts';
 import type {AIDirector} from './ai-suggestion.ts';
+import {LiveVerificationLedger,type ProvisionReceipt} from './live-verification.ts';
 
 export type Env=Record<string,string|undefined>;
 /**
@@ -32,7 +33,11 @@ export function createCloudRender(env:Env,dataDir:string,opts:{director?:AIDirec
  backends.register(new DisabledBackend({id:'runpod',class:'paid',provider:'runpod',billingProvider:'runpod',enabled:false}));
  backends.register(new DisabledBackend({id:'modal',class:'paid',provider:'modal',billingProvider:'modal',enabled:false}));
  const projects=new ProjectStore(storage),refs=new CharacterReferenceSystem(storage);
- const service=new RenderService({projects,storage,backends,router:new ModelRouter(models),workflows,policy,modelMode,director:opts.director,refs,requireSceneLock:true});
- const handle=createCloudRenderApi({service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id});
- return{handle,service,projects,policy,modelMode,storage,backends,models,refs,workflows};
+ // Receipts come from a directory on the SERVER (copied there by the operator), never from the browser.
+ const receiptsDir=env.HAHMOSTUDIO_PROVISION_RECEIPTS_DIR;
+ const receipts=():ProvisionReceipt[]=>{if(!receiptsDir)return[];try{return readdirSync(receiptsDir).filter(f=>f.endsWith('.json')).flatMap(f=>{try{const r=JSON.parse(readFileSync(resolve(receiptsDir,f),'utf8'));return r?.schema===1&&typeof r.repo==='string'&&typeof r.revision==='string'&&Array.isArray(r.files)?[r as ProvisionReceipt]:[];}catch{return[];}});}catch{return[];}};
+ const ledger=new LiveVerificationLedger({models,policy,mode:modelMode,storage,receipts});
+ const service=new RenderService({projects,storage,backends,router:new ModelRouter(models),workflows,policy,modelMode,director:opts.director,refs,requireSceneLock:true,requireAuthorizationFingerprint:true,ledger});
+ const handle=createCloudRenderApi({service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id,ledger});
+ return{handle,service,projects,policy,modelMode,storage,backends,models,refs,workflows,ledger};
 }

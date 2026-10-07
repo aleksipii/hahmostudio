@@ -9,10 +9,12 @@ import type {WorkflowRegistry} from './workflows.ts';
 import {parseRenderRequest,type ProjectStore,type RenderService} from './pipeline.ts';
 import {own,RuleViolation,RULE_ENGINE_VERSION} from './canonical.ts';
 import type {RenderJob} from './types.ts';
+import type {LiveVerificationLedger} from './live-verification.ts';
+import {smokeCheck} from './smoke.ts';
 
 export type ApiRequest={method:string;path:string;query?:URLSearchParams;body?:unknown;user:string};
 export type ApiResponse={status:number;body:unknown};
-export type ApiDeps={service:RenderService;projects:ProjectStore;models:ModelRegistry;workflows:WorkflowRegistry;backends:BackendRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;storageId:string};
+export type ApiDeps={service:RenderService;projects:ProjectStore;models:ModelRegistry;workflows:WorkflowRegistry;backends:BackendRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;storageId:string;ledger:LiveVerificationLedger};
 const ok=(body:unknown,status=200):ApiResponse=>({status,body});
 const err=(status:number,code:string,message:string):ApiResponse=>({status,body:{error:message,code}});
 const seg=(p:string)=>p.replace(/^\/api\//,'').split('/').map(decodeURIComponent);
@@ -43,7 +45,7 @@ export function createCloudRenderApi(d:ApiDeps){
    }
    if(s[0]==='backends'&&m==='GET'){
     const out=[];for(const b of d.backends.list()){const e=await b.estimateCost({} as RenderJob).catch(()=>({estimatedCostEur:null,confidence:'unknown' as const,billingProvider:'unknown'}));out.push({...b.descriptor,declaredCost:e,eligibleUnderPolicy:costViolations(b.descriptor,e,d.policy).length===0,capabilities:await b.getCapabilities()});}
-    return ok({backends:out,workflows:d.workflows.list().map(w=>({id:w.id,revision:w.revision,title:w.title,implemented:w.implemented,liveVerified:w.liveVerified}))});
+    return ok({backends:out,workflows:await Promise.all(d.workflows.list().map(async w=>({id:w.id,revision:w.revision,title:w.title,implemented:w.implemented,liveVerified:await d.ledger.isVerified(w.id)})))});
    }
    if(s[0]==='projects'){
     if(!s[1]&&m==='GET')return ok({projects:d.projects.list()});
@@ -68,7 +70,19 @@ export function createCloudRenderApi(d:ApiDeps){
     }
     return err(404,'not-found','Not found.');
    }
+   if(s[0]==='live-verification'){
+    if(!s[1]&&m==='GET')return ok(d.ledger.list());
+    if(s[1]==='smoke'&&m==='POST'){
+     const id=(r.body as {backendId?:string}|undefined)?.backendId??d.backends.list().find(b=>b.descriptor.enabled)?.descriptor.id,b=id?d.backends.get(id):undefined;if(!b)return err(404,'backend-unknown','Unknown backend.');
+     const out=await smokeCheck(b,d.models,d.workflows,d.policy,d.modelMode);
+     if(!out.authorized)return ok({authorized:false,reasons:out.reasons,rows:[],note:'Blocked by the cost gate/firewall. No provider was contacted.'});
+     const recorded=await d.ledger.recordSmoke(b.descriptor.id,b.descriptor.provider,out.rows);
+     return ok({authorized:true,rows:out.rows,recorded,note:'Render-free check. A workflow becomes liveVerified only after a completed, uploaded, audited render.'});
+    }
+    return err(405,'live-verification-readonly','liveVerified cannot be set through the API.');
+   }
    if(s[0]==='render'){
+    if(s[1]==='preflight'&&m==='POST')return ok(await d.service.preflight(parseRenderRequest(r.body,r.user)));
     if(!s[1]&&m==='POST'){const q=parseRenderRequest(r.body,r.user);const {jobId,done}=d.service.start(q);done.catch(()=>{});return ok({jobId,record:d.service.get(jobId)},202);}
     if(!s[1]&&m==='GET')return ok({jobs:d.service.list()});
     if(s[1]&&!s[2]&&m==='GET'){const x=d.service.get(s[1]);return x?ok(x):err(404,'job-unknown','Unknown job.');}
