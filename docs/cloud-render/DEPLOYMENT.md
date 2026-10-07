@@ -1,6 +1,7 @@
 # Deployment
 
 1. `npm ci && npm run build:private`.
+1b. Pin models (your machine, network needed, metadata only): `PINS_OUT=pins.json HF_TOKEN=... node --experimental-strip-types scripts/make-model-pin.ts flux1-schnell black-forest-labs/FLUX.1-schnell flux1-schnell.safetensors=diffusion_models:unet ...` (one `path=folder:role` per file; repeat per model). It records Hub's current commit; review it before use.
 2. Server env:
 ```
 HAHMOSTUDIO_CLOUD_RENDER=1
