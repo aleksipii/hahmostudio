@@ -17,4 +17,6 @@ Mechanisms that make skipping validation impossible: `compilePrompt` accepts onl
 
 Prompt injection: user/AI text cannot reach policy (policy is server-only, request bodies with policy-like keys get HTTP 400) or canon (only `RuleEngine` writes).
 
-Limits (honest): fragment vocabulary is deliberately small, so valid but unusual style words are rejected until added. Visual identity drift in the *rendered image* is not detected unless an `OutputInspector` is supplied.
+Optional local inspector (`HAHMOSTUDIO_OUTPUT_INSPECTOR=palette`, threshold `HAHMOSTUDIO_PALETTE_THRESHOLD` 0.2–0.9, default 0.55): `PaletteInspector` rejects blank/solid/transparent PNG output and flags a colour-palette distance (Hellinger on a 4x4x4 histogram) from the character's approved PNG reference. Output strictness stays `reject`, so a flag blocks the output. It needs no model weights and runs locally. It is a weak signal, not identity verification: a different pose or background can raise the distance (tune the threshold), identical colours on a different face pass, JPEG/WebP references and video are not compared.
+
+Limits (honest): fragment vocabulary is deliberately small, so valid but unusual style words are rejected until added. Real visual identity drift (face/shape) is not detected; only the palette heuristic above exists unless a stronger `OutputInspector` is supplied.

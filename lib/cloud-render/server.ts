@@ -12,6 +12,7 @@ import {CharacterReferenceSystem} from './character-refs.ts';
 import {ProjectStore,RenderService} from './pipeline.ts';
 import {createCloudRenderApi} from './api.ts';
 import type {AIDirector} from './ai-suggestion.ts';
+import {PaletteInspector} from './inspector.ts';
 import {LiveVerificationLedger,type ProvisionReceipt} from './live-verification.ts';
 
 export type Env=Record<string,string|undefined>;
@@ -37,7 +38,11 @@ export function createCloudRender(env:Env,dataDir:string,opts:{director?:AIDirec
  const receiptsDir=env.HAHMOSTUDIO_PROVISION_RECEIPTS_DIR;
  const receipts=():ProvisionReceipt[]=>{if(!receiptsDir)return[];try{return readdirSync(receiptsDir).filter(f=>f.endsWith('.json')).flatMap(f=>{try{const r=JSON.parse(readFileSync(resolve(receiptsDir,f),'utf8'));return r?.schema===1&&typeof r.repo==='string'&&typeof r.revision==='string'&&Array.isArray(r.files)?[r as ProvisionReceipt]:[];}catch{return[];}});}catch{return[];}};
  const ledger=new LiveVerificationLedger({models,policy,mode:modelMode,storage,receipts});
- const service=new RenderService({projects,storage,backends,router:new ModelRouter(models),workflows,policy,modelMode,director:opts.director,refs,requireSceneLock:true,requireAuthorizationFingerprint:true,ledger});
+ const thr=Number(env.HAHMOSTUDIO_PALETTE_THRESHOLD??0.55);
+ if(env.HAHMOSTUDIO_PALETTE_THRESHOLD!==undefined&&!(thr>=0.2&&thr<=0.9))throw new Error('HAHMOSTUDIO_PALETTE_THRESHOLD must be between 0.2 and 0.9.');
+ // Opt-in. Output strictness stays 'reject': a drift flag blocks the output; there is no setting that downgrades flags.
+ const inspector=env.HAHMOSTUDIO_OUTPUT_INSPECTOR==='palette'?new PaletteInspector(storage,thr):undefined;
+ const service=new RenderService({inspector,projects,storage,backends,router:new ModelRouter(models),workflows,policy,modelMode,director:opts.director,refs,requireSceneLock:true,requireAuthorizationFingerprint:true,ledger});
  const handle=createCloudRenderApi({service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id,ledger});
  return{handle,service,projects,policy,modelMode,storage,backends,models,refs,workflows,ledger};
 }

@@ -56,3 +56,10 @@ test('project, lock, direct, validate and render endpoints enforce the pipeline'
   assert.equal((await call('GET','/api/render/nope')).status,404);
  }finally{await done();}
 });
+
+test('palette inspector is opt-in and its threshold is validated',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'hs-insp-'));try{
+  assert.doesNotThrow(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_OUTPUT_INSPECTOR:'palette',HAHMOSTUDIO_PALETTE_THRESHOLD:'0.6'},dir));
+  for(const bad of ['0.01','1','abc'])assert.throws(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_PALETTE_THRESHOLD:bad},dir),/THRESHOLD/);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
