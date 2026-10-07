@@ -1,3 +1,90 @@
+# KILSAT Studio 2
+
+Suomenkielinen animaatiostudio Macille ja selaimeen: kirjoitat käsikirjoituksen, valitset hahmot ja saat muokattavan animaation, jonka viet MP4-videoksi. Kaikki käsittely tapahtuu omalla koneella, eikä mitään ladata pilveen.
+
+## Pika-aloitus
+
+```bash
+npm ci
+npm run desktop:dev      # Mac-työpöytäsovellus kehitystilassa
+npm run dev              # selainversio (Vite)
+```
+
+Asennettu Mac-sovellus päivittyy vasta uudella paketilla: `npm run desktop:package:mac`, sulje vanha sovellus ja korvaa se `release/`-kansion uudella.
+
+## Käyttöliittymä (2.0)
+
+Tumma studiotyökalu, jossa sama kehys säilyy kaikissa vaiheissa: yläpalkki, vasen paneeli, näyttämö, oikea paneeli ja tilarivi.
+
+- **Työvaiheet 1–5** yläpalkissa (pikanäppäin ⌥1–⌥5): **Käsikirjoitus**, **Hahmot**, **Storyboard**, **Kuva**, **Aikajana**.
+- **Projektivalikko** projektin nimestä: avaa, tallenna, tallenna nimellä, versiot, tuo kuva/PSD, lisää ääni, erilliset JSON-tiedostot, asetukset, käyttöohje ja tuotantokierros.
+- **⌘K** hakee minkä tahansa toiminnon nimellä.
+- **Hahmot**: Rakenna (tasot, piirto, nivelet, alkuperäinen PSD) tai Esitys (kamera, mikrofoni, näppäimet, oton tallennus).
+- **Storyboard**: kuvakortit, hyväksyntä ja lukitus, kommentit, työjono, tarkistuslista, hakunäkymät ja CSV.
+- **Kuva**: kuvanauha, sijoittelu, liiketyökalut, ääni ja näyttämö.
+- **Aikajana**: raidat, toisto, vienti ja sarja. Paneelien ja aikajanan kokoa muutetaan reunoista vetämällä.
+- **Asetukset**: ulkoasu (tumma, vaalea tai järjestelmä), saavutettavuus, työvaiheen rajaus ja pikanäppäimet.
+
+Rakenne ja toimintojen paikat: [docs/KILSAT-APP-SHELL.md](docs/KILSAT-APP-SHELL.md).
+
+## Käsikirjoitus
+
+Kirjoita vapaasti suomeksi tai englanniksi tavallisessa käsikirjoitusmuodossa tai tiukassa `#!kilsat`-muodossa. Sääntöpohjainen tunnistin luokittelee jokaisen rivin ja näyttää tulkinnan rivin vieressä (esim. "kävely ← 2 s"). Rivi, jota se ei ymmärrä, merkitään varoituksella, eikä sille arvata tulkintaa.
+
+```text
+INT. KEITTIÖ - AAMU
+
+MIRA:
+(hiljaa)
+“Siirsitkö auton eilen?”
+
+Niko kävelee sisään vasemmalta kaksi sekuntia.
+Hän pysähtyy ja katsoo Miraa.
+LÄHIKUVA MIRA
+Mira nostaa kulmiaan ja hymyilee.
+Niko näyttää surulliselta.
+Mira katsoo kameraan.
+Pieni tauko.
+```
+
+- **Rakenne**: kohtausotsikot (INT./EXT., SISÄ./ULKO., Kohtaus:, 0:00–0:04), siirtymät (CUT TO, FADE, HÄIVYTYS), puhujat (myös V.O., O.S., ruudun ulkopuolelta), sulkeohjeet ja repliikit.
+- **Liikkeet**: kävely, juoksu, hyppy, kyykky, istuminen, vilkutus, nyökkäys, osoitus, nyrkki ja pysähdys. Suomen taivutusmuodot tunnistetaan (käveli, kävelevät, astelee), samoin suunta ja lähtöpaikka ("vasemmalta" tarkoittaa liikettä oikealle).
+- **Ilmeet**: vihainen, huolestunut, hämmentynyt, loukkaantunut, pokerinaama, kulmat ylös, **iloinen** (hymy-suu), **surullinen** (surusuu) ja **peloissaan** (silmät laajenevat ja suu pyöristyy). Ilme pysyy seuraavaan ilmeeseen asti, ja repliikki ohittaa suun puheen ajaksi.
+- **Katse**: hahmoon sijamuodossa (Killeä, Miraan), puhelimeen tai **kameraan**. 3D-esityksessä katse kameraan osuu katsojaan mistä kamerakulmasta tahansa.
+- **Puhelin, tauot ja rajoitukset**: pitää, näyttää, korvalle, pöydälle; pieni tauko, beat; Ei isoja eleitä, Älä liikuta kameraa.
+- **Kestot**: "2 s", "0,5 sekuntia", "puoli sekuntia", "two seconds", "beat".
+
+Säännöt ja rajat: [docs/KASIKIRJOITUS-TUNNISTIN.md](docs/KASIKIRJOITUS-TUNNISTIN.md).
+
+## Hahmot
+
+Kirjastossa ovat Kille, Handu, Mr.Kille, Mr.Handu, Roni, Salla, Aino, Otto, Leo ja Hahmopohja sekä uudet leikkaushahmot:
+
+| Hahmo | 2D | 3D (kolme kuvakulmaa) |
+|-------|----|------------------------|
+| Pipsa: sadetakki, silmälasit, kumisaappaat | `Pipsa.psd` / `.hahmo` | `Pipsa-3D.psd` / `.hahmo` |
+| Ville: kiharat, pisamat, neule ja shortsit | `Ville.psd` / `.hahmo` | `Ville-3D.psd` / `.hahmo` |
+| Taru: nutturat, kuulokkeet, huppari | `Taru.psd` / `.hahmo` | `Taru-3D.psd` / `.hahmo` |
+| Ukko: viikset, villatakki, tossut | `Ukko.psd` / `.hahmo` | `Ukko-3D.psd` / `.hahmo` |
+
+Uusissa hahmoissa ovat nivelet, silmät, räpäytys ja suuasennot (lepo, auki, pyöreä, hymy, suru). "3D" tarkoittaa erikseen piirrettyjä kuvakulmia, joita Cutout3D-kamera kääntää, ei volumetristä mallia. Grafiikka on omaa (CC0), ja sen voi generoida uudelleen komennolla `npm run assets:cutout-kids`.
+
+## Kehitys
+
+```bash
+npm run typecheck
+npm test                  # yli 1000 kooditestiä
+npm run build             # selainversio
+npm run desktop:build     # Electron-renderöijä
+npm run assets:cutout-kids
+```
+
+Kehityshistoria: [KEHITYSMUISTIO.md](KEHITYSMUISTIO.md) ja `DEVELOPMENT-*.md`. Projektin ohjeet agenteille: [AGENTS.md](AGENTS.md).
+
+---
+
+## Aiemmat versiot
+
 Vaihe 0.27: vahvistettu palautusjournal, editorin muokkaustransaktiot ja PSD/rig-hahmopaketin vaihto avainruudut säilyttäen. Tarkat rajat: DEVELOPMENT-0.27.md.
 
 Vaihe 0.26: tuotantokomentoraja, tallentuva komentohistoria, resurssit ja SHA-256-äänipalautus sekä hyväksynnän resurssitarkistus. Vaiheiden 6–10 rajaus ja puutteet: DEVELOPMENT-0.26.md.

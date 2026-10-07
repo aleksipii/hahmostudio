@@ -242,3 +242,30 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Ei testattu:** pakattu Mac-sovellus, kamera/mikrofoni oikealla laitteella, natiivivalikot.
 
 **Seuraava:** Käsikirjoitus-vaiheen oikea paneeli (Tarkistus/Roolitus/Ohjaus) PresentationPanelin sisältä; vanhojen CSS-kerrosten karsinta studio2.css:n alle.
+
+### 2.1 — Sääntöpohjainen käsikirjoitustunnistin ja uudet leikkaushahmot (2026-10-07)
+
+**Kehitysvaihe:** käsikirjoituksen tilakone ja hahmokirjaston laajennus.
+
+**Valmis:**
+- `lib/script-recognizer.ts`: rivitilakone (header/body/cue/dialogue/notes/comment-block) + suljettu fi/en-sanasto. Suomen verbitaivutus kokonaisina sanoina, hahmojen sijamuodot (myös illatiivi), pronominit ja monikko, kielto, kestot numeroina ja sanoina, englannin kuvatermit vain isoilla kirjaimilla. Dokumentti: `docs/KASIKIRJOITUS-TUNNISTIN.md`.
+- Kytketty: `presentation-direction.ts` (liike/katse/ilme tunnistimesta, vanha haku varalla), `script-grammar.ts` (taivutusmuodot nimetylle hahmolle + kesto; parempi ehdotus hylätylle riville), marginaali (`script-line-annotations.ts`).
+- Kaikki repon käsikirjoitukset, pohjat ja kaksi uutta testiaineistoa (`tests/fixtures/scripts/`) luokittuvat 356/356 riviä; tarkkuus tarkistettu rivikohtaisesti testeissä.
+- Uudet alkuperäiset leikkaushahmot Pipsa, Ville, Taru, Ukko (CC0): 2D (`<Nimi>.psd/.hahmo`) ja 3D-paperitasot kolmesta kuvakulmasta (`<Nimi>-3D.psd/.hahmo`). Generaattori `npm run assets:cutout-kids`. Kirjastossa ja roolitusvalikossa.
+- `npm test` 1001/1001, `npm run build` OK.
+
+**Rajat:** "3D" tarkoittaa kolmen kuvakulman paperitasoja Cutout3D-kameralle, ei volumetristä mallia. Tunnistettu mutta toteuttamaton (hymy-ilme käsikirjoituksesta, suru, pelko, katse kameraan) näytetään syyn kanssa. Vapaata proosaa ilman tuettua verbiä ei tulkita.
+
+**Seuraava:** hymy/suru-ilmeet käsikirjoituksen tapahtumiksi (hahmoilla on jo hymy-suu), katse kameraan, hahmojen sivuprofiilien kävelyn hienosäätö.
+
+### 2.2 — Ilo, suru ja katse kameraan käsikirjoituksesta (2026-10-07)
+
+**Valmis:** `happy` ja `sad` ovat tuettuja ilmeitä ja `camera` katsekohde (tunnistin, vapaa käsikirjoitus, `#!kilsat`: `ilme: iloinen/surullinen`, `katsoo: kamera`). Kääntäjä: ilo = Suu hymy -taso + kulmat ylös, pysyy seuraavaan ilmeeseen, puhe ohittaa ja hymy palaa repliikin jälkeen; ilman hymy-suuta varoitus `smile-missing`. Suru = kulmien sisäreunat ylös, katse alas. Katse kameraan = pupillit keskelle, pää suoraan; profiilissa varoitus `camera-gaze-profile`. Cutout: happy→HAPPY, sad→SQUINT (pakeissa ei surutunnetilaa). `functions`-listaa ei laajennettu, jotta vanhat sidokset aukeavat. `npm test` 1005/1005.
+
+**Seuraava:** pelko-ilme, erillinen surusuu hahmopaketteihin (Pipsa/Ville/Taru/Ukko), kamerakatse toon3d-esityksessä.
+
+### 2.3 — Pelko, surusuu ja kamerakatse 3D:ssä (2026-10-07)
+
+**Valmis:** `scared`-ilme (kulmat ylös, silmät 1,14×, pupillit 0,78×, pyöreä suu) tunnistimessa, vapaassa käsikirjoituksessa ja `#!kilsat`-tilassa (`ilme: peloissaan`). Ilmeen lepoasennon suu yleistetty: hymy / surusuu (`mouthSad`) / pyöreä / neutraali, puhe ohittaa ja suu palaa repliikin jälkeen. Ilmeet säilyttävät katseen pupillisiirtymän. Pipsa, Ville, Taru ja Ukko saivat Suu suru -tason. Toon3d: katse kameraan siirtää projisoidun pupillin silmänvalkuaisen keskelle (`centerOnEyeWhite`). README uudistettu (KILSAT Studio 2 -osio). Cloud-tehtävä: `docs/CLOUD-TEHTAVA-KASIKIRJOITUKSESTA-SARJAKSI.md`. `npm test` 1007/1007.
+
+**Seuraava:** cloud-tehtävän vaihe A (yhden painalluksen jaksonrakennus).
