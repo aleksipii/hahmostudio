@@ -63,3 +63,17 @@ test('palette inspector is opt-in and its threshold is validated',async()=>{
   for(const bad of ['0.01','1','abc'])assert.throws(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_PALETTE_THRESHOLD:bad},dir),/THRESHOLD/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test('character reference upload is validated by content and registered',async()=>{
+ const {c,call,done}=await setup();try{
+  assert.equal((await call('PUT','/api/projects/project_001',canon())).status,200);
+  const {PNG_1X1}=await import('./mock-backend.ts'),b64=Buffer.from(PNG_1X1).toString('base64'),url='/api/projects/project_001/characters/alice/reference';
+  const ok=await call('POST',url,{mime:'image/png',dataBase64:b64});assert.equal(ok.status,200);assert.match((ok.body as any).assetId,/^alice_ref_[0-9a-f]{10}$/);
+  assert.equal(c.refs.list('project_001','alice').length,1);assert.ok((await c.storage.listProjectAssets('project_001','references')).some(a=>a.name.endsWith('.png')));
+  assert.equal((await call('POST',url,{mime:'image/jpeg',dataBase64:b64})).status,400,'type must match content');
+  assert.equal((await call('POST',url,{mime:'image/png',dataBase64:Buffer.from('not an image').toString('base64')})).status,400);
+  assert.equal((await call('POST',url,{mime:'image/png',dataBase64:'***'})).status,400);
+  assert.equal((await call('POST','/api/projects/project_001/characters/bob/reference',{mime:'image/png',dataBase64:b64})).status,404);
+  assert.equal((await call('POST','/api/projects/project_001/characters/constructor/reference',{mime:'image/png',dataBase64:b64})).status,404);
+ }finally{await done();}
+});

@@ -27,3 +27,11 @@ test('runtime script verifies checksums and discards mismatches (local server, n
   void spawnSync;
  }finally{srv.close();await rm(dir,{recursive:true,force:true});}
 });
+import {ModelRegistry} from './models.ts';
+test('shipped Wan entry yields a valid ComfyUI manifest once pinned, and not before',()=>{
+ const reg=new ModelRegistry();assert.throws(()=>buildProvisionManifest(reg.get('wan2.2-ti2v-5b')!,'PRODUCTION_SAFE',ZERO_COST_POLICY),Blocked);
+ const f=(path:string,comfyFolder:string,role:string)=>({path,sha256:'a'.repeat(64),comfyFolder,role});
+ reg.applyPins({'wan2.2-ti2v-5b':{revision:REV,files:[f('split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors','diffusion_models','unet'),f('split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors','text_encoders','clip'),f('split_files/vae/wan2.2_vae.safetensors','vae','vae')] as never}});
+ const man=buildProvisionManifest(reg.get('wan2.2-ti2v-5b')!,'PRODUCTION_SAFE',ZERO_COST_POLICY);
+ assert.equal(man.repo,'Comfy-Org/Wan_2.2_ComfyUI_Repackaged');assert.deepEqual(man.files.map(x=>x.comfyFolder),['diffusion_models','text_encoders','vae']);
+});

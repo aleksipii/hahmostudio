@@ -12,4 +12,4 @@ Trusted: rule engine, canonical state, compute policy, model policy, server envi
 - Audit log is hash-chained: detects edits, not a replacement of the whole chain.
 - Secrets (Drive tokens, ComfyUI bearer, HF token) come from server env; never sent to the browser or logged.
 
-Residual risks: the ComfyUI endpoint must be reachable only over HTTPS and protected (Colab tunnels are often public URLs, so use the bearer option). A malicious operator-configured backend could return convincing but wrong images; output inspection is a hook only.
+Residual risks: the ComfyUI endpoint must be reachable only over HTTPS and protected (Colab tunnels are often public URLs, so use the bearer option). ComfyUI itself does NOT check an Authorization header: `HAHMOSTUDIO_COMFYUI_BEARER` only helps if a reverse proxy in front of ComfyUI enforces it. With a plain quick tunnel the random URL is the only secret, so never share it or put it in logs. A malicious operator-configured backend could return convincing but wrong images; output inspection is a hook only.

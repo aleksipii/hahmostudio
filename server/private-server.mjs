@@ -75,7 +75,7 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
     let parsed;
     if(!['GET','HEAD'].includes(req.method)){
      if(req.headers.origin!==expected){send(403,{error:'Pyyntö ei ole sallittu.'});return;}
-     const raw=[];let size=0;try{for await(const chunk of req){size+=chunk.length;if(size>2097152)throw new Error('Body too large');raw.push(chunk);}}catch{send(413,{error:'Pyyntö on liian suuri.'});return;}
+     const raw=[];let size=0;try{for await(const chunk of req){size+=chunk.length;if(size>12582912)throw new Error('Body too large');raw.push(chunk);}}catch{send(413,{error:'Pyyntö on liian suuri.'});return;}
      if(size){if(!req.headers['content-type']?.startsWith('application/json')){send(415,{error:'Vain JSON sallitaan.'});return;}try{parsed=JSON.parse(Buffer.concat(raw).toString('utf8'));}catch{send(400,{error:'Virheellinen JSON.'});return;}}
     }
     const out=await cloudRender.handle({method:req.method,path,query:address.searchParams,body:parsed,user:'owner'});send(out.status,out.body);return;

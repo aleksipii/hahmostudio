@@ -43,6 +43,6 @@ export function createCloudRender(env:Env,dataDir:string,opts:{director?:AIDirec
  // Opt-in. Output strictness stays 'reject': a drift flag blocks the output; there is no setting that downgrades flags.
  const inspector=env.HAHMOSTUDIO_OUTPUT_INSPECTOR==='palette'?new PaletteInspector(storage,thr):undefined;
  const service=new RenderService({inspector,projects,storage,backends,router:new ModelRouter(models),workflows,policy,modelMode,director:opts.director,refs,requireSceneLock:true,requireAuthorizationFingerprint:true,ledger});
- const handle=createCloudRenderApi({service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id,ledger});
+ const handle=createCloudRenderApi({service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id,ledger,refs,storage});
  return{handle,service,projects,policy,modelMode,storage,backends,models,refs,workflows,ledger};
 }
