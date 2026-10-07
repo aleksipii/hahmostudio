@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const derive=promisify(scrypt);
 const hash=async(password,salt)=>Buffer.from(await derive(password,salt,64,{N:32768,maxmem:64*1024*1024}));
 const equal=(a,b)=>{const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y);};
-export async function createPrivateServer({distDir,dataDir,origin,setupToken='',secure=false,desktopToken='',speechRecognizer=recognizeSpeech,transcriber=createTranscriber({binary:fileURLToPath(new URL('../.private-runtime/native/bin/whisper-cli',import.meta.url)),model:fileURLToPath(new URL('../.private-runtime/native/models/ggml-base.bin',import.meta.url))})}={}) {
+export async function createPrivateServer({distDir,dataDir,origin,setupToken='',secure=false,desktopToken='',cloudRender=null,speechRecognizer=recognizeSpeech,transcriber=createTranscriber({binary:fileURLToPath(new URL('../.private-runtime/native/bin/whisper-cli',import.meta.url)),model:fileURLToPath(new URL('../.private-runtime/native/models/ggml-base.bin',import.meta.url))})}={}) {
  if(desktopToken&&!/^[a-f0-9]{64}$/.test(desktopToken))throw new Error('Invalid desktop session');
  const root=await realpath(distDir),store=desktopToken?null:resolve(dataDir),ownerPath=store?resolve(store,'owner.json'):null;if(store)await mkdir(store,{recursive:true,mode:0o700});
  let owner=null;try{if(ownerPath)owner=JSON.parse(await readFile(ownerPath,'utf8'));if(!ownerPath)owner={username:'desktop'};if(ownerPath&&(typeof owner.username!=='string'||typeof owner.salt!=='string'||typeof owner.hash!=='string'))throw new Error('Invalid owner record');}catch(e){if(e.code!=='ENOENT')throw e;}
@@ -70,6 +70,16 @@ form.addEventListener('submit',async e=>{e.preventDefault();error.textContent=''
     if(speechRunning){send(409,{error:'Edellinen äännetunnistus on kesken.'});return;}speechRunning=true;const controller=new AbortController();const disconnected=()=>{if(!res.writableEnded)controller.abort();};res.on('close',disconnected);
     try{let bytes=0;const chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>1920044)throw new Error('Äänitiedosto on liian suuri. Enimmäiskesto on 60 sekuntia.');chunks.push(chunk);}const wav=Buffer.concat(chunks);validateSpeechWav(wav);const mouthCues=await speechRecognizer(wav,language,controller.signal);if(!controller.signal.aborted)send(200,{mouthCues});}catch(e){if(!controller.signal.aborted)send(400,{error:e.message?.includes('Paikallinen äännetunnistin')?e.message:e.message?.includes('WAV')||e.message?.includes('Enimmäiskesto')?e.message:'Äännetunnistus epäonnistui. Tarkista äänitiedosto ja paikallinen tunnistin.'});}finally{res.off('close',disconnected);speechRunning=false;}return;
    }
+   if(cloudRender&&/^\/api\/(projects|ai|render|models|backends|compute|health)(\/|$)/.test(path)){
+    // Cloud render API (opt-in). Policy lives on the server; the browser only sends validated JSON.
+    let parsed;
+    if(!['GET','HEAD'].includes(req.method)){
+     if(req.headers.origin!==expected){send(403,{error:'Pyyntö ei ole sallittu.'});return;}
+     const raw=[];let size=0;try{for await(const chunk of req){size+=chunk.length;if(size>2097152)throw new Error('Body too large');raw.push(chunk);}}catch{send(413,{error:'Pyyntö on liian suuri.'});return;}
+     if(size){if(!req.headers['content-type']?.startsWith('application/json')){send(415,{error:'Vain JSON sallitaan.'});return;}try{parsed=JSON.parse(Buffer.concat(raw).toString('utf8'));}catch{send(400,{error:'Virheellinen JSON.'});return;}}
+    }
+    const out=await cloudRender.handle({method:req.method,path,query:address.searchParams,body:parsed,user:'owner'});send(out.status,out.body);return;
+   }
    if(!['GET','HEAD'].includes(req.method)){send(405,{error:'Menetelmä ei ole sallittu.'});return;}
    let decoded;try{decoded=decodeURIComponent(path);}catch{send(400,{error:'Virheellinen polku.'});return;}
    const candidate=resolve(root,'.'+(['/','/export-worker'].includes(decoded)?'/index.html':decoded));if(!candidate.startsWith(root+sep)){send(404,{error:'Ei löydy.'});return;}
@@ -83,6 +93,8 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const host=process.env.HAHMOSTUDIO_HOST??'127.0.0.1',origin=process.env.HAHMOSTUDIO_ORIGIN,remote=!['127.0.0.1','localhost','::1'].includes(host);
  if(remote&&(!origin?.startsWith('https://')||!process.env.HAHMOSTUDIO_SETUP_TOKEN)){throw new Error('Remote hosting requires HTTPS origin and a setup token.');}
  const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
- const server=await createPrivateServer({distDir:resolve(root,'dist'),dataDir:process.env.HAHMOSTUDIO_DATA_DIR??resolve(root,'.private-storage'),origin,setupToken:process.env.HAHMOSTUDIO_SETUP_TOKEN,secure:!!origin?.startsWith('https://')});
+ const dataDir=process.env.HAHMOSTUDIO_DATA_DIR??resolve(root,'.private-storage');
+ const cloudRender=process.env.HAHMOSTUDIO_CLOUD_RENDER==='1'?(await import('../lib/cloud-render/server.ts')).createCloudRender(process.env,dataDir):null;
+ const server=await createPrivateServer({cloudRender,distDir:resolve(root,'dist'),dataDir,origin,setupToken:process.env.HAHMOSTUDIO_SETUP_TOKEN,secure:!!origin?.startsWith('https://')});
  server.listen(Number(process.env.PORT??4176),host,()=>console.log(`Hahmostudio: ${origin??`http://${host}:${process.env.PORT??4176}`}`));
 }
