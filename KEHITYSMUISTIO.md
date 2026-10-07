@@ -357,3 +357,19 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Rajat:** siirto napsahtaa tapahtumarajoille (vapaa ajoitus sekunnin murto-osiin vaatii tauko-palikan). Tilakone on johdettu näkymä, ei erillinen ohjausdata. Hiiren veto ja näppäinkäyttö todennettu merkintätasolla, ei oikealla laitteella.
 
 **Seuraava:** vaihe G — nopeus, ensikäyttö (Esimerkki → Rakenna jakso → Vie) ja raportointi.
+
+### 2.10 — Vaihe G: nopeus, ensikäyttö ja raportointi (2026-10-07)
+
+**Valmis:**
+- Ensikäyttö kolmella toimenpiteellä: *Kokeile esimerkkiä* lataa esimerkkikäsikirjoituksen (`public/library/Esimerkki-pysakointisakko.md`) → **Rakenna jakso** (⌘↵) → **Vie**.
+- Lähi- ja puolikuvan zoom hahmon koosta (lähikuva = kasvot ja hartiat), silmälinja säilyy.
+- Puhelimeen katsominen tuo puhelimen käteen (arvioitu); “odottaa”/“pitää” esittelee hahmon ohjeriviltä.
+- `docs/KASIKIRJOITUS-KIELIOPPI.md`: takuut (jokaisella rivillä lopputulos, kanoninen muoto 100 %, determinismi, ei kaatumista) ja kaikki kanoniset lauseet; testi tarkistaa jokaisen dokumentin lauseen.
+- `docs/DESIGN-PALIKKAEDITORI.md`: komponenttispeksi (design-järjestelmän laajennus) ja 10 minuutin työnkulku, vertailu Riveen.
+- Ruutukuvat oikean `renderPresentation`-polun kautta SVG-sovitteella: `scripts/render-episode-frames.ts` → `docs/episode-frames/`.
+- Mittaukset `docs/benchmarks/episode-build.md`: rakennus 60 s jaksosta ~60 ms pilvikoneella; toiston laskenta p95 0,6 ms.
+- `npm test` 1044 (1043 läpi, 1 ohitettu, 0 virhettä); `npm run build` ja `npm run desktop:build` OK.
+
+**Ei todennettu pilvessä:** M1-Mac, oikea canvas-piirto 60 fps, VideoToolbox-vienti, pakattu .app, kamera/mikrofoni, hiiren veto oikealla laitteella. `studio example playback render stays within regression budget` -aikarajatesti voi ylittyä raskaassa rinnakkaiskuormassa (ohimenevä, läpäisee yksinään).
+
+**Seuraava:** oikean Macin tarkistus (pakattu sovellus, vienti, ääni), juoksun lentovaihe, palikoiden vapaa sekuntiajoitus ja monivalinta, toon3d/kartonkipolun esineet.

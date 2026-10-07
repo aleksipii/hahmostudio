@@ -124,3 +124,11 @@ test('.sarja: jaksot tallentuvat Jaksot-paneelin muotoon ja lukeutuvat takaisin;
  const data=writeSeriesArchive(items);assert.deepEqual(readSeriesArchive(data),items);assert.deepEqual(writeSeriesArchive(items),data);
  assert.throws(()=>writeSeriesArchive(Array.from({length:6},(_,i)=>({name:String(i),bytes:new Uint8Array(1)}))),/viisi/);
 });
+
+test('kielioppidokumentin kanoniset lauseet tunnistuvat kaikki ilman huomautuksia (docs/KASIKIRJOITUS-KIELIOPPI.md)',async()=>{
+ const doc=readFileSync(new URL('../docs/KASIKIRJOITUS-KIELIOPPI.md',import.meta.url),'utf8'),section=doc.slice(doc.indexOf('## Kanoniset lauseet'),doc.indexOf('## Tarkka tila'));
+ const sentences=[...section.split('\n').filter(l=>l.startsWith('| ')&&!l.startsWith('| Palikka')).join('\n').matchAll(/`([^`]+)`/g)].map(m=>m[1]).flatMap(s=>{const m=s.match(/^(.*?)(\S+)( \/ .*)$/);if(!m||!s.includes(' / '))return [s.replace(/\s*\(vasemmassa kädessä\)/,'')];const alts=s.replace(/\.$/,'').split(/ \/ /),head=alts[0].split(' ').slice(0,-1).join(' ');return [alts[0]+'.',...alts.slice(1).map(a=>head+' '+a+(a.endsWith('.')?'':'.'))];});
+ assert.ok(sentences.length>=40,String(sentences.length));
+ const lib=await library('Mira vilkuttaa.\nNiko vilkuttaa.');
+ for(const s of sentences){const text=`Mira odottaa 0,5 s.\nNiko odottaa 0,5 s.\nMIRA:\n“Hei.”\n${s}`,b=buildEpisode(text,lib);const bad=b.diagnostics.filter(d=>['unrecognized-line','note-line','build-failed'].includes(d.code)||(d.severity==='error'&&!['missing-audio','phone-table-missing'].includes(d.code)));assert.deepEqual(bad.map(d=>d.message),[],s);assert.ok(b.lines.at(-1)!.outcome==='event',s);}
+});

@@ -692,7 +692,7 @@ export function discoverActors(lines: string[]): string[] {
     // Sana, joka esiintyy muualla pienellä alkukirjaimella, on tavallinen sana eikä nimi ("Täysin" / "täysin").
     if (!m || nonActorStarters.has(lower(m[1])) || lowerWords.has(lower(m[1]))) continue;
     const verb = lower(m[2]);
-    if (anyVerbFi.test(verb) || anyVerbEn.test(verb) || /^(seisoo|seisoi|tulee|tuli|astuu|astui|stands|enters|entered)$/u.test(verb)) {
+    if (anyVerbFi.test(verb) || anyVerbEn.test(verb) || /^(seisoo|seisoi|tulee|tuli|astuu|astui|odottaa|odotti|pitää|pitelee|stands|enters|entered|waits|waited|holds)$/u.test(verb)) {
       const n = normalizeName(m[1]);
       if (!found.includes(n)) found.push(n);
     }

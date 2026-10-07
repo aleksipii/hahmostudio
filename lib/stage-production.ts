@@ -17,7 +17,10 @@ export function cameraTransform(p:Presentation,assets:PresentationAssets,at:numb
   const gaze=p.events.filter(e=>e.kind==='gaze'&&e.target===b.speaker&&(e.at??0)<=at).sort((x,y)=>(x.at??0)-(y.at??0)).at(-1),other=gaze?p.bindings.find(o=>o.speaker===gaze.value):undefined;
   const looking=gaze?.value==='camera'?'camera':other?(stageActor(p,other,at,width,height).x>r.x?'right':'left'):undefined;
   const side=r.x<width*.45?'left':r.x>width*.55?'right':'center',anchor=shotAnchor(size,side,looking,width,height);
-  return {scale:c.zoom,x:anchor.x-(c.offsetX+c.pan*c.panX)*width*c.zoom-eye.x*c.zoom,y:anchor.y-(c.offsetY+c.pan*c.panY)*height*c.zoom-eye.y*c.zoom};
+  // Zoom hahmon koon mukaan: lähikuvassa pää ja hartiat (~38 % hahmon korkeudesta täyttää 55 % kuvasta), puolikuvassa
+  // vyötäröstä ylös (~60 % → 85 %). Käsikirjoituksen zoom-liike ja lisäzoom säilyvät suhteellisina.
+  const charPx=m.height*r.scale,base=size==='close'?2.4:1.5,fit=size==='close'?.55*height/(.38*charPx):.85*height/(.6*charPx),zoom=Math.max(1,c.zoom/base*fit);
+  return {scale:zoom,x:anchor.x-(c.offsetX+c.pan*c.panX)*width*zoom-eye.x*zoom,y:anchor.y-(c.offsetY+c.pan*c.panY)*height*zoom-eye.y*zoom};
  }
  if(c.zoom!==1||c.pan||c.offsetX||c.offsetY)return {scale:c.zoom,x:width/2-(width/2+(c.offsetX+c.pan*c.panX)*width)*c.zoom,y:height*.46-(height*.46+(c.offsetY+c.pan*c.panY)*height)*c.zoom};
  return {scale:1,x:0,y:0};
