@@ -302,3 +302,17 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Rajat:** toon3d skinnaa puhelimen käsiluuhun (oli jo ennestään); muita esineitä toon3d- ja Mr.Kille/Handu-kartonkipolku ei vielä piirrä. Esineiden taide on yksinkertaista vektoria.
 
 **Seuraava:** vaihe C — liikekirjasto (ennakointi → toiminta → jälkiliike → asettuminen) ja laatumittarit.
+
+### 2.6 — Vaihe C: ammattimaiset liikeradat (2026-10-07)
+
+**Valmis:**
+- `lib/motion-library.ts`: eleet (vilkutus, osoitus, nyrkki, nyökkäys, hämmästys) vaiheina ennakointi → toiminta → (pito) → jälkiliike → asettuminen, jokaisella vaiheella oma Bezier-käyrä; päällekkäinen toiminta (pää/kädet/vartalo 2–4 ruudun porrastus); kaaret syntyvät nivelketjun kierrosta.
+- Kävely ja juoksu analyyttisellä kahden luun IK:lla: tukijalka lukittu maailmaan etu- ja sivunäkymässä, ensimmäinen ja viimeinen askel puolikkaita, askelpituus ∝ jalan pituus, matka keston mukaan, lantion keinunta, kädet vastavaiheessa viiveellä. Kävely kääntää monikulmahahmon profiiliin ja takaisin eteen (kova vaihto, ei ristihäivytystä).
+- Istuminen (jää istumaan), kyykky ja hyppy parametrisoitu polven kulmalla ja irtoamiskorkeudella → ei IK-singulaarisuutta suorilla jaloilla. Istumasta noustaan ennen ensimmäistä askelta.
+- Lepoelämä: deterministiset silmänräpäykset 2,8–4,6 s välein ja hengitys (pää ±0,9 px); liikkumiskielto ja pokerinaama hiljentävät.
+- Mittarit `lib/motion-quality.ts`, testit `lib/motion-library.test.ts`: 14 kirjaston hahmoa × 12 liikettä — kiihtyvyys ≤ 20 °/ruutu² ja jerk ≤ 20 °/ruutu³ (juoksu 35/40), translaatio ≤ 15 px/ruutu², tukijalan liukuma < 1 px, enintään yksi näkyvä kuvakulma. Kuvasarjat `docs/motion-sheets/`.
+- Korjattu: vanha kävely vasemmalle oli pelkkää liukumista (340 px), hyppy ei liikkunut, kävely oikealle tuotti 70 °/ruutu² nopeusportaita, kuvakulman vaihto ristihäivytti kaksi näkymää sekunneiksi, “Mira odottaa 0,5 s” katosi hiljaa huomioksi. `sampleTrack` binäärihakuun (rakennus 91 → 30 ms).
+
+**Rajat:** juoksussa ei ole lentovaihetta (nopea kävelymekaniikka). Etunäkymän kävely kohti kameraa on 2D-likiarvio (lantio laskee ruudulla, ei mittakaavaa). Mr.Kille/Handu-kartonkipaketeilla ei ole reisi–sääri-ketjua; niiden liike kulkee kartonkipolun kautta.
+
+**Seuraava:** vaihe D — vertailukorkeus, yhteinen mittakaava, lattiaviiva ja kuvakoot silmälinjan mukaan.

@@ -20,6 +20,7 @@ import {phoneActions} from './phone-actions.ts';
 import {functions,stableId,normalizeSpeaker,validatePresentation,type Presentation,type Event,type Ref,type Diagnostic,type Binding} from './presentation-model.ts';
 import type {Animation} from './animation-model.ts';
 import {heldPropFromWord} from './held-props.ts';
+import {defaultMotionSeconds} from './motion-library.ts';
 import {stageActor,stageState} from './presentation-stage.ts';
 import {viewAtFrame} from './character-view.ts';
 import {animationTransforms} from './animation-transform.ts';
@@ -227,7 +228,9 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
 /** Vapaa käsikirjoitus: jokainen tunnistimen rivi ja lause → tapahtuma, kommentti tai tarkistusmerkintä. */
 function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parseScriptResourceManifest>,aliasMap:Record<string,string>,options:BuildOptions,diagnostics:Diagnostic[]):{p:Presentation;lineOut:EpisodeBuild['lines'];musicCues:MusicCue[]}{
  const resolveName=(n:string)=>{const k=normalizeSpeaker(n);return normalizeSpeaker(aliasMap[k]??k);};
- const recognized=recognizeScript(prepared,[],{discoverActors:true});
+ // `Resurssi hahmo X: paketti` esittelee hahmon X, vaikka se ei puhuisi.
+ const declared=manifest.resources.filter(r=>r.kind==='character'&&r.speaker).map(r=>r.speaker!);
+ const recognized=recognizeScript(prepared,declared,{discoverActors:true});
  const rawLines=prepared.replace(/\r\n?/g,'\n').split('\n');
  let characters=[...new Set(recognized.characters.map(resolveName))];
  // Vain hahmot, joilla on repliikki tai toimintaa, tulevat näyttämölle.
@@ -250,7 +253,7 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
    if(('actor' in c)&&!targets.length&&c.type!=='constraint'){unknown++;warnUnknown(ref,c.text,'Hahmoa ei tunnistettu tai se ei ole näyttämöllä.');continue;}
    if(targets.length===1)lastActor=targets[0];
    switch(c.type){
-    case'motion':for(const t of targets){if(!motionNames.has(c.value)){unknown++;warnUnknown(ref,c.text);continue;}const first=!ids.some(id=>p.events.find(x=>x.id===id&&x.kind==='action'&&x.target===t&&motionNames.has(x.value)));const e=add('action',t,c.value,ref,{seconds:c.seconds??(c.value==='stop'?0:c.value.startsWith('walk')||c.value.startsWith('run')?2:1),basis:c.estimated?'estimate':'rule',after:first?afterDialogue:undefined});ids.push(e.id);require('action',ref,c.estimated?'estimated':'implemented',[e.id]);}break;
+    case'motion':for(const t of targets){if(!motionNames.has(c.value)){unknown++;warnUnknown(ref,c.text);continue;}const first=!ids.some(id=>p.events.find(x=>x.id===id&&x.kind==='action'&&x.target===t&&motionNames.has(x.value)));const e=add('action',t,c.value,ref,{seconds:c.seconds??(c.value==='stop'?0:c.value.startsWith('walk')||c.value.startsWith('run')?2:defaultMotionSeconds[c.value]??1.2),basis:c.estimated?'estimate':'rule',after:first?afterDialogue:undefined});ids.push(e.id);require('action',ref,c.estimated?'estimated':'implemented',[e.id]);}break;
     case'expression':for(const t of targets){const e=add('expression',t,c.value,ref,{after:afterDialogue});ids.push(e.id);require('expression',ref,'implemented',[e.id]);}break;
     case'gaze':{const target=c.target==='phone'||c.target==='camera'?c.target:actorOf(c.target);if(!target||target==='*'){unknown++;warnUnknown(ref,c.text,'Katseen kohdetta ei tunnistettu.');break;}for(const t of targets){if(t===target)continue;const e=add('gaze',t,target,ref,{after:afterDialogue});ids.push(e.id);require('gaze',ref,'implemented',[e.id]);}break;}
     case'phone':for(const t of targets){
@@ -264,7 +267,7 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
     case'title-card':{const e=add('title','scene',c.value,ref,{seconds:c.seconds??1.2,basis:c.seconds!==undefined?'rule':'estimate'});ids.push(e.id);require('ending',ref,'implemented',[e.id]);break;}
     case'editing':{diagnostics.push({code:'editing-info',severity:'warning',message:`Rivi ${ref.line}: leikkausrytmiä ei säädetä automaattisesti: “${c.text}”`});break;}
     case'unsupported':unknown++;warnUnknown(ref,c.text,c.reason);break;
-    case'note':p.comments.push(ref);break;
+    case'note':p.comments.push(ref);diagnostics.push({code:'note-line',severity:'warning',message:`Rivi ${ref.line+(options.firstLine??1)-1}: kirjattu huomioksi, ei animoida: “${c.text}”`});break;
     case'unknown':unknown++;warnUnknown(ref,c.text);break;
    }
   }
