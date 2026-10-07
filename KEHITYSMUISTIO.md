@@ -269,3 +269,14 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Valmis:** `scared`-ilme (kulmat ylös, silmät 1,14×, pupillit 0,78×, pyöreä suu) tunnistimessa, vapaassa käsikirjoituksessa ja `#!kilsat`-tilassa (`ilme: peloissaan`). Ilmeen lepoasennon suu yleistetty: hymy / surusuu (`mouthSad`) / pyöreä / neutraali, puhe ohittaa ja suu palaa repliikin jälkeen. Ilmeet säilyttävät katseen pupillisiirtymän. Pipsa, Ville, Taru ja Ukko saivat Suu suru -tason. Toon3d: katse kameraan siirtää projisoidun pupillin silmänvalkuaisen keskelle (`centerOnEyeWhite`). README uudistettu (KILSAT Studio 2 -osio). Cloud-tehtävä: `docs/CLOUD-TEHTAVA-KASIKIRJOITUKSESTA-SARJAKSI.md`. `npm test` 1007/1007.
 
 **Seuraava:** cloud-tehtävän vaihe A (yhden painalluksen jaksonrakennus).
+
+### E0 — Paikallinen Kokoro-puhe (2026-10-07)
+
+**Kehitysvaihe:** E0, ennen äänitehosteita ja musiikkia.
+
+**Valmis (kooditestit, testimoottori):** Kokoro-ydin (`lib/kokoro.ts`), malli käyttäjän luvalla tietokansioon, työprosessimoottori ja kapea IPC, Kokoro-paneeli (ääni hahmolle, Tuota ääninauha, Tuota uudelleen, huomautukset), merkintä Kokoro · synteettinen, `AudioClip.synthetic` ja `Binding.kokoroVoice`. Oma ääni ei ylikirjoitu. Katso DEVELOPMENT-E0.md.
+
+**Todentamatta:** ajo oikealla mallilla, mallin lataus, muisti ja nopeus (Mac), pakettiin liittäminen.
+
+**Seuraava:** mittaus ja tarkisteiden kiinnitys Macilla; sitten vaihe E.
+

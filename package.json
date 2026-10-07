@@ -27,7 +27,8 @@
     "playback:benchmark": "node --experimental-strip-types scripts/playback-benchmark.ts",
     "library:upgrade-provenance": "node --experimental-strip-types scripts/upgrade-library-provenance.mjs",
     "assets:cutout-kids": "python3 scripts/create-cutout-kids.py && node scripts/create-cutout-kids.mjs",
-    "grammar:coverage": "node --experimental-strip-types scripts/grammar-coverage.ts"
+    "grammar:coverage": "node --experimental-strip-types scripts/grammar-coverage.ts",
+    "kokoro:prepare": "node scripts/prepare-kokoro-runtime.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.32",
