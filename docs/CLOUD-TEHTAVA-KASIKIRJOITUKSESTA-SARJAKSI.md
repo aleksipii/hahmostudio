@@ -90,6 +90,8 @@ Tee vaiheet järjestyksessä. Jokainen vaihe on oma committinsa testeineen. Päi
 
 Lisätty 2026-10-07 käyttäjän päätöksellä. Tee tämä vaihe ennen vaihetta E.
 
+**Tila:** koodi ja kooditestit tehty testimoottorilla; ajo oikealla mallilla ja mittaukset todentamatta (ks. `DEVELOPMENT-E0.md`).
+
 1. **Malli ja ajo:** Kokoro-malli (noin 300 Mt) ladataan ensimmäisellä käyttökerralla käyttäjän luvalla sovelluksen tietokansioon (ei sovelluspakettiin eikä repoon). Mallin tarkiste tarkistetaan, ja lisenssi kirjataan `THIRD_PARTY_NOTICES.md`:hen. Puhe tuotetaan Electronin taustaprosessissa (main-prosessi tai erillinen worker), ei renderöijässä. Renderöijä pyytää tuotantoa kapean validoidun IPC:n kautta. Selainversiossa ominaisuus näytetään poissa käytöstä selityksen kanssa.
 2. **Ääni hahmolle:** roolitustaulukossa (`components/speaker-binding-table.tsx`) jokaiselle hahmolle **Ääni**-valinta Kokoron äänistä ja ▶-painike, joka soittaa lyhyen näytteen. Valinta tallentuu hahmosidokseen (uusi valinnainen kenttä, vanhat projektit toimivat ilman).
 3. **Tuota ääninauha:** tuottaa kaikki repliikit rivi kerrallaan, ja edistyminen näkyy rivikohtaisesti. Jokaisessa repliikissä on ▶, kesto, merkintä **Kokoro · synteettinen** ja **Tuota uudelleen**, joka tuottaa vain sen rivin. Versiot säilyvät, ja käyttäjä voi vaihtaa niiden välillä. Käyttäjän äänittämä tai tuoma ääni korvaa Kokoro-version eikä sitä koskaan ylikirjoiteta automaattisesti.

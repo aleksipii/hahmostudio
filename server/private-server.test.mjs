@@ -20,3 +20,21 @@ test('private server protects assets, owner creation, session and logout',async(
   for(let i=0;i<8;i++)await post('/api/auth/login',{username:'owner',password:'wrong'});assert.equal((await post('/api/auth/login',{username:'owner',password:'wrong'})).status,429);
  }finally{await new Promise(resolve=>server.close(resolve));await rm(root,{recursive:true,force:true});}
 });
+test('cloud render API is private, CSRF-guarded and policy is not writable',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'hahmostudio-cloud-'));await mkdir(join(root,'dist'));await writeFile(join(root,'dist','index.html'),'x');
+ const {createCloudRender}=await import('../lib/cloud-render/server.ts');
+ const cloud=createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev'},join(root,'data'));
+ const server=await createPrivateServer({distDir:join(root,'dist'),dataDir:join(root,'data'),setupToken:'t0ken-for-cloud-test',cloudRender:cloud});await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
+ try{
+  assert.equal((await fetch(base+'/api/compute/policy')).status,401,'login required');
+  const setup=await fetch(base+'/api/auth/setup',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:JSON.stringify({username:'owner',password:'test-password-123',setupToken:'t0ken-for-cloud-test'})});const cookie=setup.headers.get('set-cookie').split(';')[0];
+  const get=(p)=>fetch(base+p,{headers:{Cookie:cookie}});
+  const policy=await(await get('/api/compute/policy')).json();assert.equal(policy.maxCostEur,0);assert.equal(policy.allowPaidCompute,false);
+  const put=(p,body,origin=base)=>fetch(base+p,{method:'PUT',headers:{Cookie:cookie,Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  assert.equal((await fetch(base+'/api/compute/policy',{method:'POST',headers:{Cookie:cookie,Origin:base,'Content-Type':'application/json'},body:JSON.stringify({allowPaidCompute:true})})).status,405);
+  assert.equal((await put('/api/projects/p',{projectId:'p'},'http://evil.test')).status,403);
+  assert.equal((await put('/api/projects/p',{projectId:'p'})).status,422);
+  assert.equal((await fetch(base+'/api/render',{method:'POST',headers:{Cookie:cookie,Origin:base,'Content-Type':'application/json'},body:JSON.stringify({projectId:'p',sceneId:'s',workflowId:'w',allowPaidCompute:true})})).status,400);
+  assert.equal((await(await get('/api/compute/policy')).json()).allowPaidCompute,false);
+ }finally{await new Promise(r=>server.close(r));await rm(root,{recursive:true,force:true});}
+});

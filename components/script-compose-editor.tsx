@@ -1,5 +1,7 @@
 import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent} from 'react';
 import ScriptGuide from './script-guide';
+import {buildStageNames, type BuildStage} from '../lib/episode-builder';
+import {episodeTemplates} from '../lib/episode-templates';
 import ScriptCommandPalette, {type ScriptCommandId} from './script-command-palette';
 import {
   scanScriptLineAnnotations,
@@ -164,6 +166,9 @@ export default function ScriptComposeEditor({
   onImportFile,
   onCommandAction,
   onTryExample,
+  onBuildEpisode,
+  buildProgress,
+  onPickTemplate,
 }: {
   text: string;
   scriptLocked: boolean;
@@ -183,6 +188,11 @@ export default function ScriptComposeEditor({
   onImportFile?: (text: string) => Promise<void>;
   onCommandAction?: (id: ScriptCommandId) => void;
   onTryExample?: () => void;
+  /** Rakenna jakso: koko ketju yhdellä kumottavalla muutoksella. */
+  onBuildEpisode?: () => void;
+  buildProgress?: { stage: BuildStage; episode?: number; episodes?: number } | null;
+  /** Aloituspohja tyhjästä tilasta: asettaa tekstin, rakennus tehdään käyttäjän painalluksella. */
+  onPickTemplate?: (id: string) => void;
 }) {
   const empty = !text.trim();
   const uxHero = variant === 'hero';
@@ -287,6 +297,7 @@ export default function ScriptComposeEditor({
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (scriptLocked) return;
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && onBuildEpisode && !parseDisabled) { e.preventDefault(); onBuildEpisode(); return; }
     const el = e.currentTarget;
     const pos = el.selectionStart;
     const before = text.slice(0, pos);
@@ -412,6 +423,16 @@ export default function ScriptComposeEditor({
                 Aloita tyhjästä
               </button>
             </div>
+            {onPickTemplate && (
+              <div className="script-templates" role="group" aria-label="Aloituspohjat">
+                <span className="script-templates__title">Aloituspohjat</span>
+                {episodeTemplates.map(t => (
+                  <button key={t.id} type="button" className="ghost-btn script-template" disabled={scriptLocked} title={`${t.description} Esimerkkirepliikit korvataan omilla. Kesto ilman ääniä noin ${t.approxSeconds[0]}–${t.approxSeconds[1]} s.`} onClick={() => onPickTemplate(t.id)}>
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="script-empty-hint">
               Tai kirjoita alusta: paina <kbd>/</kbd> työkaluille
             </p>
@@ -509,10 +530,23 @@ export default function ScriptComposeEditor({
               </button>
             )}
           </div>
-          <div className="script-sticky-bar">
+          {buildProgress && <BuildProgress progress={buildProgress} />}
+          <div className={`script-sticky-bar${onBuildEpisode ? ' script-sticky-bar--build' : ''}`}>
+            {onBuildEpisode && (
+              <button
+                type="button"
+                className="primary full script-build-episode"
+                disabled={parseDisabled}
+                title="Tunnistaa käsikirjoituksen, roolittaa hahmot, valitsee taustat ja rakentaa liikkeet yhdellä kumottavalla muutoksella (⌘↵)"
+                aria-keyshortcuts="Meta+Enter Control+Enter"
+                onClick={onBuildEpisode}
+              >
+                Rakenna jakso
+              </button>
+            )}
             <button
               type="button"
-              className="primary full"
+              className={onBuildEpisode ? 'secondary' : 'primary full'}
               disabled={parseDisabled}
               title={parseTitle}
               onClick={onRequestParse}
@@ -532,6 +566,25 @@ export default function ScriptComposeEditor({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+const buildStages: BuildStage[] = ['recognize', 'cast', 'motion', 'audio', 'done'];
+/** Rakennuksen vaiheet: tunnistus → roolitus → liikkeet → ääni → valmis. */
+function BuildProgress({ progress }: { progress: { stage: BuildStage; episode?: number; episodes?: number } }) {
+  const index = buildStages.indexOf(progress.stage);
+  const label = (progress.episodes && progress.episodes > 1 ? `Jakso ${progress.episode}/${progress.episodes}: ` : '') + buildStageNames[progress.stage];
+  return (
+    <div className="build-progress" role="progressbar" aria-label="Jakson rakennus" aria-valuemin={0} aria-valuemax={buildStages.length - 1} aria-valuenow={index} aria-valuetext={label}>
+      <ol>
+        {buildStages.map((stage, i) => (
+          <li key={stage} className={i < index ? 'is-done' : i === index ? 'is-current' : ''}>
+            {buildStageNames[stage]}
+          </li>
+        ))}
+      </ol>
+      <span className="build-progress__label">{label}</span>
     </div>
   );
 }

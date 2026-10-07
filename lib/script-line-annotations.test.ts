@@ -34,3 +34,10 @@ test('scanScriptLineAnnotations stays under 100ms for 5000 lines', () => {
   assert.equal(rows.length, 5000);
   assert.ok(elapsed < 100, `scan took ${elapsed.toFixed(1)} ms`);
 });
+
+test('marginaali käyttää samaa hahmolöytöä kuin jaksonrakennus: hän-pronomini puhumattoman hahmon jälkeen tunnistuu', () => {
+  // Niko ei puhu, joten hänet löytyy vain ohjeriviltä; ilman sitä rivi 2 jäisi "Ei tunnistettu".
+  const text = 'INT. KEITTIÖ\nMIRA:\n“Hei.”\nNiko kävelee sisään vasemmalta kaksi sekuntia.\nHän pysähtyy ja katsoo Miraa.';
+  const line5 = scanScriptLineAnnotations(text).find(n => n.line === 5);
+  assert.ok(line5 && !line5.unrecognized, JSON.stringify(line5));
+});
