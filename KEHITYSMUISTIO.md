@@ -457,3 +457,13 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 - **AGENTS.md** tiivistetty 3100 → ~1500 sanaan alueittain ja ristiriidat ratkaistu (asettelu, push-rajoitus, pilvi/TTS-poikkeukset, selaintestit). Alkuperäinen koko teksti on `docs/AGENTS-HISTORIA.md`.
 
 **Ei tehty:** vanhan etähaaran `cloud/kasikirjoitus-sarjaksi` poisto (PR #1 ja #3 on yhdistetty, haara on kokonaan mainissa), koska työkalun oikeustarkistus esti `git push --delete`; se jää käyttäjän päätettäväksi. Oikeita omia käsikirjoituksia ei ollut saatavilla, joten korpus on laadittu tyypillisistä ilmauksista, ei mitatuista omista lauseista.
+
+### 2.17 — Mac-tarkistus, osa 1 (2026-10-07, M-sarjan Mac, arm64, KOETA 0.36.0)
+
+**Todennettu oikealla Macilla:**
+- Pakattu `KOETA.app` käynnistyy (`startup-status.json`: phase `ready`, GPU-prosessi käynnissä); asennettu `/Applications/KOETA.app`.
+- `npm run desktop:test:package` (pakatun sovelluksen ajoaikatesti: resurssit, Rhubarb, hiljainen WAV fi/en) läpi.
+- `npm run desktop:test:playback-raf` (Electron Chromium, oikea requestAnimationFrame): 59,3 fps, p95 17,6 ms koossa 1440×900 ja 1280×720.
+- Pakatun sovelluksen mukana tuleva FFmpeg: `h264_videotoolbox -allow_sw 0` (sovelluksen oma probe) onnistuu, ja 1080×1920 30 fps H.264 + AAC -testivideo koodautuu laitteistolla.
+
+**Edelleen todentamatta (vaatii käyttöliittymän käyttöä käsin):** koko MP4-vienti sovelluksen sisältä (vientijono, musiikin ja tehosteiden kuuluminen valmiissa tiedostossa), kamera ja mikrofoni, trackpad-veto palikoissa, uudet paneelit (korjausehdotukset, nivelehdotus, monivalinta, Samalla). Huom. testit eivät käytä oikeaa Kokoro-mallia.
