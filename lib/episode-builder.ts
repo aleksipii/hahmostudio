@@ -23,6 +23,7 @@ import {heldPropFromWord} from './held-props.ts';
 import {defaultMotionSeconds} from './motion-library.ts';
 import {composeBinding,screenDirectionDiagnostics,measureCharacter} from './stage-composition.ts';
 import {defaultSafeArea} from './stage-bounds.ts';
+import {autoSoundCues,musicCues as planMusicCues,sfxInstruction} from './soundtrack.ts';
 import {sampleTrack} from './animation-model.ts';
 import {stageActor,stageState} from './presentation-stage.ts';
 import {viewAtFrame} from './character-view.ts';
@@ -186,7 +187,7 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
  const resources:Record<string,string>={};for(const r of manifest.resources)if(r.kind==='character'&&r.speaker&&r.assetKey)resources[resolveName(r.speaker)]=r.assetKey;
  const built=prepared.trimStart().startsWith('#!kilsat')?strictPresentation(prepared,aliasMap,options,diagnostics):recognizedPresentation(prepared,manifest,aliasMap,options,diagnostics);
  onStage?.('cast');
- const {p,lineOut,musicCues}=built,characters=p.characters;
+ const {p,lineOut,musicCues:musicCuesIn,sfxLines}=built,musicCues=musicCuesIn,characters=p.characters;
  // Resurssiriveillä lisätyt kalusteet pysyvät näyttämöllä koko jakson (kesto ei ole vielä tiedossa jäsennyksessä).
  for(const prop of p.production?.props??[])if(prop.id.startsWith('res-manifest-'))prop.end=1200;
  if(options.width||options.height){p.world.width=options.width??p.world.width;p.world.height=options.height??p.world.height;}
@@ -229,6 +230,11 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
     compiled=compilePresentation(validated,library.assets,fps);diagnostics.push({code:'table-placed',severity:'warning',message:`Pöytä sijoitettiin hahmon ${b.speaker} ulottuville laskuhetkellä. Siirrä pöytää tarvittaessa näyttämöllä.`});}}}
  compiled.diagnostics.push(...screenDirectionDiagnostics(compiled));
  onStage?.('audio');
+ // Ääniraita: automaattiset tehosteet liikkeistä, käsikirjoituksen tehosterivit ja musiikki; vanhat käsin tehdyt merkinnät säilyvät.
+ {const ordered=[...compiled.events].sort((a,b)=>a.sourceRef.line-b.sourceRef.line),explicit=sfxLines.flatMap(x=>{const anchor=ordered.find(e=>e.sourceRef.line>x.line)??ordered.at(-1);return anchor?[{id:'sfx-line-'+x.line,kind:'sfx' as const,sound:x.sound,event:anchor.id,offset:0,gain:.8,source:'generated' as const,line:x.line}]:[];});
+  const music=planMusicCues(compiled,musicCuesIn);diagnostics.push(...music.diagnostics);
+  const kept=(options.previous?.soundCues??[]).filter(c=>!c.auto&&!c.line&&compiled.events.some(e=>e.id===c.event));
+  compiled.soundCues=[...autoSoundCues(compiled,library.assets,fps),...explicit,...music.cues,...kept];}
  const dialogueLines=compiled.events.filter(e=>e.kind==='dialogue');
  let at=0;const music=musicCues.map(m=>{const next=compiled.events.find(e=>e.sourceRef.line>m.line);at=next?.at??compiled.seconds;return {...m,at,status:(m.off?'stopped':m.file?'imported':m.mood?'generated':'unknown') as EpisodeAudioPlan['music'][number]['status']};});
  const audioPlan:EpisodeAudioPlan={dialogue:dialogueLines.map(e=>({event:e.id,speaker:e.target,text:e.text??'',line:e.sourceRef.line,status:compiled.audioClips.some(a=>a.dialogue===e.id)?'linked':'missing'})),music};
@@ -244,7 +250,7 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
 }
 
 /** Vapaa käsikirjoitus: jokainen tunnistimen rivi ja lause → tapahtuma, kommentti tai tarkistusmerkintä. */
-function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parseScriptResourceManifest>,aliasMap:Record<string,string>,options:BuildOptions,diagnostics:Diagnostic[]):{p:Presentation;lineOut:EpisodeBuild['lines'];musicCues:MusicCue[]}{
+function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parseScriptResourceManifest>,aliasMap:Record<string,string>,options:BuildOptions,diagnostics:Diagnostic[]):{p:Presentation;lineOut:EpisodeBuild['lines'];musicCues:MusicCue[];sfxLines:{line:number;sound:string}[]}{
  const resolveName=(n:string)=>{const k=normalizeSpeaker(n);return normalizeSpeaker(aliasMap[k]??k);};
  // `Resurssi hahmo X: paketti` esittelee hahmon X, vaikka se ei puhuisi.
  const declared=manifest.resources.filter(r=>r.kind==='character'&&r.speaker).map(r=>r.speaker!);
@@ -257,7 +263,7 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
  if(characters.length>4){diagnostics.push({code:'too-many-characters',severity:'error',message:'Jaksossa voi olla enintään neljä hahmoa näyttämöllä. Mukana: '+characters.slice(0,4).join(', ')+'. Ohitettu: '+characters.slice(4).join(', ')+'. Jaa kohtaus tai jakso.'});characters=characters.slice(0,4);}
  const title=options.title??recognized.lines.find(l=>l.metadata&&['title','episode'].includes(l.metadata.key))?.metadata?.value??'Jakso';
  const p:Presentation={schemaVersion:1,id:'episode-'+stableId(prepared),original:prepared,metadata:{series:'Käsikirjoitus',season:1,episode:options.episode??1,title,target:60,purpose:'',environment:''},characters,assets:[],world:{width:options.width??1080,height:options.height??1920,background:'#ffffff',phone:{enabled:false,model:'phone-v1',carrier:characters[0]??'',hand:'leftHand',view:'front'}},sections:[],events:[],comments:[],bindings:[],audioClips:[],diagnostics:[],seconds:0,natural:true,source:'script'};
- const requirements:Requirement[]=[],lineOut:EpisodeBuild['lines']=[],musicCues:MusicCue[]=[];
+ const requirements:Requirement[]=[],lineOut:EpisodeBuild['lines']=[],musicCues:MusicCue[]=[],sfxLines:{line:number;sound:string}[]=[];
  const counts:Record<string,number>={};
  let section='intro',lastActor=characters[0]??'',speaker='',dialogue:Event|undefined,hasShot=false,durationSet=false,targetMin=0;
  const require=(category:Category,ref:Ref,status:Requirement['status'],events:string[])=>{const id='r-'+stableId(category+'|'+ref.line+'|'+ref.text);const old=requirements.find(r=>r.id===id);if(old){old.events.push(...events.filter(e=>!old.events.includes(e)));if(status==='missing'||(status==='estimated'&&old.status==='implemented'))old.status=status;}else requirements.push({id,category,detail:ref.text,sourceRef:ref,events:[...events],status});};
@@ -296,6 +302,8 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
   if(l.kind!=='dialogue'&&l.kind!=='empty'&&l.kind!=='parenthetical')dialogue=undefined;
   const music=parseMusicLine(l.text);
   if(music){musicCues.push({...music,line:l.line});if(!music.off&&!music.file&&!music.mood){warnUnknown(ref,l.text,'Musiikin tunnelmaa ei tunnistettu (iloinen, jännittävä, rauhallinen, surullinen tai tiedostonimi).');outcome='unrecognized';}lineOut.push({line:l.line,kind:'metadata',outcome,events:[]});continue;}
+  const sfx=l.kind==='direction'||l.kind==='unknown'||l.kind==='metadata'||l.kind==='comment'?sfxInstruction(l.text):undefined;
+  if(sfx&&!(l.clauses.some(c=>c.type!=='unknown'&&c.type!=='note')&&!/^(?:Ääni|Äänitehoste|Tehoste|SFX|Sound)/i.test(l.text))){sfxLines.push({line:l.line,sound:sfx});lineOut.push({line:l.line,kind:l.kind,outcome:'structure',events:[]});continue;}
   switch(l.kind){
    case'empty':lineOut.push({line:l.line,kind:l.kind,outcome:'empty',events:[]});continue;
    case'comment':case'strict-header':if(l.text)p.comments.push(ref);if(l.shot?.length||l.clauses.some(c=>c.type!=='note'))diagnostics.push({code:'notes-ignored',severity:'warning',message:`Rivi ${l.line}: tuotanto-ohjeosion rivi on kommentti eikä ohjaa animaatiota.`});lineOut.push({line:l.line,kind:l.kind,outcome:'comment',events:[]});continue;
@@ -349,15 +357,15 @@ function recognizedPresentation(prepared:string,manifest:ReturnType<typeof parse
  p.direction={targetMin,targetMax:p.metadata.target,profiles:characters.map(s=>({speaker:s,personality:'',relationship:'',delivery:'',intensity:1,still:false,sourceRefs:[]})),requirements:requirements.filter(r=>requirementCategories.includes(r.category)),noLargeGestures:false,noExtraProps:p.events.some(e=>e.value==='no-extra-props')};
  p.production=initProduction(p);
  mergeScriptResourceManifest(p,manifest);
- return {p,lineOut,musicCues};
+ return {p,lineOut,musicCues,sfxLines};
 }
 /** `#!kilsat`-tila: olemassa oleva tarkka kielioppi ja sen ajoitus säilyvät sellaisenaan. */
-function strictPresentation(prepared:string,aliasMap:Record<string,string>,options:BuildOptions,diagnostics:Diagnostic[]):{p:Presentation;lineOut:EpisodeBuild['lines'];musicCues:MusicCue[]}{
+function strictPresentation(prepared:string,aliasMap:Record<string,string>,options:BuildOptions,diagnostics:Diagnostic[]):{p:Presentation;lineOut:EpisodeBuild['lines'];musicCues:MusicCue[];sfxLines:{line:number;sound:string}[]}{
  const p=parsePresentation(prepared,aliasMap);if(options.title)p.metadata.title=options.title;p.metadata.episode=options.episode??p.metadata.episode;
  const musicCues:MusicCue[]=[],lineOut:EpisodeBuild['lines']=[];
  prepared.replace(/\r\n?/g,'\n').split('\n').forEach((text,i)=>{const m=parseMusicLine(text);if(m)musicCues.push({...m,line:i+1});const events=p.events.filter(e=>e.sourceRef.line===i+1).map(e=>e.id);lineOut.push({line:i+1,kind:text.trim()?'direction':'empty',outcome:events.length?'event':text.trim()?'structure':'empty',events});});
  for(const r of p.direction?.requirements??[])r.accepted=true;
- return {p,lineOut,musicCues};
+ return {p,lineOut,musicCues,sfxLines:[]};
 }
 
 /** Koko sarja: jokainen jakso rakennetaan erikseen samalla kirjastolla. */

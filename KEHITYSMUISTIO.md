@@ -329,3 +329,17 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Rajat:** sommittelu koskee rakentajan uusia sidoksia; vanhojen projektien käsin asetetut x/y/scale säilyvät. Lattiaviiva on yksi per jakso (ensimmäinen tausta). Vaakakuvassa turva-alue (220 px) nostaa lattiaviivaa taustan lattiakaistaa ylemmäs.
 
 **Seuraava:** vaihe E — äänitehosteet, ohjelmallinen musiikki, ducking ja kolmen lähteen miksaus.
+
+### 2.8 — Vaihe E: äänitehosteet, musiikki ja miksaus (2026-10-07)
+
+**Valmis:**
+- `lib/sound-library.ts`: kahdeksan ohjelmallisesti syntetisoitua tehostetta (askel, napautus, puhelimen värinä, soitto, ovi, koputus, suhahdus, istuutuminen) ja alkuperäinen tunnelmamusiikki (iloinen, jännittävä, rauhallinen, surullinen: sointukulku, basso, arpeggio/melodia, rytmi). Deterministinen, CC0, ei näytteitä eikä verkkoa.
+- `lib/soundtrack.ts` + `Presentation.soundCues` (valinnainen, validoitu): merkinnät ankkuroidaan tapahtumiin (siirtyvät ajoituksen mukana). Askeleet animaation todellisiin maakosketuksiin, istuutuminen/laskeutuminen liikkeen vaiheisiin, puhelimen napautus ja lasku. Käsikirjoitus: `Musiikki: rauhallinen | tiedosto.wav | pois`, `Ääni: ovi`, `SFX: door`, “Puhelin soi.”, “Ovi paukahtaa.”, “Joku koputtaa.”
+- Ducking: musiikki −10,5 dB repliikkien alle (0,15 s alku, 0,4 s palautus). Miksaus: repliikit + tehosteet + musiikki, pehmeä rajoitin; kulkee olemassa olevan `mixDialogueAudio`-polun kautta esikatseluun ja MP4/Mac-vientiin. Esikatselu soittaa musiikin ja tehosteet myös ennen repliikkiäänien tuontia.
+- Paneeli: Ääniraita-yhteenveto ja oman musiikkitiedoston tuonti (korvaa ohjelmallisen).
+- Korjattu samalla: istumisen IK nosti vinossa olevan jalan 40 px ilmaan; etunäkymän kävely taivutti polvet eri suuntaan kuin istuminen (jalka painui lattian alle noustessa).
+- Testit `lib/soundtrack.test.ts`: askel ±1 ruutu tukivaiheen alusta (riippumaton tunnistus), ducking > 8 dB, kolme lähdettä miksauksessa ja viennin WAV-polussa, determinismi.
+
+**Rajat / todentamatta:** puhesynteesiä ei ole (vain tuodut/äänitetyt repliikit). MP4:n AAC-koodaus (WebCodecs/VideoToolbox/FFmpeg) ja kuuntelu oikealla Macilla todentamatta pilvessä; testattu PCM/WAV-taso. Tehosteiden ja musiikin äänenlaatu on yksinkertaista synteesiä.
+
+**Seuraava:** vaihe F — palikkaeditori (tapahtuma = palikka, kaksisuuntainen synkronointi tekstiin).

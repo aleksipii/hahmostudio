@@ -22,7 +22,7 @@ export function compileBodyMotion(a:Animation,q:QuickProfile,p:Presentation,spea
   const current=viewAtFrame(q,next,Math.max(0,start-1)),wanted:CharacterView=gait?(gait[2]==='front'?'front':gait[2] as CharacterView):current,view=q.views?.[wanted]?wanted:current,roles=q.views?.[view]??q.roles;
   const roots=[...new Set(Object.values(q.views??{}).map(m=>m?.root).filter((k):k is string=>!!k&&k!==roles.root))];
   if(q.views&&view!==current)next=switchView(next,q,start,view);
-  if(gait)next=applyGait(next,roles,gait[1] as 'walk'|'run',gait[2] as 'left'|'right'|'front',start,count,roots);
+  if(gait)next=applyGait(next,roles,gait[1] as 'walk'|'run',gait[2] as 'left'|'right'|'front',start,count,roots,6,view==='left'||view==='right');
   else if(lowerBodyMotions[e.value]){const m=lowerBodyMotions[e.value];next=applyLowerBody(next,roles,start,count,m.phases.map(ph=>({...ph,knee:ph.knee*Math.max(.5,factor),air:(ph.air??0)*Math.max(.5,factor),arms:(ph.arms??0)*factor})),roots);}
   else if(gestures[e.value])next=applyGesture(next,roles,e.value,start,count,factor);
   // Kävelyn jälkeen hahmo kääntyy takaisin edestä kuvattavaksi, ellei seuraava liike jatka samaan suuntaan.

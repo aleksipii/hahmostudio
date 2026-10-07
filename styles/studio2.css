@@ -876,3 +876,5 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
 .studio .held-prop-gallery li { display: grid; gap: 4px; padding: 6px; border: 1px solid var(--s2-line, var(--border)); border-radius: var(--s2-r, 6px); }
 .studio .held-prop-gallery span { display: flex; gap: 4px; }
 .studio .held-prop-gallery img { background: var(--s2-bg2, var(--bg-2)); border-radius: 4px; }
+/* Ääniraidan yhteenveto */
+.studio .soundtrack-summary ul { margin: 0 0 8px; padding-left: 18px; font-size: 12px; color: var(--s2-muted, var(--muted)); }

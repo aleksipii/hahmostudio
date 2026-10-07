@@ -146,7 +146,7 @@ export type LowerBodyPlan={direction:{x:number;y:number};distance:number;kind:Ga
  * tukijalan nilkka pysyy maailmassa paikallaan ja heilahtava jalka kulkee kaarella seuraavaan kohtaan.
  * `roots`: kaikkien kuvakulmien juuret, jotta paikka säilyy kuvakulman vaihtuessa.
  */
-export function applyGait(a:Animation,roles:Record<string,string>,kind:GaitKind,dir:'left'|'right'|'front',start:number,count:number,roots:string[],blendIn=6):Animation{
+export function applyGait(a:Animation,roles:Record<string,string>,kind:GaitKind,dir:'left'|'right'|'front',start:number,count:number,roots:string[],blendIn=6,profile=false):Animation{
  const left=legGeometry(a,roles,'left'),right=legGeometry(a,roles,'right');if(!left||!right)throw Error('Askellus tarvitsee reisi-, sääri- ja jalkaterärooli sekä nilkan nivelpisteen.');
  const g=gaitParams[kind],L=(left.upper+left.lower+right.upper+right.lower)/2,before=Math.max(0,start-1),seated=Math.abs(sampleTrack(a.tracks.find(t=>t.key===roles.root),before).y)>1;
  // Askelmäärä varsinaisen kävelyajan mukaan (ennakointi/nousu ja asettuminen eivät nopeuta askeleita).
@@ -167,7 +167,8 @@ export function applyGait(a:Animation,roles:Record<string,string>,kind:GaitKind,
  const cycle=(i:number)=>{const u=Math.max(0,Math.min(1,(i-Math.min(Math.round(a.fps*.25),Math.floor((count-2)/4)))/Math.max(1,count-1-2*Math.min(Math.round(a.fps*.25),Math.floor((count-2)/4)))));let st=0;while(st<n-1&&u>times[st+1])st++;return (st+Math.max(0,Math.min(1,(u-times[st])/Math.max(1e-9,times[st+1]-times[st]))))*Math.PI;};
  // Ennakointi: lantio laskeutuu ennen ensimmäistä askelta; asettuminen: nousee viimeisen askeleen jälkeen.
  // Istumasta tai kyykystä noustaan ennen ensimmäistä askelta (juuren y palaa lepoon nousuvaiheessa `settle`).
- const bend=(s:'left'|'right'):1|-1=>dir==='front'?(s==='left'?1:-1):(sign>0?1:-1);
+ // Profiilissa polvi taipuu kulkusuuntaan; etunäkymän taiteessa ulospäin (sama kuin istuessa, ei ristihäivytystä).
+ const bend=(s:'left'|'right'):1|-1=>profile?(sign>0?1:-1):(s==='left'?1:-1);
  // Ristihäivytys vain, jos lähtöasento poikkeaa IK-ratkaisusta (esim. nousu istumasta); muuten IK sellaisenaan.
  const first=Object.fromEntries((['left','right'] as const).map(s=>[s,legAngles(legs[s],{x:legs[s].hip.x+root0.x,y:legs[s].hip.y+root0.y},{x:legs[s].ankle.x+root0.x,y:legs[s].ankle.y},bend(s))]));
  // Juuri esiin tuleva kuvakulma (oli piilossa) aloittaa suoraan IK-asennosta.
@@ -207,9 +208,10 @@ export function applyLowerBody(a:Animation,roles:Record<string,string>,start:num
  for(let i=0;i<count;i++){
   const u=count>1?i/(count-1):1,frame=start+i,knee=value(u,p=>p.knee,startKnee),air=value(u,p=>p.air??0,0)*L;
   // Lantion lasku: lepoetäisyys − koukistettu etäisyys (sama molemmille jaloille keskiarvona).
-  const drop=((restDist(left)-distFor(left,knee))+(restDist(right)-distFor(right,knee)))/2,y=ground+drop-air;
+  // Lantion lasku pystysuunnassa: lepoasennon pystyetäisyys − koukistetun jalan pystyetäisyys (keskiarvo jaloista).
+  const vertical=(leg:Leg,d:number)=>Math.sqrt(Math.max(0,d*d-(leg.ankle.x-leg.hip.x)**2)),drop=((vertical(left,restDist(left))-vertical(left,distFor(left,knee)))+(vertical(right,restDist(right))-vertical(right,distFor(right,knee))))/2,y=ground+drop-air;
   w.set('root',frame,{x:root0.x,y});roots.forEach((_,k)=>w.set('__root'+k,frame,{x:root0.x,y}));
-  for(const s of ['left','right'] as const){const leg=legs[s],hip={x:leg.hip.x+root0.x,y:leg.hip.y+y},d=distFor(leg,knee),dx=leg.ankle.x-leg.hip.x,target={x:leg.ankle.x+root0.x,y:hip.y+Math.sqrt(Math.max(0,d*d-dx*dx))};
+  for(const s of ['left','right'] as const){const leg=legs[s],hip={x:leg.hip.x+root0.x,y:leg.hip.y+y},target={x:leg.ankle.x+root0.x,y:leg.ankle.y+ground-air};
    const angles=legAngles(leg,hip,target,s==='left'?1:-1);w.set(s+'Thigh',frame,{rotation:angles.thigh});w.set(s+'Shin',frame,{rotation:angles.shin});w.set(s+'Foot',frame,{rotation:angles.foot});}
   const ua=Math.max(0,Math.min(1,count>1?(i-2)/(count-1):1)),arms=value(ua,p=>p.arms??0,0);
   for(const [s,m] of [['left',-1],['right',1]] as const){const base=w.base(s+'Arm',before);w.set(s+'Arm',frame,{rotation:base.rotation+m*arms});}
