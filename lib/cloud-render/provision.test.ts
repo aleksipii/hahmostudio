@@ -13,6 +13,7 @@ test('manifest is built only for fully verifiable models',()=>{
  assert.throws(()=>buildProvisionManifest(goodModel({files:[{path:'../x.safetensors',sha256:sha,comfyFolder:'checkpoints'}]}),'PRODUCTION_SAFE',ZERO_COST_POLICY),/Invalid file entry/);
  assert.throws(()=>buildProvisionManifest(goodModel({commercialUse:'unknown'}),'PRODUCTION_SAFE',ZERO_COST_POLICY),Blocked);
 });
+test('dot-segment repo ids are refused',()=>{assert.throws(()=>buildProvisionManifest(goodModel({source:'huggingface:../x'}),'PRODUCTION_SAFE',ZERO_COST_POLICY),/Invalid repository/);});
 test('runtime script verifies checksums and discards mismatches (local server, no external network)',async()=>{
  const body=Buffer.from('fake weights for test'),good=createHash('sha256').update(body).digest('hex');
  const srv=http.createServer((_q,r)=>{r.end(body);});await new Promise<void>(r=>srv.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${(srv.address() as {port:number}).port}`;

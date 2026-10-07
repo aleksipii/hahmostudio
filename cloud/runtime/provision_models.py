@@ -23,7 +23,7 @@ def sha256_file(path):
 
 
 def provision(manifest, comfy_dir, base_url="https://huggingface.co", token=None):
-    if manifest.get("schema") != 1 or not REPO.match(manifest.get("repo", "")) or not REV.match(manifest.get("revision", "")):
+    if manifest.get("schema") != 1 or not REPO.match(manifest.get("repo", "")) or any(set(x) == {"."} for x in manifest["repo"].split("/")) or not REV.match(manifest.get("revision", "")):
         raise SystemExit("manifest rejected: repo/revision invalid (an exact 40-hex commit is required)")
     root = os.path.realpath(os.path.join(comfy_dir, "models"))
     for f in manifest["files"]:

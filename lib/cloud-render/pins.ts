@@ -1,7 +1,9 @@
+import type {ModelFile} from './models.ts';
+export const ROLES=['checkpoint','unet','clip','clip2','vae','clip_vision'] as const;
 /** Builds a HAHMOSTUDIO_MODEL_PINS_FILE entry from Hugging Face metadata. Metadata only: no weight bytes are downloaded. */
-export type PinFileSpec={path:string;comfyFolder:string;role:string};
+export type PinFileSpec={path:string;comfyFolder:string;role:NonNullable<ModelFile['role']>};
 export async function buildPin(repo:string,files:PinFileSpec[],fetchImpl:typeof fetch=fetch,token?:string){
- if(!/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(repo))throw new Error('Invalid repo id.');
+ if(!/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(repo)||repo.split('/').some(x=>/^\.+$/.test(x)))throw new Error('Invalid repo id.');
  const r=await fetchImpl(`https://huggingface.co/api/models/${repo}?blobs=true`,{headers:token?{Authorization:'Bearer '+token}:{}});
  if(!r.ok)throw new Error(`Hugging Face returned ${r.status} (gated repos need HF_TOKEN).`);
  const j=await r.json() as {sha?:string;siblings?:{rfilename:string;lfs?:{sha256?:string}}[]};
