@@ -976,7 +976,3 @@ For files under tasks/cc/text/language_detector/custom_ops/utils/utf/
 ## Local export and speech runtime
 
 FFmpeg 8.1 (LGPL 2.1+, GPL disabled), OpenH264 2.6.0 (BSD), whisper.cpp 1.9.4 and Whisper base weights (MIT). Static binaries use only macOS system frameworks. Licenses: licenses/native/. Corresponding pinned source archives and configuration: Contents/Resources/native/sources/. Maintainer build command: npm run native:prepare. Model source: https://huggingface.co/ggerganov/whisper.cpp. No audio is sent there during recognition.
-
-## Kokoro-puhesynteesi (valinnainen, paikallinen)
-
-Kokoro-82M-v1.0-ONNX (Apache-2.0) ja kokoro-js 1.2.1 (Apache-2.0, riippuvuuksina Transformers.js ja ONNX Runtime). Mallipainoja ei pakata sovellukseen eikä repoon: ne ladataan käyttäjän luvalla sovelluksen tietokansioon (lähde huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX). Ajoympäristö asennetaan Macilla komennolla `npm run kokoro:prepare`; sen riippuvuuksien lisenssit tulee tarkistaa ennen jakelua.
