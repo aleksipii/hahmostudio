@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent} from 'react';
 import ScriptGuide from './script-guide';
 import {buildStageNames, type BuildStage} from '../lib/episode-builder';
+import {episodeTemplates} from '../lib/episode-templates';
 import ScriptCommandPalette, {type ScriptCommandId} from './script-command-palette';
 import {
   scanScriptLineAnnotations,
@@ -167,6 +168,7 @@ export default function ScriptComposeEditor({
   onTryExample,
   onBuildEpisode,
   buildProgress,
+  onPickTemplate,
 }: {
   text: string;
   scriptLocked: boolean;
@@ -189,6 +191,8 @@ export default function ScriptComposeEditor({
   /** Rakenna jakso: koko ketju yhdellä kumottavalla muutoksella. */
   onBuildEpisode?: () => void;
   buildProgress?: { stage: BuildStage; episode?: number; episodes?: number } | null;
+  /** Aloituspohja tyhjästä tilasta: asettaa tekstin, rakennus tehdään käyttäjän painalluksella. */
+  onPickTemplate?: (id: string) => void;
 }) {
   const empty = !text.trim();
   const uxHero = variant === 'hero';
@@ -419,6 +423,16 @@ export default function ScriptComposeEditor({
                 Aloita tyhjästä
               </button>
             </div>
+            {onPickTemplate && (
+              <div className="script-templates" role="group" aria-label="Aloituspohjat">
+                <span className="script-templates__title">Aloituspohjat</span>
+                {episodeTemplates.map(t => (
+                  <button key={t.id} type="button" className="ghost-btn script-template" disabled={scriptLocked} title={`${t.description} Esimerkkirepliikit korvataan omilla. Kesto ilman ääniä noin ${t.approxSeconds[0]}–${t.approxSeconds[1]} s.`} onClick={() => onPickTemplate(t.id)}>
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="script-empty-hint">
               Tai kirjoita alusta: paina <kbd>/</kbd> työkaluille
             </p>

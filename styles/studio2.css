@@ -908,3 +908,6 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
 @media (prefers-reduced-motion: reduce) { .studio .block { transition: none; } }
 /* Palikkaeditori keskialueella: koko leveys käsikirjoituksen alla, ei kapeassa sivupalkissa */
 .studio .block-editor-dock { padding: 0 16px 16px; max-width: var(--script-measure-wide, 1100px); margin: 0 auto; width: 100%; box-sizing: border-box; }
+/* Aloituspohjat tyhjässä tilassa */
+.studio .script-templates { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin-top: 14px; }
+.studio .script-templates__title { font-size: 11px; color: var(--s2-faint, var(--muted)); text-transform: uppercase; letter-spacing: .06em; }

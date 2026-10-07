@@ -147,3 +147,22 @@ test('Kokoro-yhteispeli: oletusäänet, tuotettavuusarvio rivikohtaisesti, oma �
  // Uudelleenrakennus säilyttää käyttäjän valitseman äänen.
  const changed=structuredClone(p);changed.bindings[0].kokoroVoice='bf_emma';assert.equal(buildEpisode(text,await library(text),{previous:changed}).presentation.bindings[0].kokoroVoice,'bf_emma');
 });
+
+test('aloituspohjat rakentuvat heti: ei tunnistamattomia rivejä, ainoa virhe on puuttuva repliikkiääni, kesto arvion mukainen',async()=>{
+ const {episodeTemplates}=await import('./episode-templates.ts');
+ assert.ok(episodeTemplates.length>=7);assert.equal(new Set(episodeTemplates.map(t=>t.id)).size,episodeTemplates.length);
+ for(const t of episodeTemplates){const b=buildEpisode(t.source,await library(t.source)),p=b.presentation;
+  assert.deepEqual(b.diagnostics.filter(d=>d.severity==='error'&&d.code!=='missing-audio').map(d=>d.message),[],t.id);
+  assert.ok(!b.diagnostics.some(d=>['unrecognized-line','note-line','build-failed'].includes(d.code)),t.id+' '+JSON.stringify(b.diagnostics.filter(d=>['unrecognized-line','note-line'].includes(d.code)).map(d=>d.message)));
+  assert.ok(p.events.some(e=>e.kind==='dialogue')&&p.characters.length>=1,t.id);
+  assert.ok(p.seconds>=t.approxSeconds[0]-2&&p.seconds<=t.approxSeconds[1]+2,`${t.id}: ${p.seconds.toFixed(1)} s ei välillä ${t.approxSeconds}`);
+  assert.ok(p.soundCues!.some(c=>c.kind==='music'),t.id+' musiikki');assert.ok(b.lines.filter(l=>l.outcome==='unrecognized').length===0,t.id);}
+ const en=episodeTemplates.find(t=>t.language==='en')!,b=buildEpisode(en.source,await library(en.source));assert.ok(b.audioPlan.dialogue.every(d=>d.synth==='possible'),'englanninkieliset rivit ovat Kokoro-tuotettavissa');
+});
+
+test('jakso ei jakaudu tyhjäksi esijaksoksi, kun resurssirivi on ennen otsikkoa; aloituspohjat ovat yksi jakso',async()=>{
+ const {episodeTemplates}=await import('./episode-templates.ts');
+ const s=splitEpisodes('Resurssi esine: pöytä\n\nJakso 1: Puhelu\nMusiikki: rauhallinen\nMira vilkuttaa.');assert.equal(s.length,1);assert.equal(s[0].title,'Puhelu');assert.ok(s[0].text.startsWith('Resurssi esine'));assert.equal(s[0].firstLine,1);
+ assert.equal(splitEpisodes('Mira vilkuttaa.\n---\nNiko vilkuttaa.').length,2);assert.equal(splitEpisodes('Jakso 1: A\nMira vilkuttaa.\nJakso 2: B\nNiko vilkuttaa.').length,2);
+ for(const t of episodeTemplates)assert.equal(splitEpisodes(t.source).length,1,t.id);
+});

@@ -397,3 +397,10 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Ei todennettu:** Electron/Mac, Kokoro-synteesi oikealla mallilla (vain testimoottori), tuotantokoonti, trackpad-veto.
 
 **Seuraava:** mallipohjat (kohta 7), palikkamuutoksen viiveen pienentäminen, tarkistuksen yhden napin korjausehdotukset.
+
+### 2.12 — Aloituspohjat (2026-10-07)
+
+**Valmis:** `lib/episode-templates.ts`: 7 pohjaa (dialogi kahdelle, uutiskatsaus, tuote-esittely, opetusvideo, pieni tarina, puhelinsoitto, English chat/Kokoro), valinta Käsikirjoitus-vaiheen tyhjästä tilasta. Pohjat käyttävät vain kanonisia lauseita ja rakentuvat heti ilman tunnistamattomia rivejä (testi + oikea UI). Esimerkkirepliikit on merkitty korvattaviksi; ohjelma ei keksi repliikkejä. Kesto ilman ääniä 3–14 s (arvio näkyy vihjeessä).
+Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson kahtia (tyhjä esijakso). `splitEpisodes` liittää pelkät resurssi-/asetusrivit seuraavaan jaksoon (testi). `npm test` 1147 (1146 läpi, 1 ohitettu). Kuva `docs/ui-checks/03-aloituspohjat.png`.
+
+**Seuraava:** palikkamuutoksen kokonaisviive (661 ms dev), tarkistuksen yhden napin korjausehdotukset, vapaa ajoitus/monivalinta palikoille, Mac-tarkistus.
