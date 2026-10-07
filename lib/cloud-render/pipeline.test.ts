@@ -4,6 +4,7 @@ import {mockFree,mockPaid,mockUnknownCost,MockRenderBackend,PNG_1X1} from './moc
 import {MockAIDirector} from './ai-suggestion.ts';
 import {parseRenderRequest} from './pipeline.ts';
 import {ZERO_COST_POLICY} from './compute.ts';
+import {WorkflowRegistry} from './workflows.ts';
 
 test('happy path: all 21 steps, uploads render + audit + reproducibility metadata',async()=>{
  const free=mockFree(),h=await harness([free]);
@@ -70,7 +71,7 @@ test('unknown project/scene/workflow/model are blocked',async()=>{
  assert.equal((await h.service.start(req({projectId:'nope'})).done).blocked!.code,'project-unknown');
  assert.equal((await h.service.start(req({sceneId:'nope'})).done).blocked!.code,'scene-unknown');
  assert.equal((await h.service.start(req({workflowId:'nope'})).done).blocked!.code,'workflow-unknown');
- assert.equal((await h.service.start(req({workflowId:'character_animation'})).done).blocked!.code,'workflow-not-implemented');
+ assert.throws(()=>new WorkflowRegistry().require('character_animation'),/not implemented/,'composite workflow has no graph of its own');
  assert.equal((await h.service.start(req({modelId:'nope'})).done).blocked!.code,'model-unknown');
 });
 test('unknown-license model is blocked in PRODUCTION_SAFE and never silently replaced',async()=>{

@@ -79,6 +79,7 @@ const authorized={status:'AUTHORIZED',stage:'authorized',reasons:[],fingerprint:
 test('cloud authorization card shows every pre-execution field and only an authorized card can start a render',()=>{
  const html=renderToStaticMarkup(React.createElement(AuthorizationCardView,{card:authorized}));
  for(const t of ['Taustajärjestelmä','colab-free','Luokka','free','Arvioitu laskennan hinta','€0.00','Enimmäishinta','Maksullinen laskenta','POIS','Maksullinen varavaihtoehto','Malli','flux1-schnell','Mallin revisio','b'.repeat(40),'Lisenssi','apache-2.0','Kaupallinen käyttö','allowed','Työnkulku','text_to_image','HYVÄKSYTTY','ei voi muuttaa'])assert.ok(html.includes(t),t);
+ assert.ok(renderToStaticMarkup(React.createElement(AuthorizationCardView,{card:{...authorized,workflowId:'character_animation',clips:[{eventId:'a'},{eventId:'b'}]}})).includes('Klippejä'));
  assert.equal(canRender(authorized,null,false),true);assert.equal(canRender(authorized,null,true),false);assert.equal(canRender(authorized,{state:'RENDERING'},false),false);assert.equal(canRender(authorized,{state:'COMPLETED'},false),true);
  const blocked={...authorized,status:'BLOCKED',fingerprint:undefined,estimate:{estimatedCostEur:null,confidence:'unknown',billingProvider:'x'},model:{...authorized.model,revision:undefined,checksumsPinned:false},reasons:['Model revision is not pinned.']};
  const bh=renderToStaticMarkup(React.createElement(AuthorizationCardView,{card:blocked}));assert.ok(bh.includes('ESTETTY')&&bh.includes('EI LUKITTU')&&bh.includes('tuntematon (estetty)')&&bh.includes('not pinned'));
