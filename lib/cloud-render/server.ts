@@ -34,5 +34,5 @@ export function createCloudRender(env:Env,dataDir:string,opts:{director?:AIDirec
  const projects=new ProjectStore(storage),refs=new CharacterReferenceSystem(storage);
  const service=new RenderService({projects,storage,backends,router:new ModelRouter(models),workflows,policy,modelMode,director:opts.director,refs,requireSceneLock:true});
  const handle=createCloudRenderApi({service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id});
- return{handle,service,projects,policy,modelMode,storage,backends,models,refs};
+ return{handle,service,projects,policy,modelMode,storage,backends,models,refs,workflows};
 }

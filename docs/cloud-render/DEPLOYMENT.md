@@ -17,7 +17,8 @@ HAHMOSTUDIO_COMFYUI_BEARER=...                       # protect the runtime
 python cloud/runtime/provision_models.py manifest.json --comfy-dir /content/ComfyUI     # HF_TOKEN env for gated repos
 ```
 Manifests come from `buildProvisionManifest(model, 'PRODUCTION_SAFE', policy)`, which refuses unpinned or unlicensed models. Start ComfyUI with `--listen` behind the tunnel.
-5. Open the editor → menu → "Pilvirenderöinti…".
+5. Check the runtime without rendering: `node --experimental-strip-types scripts/cloud-render-smoke.ts` (same env). It goes through the cost gate and firewall, then confirms nodes and pinned model files per workflow/model pair via `/object_info`. A pair that passes is the evidence for flipping a workflow's `liveVerified` after one real render.
+6. Open the editor → menu → "Pilvirenderöinti…".
 
 No weights ever touch the local machine or Drive. The repo test `repository contains no model weight files` guards the source tree.
 
