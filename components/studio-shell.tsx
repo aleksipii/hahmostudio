@@ -50,9 +50,9 @@ export default function StudioShell({
       onDrop={onDrop}
     >
       <header className="kilsat-top s2-top">
-        <div className="kilsat-brand s2-brand" aria-label="KILSAT Studio">
-          <i className="kilsat-brand-mark s2-mark" aria-hidden>K</i>
-          <span>KILSAT</span>
+        <div className="kilsat-brand s2-brand" aria-label="KOETA">
+          <img className="kilsat-brand-mark s2-mark" src={`${import.meta.env.BASE_URL}branding/koeta.png`} alt="" aria-hidden />
+          <span>KOETA</span>
         </div>
         {projectMenu}
         <nav className="studio-flow-tabs s2-phases" aria-label="Tuotantovaiheet">
