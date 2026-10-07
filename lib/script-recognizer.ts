@@ -674,12 +674,39 @@ export class ScriptRecognizer {
 
 }
 
+/** Lauseen alun sanat, jotka eivät koskaan ole hahmon nimiä (ohjerivien hahmolöytö). */
+const nonActorStarters = new Set(['sitten', 'samalla', 'nyt', 'lopuksi', 'yhtäkkiä', 'äkkiä', 'hetken', 'kamera', 'kuva', 'tausta', 'musiikki', 'ääni', 'kaikki', 'molemmat', 'kumpikin', 'joku', 'kukaan', 'hän', 'he', 'se', 'ne', 'tämä', 'tuo', 'ja', 'mutta', 'kun', 'jos', 'ei', 'älä', 'huom', 'leikkaus', 'kohtaus', 'jakso',
+  'täysin', 'hyvin', 'hieman', 'vähän', 'todella', 'aivan', 'hitaasti', 'nopeasti', 'hiljaa', 'varovasti', 'vihdoin', 'taas', 'jälleen', 'very', 'slowly', 'quickly', 'really', 'just', 'still', 'again', 'quietly', 'carefully',
+  'then', 'meanwhile', 'suddenly', 'finally', 'now', 'camera', 'the', 'a', 'an', 'everyone', 'everybody', 'someone', 'somebody', 'nobody', 'he', 'she', 'they', 'it', 'we', 'i', 'you', 'and', 'but', 'when', 'if', 'no', 'not', 'cut', 'scene', 'episode', 'music', 'sound', 'background']);
+/**
+ * Puhumattomat hahmot ohjeriveiltä: rivin ensimmäinen sana on isolla alkukirjaimella kirjoitettu nimi,
+ * jota seuraa suoraan tunnettu toimintaverbi ("Niko kävelee", "Mom waves"). Suljettu sääntö, ei arvausta.
+ */
+export function discoverActors(lines: string[]): string[] {
+  const found: string[] = [];
+  const lowerWords = new Set(lines.flatMap(l => l.match(/(?<![\p{L}])[\p{Ll}][\p{L}'-]*/gu) ?? []));
+  for (const raw of lines) {
+    const t = cleanLine(raw);
+    if (!t || /^[\p{Lu}\d\s.'’:()\/-]+$/u.test(t) || /:/.test(t.split(/\s+/)[0] ?? '')) continue;
+    const m = t.match(/^([\p{Lu}][\p{Ll}][\p{L}'-]{0,30})\s+([\p{L}]+)/u);
+    // Sana, joka esiintyy muualla pienellä alkukirjaimella, on tavallinen sana eikä nimi ("Täysin" / "täysin").
+    if (!m || nonActorStarters.has(lower(m[1])) || lowerWords.has(lower(m[1]))) continue;
+    const verb = lower(m[2]);
+    if (anyVerbFi.test(verb) || anyVerbEn.test(verb) || /^(seisoo|seisoi|tulee|tuli|astuu|astui|stands|enters|entered)$/u.test(verb)) {
+      const n = normalizeName(m[1]);
+      if (!found.includes(n)) found.push(n);
+    }
+  }
+  return found;
+}
+
 /** Koko käsikirjoitus: esiskannaus (puhujat, hahmot) + rivitilakone. */
-export function recognizeScript(text: string, characters: string[] = []): RecognizedScript {
+export function recognizeScript(text: string, characters: string[] = [], options: { discoverActors?: boolean } = {}): RecognizedScript {
   const lines = text.replace(/\r\n?/g, '\n').split('\n');
   const r = new ScriptRecognizer(characters);
   const following = nextNonEmpty(lines);
   r.prescan(lines, following);
+  if (options.discoverActors) for (const n of discoverActors(lines)) r.addCharacter(n);
   const out: RecognizedLine[] = [];
   for (let i = 0; i < lines.length; i++) out.push(r.recognize(lines[i], i + 1, following[i]));
   const content = out.filter(l => l.kind !== 'empty');

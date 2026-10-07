@@ -856,3 +856,18 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
 .studio.s2 .script-line-meta { font: 10px var(--s2-mono); color: var(--s2-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .studio.s2 .script-line-meta.is-recognized { color: var(--s2-ok); }
 .studio.s2 .script-line-meta.is-unknown { color: var(--s2-warn); }
+
+/* Rakenna jakso: ensisijainen toiminto + vaiheittainen edistyminen (tunnistus → roolitus → liikkeet → ääni → valmis) */
+.studio .script-sticky-bar--build { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.studio .script-sticky-bar--build .secondary { white-space: nowrap; }
+.studio .build-progress { display: grid; gap: 6px; padding: 8px 0; }
+.studio .build-progress ol { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 0; padding: 0; list-style: none; }
+.studio .build-progress li { padding-top: 6px; border-top: 3px solid var(--s2-line, var(--border)); font: 11px var(--s2-font, inherit); color: var(--s2-muted, var(--muted)); }
+.studio .build-progress li.is-done { border-color: var(--s2-ok, var(--green)); color: var(--s2-text, inherit); }
+.studio .build-progress li.is-current { border-color: var(--s2-accent, var(--accent)); color: var(--s2-text, inherit); font-weight: 600; }
+.studio .build-progress__label { font-size: 12px; color: var(--s2-muted, var(--muted)); }
+@media (prefers-reduced-motion: no-preference) { .studio .build-progress li { transition: border-color 120ms ease-out; } }
+.studio .series-builds ol { display: grid; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.studio .series-builds li { display: flex; align-items: center; gap: 8px; }
+.studio .series-builds button[aria-current="true"] { border-color: var(--s2-accent, var(--accent)); }
+.studio .series-builds__meta { font: 11px var(--s2-mono, monospace); color: var(--s2-faint, var(--muted)); }

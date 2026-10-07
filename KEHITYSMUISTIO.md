@@ -269,3 +269,22 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Valmis:** `scared`-ilme (kulmat ylös, silmät 1,14×, pupillit 0,78×, pyöreä suu) tunnistimessa, vapaassa käsikirjoituksessa ja `#!kilsat`-tilassa (`ilme: peloissaan`). Ilmeen lepoasennon suu yleistetty: hymy / surusuu (`mouthSad`) / pyöreä / neutraali, puhe ohittaa ja suu palaa repliikin jälkeen. Ilmeet säilyttävät katseen pupillisiirtymän. Pipsa, Ville, Taru ja Ukko saivat Suu suru -tason. Toon3d: katse kameraan siirtää projisoidun pupillin silmänvalkuaisen keskelle (`centerOnEyeWhite`). README uudistettu (KILSAT Studio 2 -osio). Cloud-tehtävä: `docs/CLOUD-TEHTAVA-KASIKIRJOITUKSESTA-SARJAKSI.md`. `npm test` 1007/1007.
 
 **Seuraava:** cloud-tehtävän vaihe A (yhden painalluksen jaksonrakennus).
+
+### 2.4 — Cloud-tehtävä vaihe A: Rakenna jakso yhdellä painalluksella (haara `cloud/kasikirjoitus-sarjaksi`, 2026-10-07)
+
+**Kehitysvaihe:** käsikirjoituksesta katsottava jakso yhdellä kumottavalla muutoksella.
+
+**Valmis:**
+- `lib/episode-builder.ts`: `buildEpisode(scriptText, library, options) → {presentation, assets, cast, animationPerActor, audioPlan, diagnostics, lines}`. Vapaa käsikirjoitus rakennetaan suoraan sääntötunnistimen riveistä ja lauseista; `#!kilsat`-lohkot käyttävät olemassa olevaa tarkkaa kielioppia. Jokainen rivi saa lopputuloksen (tapahtuma, rakenne, kommentti tai näkyvä tarkistusmerkintä); tunnistamatonta ei arvata. Rakentaja ei kaadu millään syötteellä (fuzz-testi 150 satunnaista käsikirjoitusta).
+- Roolitus: `Resurssi hahmo X: paketti` → `@tunnus` → sama nimi → oletuspaketit (Pipsa, Ville, Taru, Ukko) merkinnällä `default-cast`. Sidosfunktiot ovat tuettuja vain, jos paketissa on osat (virhe vain, kun käsikirjoitus käyttää puuttuvaa toimintoa).
+- Miljöö: `Tausta:`, `Miljöö:` ja kohtausotsikot (INT. KEITTIÖ) → synonyymitaulukko taivutusmuotoineen ja astevaihteluineen (keittiössä, bussipysäkillä, living room, kartonkiauto…). Tuntematon tausta = virhe + neutraali tausta.
+- Puhumattomat hahmot löytyvät ohjeriveiltä (`discoverActors`: iso alkukirjain + tunnettu verbi; sana, joka esiintyy muualla pienellä, ei ole nimi).
+- Uusi tapahtumatyyppi `transition` (häivytys mustaan/mustasta, ristikuva, leikkaus) mallissa, ajoituksessa ja renderöinnissä.
+- Sarja: `---`, `Jakso N:` ja `#!kilsat` aloittavat jakson; useampi jakso → jaksovalitsin ja **Tallenna sarja (.sarja)** (`lib/series-archive.ts`, sama muoto kuin Jaksot-paneelissa, max 5).
+- UI: **Rakenna jakso** (⌘↵) on Käsikirjoitus-vaiheen ensisijainen toiminto, *Jaa kohtauksiin* toissijainen. Edistyminen: Tunnistus → Roolitus → Liikkeet → Ääni → Valmis (`role=progressbar`). Kulkee `update()`→`DurableCommandGate` → yksi kumottava muutos.
+- Korjattu samalla: ilo/suru/pelko-ilmeet merkittiin ajoituksessa tuntemattomiksi; `#!kilsat` hylkäsi `Jakson nimi:`/`Pituus:`/`Musiikki:`-rivit; puuttuva ääni tuotti tiukassa tilassa kestoristiriidan.
+- Mittaus `docs/benchmarks/episode-build.md`: 60 s jakso ~0,1 s pilvikoneella. `npm test` 1019/1019.
+
+**Rajat:** äänitehosteita ja musiikkia ei vielä tuoteta (musiikkiohje kirjataan `audioPlan`iin). Muut esineet kuin puhelin mainitaan tarkistuksessa mutta eivät vielä kiinnity käteen. Tunnistin on sääntöpohjainen, ei vapaan kielen ymmärrys.
+
+**Seuraava:** vaihe B — esineiden tartuntapisteet (grip) ja käden maailmamatriisi joka ruudussa.

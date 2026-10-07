@@ -1,4 +1,5 @@
 import {boundedPresentation} from './stage-production.ts';
+import {transitionShade} from './presentation-timing.ts';
 import {toonCamera} from './toon-render.ts';
 import {drawProps} from './prop-library.ts';
 import {renderToonCast} from './toon-render.ts';
@@ -11,6 +12,9 @@ import {viewAtFrame} from './character-view.ts';
 import {paintAnimatedLayers} from './psd-render.ts';import {drawPhone,phonePlacement,defaultPhone} from './phone-prop.ts';import {actorPlacement,type PresentationAssets} from './presentation-compile.ts';import type {Pose} from './animation-model.ts';import type {Presentation} from './presentation-model.ts';
 export function presentationState(p:Presentation,time:number){const active=(kind:string)=>p.events.filter(e=>e.kind===kind&&(e.at??0)<=time).sort((a,b)=>(a.at??0)-(b.at??0)).at(-1);return {shot:active('shot'),title:p.events.filter(e=>e.kind==='title'&&(e.at??0)<=time&&time<(e.at??0)+(e.duration??.7)).at(-1)};}
 export function renderPresentation(canvas:HTMLCanvasElement,scratch:HTMLCanvasElement,p:Presentation,assets:PresentationAssets,time:number,width:number,height:number,live?:{roles:Record<string,string>;poses:Record<string,Pose>},depth?:Cutout3D,transparent=false,safeArea?:import('./stage-bounds').SafeArea){
+ renderPresentationFrame(canvas,scratch,p,assets,time,width,height,live,depth,transparent,safeArea);const shade=transitionShade(p,time);if(shade>0){const ctx=canvas.getContext('2d')!;ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=shade;ctx.fillStyle='#000000';ctx.fillRect(0,0,width,height);ctx.globalAlpha=1;}
+}
+function renderPresentationFrame(canvas:HTMLCanvasElement,scratch:HTMLCanvasElement,p:Presentation,assets:PresentationAssets,time:number,width:number,height:number,live?:{roles:Record<string,string>;poses:Record<string,Pose>},depth?:Cutout3D,transparent=false,safeArea?:import('./stage-bounds').SafeArea){
  p=boundedPresentation(p,assets,time,safeArea);
  canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d')!;if(!transparent){ctx.fillStyle=p.world.background;ctx.fillRect(0,0,width,height);}const state=presentationState(p,time),world=stageState(p,time);if(!transparent&&world.design&&world.design!=='white')drawBackground(ctx,world.design,width,height);
  if(state.title){ctx.fillStyle='#242a31';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${Math.round(width*.11)}px -apple-system, sans-serif`;ctx.fillText(state.title.value,width/2,height/2,width*.9);return;}
