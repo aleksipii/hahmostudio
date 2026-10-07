@@ -4,7 +4,10 @@ import type {Presentation} from '../lib/presentation-model';
 import {characterStateMachine,characterSpans} from '../lib/character-states';
 
 export type BlockCommand=
- |{kind:'move';id:string;time:number}
+ |{kind:'move';id:string;time:number;together?:boolean}
+ |{kind:'move-many';ids:string[];time:number}
+ |{kind:'delete-many';ids:string[]}
+ |{kind:'duplicate-many';ids:string[]}
  |{kind:'stretch';id:string;seconds:number}
  |{kind:'delete';id:string}
  |{kind:'duplicate';id:string}
@@ -31,6 +34,8 @@ export default function BlockTimeline({presentation,selected,onSelect,onCommand,
  const blocks=useMemo(()=>presentationBlocks(presentation),[presentation]);
  const lanes=useMemo(()=>[...presentation.characters,'kamera','näyttämö','ääni'],[presentation.characters]);
  const [drag,setDrag]=useState<{id:string;mode:'move'|'stretch';x:number;dx:number}|undefined>();
+ const [multi,setMulti]=useState<string[]>([]);
+ const group=multi.length>1?multi:undefined,inGroup=(id:string)=>!!group?.includes(id);
  const [libraryLane,setLibraryLane]=useState(presentation.characters[0]??'');
  const width=Math.max(320,(presentation.seconds+1)*pixelsPerSecond);
  const ordered=blocks.filter(b=>b.editable);
@@ -40,13 +45,16 @@ export default function BlockTimeline({presentation,selected,onSelect,onCommand,
   if(!b.editable)return;
   if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&e.shiftKey){e.preventDefault();if(b.params.seconds!==undefined)onCommand({kind:'stretch',id:b.id,seconds:b.params.seconds+(e.key==='ArrowRight'?.5:-.5)});return;}
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();const n=neighbour(b,e.key==='ArrowLeft'?-1:1);if(n)onCommand({kind:'move',id:b.id,time:e.key==='ArrowLeft'?n.start:n.start+n.duration+.001});return;}
-  if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();onCommand({kind:'delete',id:b.id});return;}
-  if((e.key==='d'||e.key==='D')&&(e.metaKey||e.ctrlKey)){e.preventDefault();onCommand({kind:'duplicate',id:b.id});}
+  if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();if(group&&inGroup(b.id)){onCommand({kind:'delete-many',ids:group});setMulti([]);}else onCommand({kind:'delete',id:b.id});return;}
+  if((e.key==='d'||e.key==='D')&&(e.metaKey||e.ctrlKey)){e.preventDefault();if(group&&inGroup(b.id))onCommand({kind:'duplicate-many',ids:group});else onCommand({kind:'duplicate',id:b.id});return;}
+  if(e.key==='Escape'&&multi.length){e.preventDefault();setMulti([]);}
  };
- const down=(e:ReactPointerEvent,b:Block,mode:'move'|'stretch')=>{if(disabled||!b.editable)return;e.stopPropagation();(e.currentTarget as Element).setPointerCapture?.(e.pointerId);setDrag({id:b.id,mode,x:e.clientX,dx:0});onSelect(b.id);};
+ const down=(e:ReactPointerEvent,b:Block,mode:'move'|'stretch')=>{if(disabled||!b.editable)return;e.stopPropagation();
+  if(mode==='move'&&(e.shiftKey||e.metaKey||e.ctrlKey)){setMulti(cur=>{const base=cur.length?cur:selected&&selected!==b.id?[selected]:[];return base.includes(b.id)?base.filter(x=>x!==b.id):[...base,b.id];});onSelect(b.id);return;}
+  if(mode==='move'&&!inGroup(b.id))setMulti([]);(e.currentTarget as Element).setPointerCapture?.(e.pointerId);setDrag({id:b.id,mode,x:e.clientX,dx:0});onSelect(b.id);};
  const move=(e:ReactPointerEvent)=>{if(drag)setDrag({...drag,dx:e.clientX-drag.x});};
- const up=()=>{if(!drag)return;const b=blocks.find(x=>x.id===drag.id),d=drag;setDrag(undefined);if(!b||Math.abs(d.dx)<3)return;
-  if(d.mode==='move')onCommand({kind:'move',id:b.id,time:Math.max(0,b.start+d.dx/pixelsPerSecond)});else if(b.params.seconds!==undefined)onCommand({kind:'stretch',id:b.id,seconds:b.params.seconds+d.dx/pixelsPerSecond});};
+ const up=(e:ReactPointerEvent)=>{if(!drag)return;const b=blocks.find(x=>x.id===drag.id),d=drag;setDrag(undefined);if(!b||Math.abs(d.dx)<3)return;
+  if(d.mode==='move'&&group&&inGroup(b.id)){const first=blocks.filter(x=>group.includes(x.id)).sort((x,y)=>x.start-y.start)[0];onCommand({kind:'move-many',ids:group,time:Math.max(0,first.start+d.dx/pixelsPerSecond)});}else if(d.mode==='move')onCommand({kind:'move',id:b.id,time:Math.max(0,b.start+d.dx/pixelsPerSecond),together:e.altKey||undefined});else if(b.params.seconds!==undefined)onCommand({kind:'stretch',id:b.id,seconds:b.params.seconds+d.dx/pixelsPerSecond});};
  const drop=(e:DragEvent,lane:string)=>{const item=Number(e.dataTransfer.getData('application/x-hahmo-block'));if(!Number.isInteger(item)||disabled)return;e.preventDefault();const rect=(e.currentTarget as HTMLElement).getBoundingClientRect();onCommand({kind:'insert',item,lane:blockLibrary[item].kind==='kamera'?'kamera':lane,time:Math.max(0,(e.clientX-rect.left)/pixelsPerSecond)});};
  const current=blocks.find(b=>b.id===selected);
  return <section className="block-editor" aria-label="Palikkaeditori">
@@ -54,13 +62,14 @@ export default function BlockTimeline({presentation,selected,onSelect,onCommand,
    <label>Hahmolle<select value={libraryLane} disabled={disabled} onChange={e=>setLibraryLane(e.target.value)}>{presentation.characters.map(c=><option key={c} value={c}>{displayName(c)}</option>)}</select></label>
    {blockLibrary.map((item,i)=><button type="button" key={item.label} className={`block-chip block-chip--${item.kind}`} draggable={!disabled} disabled={disabled||!libraryLane} onDragStart={e=>{e.dataTransfer.setData('application/x-hahmo-block',String(i));e.dataTransfer.effectAllowed='copy';}} onClick={()=>onCommand({kind:'insert',item:i,lane:item.kind==='kamera'?'kamera':libraryLane,time:playhead})} aria-label={`Lisää ${item.label} hahmolle ${displayName(libraryLane)} kohtaan ${fmt(playhead)} s`}>{item.label}</button>)}
   </div>
+  <div className="row block-selection" role="group" aria-label="Monivalinta"><button type="button" className="secondary" disabled={disabled} onClick={()=>setMulti(ordered.map(b=>b.id))}>Valitse kaikki</button>{multi.length>0&&<button type="button" className="secondary" onClick={()=>setMulti([])}>Tyhjennä valinta</button>}<span className="panel-note" role="status">{multi.length>1?`${multi.length} palikkaa valittu: vedä siirtääksesi, Delete poistaa, ⌘/Ctrl+D kopioi.`:'Vaihto/⌘-klikkaus valitsee useita. Alt + pudotus repliikin päälle = Samalla.'}</span></div>
   <div className="block-timeline" role="application" aria-label="Palikka-aikajana" aria-roledescription="aikajana" onPointerMove={move} onPointerUp={up} onPointerCancel={()=>setDrag(undefined)}>
    <div className="block-ruler" style={{width}} aria-hidden="true">{Array.from({length:Math.ceil(presentation.seconds)+1},(_,s)=><span key={s} style={{left:s*pixelsPerSecond}}>{s} s</span>)}<i className="block-playhead" style={{left:playhead*pixelsPerSecond}}/></div>
    {lanes.map(lane=><div key={lane} className="block-lane" data-lane={lane} role="group" aria-label={'Raita: '+laneName(lane)} onDragOver={e=>{if(e.dataTransfer.types.includes('application/x-hahmo-block')){e.preventDefault();e.dataTransfer.dropEffect='copy';}}} onDrop={e=>drop(e,lane)}>
     <span className="block-lane__name">{laneName(lane)}</span>
     <div className="block-lane__track" style={{width}}>
-     {(()=>{const {rows,items}=packLane(blocks.filter(b=>b.lane===lane),pixelsPerSecond);return <div style={{height:rows*ROW_HEIGHT}}>{items.map(({b,row})=>{const d=drag?.id===b.id?drag:undefined,left=b.start*pixelsPerSecond+(d?.mode==='move'?d.dx:0),w=Math.max(minWidth(b),(b.duration||.3)*pixelsPerSecond+(d?.mode==='stretch'?d.dx:0));
-      return <div key={b.id} className={`block block--${b.kind}${b.id===selected?' is-selected':''}${b.editable?'':' is-derived'}`} style={{left,width:w,top:row*ROW_HEIGHT+3,height:ROW_HEIGHT-6}} role="button" tabIndex={0} aria-pressed={b.id===selected} aria-label={blockAria(b)} aria-keyshortcuts="Enter ArrowLeft ArrowRight Shift+ArrowLeft Shift+ArrowRight Delete Control+D Meta+D" title={b.editable?b.lineText.trim():'Johdettu palikka (automaattinen kuva tai tehoste)'} onKeyDown={e=>onKey(e,b)} onClick={()=>onSelect(b.id)} onPointerDown={e=>down(e,b,'move')}>
+     {(()=>{const {rows,items}=packLane(blocks.filter(b=>b.lane===lane),pixelsPerSecond);return <div style={{height:rows*ROW_HEIGHT}}>{items.map(({b,row})=>{const d=drag?.id===b.id?drag:undefined,gd=drag&&drag.mode==='move'&&inGroup(drag.id)&&inGroup(b.id)?drag:undefined,left=b.start*pixelsPerSecond+(d?.mode==='move'?d.dx:gd?gd.dx:0),w=Math.max(minWidth(b),(b.duration||.3)*pixelsPerSecond+(d?.mode==='stretch'?d.dx:0));
+      return <div key={b.id} className={`block block--${b.kind}${b.id===selected||inGroup(b.id)?' is-selected':''}${b.editable?'':' is-derived'}`} style={{left,width:w,top:row*ROW_HEIGHT+3,height:ROW_HEIGHT-6}} role="button" tabIndex={0} aria-pressed={b.id===selected||inGroup(b.id)} aria-label={blockAria(b)} aria-keyshortcuts="Enter ArrowLeft ArrowRight Shift+ArrowLeft Shift+ArrowRight Delete Control+D Meta+D" title={b.editable?b.lineText.trim():'Johdettu palikka (automaattinen kuva tai tehoste)'} onKeyDown={e=>onKey(e,b)} onClick={()=>onSelect(b.id)} onPointerDown={e=>down(e,b,'move')}>
        <span className="block__label">{b.label}</span>{b.editable&&b.params.seconds!==undefined&&<span className="block__handle" aria-hidden="true" onPointerDown={e=>down(e,b,'stretch')}/>}
       </div>;})}</div>;})()}
     </div>

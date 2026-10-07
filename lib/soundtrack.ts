@@ -5,7 +5,8 @@
  * Askeleet sijoitetaan animaation todellisiin maakosketuksiin, istuutuminen ja laskeutuminen liikkeen vaiheisiin.
  * Musiikki hiljenee repliikkien alle (ducking). Repliikkiäänet ovat aina käyttäjän tuomia tai äänittämiä.
  */
-import {synthSfx,synthMusic,sfxIds,SOUND_RATE,type SfxId,type MusicMood} from './sound-library.ts';
+import {synthSfx,synthMusic,applyRoom,sfxIds,SOUND_RATE,type SfxId,type MusicMood,type Surface,type Room} from './sound-library.ts';
+import {environmentLibrary} from './environment-library.ts';
 import {footPoint} from './motion-quality.ts';
 import type {Presentation,Event,Diagnostic} from './presentation-model.ts';
 import type {PresentationAssets} from './presentation-compile.ts';
@@ -71,6 +72,33 @@ export function duckEnvelope(ranges:[number,number][],length:number,rate=SOUND_R
   for(let i=Math.max(0,a);i<Math.min(length,d);i++){const k=i<b?(i-a)/Math.max(1,b-a):i<c?1:1-(i-c)/Math.max(1,d-c),smooth=k*k*(3-2*k),v=1-(1-o.level)*smooth;if(v<g[i])g[i]=v;}}
  return g;
 }
+/** Ympäristö hetkellä `t` (viimeisin ympäristötapahtuma). */
+export function environmentAt(p:Presentation,t:number):string|undefined{return [...p.events].filter(e=>e.kind==='environment'&&(e.at??0)<=t+1e-9).sort((a,b)=>(a.at??0)-(b.at??0)).at(-1)?.value;}
+/** Askelten lattia ympäristön mukaan: sisällä puu, ulkona kova pinta (puisto nurmi), studio ja tuntematon alkuperäinen askel. */
+export function surfaceFor(envId?:string):Surface{const env=environmentLibrary.find(e=>e.id===envId);if(!env||env.category==='studio')return 'oletus';if(env.category==='sisätila')return 'puu';return /^park/.test(env.id)?'nurmi':'kova';}
+/** Huoneen kaiku tehosteille ympäristön mukaan. Studio on kuiva; ulkona kaiku on vähäistä. Repliikkeihin ja tuotuihin ääniin ei lisätä kaikua. */
+export function roomFor(envId?:string):Room{const env=environmentLibrary.find(e=>e.id===envId);if(!env||env.category==='studio')return {wet:0,decay:.3};if(env.category==='sisätila')return /^meeting/.test(env.id)?{wet:.2,decay:.55}:{wet:.13,decay:.35};return /^square/.test(env.id)?{wet:.08,decay:.45}:{wet:.04,decay:.25};}
+/** Lyhyt tuotu musiikki toistetaan silmukkana; saumassa on lineaarinen ristihäivytys (`fadeSeconds`). */
+export function loopFill(pcm:Float32Array,count:number,rate=SOUND_RATE,fadeSeconds=.25):Float32Array{
+ if(pcm.length>=count)return pcm.subarray(0,count);
+ const xf=Math.max(1,Math.min(Math.round(fadeSeconds*rate),pcm.length>>1)),step=pcm.length-xf,out=new Float32Array(count);
+ for(let k=0,pos=0;pos<count;k++,pos=k*step){const hasNext=pos+step<count;for(let i=0;i<pcm.length&&pos+i<count;i++){let w=1;if(k>0&&i<xf)w*=i/xf;if(hasNext&&i>=pcm.length-xf)w*=(pcm.length-i)/xf;out[pos+i]+=pcm[i]*w;}}
+ return out;
+}
+/** Musiikin häivytys kohdan alussa ja lopussa (pehmeä), ettei leikkaus napsahda. */
+export function fadeGain(i:number,count:number,rate=SOUND_RATE,fadeIn=.4,fadeOut=.6):number{
+ const a=Math.min(fadeIn*rate,count/4),b=Math.min(fadeOut*rate,count/4),k=Math.max(0,Math.min(1,Math.min(i/Math.max(1,a),(count-i)/Math.max(1,b))));return k*k*(3-2*k);
+}
+/** Kuvasiirtymät ohjaavat musiikkia: häivytys mustaan vaimentaa musiikin ja pitää sen hiljaa seuraavaan sisäänhäivytykseen; sisäänhäivytys nostaa sen. */
+export function transitionEnvelope(p:Presentation,length:number,offset=0,rate=SOUND_RATE):Float32Array{
+ const g=new Float32Array(length).fill(1),moves=p.events.filter(e=>e.kind==='transition'&&(e.value==='fade-out'||e.value==='fade-in')).sort((a,b)=>(a.at??0)-(b.at??0));
+ for(const [k,e] of moves.entries()){
+  const t0=Math.round((offset+(e.at??0))*rate),n=Math.max(1,Math.round((e.duration??.7)*rate));
+  if(e.value==='fade-out'){const nextIn=moves.slice(k+1).find(x=>x.value==='fade-in'),stop=nextIn?Math.round((offset+(nextIn.at??0))*rate):length;for(let i=Math.max(0,t0);i<Math.min(length,stop);i++){const u=Math.min(1,(i-t0)/n),v=1-u*u*(3-2*u);if(v<g[i])g[i]=v;}}
+  else for(let i=Math.max(0,t0);i<Math.min(length,t0+n);i++){const u=(i-t0)/n,v=u*u*(3-2*u);if(v<g[i])g[i]=v;}
+ }
+ return g;
+}
 export type SoundtrackStems={mix:Float32Array;dialogue:Float32Array;sfx:Float32Array;music:Float32Array;duck:Float32Array};
 /**
  * Miksaa repliikit (valmis PCM), tehosteet ja musiikin. `offset`: jakson alku sekunteina koko kohtauksen aikajanalla.
@@ -78,11 +106,11 @@ export type SoundtrackStems={mix:Float32Array;dialogue:Float32Array;sfx:Float32A
  */
 export function renderSoundtrack(p:Presentation,dialogue:Float32Array,offset=0,imported:Record<string,Float32Array>={},rate=SOUND_RATE):SoundtrackStems{
  const length=dialogue.length,sfx=new Float32Array(length),music=new Float32Array(length),cues=p.soundCues??[];const at=(s:number)=>Math.round((offset+s)*rate);
- let variant=0;for(const c of cues.filter(c=>c.kind==='sfx')){const t=cueTime(p,c);if(t===undefined)continue;const pcm=c.source==='generated'?synthSfx(c.sound as SfxId,variant++,rate):imported[c.sound];if(!pcm)continue;const i0=at(t);for(let i=0;i<pcm.length&&i0+i<length;i++)if(i0+i>=0)sfx[i0+i]+=pcm[i]*c.gain;}
+ let variant=0;for(const c of cues.filter(c=>c.kind==='sfx')){const t=cueTime(p,c);if(t===undefined)continue;const env=environmentAt(p,t),raw=c.source==='generated'?synthSfx(c.sound as SfxId,variant++,rate,c.sound==='askel'?surfaceFor(env):'oletus'):imported[c.sound];if(!raw)continue;const pcm=c.source==='generated'?applyRoom(raw,rate,roomFor(env)):raw;const i0=at(t);for(let i=0;i<pcm.length&&i0+i<length;i++)if(i0+i>=0)sfx[i0+i]+=pcm[i]*c.gain;}
  const music_=cues.filter(c=>c.kind==='music').map(c=>({c,t:cueTime(p,c)})).filter((x):x is {c:SoundCue;t:number}=>x.t!==undefined).sort((a,b)=>a.t-b.t);
- music_.forEach(({c,t},k)=>{if(c.sound==='pois')return;const end=k+1<music_.length?music_[k+1].t:p.seconds,seconds=c.duration??Math.max(.1,end-t);const pcm=c.source==='generated'?synthMusic(c.sound as MusicMood,seconds,k+1,rate):imported[c.sound];if(!pcm||!pcm.length)return;const i0=at(t),count=Math.round(seconds*rate);for(let i=0;i<count&&i0+i<length;i++)if(i0+i>=0)music[i0+i]+=pcm[i%pcm.length]*c.gain;});
+ music_.forEach(({c,t},k)=>{if(c.sound==='pois')return;const end=k+1<music_.length?music_[k+1].t:p.seconds,seconds=c.duration??Math.max(.1,end-t);const source=c.source==='generated'?synthMusic(c.sound as MusicMood,seconds,k+1,rate):imported[c.sound];if(!source||!source.length)return;const i0=at(t),count=Math.round(seconds*rate),pcm=c.source==='imported'?loopFill(source,count,rate):source;for(let i=0;i<count&&i0+i<length;i++)if(i0+i>=0)music[i0+i]+=pcm[i%pcm.length]*c.gain*fadeGain(i,count,rate);});
  const ranges:[number,number][]=p.events.filter(e=>e.kind==='dialogue').map(e=>[offset+(e.at??0),offset+(e.at??0)+(e.duration??0)]);
- const duck=duckEnvelope(ranges,length,rate),mix=new Float32Array(length);
- for(let i=0;i<length;i++){const v=dialogue[i]+sfx[i]*.8+music[i]*duck[i];mix[i]=Math.abs(v)<.9?v:Math.sign(v)*(.9+.1*Math.tanh((Math.abs(v)-.9)/.1));}
+ const duck=duckEnvelope(ranges,length,rate),boundary=transitionEnvelope(p,length,offset,rate),mix=new Float32Array(length);
+ for(let i=0;i<length;i++){const v=dialogue[i]+sfx[i]*.8+music[i]*duck[i]*boundary[i];mix[i]=Math.abs(v)<.9?v:Math.sign(v)*(.9+.1*Math.tanh((Math.abs(v)-.9)/.1));}
  return {mix,dialogue,sfx,music,duck};
 }

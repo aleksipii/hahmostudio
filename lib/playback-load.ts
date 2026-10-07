@@ -1,4 +1,3 @@
-import {performance} from 'node:perf_hooks';
 import {frameMetrics,PlaybackController} from './playback-machine.ts';
 import {renderPresentation} from './presentation-render.ts';
 import type {Presentation} from './presentation-model.ts';
@@ -36,9 +35,11 @@ export function measurePresentationPlayback(compiled:Presentation,assets:Present
   const time=targetFrame/options.fps;
   for(const vp of viewports){
    const {canvas,scratch}=createStubCanvas(vp.width,vp.height);
-   const start=performance.now();
+   // CPU time, not wall time: parallel test files or a busy CI host must not inflate the sample.
+   const start=process.cpuUsage();
    renderPresentation(canvas,scratch,compiled,assets,time,vp.width,vp.height);
-   renderSamples[vp.label].push(performance.now()-start);
+   const used=process.cpuUsage(start);
+   renderSamples[vp.label].push((used.user+used.system)/1000);
   }
  }
  const viewportsOut:PlaybackLoadReport['viewports']={};

@@ -5,26 +5,22 @@
     {
       "width": 1440,
       "height": 900,
-      "fps": 59.4,
-      "p95Ms": 17.4,
-      "transport": "59.4 fps · p95 17.4 ms ",
-      "footer": ""
+      "fps": 59.3,
+      "p95Ms": 17.6,
+      "transport": "59.3 fps · p95 17.6 ms ",
+      "footer": "59.3 fps"
     },
     {
       "width": 1280,
       "height": 720,
-      "fps": 59.4,
-      "p95Ms": 17.4,
-      "transport": "59.4 fps · p95 17.4 ms ",
-      "footer": ""
+      "fps": 59.3,
+      "p95Ms": 17.6,
+      "transport": "59.3 fps · p95 17.6 ms ",
+      "footer": "59.3 fps"
     }
   ],
   "errors": [],
   "gui": true,
   "devices": false,
-  "scope": "Electron Chromium requestAnimationFrame during presentation playback",
-  "version": "0.37.0",
-  "timestamp": "2026-10-05T18:52:00.000Z",
-  "compareStub": "docs/benchmarks/0.37-playback.json",
-  "note": "Mitattu npm run desktop:test:playback-raf. Footer-fps tyhjä; transport-metrics span on lähde. sandbox_extension_issue_file -varoitus voi näkyä silti."
+  "scope": "Electron Chromium requestAnimationFrame during presentation playback"
 }

@@ -80,4 +80,5 @@ export function drawHeldProp(ctx:CanvasRenderingContext2D,spec:HeldPropSpec,plac
  ctx.restore();
 }
 /** Esineen SVG-esikatselu kirjastoon (kaikki kolme näkymää). */
+export const heldPropFragment=(spec:HeldPropSpec,view:PropView='front')=>spec.views[view].map(s=>s.rect?`<rect fill="${s.fill}" x="${s.rect[0]}" y="${s.rect[1]}" width="${s.rect[2]}" height="${s.rect[3]}"/>`:s.ellipse?`<ellipse fill="${s.fill}" cx="${s.ellipse[0]}" cy="${s.ellipse[1]}" rx="${s.ellipse[2]}" ry="${s.ellipse[3]}"/>`:`<polygon fill="${s.fill}" points="${s.points!.map(v=>v.join(',')).join(' ')}"/>`).join('');
 export function heldPropSvg(id:string,view:PropView='front'){const spec=heldProp(id);if(!spec)throw Error('Esine puuttuu: '+id);return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" width="128" height="128">${spec.views[view].map(s=>s.rect?`<rect fill="${s.fill}" x="${s.rect[0]}" y="${s.rect[1]}" width="${s.rect[2]}" height="${s.rect[3]}"/>`:s.ellipse?`<ellipse fill="${s.fill}" cx="${s.ellipse[0]}" cy="${s.ellipse[1]}" rx="${s.ellipse[2]}" ry="${s.ellipse[3]}"/>`:`<polygon fill="${s.fill}" points="${s.points!.map(v=>v.join(',')).join(' ')}"/>`).join('')}</svg>`;}
