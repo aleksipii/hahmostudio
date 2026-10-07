@@ -86,7 +86,7 @@ export function scanScriptLineAnnotations(text: string): ScriptLineAnnotation[] 
   for (const a of out) if (a.kind === 'body' && !a.right && /^[“"„«].*[”"»]?\.?$/.test(lines[a.line - 1].trim())) a.right = 'Repliikki';
   // Ohjerivit: sääntöpohjainen tunnistin kertoo marginaalissa, mitä rivi tekee (tai ettei sitä tunnistettu).
   if (out.some((a) => a.kind === 'body' && !a.right)) {
-    const recognized = recognizeScript(text).lines;
+    const recognized = recognizeScript(text, [], { discoverActors: true }).lines;
     for (const a of out) {
       if (a.kind !== 'body' || a.right) continue;
       const r = recognized[a.line - 1];

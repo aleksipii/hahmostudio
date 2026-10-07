@@ -855,3 +855,57 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #0d0e12); }
 .studio.s2 .script-line-meta.is-recognized { color: var(--s2-ok); }
 .studio.s2 .script-line-meta.is-unknown { color: var(--s2-warn); }
 
+/* Rakenna jakso: ensisijainen toiminto + vaiheittainen edistyminen (tunnistus → roolitus → liikkeet → ääni → valmis) */
+.studio .script-sticky-bar--build { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.studio .script-sticky-bar--build .secondary { white-space: nowrap; }
+.studio .build-progress { display: grid; gap: 6px; padding: 8px 0; }
+.studio .build-progress ol { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 0; padding: 0; list-style: none; }
+.studio .build-progress li { padding-top: 6px; border-top: 3px solid var(--s2-line, var(--border)); font: 11px var(--s2-font, inherit); color: var(--s2-muted, var(--muted)); }
+.studio .build-progress li.is-done { border-color: var(--s2-ok, var(--green)); color: var(--s2-text, inherit); }
+.studio .build-progress li.is-current { border-color: var(--s2-accent, var(--accent)); color: var(--s2-text, inherit); font-weight: 600; }
+.studio .build-progress__label { font-size: 12px; color: var(--s2-muted, var(--muted)); }
+@media (prefers-reduced-motion: no-preference) { .studio .build-progress li { transition: border-color 120ms ease-out; } }
+.studio .series-builds ol { display: grid; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.studio .series-builds li { display: flex; align-items: center; gap: 8px; }
+.studio .series-builds button[aria-current="true"] { border-color: var(--s2-accent, var(--accent)); }
+.studio .series-builds__meta { font: 11px var(--s2-mono, monospace); color: var(--s2-faint, var(--muted)); }
+/* Käteen otettavat esineet: kolme näkymää rinnakkain */
+.studio .held-prop-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; }
+.studio .held-prop-gallery li { display: grid; gap: 4px; padding: 6px; border: 1px solid var(--s2-line, var(--border)); border-radius: var(--s2-r, 6px); }
+.studio .held-prop-gallery span { display: flex; gap: 4px; }
+.studio .held-prop-gallery img { background: var(--s2-bg2, var(--bg-2)); border-radius: 4px; }
+/* Ääniraidan yhteenveto */
+.studio .soundtrack-summary ul { margin: 0 0 8px; padding-left: 18px; font-size: 12px; color: var(--s2-muted, var(--muted)); }
+
+/* Palikkaeditori (Rive-tyylinen aikajana): raita per hahmo + kamera/näyttämö/ääni */
+.studio .block-editor { display: grid; gap: 8px; margin: 12px 0; }
+.studio .block-library { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.studio .block-library label { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+.studio .block-chip { padding: 3px 8px; border-radius: 999px; border: 1px solid var(--s2-line, var(--border)); background: var(--s2-bg2, var(--bg-2)); color: var(--s2-text, inherit); font-size: 12px; cursor: grab; }
+.studio .block-chip:active { cursor: grabbing; }
+.studio .block-timeline { overflow-x: auto; border: 1px solid var(--s2-line, var(--border)); border-radius: var(--s2-r, 6px); background: var(--s2-bg1, var(--bg-1)); touch-action: none; }
+.studio .block-ruler { position: relative; height: 18px; margin-left: 84px; font: 10px var(--s2-mono, monospace); color: var(--s2-faint, var(--muted)); }
+.studio .block-ruler span { position: absolute; white-space: nowrap; top: 2px; transform: translateX(-50%); }
+.studio .block-playhead { position: absolute; top: 0; bottom: -400px; width: 2px; background: var(--s2-accent, var(--accent)); pointer-events: none; }
+.studio .block-lane { display: flex; align-items: stretch; min-height: 28px; border-top: 1px solid var(--s2-line, var(--border)); }
+.studio .block-lane__name { flex: 0 0 84px; padding: 6px 8px; font-size: 11px; font-weight: 600; color: var(--s2-muted, var(--muted)); position: sticky; left: 0; background: var(--s2-bg1, var(--bg-1)); z-index: 1; }
+.studio .block-lane__track { position: relative; }
+.studio .block { position: absolute; display: flex; align-items: center; padding: 0 6px; border-radius: 5px; font-size: 11px; white-space: nowrap; overflow: hidden; cursor: grab; color: var(--s2-text, inherit); background: var(--s2-bg3, var(--bg-2)); border: 1px solid var(--s2-line2, var(--border)); }
+.studio .block:focus-visible { outline: 2px solid var(--focus-ring, var(--s2-accent)); outline-offset: 1px; }
+.studio .block.is-selected { border-color: var(--s2-accent, var(--accent)); box-shadow: 0 0 0 1px var(--s2-accent, var(--accent)); }
+.studio .block.is-derived { opacity: .6; border-style: dashed; cursor: default; }
+.studio .block--liike { background: var(--s2-accent-soft, var(--accent-subtle)); }
+.studio .block--ilme, .studio .block--katse { background: var(--s2-ok-soft, var(--green-bg)); }
+.studio .block--repliikki { background: var(--s2-info-soft, var(--bg-2)); }
+.studio .block--ääni, .studio .block--tauko { background: var(--s2-warn-soft, var(--bg-2)); }
+.studio .block__label { overflow: hidden; text-overflow: ellipsis; }
+.studio .block__handle { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; background: var(--s2-line2, var(--border)); }
+.studio .block-inspector { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.studio .block-states__row ol { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; padding: 0; list-style: none; font-size: 11px; }
+.studio .block-states__row li { padding: 2px 6px; border-radius: 4px; background: var(--s2-bg2, var(--bg-2)); }
+@media (prefers-reduced-motion: reduce) { .studio .block { transition: none; } }
+/* Palikkaeditori keskialueella: koko leveys käsikirjoituksen alla, ei kapeassa sivupalkissa */
+.studio .block-editor-dock { padding: 0 16px 16px; max-width: var(--script-measure-wide, 1100px); margin: 0 auto; width: 100%; box-sizing: border-box; }
+/* Aloituspohjat tyhjässä tilassa */
+.studio .script-templates { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin-top: 14px; }
+.studio .script-templates__title { font-size: 11px; color: var(--s2-faint, var(--muted)); text-transform: uppercase; letter-spacing: .06em; }

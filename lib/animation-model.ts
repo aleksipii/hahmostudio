@@ -14,7 +14,10 @@ export function sampleTrack(track: Track | undefined, frame: number): Pose {
  if (frame <= frames[0].frame) return { ...frames[0] };
  const last = frames.at(-1)!;
  if (frame >= last.frame) return { ...last };
- const right = frames.findIndex(k => k.frame > frame), a = frames[right - 1], b = frames[right];
+ // Binäärihaku: ensimmäinen avain, jonka ruutu > frame (tiheät raidat pysyvät nopeina).
+ let lo = 0, hi = frames.length - 1;
+ while (lo < hi) { const mid = (lo + hi) >> 1; if (frames[mid].frame > frame) hi = mid; else lo = mid + 1; }
+ const right = lo, a = frames[right - 1], b = frames[right];
  let t = (frame - a.frame) / (b.frame - a.frame);
  if (a.easing === 'hold') t = 0;
  if (a.easing !== 'hold' && a.bezierCurve) t = sampleBezierCurve(a.bezierCurve,t);
