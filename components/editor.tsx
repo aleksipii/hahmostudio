@@ -25,6 +25,7 @@ import PanelDock from './panel-dock';
 import ImportReview from './import-review';
 import AccessibilitySettings from './accessibility-settings';
 import ExportPanel from './export-panel';
+import CloudRenderDialog from './cloud-render-dialog';
 import AudioAnalysisPanel from './audio-analysis';
 import LayerEditor from './layer-editor';
 import {addEditableLayer,updateLayer} from '../lib/layer-edit';
@@ -530,6 +531,7 @@ export default function Editor() {
  const focusStage=()=>{setLayout({...layout,library:false,inspector:false});setTimelineOpen(false);setZoom(null);};
  const showTour=()=>{setHelp(false);setFlowTourStep(0);setFlowTourOpen(true);setLayout(l=>(l.library?l:{...l,library:true}));};
  const privateServer=import.meta.env.VITE_PRIVATE_SERVER==='true';
+ const [cloudRender,setCloudRender]=useState(false);
  const paletteCommands:PaletteCommand[]=[
   ...studioFlowSteps.map((s,i)=>({id:'phase-'+s.id,group:'Työvaihe',label:`${i+1} · ${s.label}`,shortcut:`⌥${i+1}`,keywords:s.hint,run:()=>goFlowStep(s.id)})),
   {id:'save',group:'Projekti',label:'Tallenna projekti',shortcut:'⌘S',disabled:saveDisabled,run:()=>void downloadProject()},
@@ -594,11 +596,13 @@ export default function Editor() {
    <button className="secondary" onClick={()=>setSettingsOpen(true)}><Settings size={14}/><span>Asetukset…</span></button>
    <button ref={helpButton} className="secondary" onClick={() => setHelp(true)}><Info size={14}/><span>Käyttöohje</span></button>
    <button className="secondary" onClick={showTour}><RotateCcw size={14}/><span>Näytä tuotantokierros</span></button>
+   {privateServer&&<button className="secondary" onClick={()=>setCloudRender(true)}><span>Pilvirenderöinti…</span></button>}
    {privateServer&&<button className="secondary" disabled={quickBusy} onClick={()=>void logout()}>Kirjaudu ulos</button>}
   </AppMenu>}
   viewMenu={<ViewMenu layout={{...layout,timeline:timelineOpen}} update={next=>{setLayout(next);setTimelineOpen(next.timeline);}} extra={<><button className="secondary" onClick={focusStage}>Keskity näyttämöön</button><button className="secondary" onClick={()=>{setPanelSizes({...defaultSizes});setZoom(null);}}>Palauta paneelien koot</button><button className="secondary" disabled={!doc} onClick={()=>setZoom(null)}>Sovita koko näyttämö</button></>}/>}
   saveButton={<button className="secondary s2-save" disabled={saveDisabled} onClick={()=>void downloadProject()} title="Tallenna projekti (⌘S)">{projectBusy?'Odota…':'Tallenna'}</button>}
   exportControl={<div className="s2-export"><ExportPanel episode={doc&&animation&&rig?{doc,animation:{...animation,rig},scene,audio:audioAsset}:null} legacy={()=>void downloadVideo()}/></div>}>
+  {cloudRender&&<CloudRenderDialog presentation={activePresentation??null} onClose={()=>setCloudRender(false)}/>}
   <input ref={audioInput} type="file" accept=".mp3,.wav,.ogg,.m4a" hidden onChange={e=>{const f=e.target.files?.[0];if(f)loadAudio(f);e.target.value='';}}/>
   <input ref={projectInput} type="file" accept=".hahmo" hidden onChange={e=>{const f=e.target.files?.[0];if(f)void openProject(f);e.target.value='';}}/>
   <input ref={input} type="file" accept=".psd,.png" hidden onChange={e => { const file = e.target.files?.[0]; if (file) void openFile(file); e.target.value = ''; }}/>
