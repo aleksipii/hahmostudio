@@ -467,3 +467,13 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 - Pakatun sovelluksen mukana tuleva FFmpeg: `h264_videotoolbox -allow_sw 0` (sovelluksen oma probe) onnistuu, ja 1080×1920 30 fps H.264 + AAC -testivideo koodautuu laitteistolla.
 
 **Edelleen todentamatta (vaatii käyttöliittymän käyttöä käsin):** koko MP4-vienti sovelluksen sisältä (vientijono, musiikin ja tehosteiden kuuluminen valmiissa tiedostossa), kamera ja mikrofoni, trackpad-veto palikoissa, uudet paneelit (korjausehdotukset, nivelehdotus, monivalinta, Samalla). Huom. testit eivät käytä oikeaa Kokoro-mallia.
+
+### 2.18 — Palikkamuutoksen viive, mittaus ja rajaus (2026-10-07)
+
+**Mitattu (Vite dev, Chromium-paneeli, pieni jakso; React dev -mittaukset):**
+- Viive = painallus → päivittynyt palikka DOM:ssa. Lähtötaso 159–179 ms (keskiarvo ≈168 ms): rakennus ≈20 ms + synkroninen työ ≈35 ms, sen jälkeen **kolme** editorin renderiä (≈34 ms kukin). Tallennus (`saveProjectRecovery`, web-polku) on vain ≈12–15 ms; aiempi “tallennus 76 ms” oli pääosin odotusta renderille eikä I/O:ta.
+- Syy renderin hintaan: suljettu `<details id="production-event-editor">` renderöi kaikkien tapahtumien kaikki kentät joka renderissä (≈10 ms/render). Nyt sisältö renderöidään vasta avattuna (`eventEditorOpen`); tarkennus (`focused`) avaa osion ja vierittää kohteeseen. Renderit ≈24 ms kukin, viive 122–168 ms (keskiarvo ≈147 ms, −12 %).
+- Rakenne: 3 renderiä per muutos: (1) editorin julkaisu (paneeli vielä vanhalla mallilla), (2) paneelin `setModel`, (3) kaskadi `previewModel`-efektistä editorin `productionView`-tilaan. Kokeilin varattu-tilan viivästystä, julkaisun yhdistämistä (`afterPublish`/`early`) ja aikaistettua `setModel`:ia: laskennallinen aika laski (≈100 → ≈35 ms), mutta näkyvä viive ei parantunut mitattavasti, joten ne jätettiin pois.
+- Tavoite “alle 100 ms näkyvään päivitykseen” **ei täyty** dev-palvelimella. Seuraavat mahdolliset askeleet: ehkäistä kaskadirender (`previewModel` ulos Editorin tilasta, esim. ulkoinen store), memoida `StudioShell`/`PresentationPanel`-alipuut, siirtää `plan`-osion (~7 ms) laskenta memoon; mittaus tuotantokoonnilla (dev-React on hitaampi).
+
+**Muuta:** `measurePresentationPlayback` käyttää paras-3-toistoa CPU-ajasta (testi epävakaa vain kun kone oli kuormitettu dev-palvelimella).
