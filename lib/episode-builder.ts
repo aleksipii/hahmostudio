@@ -21,6 +21,9 @@ import {functions,stableId,normalizeSpeaker,validatePresentation,type Presentati
 import type {Animation} from './animation-model.ts';
 import {heldPropFromWord} from './held-props.ts';
 import {defaultMotionSeconds} from './motion-library.ts';
+import {composeBinding,screenDirectionDiagnostics,measureCharacter} from './stage-composition.ts';
+import {defaultSafeArea} from './stage-bounds.ts';
+import {sampleTrack} from './animation-model.ts';
 import {stageActor,stageState} from './presentation-stage.ts';
 import {viewAtFrame} from './character-view.ts';
 import {animationTransforms} from './animation-transform.ts';
@@ -196,6 +199,9 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
   const old=options.previous?.bindings.find(b=>b.speaker===c.speaker);
   const binding:Binding={speaker:c.speaker,asset:old&&c.reason!=='resource'?old.asset:c.pack,voice:old?.voice??'Omat repliikkiäänet',side:old?.side??(i%2?'right':'left'),functions:packFunctions(library.assets[c.pack].doc.quick?.roles,p.world.phone.hand)};
   if(characters.length>2)binding.x=p.world.width*(characters.length===3?[.2,.5,.8][i]:[.14,.38,.62,.86][i]);
+  // Yhteinen mittakaava (aikuinen 1,0 · lapsi 0,72 · robotti 0,9) ja jalkapohjat taustan lattiaviivalle; käyttäjän sijoitus säilyy.
+  if(old?.y!==undefined||old?.scale!==undefined){binding.x=old.x;binding.y=old.y;binding.scale=old.scale;}
+  else Object.assign(binding,composeBinding(binding,library.assets[c.pack].doc,p.world.width,p.world.height,p.world.design??environmentId(p.events.find(e=>e.kind==='environment')?.value??'')??undefined,binding.x,undefined,library.assets[c.pack].animation.rig));
   p.bindings.push(binding);
  }
  // Säilytä aiemmat äänileikkeet, jos sama repliikki (sama tunniste) on edelleen olemassa.
@@ -203,6 +209,17 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
  onStage?.('motion');
  const validated=validatePresentation(p);
  let compiled=compilePresentation(validated,library.assets,fps);
+ // Kävelyt pysyvät näyttämöllä: lähtöpaikka valitaan niin, että juuren koko liikerata mahtuu turva-alueen sisään.
+ // “Kävelee sisään vasemmalta/oikealta” päättyy hahmon omalle paikalle. Käyttäjän asettama sijainti säilyy.
+ {let moved=false;for(const b of validated.bindings){const a=compiled.actorAnimations?.[b.speaker],asset=library.assets[b.asset],q=asset?.doc.quick;if(!a||!q||options.previous?.bindings.find(x=>x.speaker===b.speaker)?.x!==undefined)continue;
+  const roots=[...new Set([q.roles.root,...Object.values(q.views??{}).map(m=>m?.root)].filter((k):k is string=>!!k))],xs:number[]=[];for(let f=0;f<a.duration;f+=2){for(const k of roots){const t=a.tracks.find(x=>x.key===k);if(t)xs.push(sampleTrack(t,f).x);}}
+  if(!xs.length)continue;const dMin=Math.min(...xs),dMax=Math.max(...xs);if(dMax-dMin<1)continue;
+  const scale=b.scale??1,half=measureCharacter(asset.doc,asset.animation.rig).width/2*scale,left=defaultSafeArea.left+half,right=validated.world.width-defaultSafeArea.right-half,mark=b.x??validated.world.width*(b.side==='left'?.28:.72);
+  const entrance=validated.events.find(e=>e.kind==='action'&&e.target===b.speaker&&/^(walk|run)-/.test(e.value)&&/sisään|enters?|comes in|walks in/i.test(e.sourceRef.text));
+  let x=entrance?mark-(e2x(entrance.value)>0?dMax:dMin)*scale:mark;x=Math.max(left-dMin*scale,Math.min(right-dMax*scale,x));
+  if((dMax-dMin)*scale>right-left)diagnostics.push({code:'walk-off-stage',severity:'warning',message:`${b.speaker}: kävelyt eivät mahdu näyttämölle (${Math.round((dMax-dMin)*scale)} px). Hahmo pysähtyy reunaan; lyhennä kävelyä tai vaihda suuntaa.`});
+  if(Math.abs(x-mark)>.5){b.x=x;moved=true;}}
+  if(moved)compiled=compilePresentation(validated,library.assets,fps);}
  // Resurssirivin pöytä ilman sijaintia sijoitetaan laskevan käden ulottuville laskuhetkellä (kaksi käännöstä, deterministinen).
  const table=validated.production?.props?.find(v=>v.asset==='table-prop-v1'&&v.id.startsWith('res-manifest-')),dropper=compiled.events.find(e=>(e.kind==='action'&&e.value==='phone_down')||(e.kind==='prop'&&e.value.startsWith('drop:')));
  if(table&&dropper){const b=compiled.bindings.find(x=>x.speaker===dropper.target),asset=b?library.assets[b.asset]:undefined,a=b?compiled.actorAnimations?.[b.speaker]:undefined,q=asset?.doc.quick;
@@ -210,6 +227,7 @@ function buildEpisodeUnsafe(scriptText:string,library:EpisodeLibrary,options:Bui
    if(part&&m){const r=stageActor(compiled,b,t),size=Math.min(compiled.world.width,compiled.world.height)*table.scale,hx=m.a*part.pivot.x+m.c*part.pivot.y+m.e,hy=m.b*part.pivot.x+m.d*part.pivot.y+m.f,target={x:hx+(hx>asset.doc.width/2?25:-25),y:hy-15};
     table.x=Math.max(.05,Math.min(.95,(r.x+(target.x-asset.doc.width/2)*r.scale)/compiled.world.width));table.y=Math.max(.05,Math.min(.98,(r.y+(target.y-asset.doc.height/2)*r.scale+size*.25+20*r.scale)/compiled.world.height));
     compiled=compilePresentation(validated,library.assets,fps);diagnostics.push({code:'table-placed',severity:'warning',message:`Pöytä sijoitettiin hahmon ${b.speaker} ulottuville laskuhetkellä. Siirrä pöytää tarvittaessa näyttämöllä.`});}}}
+ compiled.diagnostics.push(...screenDirectionDiagnostics(compiled));
  onStage?.('audio');
  const dialogueLines=compiled.events.filter(e=>e.kind==='dialogue');
  let at=0;const music=musicCues.map(m=>{const next=compiled.events.find(e=>e.sourceRef.line>m.line);at=next?.at??compiled.seconds;return {...m,at,status:(m.off?'stopped':m.file?'imported':m.mood?'generated':'unknown') as EpisodeAudioPlan['music'][number]['status']};});
@@ -347,6 +365,7 @@ export function buildSeries(scriptText:string,library:EpisodeLibrary,options:Bui
  return splitEpisodes(scriptText).map(source=>({...buildEpisode(source.text,library,{...options,title:source.title,episode:source.index,firstLine:source.firstLine},s=>onStage?.(source.index,s)),source}));
 }
 
+const e2x=(value:string)=>value.endsWith('left')?-1:value.endsWith('right')?1:0;
 /** Sidosfunktio on tuettu vain, jos paketissa on sen tarvitsemat osat (samat vaatimukset kuin kääntäjässä). */
 export function packFunctions(roles:Record<string,string|undefined>|undefined,hand:'leftHand'|'rightHand'):Record<string,string>{const need:Record<string,string[]>={neutral_talk:['mouthNeutral','mouthOpen'],worried:['leftBrow','rightBrow'],confused:['leftBrow','rightBrow'],mildly_hurt:['leftBrow','rightBrow'],angry:['leftBrow','rightBrow'],look_at_phone:['leftPupil','rightPupil'],look_at_other_character:['leftPupil','rightPupil'],show_phone:[hand==='leftHand'?'leftArm':'rightArm',hand==='leftHand'?'leftForearm':'rightForearm',hand],eyebrow_raise:['leftBrow'],dead_stare:['root','head']};return Object.fromEntries(functions.map(f=>[f,roles&&(need[f]??[]).every(k=>roles[k])?'supported':'none']));}
 const holdVerb=/^(pitää|pitelee|piteli|pitävät|kantaa|kantoi|kantavat|ottaa|otti|ottavat|nostaa|nosti|tarttuu|tarttui|kädessä|kädessään|käteensä|holds|held|holding|carries|carried|carrying|takes|took|grabs|grabbed|picks|picked|with)$/u;

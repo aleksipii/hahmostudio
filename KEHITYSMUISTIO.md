@@ -316,3 +316,16 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Rajat:** juoksussa ei ole lentovaihetta (nopea kävelymekaniikka). Etunäkymän kävely kohti kameraa on 2D-likiarvio (lantio laskee ruudulla, ei mittakaavaa). Mr.Kille/Handu-kartonkipaketeilla ei ole reisi–sääri-ketjua; niiden liike kulkee kartonkipolun kautta.
 
 **Seuraava:** vaihe D — vertailukorkeus, yhteinen mittakaava, lattiaviiva ja kuvakoot silmälinjan mukaan.
+
+### 2.7 — Vaihe D: mittasuhteet ja sommittelu (2026-10-07)
+
+**Valmis:**
+- `lib/stage-composition.ts`: vertailukorkeus (pään/hiusten yläreuna – jalkapohja, etunäkymän kerrokset riggauksen liitosketjusta), silmälinja ja käden koko jokaiselle paketille; hahmotyyppi QuickProfile.asset-tunnisteesta (Pipsa/Ville/Taru lapsi 0,72, Ukko ja muut aikuinen 1,0, Otto robotti 0,9).
+- Rakentaja sijoittaa hahmot yhteiseen mittakaavaan ja jalkapohjat taustan lattiaviivalle (taulukko taustoittain, turva-alueen sisällä niin, ettei näyttämön rajaus koskaan siirrä jalkoja). Kävelyt mahtuvat näyttämölle: lähtöpaikka valitaan liikeradan mukaan, “kävelee sisään vasemmalta” päättyy hahmon paikalle.
+- Yhteinen `cameraTransform`/`stageProjection` esikatselulle, viennille ja suoralle muokkaukselle: lähikuvassa silmät 1/3 korkeudelle, puolikuvassa 0,3; katseen suuntaan jää tilaa.
+- 180 asteen sääntö: takakamera/sivukamera kahden hahmon kohtauksessa ja puolen vaihto kohtauksen sisällä → varoitus.
+- Testit `lib/stage-composition.test.ts`: jalat lattiaviivalla ±2 px koko jakson (pysty ja vaaka, turva-alueen rajaus mukana), esine/käsi-suhde, lähikuvan silmälinja ±5 %, katsetila, akselisääntö.
+
+**Rajat:** sommittelu koskee rakentajan uusia sidoksia; vanhojen projektien käsin asetetut x/y/scale säilyvät. Lattiaviiva on yksi per jakso (ensimmäinen tausta). Vaakakuvassa turva-alue (220 px) nostaa lattiaviivaa taustan lattiakaistaa ylemmäs.
+
+**Seuraava:** vaihe E — äänitehosteet, ohjelmallinen musiikki, ducking ja kolmen lähteen miksaus.
