@@ -9,4 +9,5 @@ import './styles/ui-minimal.css';
 import './styles/studio-components.css';
 import './styles/kilsat-app.css';
 import './styles/studio2.css';
+import './styles/koeta-premium.css';
 if(location.pathname==='/export-worker')void import('./export-worker').then(m=>m.startExportWorker());else createRoot(document.getElementById('root')!).render(<Editor/>);

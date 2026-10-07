@@ -1,0 +1,332 @@
+/* ============================================================================
+   KOETA · Premium-viimeistelykerros
+   Ladataan viimeisenä. Tavoite: Riven kaltainen, hiljainen ja tiivis työkalu.
+   Periaatteet:
+     1. Neutraali tumma pinta, hiusviivareunat, ei varjoja paneelien välillä.
+     2. Yksi aksenttiväri (logon sininen) – vain pääasialliselle toiminnolle,
+        valinnalle ja fokukselle. Muut painikkeet ovat hiljaisia.
+     3. Ei päällekkäisiä otsikoita tai leikkautuvia kontrolleja.
+   Ei logiikkamuutoksia – vain tokenit ja pintatyylit.
+   ============================================================================ */
+
+/* ─── Tokenit · tumma ─── */
+.studio.kilsat-app.s2 {
+  --s2-bg0: #09090b;
+  --s2-bg1: #0f0f12;
+  --s2-bg2: #141418;
+  --s2-bg3: #1b1b21;
+  --s2-line: #1f1f26;
+  --s2-line2: #2b2b34;
+  --s2-text: #ececf1;
+  --s2-muted: #8d8d9a;
+  --s2-faint: #5e5e6b;
+  --s2-accent: #66b9e8;
+  --s2-accent-2: #8ccbef;
+  --s2-accent-soft: rgba(102, 185, 232, 0.1);
+  --s2-accent-line: rgba(102, 185, 232, 0.3);
+  --s2-on-accent: #06202e;
+  --s2-cta: #e8e8ee;
+  --s2-cta-hover: #ffffff;
+  --s2-on-cta: #0f0f12;
+  --s2-stage: #060608;
+  --s2-dots: rgba(255, 255, 255, 0.03);
+  --s2-shadow: 0 24px 64px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --s2-r: 7px;
+  --s2-ease: cubic-bezier(0.2, 0, 0, 1);
+  --focus: var(--s2-accent);
+  --focus-ring: 2px solid var(--s2-accent);
+  --green: var(--s2-accent);
+  --green-bg: var(--s2-accent-soft);
+  --green-line: var(--s2-accent-line);
+}
+
+/* ─── Tokenit · vaalea ─── */
+:root[data-theme='light'] .studio.kilsat-app.s2 {
+  --s2-bg0: #eceef0; --s2-bg1: #f7f8f9; --s2-bg2: #ffffff; --s2-bg3: #eef0f2;
+  --s2-line: #e1e4e8; --s2-line2: #d0d4da;
+  --s2-text: #16181d; --s2-muted: #5b6270; --s2-faint: #8a909c;
+  --s2-accent: #0a84c6; --s2-accent-2: #0873ad;
+  --s2-accent-soft: rgba(10, 132, 198, 0.1); --s2-accent-line: rgba(10, 132, 198, 0.4);
+  --s2-on-accent: #ffffff; --s2-stage: #dfe2e6; --s2-dots: rgba(0, 0, 0, 0.05);
+  --s2-cta: #16181d; --s2-cta-hover: #000; --s2-on-cta: #ffffff;
+  --s2-shadow: 0 24px 64px rgba(20, 30, 50, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .studio.kilsat-app.s2 {
+    --s2-bg0: #eceef0; --s2-bg1: #f7f8f9; --s2-bg2: #ffffff; --s2-bg3: #eef0f2;
+    --s2-line: #e1e4e8; --s2-line2: #d0d4da;
+    --s2-text: #16181d; --s2-muted: #5b6270; --s2-faint: #8a909c;
+    --s2-accent: #0a84c6; --s2-accent-2: #0873ad;
+    --s2-accent-soft: rgba(10, 132, 198, 0.1); --s2-accent-line: rgba(10, 132, 198, 0.4);
+    --s2-on-accent: #ffffff; --s2-stage: #dfe2e6; --s2-dots: rgba(0, 0, 0, 0.05);
+    --s2-cta: #16181d; --s2-cta-hover: #000; --s2-on-cta: #ffffff;
+  }
+}
+html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #09090b); }
+
+/* Vanhat kovakoodatut tummat pinnat → sama sininen */
+.studio.kilsat-app.s2 { background: var(--s2-bg1); color: var(--s2-text); }
+.studio.s2 .camera-controls { background: transparent; color: var(--s2-text); }
+.studio.s2 .modal-backdrop, .s2 .modal-backdrop { background: rgba(4, 4, 6, 0.62); }
+
+/* ─── Peruskontrollit: hiljaiset oletuksena, aksentti vain pääasialle ─── */
+.studio.s2 { -webkit-font-smoothing: antialiased; font-feature-settings: 'cv11', 'ss01'; }
+.s2 :focus-visible { outline: 2px solid var(--s2-accent); outline-offset: 1px; border-radius: 4px; }
+
+.studio.s2 .secondary,
+.studio.s2 .ghost-btn {
+  background: transparent;
+  border: 1px solid var(--s2-line2);
+  color: var(--s2-text);
+  transition: background 120ms var(--s2-ease), border-color 120ms var(--s2-ease), color 120ms var(--s2-ease);
+}
+.studio.s2 .secondary:hover:not(:disabled),
+.studio.s2 .ghost-btn:hover:not(:disabled) { background: var(--s2-bg3); border-color: var(--s2-line2); }
+.studio.s2 .secondary:active:not(:disabled),
+.studio.s2 .ghost-btn:active:not(:disabled) { background: var(--s2-bg2); }
+.studio.s2 .secondary[aria-pressed='true'],
+.studio.s2 .ghost-btn[aria-pressed='true'] {
+  background: var(--s2-bg3); border-color: var(--s2-line2); color: var(--s2-text);
+}
+.studio.s2 .primary {
+  background: var(--s2-cta);
+  border: 1px solid var(--s2-cta);
+  color: var(--s2-on-cta);
+  font-weight: 600;
+  box-shadow: none;
+  transition: background 120ms var(--s2-ease), filter 120ms var(--s2-ease);
+}
+.studio.s2 .primary:hover:not(:disabled) { background: var(--s2-cta-hover); border-color: var(--s2-cta-hover); filter: none; }
+.studio.s2 .primary:active:not(:disabled) { filter: brightness(0.94); }
+.studio.s2 .primary:disabled,
+.studio.s2 .secondary:disabled { opacity: 0.55; }
+.studio.s2 .text-button { color: var(--s2-muted); background: none; border: 0; }
+.studio.s2 .text-button:hover:not(:disabled) { color: var(--s2-text); background: none; }
+
+/* Tekstikentät */
+.studio.s2 input:not([type='checkbox']):not([type='radio']):not([type='range']),
+.studio.s2 select,
+.studio.s2 textarea {
+  background: var(--s2-bg2); border: 1px solid var(--s2-line2); border-radius: var(--s2-r);
+  color: var(--s2-text); transition: border-color 120ms var(--s2-ease), box-shadow 120ms var(--s2-ease);
+}
+.studio.s2 input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+.studio.s2 select:focus,
+.studio.s2 textarea:focus { outline: none; border-color: var(--s2-accent); box-shadow: 0 0 0 2px var(--s2-accent-soft); }
+.studio.s2 input[type='checkbox'], .studio.s2 input[type='radio'], .studio.s2 input[type='range'] { accent-color: var(--s2-accent); }
+
+/* Vierityspalkit: ohuet ja huomaamattomat */
+.studio.s2 * { scrollbar-width: thin; scrollbar-color: var(--s2-line2) transparent; }
+.studio.s2 *::-webkit-scrollbar { width: 8px; height: 8px; }
+.studio.s2 *::-webkit-scrollbar-thumb { background: var(--s2-line2); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+.studio.s2 *::-webkit-scrollbar-thumb:hover { background: var(--s2-faint); background-clip: content-box; border: 2px solid transparent; }
+
+/* ─── Yläpalkki ─── */
+.s2 .s2-top { background: var(--s2-bg1); border-bottom: 1px solid var(--s2-line); gap: 10px; }
+.s2 .s2-brand { letter-spacing: 0.08em; font-size: 12px; font-weight: 700; }
+.s2 .s2-phases { background: transparent; border: 0; gap: 2px; padding: 0; }
+.s2 .s2-phase {
+  position: relative; border-radius: 6px; padding: 3px 11px; color: var(--s2-muted);
+  background: none !important; transition: color 120ms var(--s2-ease);
+}
+.s2 .s2-phase b { border: 0; background: none; padding: 0; color: var(--s2-faint); font-size: 10px; min-width: 8px; }
+.s2 .s2-phase:hover { color: var(--s2-text); }
+.s2 .s2-phase[aria-current='page'] { color: var(--s2-text); }
+.s2 .s2-phase[aria-current='page'] b { background: none; border: 0; color: var(--s2-muted); }
+.s2 .s2-phase[aria-current='page']::after {
+  content: ''; position: absolute; left: 11px; right: 11px; bottom: -8px; height: 1px;
+  border-radius: 1px; background: var(--s2-text); opacity: 0.7;
+}
+.s2 .s2-tools { gap: 2px; }
+.s2 .s2-search { background: var(--s2-bg2); border: 1px solid var(--s2-line); color: var(--s2-muted); }
+.s2 .s2-search:hover { border-color: var(--s2-line2); color: var(--s2-text); }
+.s2 .s2-icon { background: none; border: 0; color: var(--s2-muted); }
+.s2 .s2-icon:hover:not(:disabled) { background: var(--s2-bg3); color: var(--s2-text); }
+.s2 .s2-icon:disabled { opacity: 0.3; }
+/* Näytä-valikon avain ja Tallenna: samaa hiljaista ilmettä */
+.s2 .s2-tools .view-menu > summary,
+.s2 .s2-tools .s2-save {
+  height: 30px; padding: 0 10px; display: inline-flex; align-items: center;
+  background: none; border: 1px solid transparent; border-radius: var(--s2-r);
+  color: var(--s2-muted); font-size: 12px; font-weight: 500; list-style: none; cursor: pointer;
+}
+.s2 .s2-tools .view-menu > summary::-webkit-details-marker { display: none; }
+.s2 .s2-tools .view-menu > summary:hover,
+.s2 .s2-tools .view-menu[open] > summary,
+.s2 .s2-tools .s2-save:hover:not(:disabled) { background: var(--s2-bg3); color: var(--s2-text); }
+.s2 .s2-tools .s2-save:disabled { opacity: 0.35; }
+.s2 .s2-export button:not(.secondary):not(.text-button):first-of-type:not(:disabled) { background: var(--s2-cta); border-color: var(--s2-cta); color: var(--s2-on-cta); }
+.s2 .s2-export .primary { height: 30px; min-height: 30px; padding: 0 14px; }
+.s2 .s2-export button:not(.secondary):not(.text-button):first-of-type:disabled,
+.s2 .s2-export .primary:disabled { background: var(--s2-bg3); border-color: var(--s2-line2); color: var(--s2-faint); opacity: 1; }
+
+/* Pudotusvalikot: yksi yhtenäinen pinta */
+.s2 .app-menu-content,
+.s2 .view-menu > div {
+  background: var(--s2-bg2); border: 1px solid var(--s2-line2); border-radius: 10px;
+  box-shadow: var(--s2-shadow); padding: 6px;
+}
+.s2 .app-menu-content .secondary,
+.s2 .view-menu > div .secondary {
+  border-color: transparent; background: none; justify-content: flex-start; width: 100%; border-radius: 6px;
+}
+.s2 .app-menu-content .secondary:hover:not(:disabled),
+.s2 .view-menu > div .secondary:hover:not(:disabled) { background: var(--s2-bg3); }
+.s2 .s2-menu-head { color: var(--s2-faint); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ─── Paneelit: hiusviivat, ei sisäkkäisiä kortteja ─── */
+.studio.s2 .layers-panel,
+.studio.s2 .details-panel { background: var(--s2-bg1); border-color: var(--s2-line); }
+.studio.s2 .layers-panel { border-right: 1px solid var(--s2-line); }
+.studio.s2 .details-panel { border-left: 1px solid var(--s2-line); }
+
+/* Vasemman paneelin välilehdet: jakavat tilan tasan, eivät leikkaudu */
+.studio.s2 .layers-panel .library-tabs { padding: 0 4px; overflow: hidden; }
+.studio.s2 .layers-panel .library-tabs button {
+  flex: 1 1 auto; min-width: 0; padding: 10px 3px 9px !important; font-size: 11.5px; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.studio.s2 .library-tabs button.active,
+.studio.s2 .library-tabs button[aria-pressed='true'],
+.studio.s2 .details-panel .inspector-tabs button.active,
+.studio.s2 .performance-navigation button[aria-pressed='true'] { color: var(--s2-text); border-bottom-color: var(--s2-text); }
+
+/* Välilehtirivit eivät saa kutistua (muuten ne katoavat pitkän sisällön alle) */
+.studio.s2 .details-panel .inspector-tabs { overflow: hidden; padding: 0 4px; flex: none; min-height: 38px; }
+.studio.s2 .layers-panel .library-tabs { flex: none; min-height: 38px; }
+.studio.s2 .details-panel .inspector-tabs button { flex: 1 1 0; min-width: 0; padding: 10px 4px 9px !important; overflow: hidden; text-overflow: ellipsis; }
+
+/* Oikean paneelin välilehdet samalla periaatteella; vanhat täyteväriset laatat pois */
+/* ui-minimal.css käyttää !important-täyteväriä; ylikirjoita se alleviivatyylillä */
+.studio.s2.kilsat-app .details-panel .inspector-tabs button { background: none !important; color: var(--s2-muted) !important; border-radius: 0; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.studio.s2.kilsat-app .details-panel .inspector-tabs button:hover { color: var(--s2-text) !important; }
+.studio.s2.kilsat-app .details-panel .inspector-tabs button.active,
+.studio.s2.kilsat-app .details-panel .inspector-tabs button[aria-pressed='true'] {
+  background: none !important; color: var(--s2-text) !important; font-weight: 600; border-bottom: 1px solid var(--s2-text);
+}
+
+/* Alavälilehdet (Hahmot / Kuvausympäristöt / Esineet): segmentti, ei kehystä */
+.studio.s2 .quick-library > nav.asset-tabs {
+  background: var(--s2-bg0); border: 1px solid var(--s2-line); border-radius: 8px; padding: 2px; gap: 2px;
+}
+.studio.s2 .quick-library > nav.asset-tabs button {
+  border: 0; border-radius: 6px; background: none; color: var(--s2-muted); min-height: 26px;
+}
+.studio.s2 .quick-library > nav.asset-tabs button:hover { color: var(--s2-text); }
+.studio.s2 .quick-library > nav.asset-tabs button[aria-pressed='true'],
+.studio.s2 .quick-library > nav.asset-tabs button.active {
+  background: var(--s2-bg3); color: var(--s2-text); box-shadow: 0 0 0 1px var(--s2-line2) inset;
+}
+
+/* Hahmokortit: kevyt pinta, valittu = aksenttireunus */
+.studio.s2 .quick-library [class*='card']:not(.import-card) { border-radius: 10px; }
+
+/* ─── Näyttämön palkki: yksi otsikko, ei kaksoistekstiä ─── */
+.studio.s2 .s2-stagebar {
+  background: var(--s2-bg1); border-bottom: 1px solid var(--s2-line); gap: 10px; min-height: 40px;
+}
+/* Rakenna/Esitys-kytkin toimii jo otsikkona → piilota toistuva otsikko */
+.studio.s2 .s2-stagebar .header-workspace-toggle + strong { display: none; }
+.studio.s2 .s2-seg {
+  display: inline-flex; padding: 2px; gap: 2px; background: var(--s2-bg0);
+  border: 1px solid var(--s2-line); border-radius: 8px;
+}
+.studio.s2 .s2-seg button {
+  border: 0; background: none; border-radius: 6px; min-height: 24px; padding: 2px 11px;
+  color: var(--s2-muted); font-size: 12px; font-weight: 500; box-shadow: none;
+}
+.studio.s2 .s2-seg button:hover:not(:disabled) { color: var(--s2-text); background: none; }
+.studio.s2 .s2-seg button[aria-pressed='true'] { background: var(--s2-bg3); color: var(--s2-text); box-shadow: 0 0 0 1px var(--s2-line2) inset; }
+.studio.s2 .s2-meta { color: var(--s2-faint); font-size: 11px; }
+
+/* Taustavärivalitsimet: pieniä, pyöreitä, ei räikeää valkoista laattaa */
+.studio.s2 .background-options { gap: 6px; align-items: center; }
+.studio.s2 .background-options .swatch {
+  width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--s2-line2); padding: 0;
+}
+.studio.s2 .background-options .swatch.white { background: #d9dadf; }
+.studio.s2 .background-options .swatch.chosen { outline: 1px solid var(--s2-accent); outline-offset: 2px; }
+
+/* Näyttämö: rauhallinen taustapiste */
+.studio.s2 .stage { background-color: var(--s2-stage); }
+.studio.s2 .artboard { box-shadow: 0 0 0 1px var(--s2-line2), 0 20px 60px rgba(0, 0, 0, 0.5); border-radius: 2px; }
+
+/* Kelluva työkalulista varaa oman kaistansa, jotta se ei peitä piirtoaluetta */
+.studio.s2 .stage:has(> .character-tools) { padding-left: 148px; }
+.studio.s2 .character-tools.s2-float {
+  background: color-mix(in srgb, var(--s2-bg1) 86%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: 1px solid var(--s2-line2); border-radius: 10px; padding: 4px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Zoomaus: kelluva kapseli näyttämön alareunassa, ei erillinen palkki */
+.studio.s2 .preview-footer {
+  background: color-mix(in srgb, var(--s2-bg1) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: 1px solid var(--s2-line2); border-radius: 999px; padding: 2px 4px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+.studio.s2 .zoom-controls button { border-radius: 999px; }
+
+/* ─── Aloitusnäkymä: tiivis, ei sisäistä vieritystä, yksi pääpainike ─── */
+.studio.s2 .import-card {
+  width: min(380px, 100%); padding: 28px 24px 20px; gap: 6px;
+  background: var(--s2-bg1); border: 1px solid var(--s2-line2); border-radius: 14px; box-shadow: var(--s2-shadow);
+  overflow: visible; max-height: none;
+}
+.studio.s2 .import-card .import-symbol { margin-bottom: 6px; transform: none; border: 1px solid var(--s2-line2); background: var(--s2-bg2); color: var(--s2-muted); }
+.studio.s2 .import-card .eyebrow { color: var(--s2-faint); letter-spacing: 0.12em; font-size: 10px; }
+.studio.s2 .import-card h2 { font-size: 19px !important; margin: 0 0 14px; font-weight: 650; }
+.studio.s2 .import-card .large { margin: 0; min-height: 36px; width: 100%; }
+/* Toissijaiset toiminnot hiljaisiksi: vain ensimmäinen CTA saa aksentin */
+.studio.s2 .import-card > p ~ button.primary.large {
+  background: transparent; color: var(--s2-text); border: 1px solid var(--s2-line2);
+}
+.studio.s2 .import-card > p ~ button.primary.large:hover:not(:disabled) { background: var(--s2-bg3); border-color: var(--s2-line2); }
+.studio.s2 .import-card h3 { margin: 14px 0 2px; color: var(--s2-faint); }
+.studio.s2 .import-card p { font-size: 12px; color: var(--s2-muted); }
+.studio.s2 .import-card .drop-hint { margin: 2px 0 0; }
+.studio.s2 .import-card .format-note { margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--s2-line); }
+.studio.s2 .import-card .demo-button { justify-self: center; font-size: 12px; }
+@media (max-height: 780px) {
+  .studio.s2 .import-card .import-symbol { display: none; }
+  .studio.s2 .import-card { padding-top: 22px; }
+}
+
+/* Inspektorin lohkot täyttävät paneelin leveyden (vanha align-items:end työnsi ne oikealle) */
+.studio.s2 .stage-inspector,
+.studio.s2 .camera-controls { align-items: stretch; }
+.studio.s2 .stage-block,
+.studio.s2 .camera-controls fieldset { width: 100%; min-width: 0; border-color: var(--s2-line); background: transparent; }
+
+/* ─── Aikajana ja tilarivi: yksi hiljainen kokonaisuus ───
+   Aikajana ei saa viedä yli neljännestä ikkunasta; näyttämö pysyy käytettävänä
+   pienimmälläkin ikkunalla (1200 × 700). */
+.studio.s2 .timeline-container { height: min(var(--timeline-size), 26dvh); min-height: 132px; max-height: 40dvh; }
+.studio.s2 .workspace { min-height: 300px; }
+.studio.s2 .timeline-dock { background: var(--s2-bg1); border-top: 1px solid var(--s2-line); }
+.studio.s2 .timeline-toggle { border-bottom: 1px solid var(--s2-line); background: transparent; }
+.studio.s2 .transport-controls { background: transparent; }
+.studio.s2 .transport-icon { border-color: transparent; background: none; }
+.studio.s2 .transport-icon:hover:not(:disabled) { background: var(--s2-bg3); }
+.studio.s2 .transport-icon[aria-pressed='true'],
+.studio.s2 .transport-icon.active { background: var(--s2-bg3); color: var(--s2-text); }
+
+/* Tilarivi: lyhyet tilat eivät kutistu, pitkä viesti saa jäljellä olevan tilan ja typistyy siististi */
+.studio.s2 .statusbar { background: var(--s2-bg1); border-top: 1px solid var(--s2-line); color: var(--s2-faint); gap: 14px; padding: 0 12px; min-height: 26px; }
+.studio.s2 .statusbar > * { flex: 0 0 auto; white-space: nowrap; }
+.studio.s2 .statusbar > span:not(.device-status):not(.status-dot):last-of-type,
+.studio.s2 .statusbar > span:nth-last-child(2) { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+.studio.s2 .statusbar .device-status { margin-right: auto; }
+
+/* ─── Modaalit ─── */
+.studio.s2 .modal-backdrop,
+.s2 .modal-backdrop { background: rgba(4, 4, 6, 0.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.studio.s2 .help-modal,
+.s2 .help-modal {
+  background: var(--s2-bg1); border: 1px solid var(--s2-line2); border-radius: 14px; box-shadow: var(--s2-shadow);
+}
+
+/* Hiljainen liikkeen vähennys */
+@media (prefers-reduced-motion: reduce) {
+  .studio.s2 * { transition: none !important; animation-duration: 0.01ms !important; }
+}

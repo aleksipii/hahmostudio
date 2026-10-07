@@ -52,9 +52,9 @@ export default function KilsatAppShell({
       onDrop={onDrop}
     >
       <header className="kilsat-top">
-        <div className="kilsat-brand" aria-label="KILSAT Studio">
+        <div className="kilsat-brand" aria-label="KOETA">
           <i className="kilsat-brand-mark" aria-hidden />
-          <span>KILSAT Studio</span>
+          <span>KOETA</span>
         </div>
         <StudioFlowTabs active={active} onSelect={onSelectPhase} />
         <span className="kilsat-saved" role="status">
