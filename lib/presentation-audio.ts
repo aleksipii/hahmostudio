@@ -4,6 +4,7 @@ import {createAudioContext} from './browser-audio.ts';
 import {speechFrames} from './speech-animation.ts';
 import {encodeSpeechWav,validateCues} from './phonetic-speech.ts';
 import {desktop} from './platform.ts';
+import {renderSoundtrack} from './soundtrack.ts';
 import type {AudioClip,Presentation} from './presentation-model.ts';
 export type PresentationAudio={name:string;blob:Blob};
 export async function analyzeDialogue(blob:Blob,dialogue:string,asset:string,start=0,end?:number,phonetic=false,signal?:AbortSignal):Promise<AudioClip>{
@@ -23,6 +24,9 @@ export async function mixDialogueAudio(p:Presentation,files:Record<string,Presen
  const copy=(buffer:AudioBuffer,from:number,to:number,at:number)=>{const count=Math.round((to-from)*rate),offset=Math.round(at*rate);for(let i=0;i<count&&offset+i<mono.length;i++){const source=(from+i/rate)*buffer.sampleRate,j=Math.floor(source),fraction=source-j;let v=0;for(let c=0;c<buffer.numberOfChannels;c++){const d=buffer.getChannelData(c);v+=((d[j]??0)*(1-fraction)+(d[j+1]??0)*fraction)/buffer.numberOfChannels;}mono[offset+i]+=v;}};
  if(old){const decoded=await context.decodeAudioData(await old.blob.arrayBuffer());copy(decoded,0,Math.min(decoded.duration,startFrame/fps),0);const tail=startFrame/fps+p.seconds;if(decoded.duration>tail&&length/rate>tail)copy(decoded,tail,Math.min(decoded.duration,length/rate),tail);}
  const decoded=new Map<string,AudioBuffer>();for(const a of p.audioClips){signal?.throwIfAborted();if(!files[a.asset])throw Error('Repliikin alkuperäinen ääni puuttuu.');let buffer=decoded.get(a.asset);if(!buffer){buffer=await context.decodeAudioData(await files[a.asset].blob.arrayBuffer());decoded.set(a.asset,buffer);}const e=p.events.find(e=>e.id===a.dialogue)!;copy(buffer,a.start,a.end,startFrame/fps+(e.at??0));}
+ // Tehosteet ja musiikki (vaihe E): ohjelmalliset äänet syntetisoidaan, tuodut musiikkitiedostot puretaan monoksi 48 kHz:iin.
+ if(p.soundCues?.length){const imported:Record<string,Float32Array>={};for(const c of p.soundCues){if(c.source!=='imported'||imported[c.sound]||!files[c.sound])continue;signal?.throwIfAborted();const b=await context.decodeAudioData(await files[c.sound].blob.arrayBuffer()),n=Math.round(b.duration*rate),pcm=new Float32Array(n);for(let i=0;i<n;i++){const src=i/rate*b.sampleRate,j=Math.floor(src),f=src-j;let v=0;for(let ch=0;ch<b.numberOfChannels;ch++){const d=b.getChannelData(ch);v+=((d[j]??0)*(1-f)+(d[j+1]??0)*f)/b.numberOfChannels;}pcm[i]=v;}imported[c.sound]=pcm;}
+  const stems=renderSoundtrack(p,mono,startFrame/fps,imported,rate);mono.set(stems.mix);}
  // WAV conversion retains pauses and PCM duration; export uses the existing AAC encoder.
  return {name:p.metadata.series+'-dialogue.wav',blob:wav(mono,rate)};
  }finally{await context.close();}

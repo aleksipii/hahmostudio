@@ -19,7 +19,7 @@ export function parseRuleScript(text:string):StructuredScript{
  const names=new Map<string,string>();let failed=false;
  const fail=(line:number,problem:string,suggestion='Käytä ohjeen täsmällistä rakennetta; nimeä hahmo ja anna kesto.')=>{result.diagnostics.push({line,problem,suggestion});failed=true;};
  for(const [index,raw] of text.replace(/\r\n?/g,'\n').split('\n').entries()){
-  failed=false;const line=index+1;let t=raw.trim();if(!t||t==='#!kilsat'||/^(?:Resurssi|Resource)\s/i.test(t))continue;
+  failed=false;const line=index+1;let t=raw.trim();if(!t||t==='#!kilsat'||/^(?:Resurssi|Resource)\s/i.test(t)||/^(?:Jakson nimi|Title|Pituus|Kesto|Duration|Tarkoitus|Purpose|Musiikki|Taustamusiikki|Music|Sarja|Series)\s*:/i.test(t)||/^\/\//.test(t))continue;
   const heading=t.match(/^(?:Kohtaus|Scene):\s*(.+)$/i);if(heading){scene={id:`scene-${result.scenes.length+1}`,name:heading[1],commands:[]};result.scenes.push(scene);continue;}
   const declaration=t.match(/^(?:Hahmo|Character):\s*([\p{L}\d. -]{1,100})$/u);if(declaration){const name=declaration[1].trim();if(names.has(name.toLowerCase())){fail(line,'Hahmo on määritelty kahdesti.');continue;}if(names.size>=4){fail(line,'Enintään neljä hahmoa esitystä kohti.');continue;}names.set(name.toLowerCase(),name);result.characters.push(name);continue;}
   const parallel=/^(?:Samalla|Meanwhile|Simultaneously):\s*/i.test(t);t=t.replace(/^(?:Samalla|Meanwhile|Simultaneously):\s*/i,'').replace(/^(?:Leikkaus|Cut):/i,'Kamera:');

@@ -279,4 +279,128 @@ Visuaalinen polish (Rive / Character Animator -henki), suomenkielinen UI ja kaik
 **Todentamatta:** ajo oikealla mallilla, mallin lataus, muisti ja nopeus (Mac), pakettiin liittäminen.
 
 **Seuraava:** mittaus ja tarkisteiden kiinnitys Macilla; sitten vaihe E.
+### 2.4 — Cloud-tehtävä vaihe A: Rakenna jakso yhdellä painalluksella (haara `cloud/kasikirjoitus-sarjaksi`, 2026-10-07)
 
+**Kehitysvaihe:** käsikirjoituksesta katsottava jakso yhdellä kumottavalla muutoksella.
+
+**Valmis:**
+- `lib/episode-builder.ts`: `buildEpisode(scriptText, library, options) → {presentation, assets, cast, animationPerActor, audioPlan, diagnostics, lines}`. Vapaa käsikirjoitus rakennetaan suoraan sääntötunnistimen riveistä ja lauseista; `#!kilsat`-lohkot käyttävät olemassa olevaa tarkkaa kielioppia. Jokainen rivi saa lopputuloksen (tapahtuma, rakenne, kommentti tai näkyvä tarkistusmerkintä); tunnistamatonta ei arvata. Rakentaja ei kaadu millään syötteellä (fuzz-testi 150 satunnaista käsikirjoitusta).
+- Roolitus: `Resurssi hahmo X: paketti` → `@tunnus` → sama nimi → oletuspaketit (Pipsa, Ville, Taru, Ukko) merkinnällä `default-cast`. Sidosfunktiot ovat tuettuja vain, jos paketissa on osat (virhe vain, kun käsikirjoitus käyttää puuttuvaa toimintoa).
+- Miljöö: `Tausta:`, `Miljöö:` ja kohtausotsikot (INT. KEITTIÖ) → synonyymitaulukko taivutusmuotoineen ja astevaihteluineen (keittiössä, bussipysäkillä, living room, kartonkiauto…). Tuntematon tausta = virhe + neutraali tausta.
+- Puhumattomat hahmot löytyvät ohjeriveiltä (`discoverActors`: iso alkukirjain + tunnettu verbi; sana, joka esiintyy muualla pienellä, ei ole nimi).
+- Uusi tapahtumatyyppi `transition` (häivytys mustaan/mustasta, ristikuva, leikkaus) mallissa, ajoituksessa ja renderöinnissä.
+- Sarja: `---`, `Jakso N:` ja `#!kilsat` aloittavat jakson; useampi jakso → jaksovalitsin ja **Tallenna sarja (.sarja)** (`lib/series-archive.ts`, sama muoto kuin Jaksot-paneelissa, max 5).
+- UI: **Rakenna jakso** (⌘↵) on Käsikirjoitus-vaiheen ensisijainen toiminto, *Jaa kohtauksiin* toissijainen. Edistyminen: Tunnistus → Roolitus → Liikkeet → Ääni → Valmis (`role=progressbar`). Kulkee `update()`→`DurableCommandGate` → yksi kumottava muutos.
+- Korjattu samalla: ilo/suru/pelko-ilmeet merkittiin ajoituksessa tuntemattomiksi; `#!kilsat` hylkäsi `Jakson nimi:`/`Pituus:`/`Musiikki:`-rivit; puuttuva ääni tuotti tiukassa tilassa kestoristiriidan.
+- Mittaus `docs/benchmarks/episode-build.md`: 60 s jakso ~0,1 s pilvikoneella. `npm test` 1019/1019.
+
+**Rajat:** äänitehosteita ja musiikkia ei vielä tuoteta (musiikkiohje kirjataan `audioPlan`iin). Muut esineet kuin puhelin mainitaan tarkistuksessa mutta eivät vielä kiinnity käteen. Tunnistin on sääntöpohjainen, ei vapaan kielen ymmärrys.
+
+**Seuraava:** vaihe B — esineiden tartuntapisteet (grip) ja käden maailmamatriisi joka ruudussa.
+
+### 2.5 — Vaihe B: esineet oikeasti kädessä (2026-10-07)
+
+**Valmis:**
+- `lib/held-props.ts`: tartuntapiste (grip) ja kulma esineen omassa koordinaatistossa; käden tartuntapiste `QuickProfile.grips` (valinnainen, validoitu, vanhat paketit toimivat — oletus on käsikerroksen keskipiste). Esineen matriisi = käden lopullinen maailmanmatriisi (`animationTransforms`) · grip · kulma · koko · (−esineen grip), joka ruudussa.
+- Kirjasto: puhelin, kahvikuppi, kirja, laukku, sateenvarjo — kukin alkuperäisenä 2D-vektoritaiteena kolmena näkymänä (edestä, sivulta, takaa). Profiilinäkymä valitsee sivunäkymän automaattisesti.
+- Piirtojärjestys: `paintAnimatedLayers(…, beneath)` piirtää esineen juuri käsikerroksen alle, joten sormet ovat esineen päällä. Laskettu esine jää laskuhetken paikkaan.
+- Käsikirjoitus: “Mira pitää kahvikuppia (oikeassa kädessä)”, “Niko ottaa kirjan vasempaan käteen”, “laskee kupin pöydälle”, “holds an umbrella” → `prop`-tapahtumat `hold:`/`drop:`. Resurssirivin pöytä sijoitetaan laskevan käden ulottuville laskuhetkellä (kaksi käännöstä, merkintä tarkistukseen).
+- Korjattu: puhelin-IK:n kohteet eivät seuranneet juuren siirtymää kävelyn jälkeen (kaikki puhelintoiminnot olivat “ulottumattomissa”); mikä tahansa rekvisiittatapahtuma kytki puhelimen pois; resurssirivin kalusteet katosivat 1 s jälkeen; vanha `scene.phone`-polku käyttää nyt samaa tartuntapistettä ja kiertyy käden mukana.
+- Hyväksyntätesti `lib/held-props.test.ts`: oikean `renderPresentation`-polun läpi mallikontekstilla jokainen ruutu, etu- ja sivunäkymä, molemmat kädet, siirto kädestä toiseen ja pöydälle lasku. Suurin etäisyys < 1e‑6 px (raja 0,5 px).
+
+**Rajat:** toon3d skinnaa puhelimen käsiluuhun (oli jo ennestään); muita esineitä toon3d- ja Mr.Kille/Handu-kartonkipolku ei vielä piirrä. Esineiden taide on yksinkertaista vektoria.
+
+**Seuraava:** vaihe C — liikekirjasto (ennakointi → toiminta → jälkiliike → asettuminen) ja laatumittarit.
+
+### 2.6 — Vaihe C: ammattimaiset liikeradat (2026-10-07)
+
+**Valmis:**
+- `lib/motion-library.ts`: eleet (vilkutus, osoitus, nyrkki, nyökkäys, hämmästys) vaiheina ennakointi → toiminta → (pito) → jälkiliike → asettuminen, jokaisella vaiheella oma Bezier-käyrä; päällekkäinen toiminta (pää/kädet/vartalo 2–4 ruudun porrastus); kaaret syntyvät nivelketjun kierrosta.
+- Kävely ja juoksu analyyttisellä kahden luun IK:lla: tukijalka lukittu maailmaan etu- ja sivunäkymässä, ensimmäinen ja viimeinen askel puolikkaita, askelpituus ∝ jalan pituus, matka keston mukaan, lantion keinunta, kädet vastavaiheessa viiveellä. Kävely kääntää monikulmahahmon profiiliin ja takaisin eteen (kova vaihto, ei ristihäivytystä).
+- Istuminen (jää istumaan), kyykky ja hyppy parametrisoitu polven kulmalla ja irtoamiskorkeudella → ei IK-singulaarisuutta suorilla jaloilla. Istumasta noustaan ennen ensimmäistä askelta.
+- Lepoelämä: deterministiset silmänräpäykset 2,8–4,6 s välein ja hengitys (pää ±0,9 px); liikkumiskielto ja pokerinaama hiljentävät.
+- Mittarit `lib/motion-quality.ts`, testit `lib/motion-library.test.ts`: 14 kirjaston hahmoa × 12 liikettä — kiihtyvyys ≤ 20 °/ruutu² ja jerk ≤ 20 °/ruutu³ (juoksu 35/40), translaatio ≤ 15 px/ruutu², tukijalan liukuma < 1 px, enintään yksi näkyvä kuvakulma. Kuvasarjat `docs/motion-sheets/`.
+- Korjattu: vanha kävely vasemmalle oli pelkkää liukumista (340 px), hyppy ei liikkunut, kävely oikealle tuotti 70 °/ruutu² nopeusportaita, kuvakulman vaihto ristihäivytti kaksi näkymää sekunneiksi, “Mira odottaa 0,5 s” katosi hiljaa huomioksi. `sampleTrack` binäärihakuun (rakennus 91 → 30 ms).
+
+**Rajat:** juoksussa ei ole lentovaihetta (nopea kävelymekaniikka). Etunäkymän kävely kohti kameraa on 2D-likiarvio (lantio laskee ruudulla, ei mittakaavaa). Mr.Kille/Handu-kartonkipaketeilla ei ole reisi–sääri-ketjua; niiden liike kulkee kartonkipolun kautta.
+
+**Seuraava:** vaihe D — vertailukorkeus, yhteinen mittakaava, lattiaviiva ja kuvakoot silmälinjan mukaan.
+
+### 2.7 — Vaihe D: mittasuhteet ja sommittelu (2026-10-07)
+
+**Valmis:**
+- `lib/stage-composition.ts`: vertailukorkeus (pään/hiusten yläreuna – jalkapohja, etunäkymän kerrokset riggauksen liitosketjusta), silmälinja ja käden koko jokaiselle paketille; hahmotyyppi QuickProfile.asset-tunnisteesta (Pipsa/Ville/Taru lapsi 0,72, Ukko ja muut aikuinen 1,0, Otto robotti 0,9).
+- Rakentaja sijoittaa hahmot yhteiseen mittakaavaan ja jalkapohjat taustan lattiaviivalle (taulukko taustoittain, turva-alueen sisällä niin, ettei näyttämön rajaus koskaan siirrä jalkoja). Kävelyt mahtuvat näyttämölle: lähtöpaikka valitaan liikeradan mukaan, “kävelee sisään vasemmalta” päättyy hahmon paikalle.
+- Yhteinen `cameraTransform`/`stageProjection` esikatselulle, viennille ja suoralle muokkaukselle: lähikuvassa silmät 1/3 korkeudelle, puolikuvassa 0,3; katseen suuntaan jää tilaa.
+- 180 asteen sääntö: takakamera/sivukamera kahden hahmon kohtauksessa ja puolen vaihto kohtauksen sisällä → varoitus.
+- Testit `lib/stage-composition.test.ts`: jalat lattiaviivalla ±2 px koko jakson (pysty ja vaaka, turva-alueen rajaus mukana), esine/käsi-suhde, lähikuvan silmälinja ±5 %, katsetila, akselisääntö.
+
+**Rajat:** sommittelu koskee rakentajan uusia sidoksia; vanhojen projektien käsin asetetut x/y/scale säilyvät. Lattiaviiva on yksi per jakso (ensimmäinen tausta). Vaakakuvassa turva-alue (220 px) nostaa lattiaviivaa taustan lattiakaistaa ylemmäs.
+
+**Seuraava:** vaihe E — äänitehosteet, ohjelmallinen musiikki, ducking ja kolmen lähteen miksaus.
+
+### 2.8 — Vaihe E: äänitehosteet, musiikki ja miksaus (2026-10-07)
+
+**Valmis:**
+- `lib/sound-library.ts`: kahdeksan ohjelmallisesti syntetisoitua tehostetta (askel, napautus, puhelimen värinä, soitto, ovi, koputus, suhahdus, istuutuminen) ja alkuperäinen tunnelmamusiikki (iloinen, jännittävä, rauhallinen, surullinen: sointukulku, basso, arpeggio/melodia, rytmi). Deterministinen, CC0, ei näytteitä eikä verkkoa.
+- `lib/soundtrack.ts` + `Presentation.soundCues` (valinnainen, validoitu): merkinnät ankkuroidaan tapahtumiin (siirtyvät ajoituksen mukana). Askeleet animaation todellisiin maakosketuksiin, istuutuminen/laskeutuminen liikkeen vaiheisiin, puhelimen napautus ja lasku. Käsikirjoitus: `Musiikki: rauhallinen | tiedosto.wav | pois`, `Ääni: ovi`, `SFX: door`, “Puhelin soi.”, “Ovi paukahtaa.”, “Joku koputtaa.”
+- Ducking: musiikki −10,5 dB repliikkien alle (0,15 s alku, 0,4 s palautus). Miksaus: repliikit + tehosteet + musiikki, pehmeä rajoitin; kulkee olemassa olevan `mixDialogueAudio`-polun kautta esikatseluun ja MP4/Mac-vientiin. Esikatselu soittaa musiikin ja tehosteet myös ennen repliikkiäänien tuontia.
+- Paneeli: Ääniraita-yhteenveto ja oman musiikkitiedoston tuonti (korvaa ohjelmallisen).
+- Korjattu samalla: istumisen IK nosti vinossa olevan jalan 40 px ilmaan; etunäkymän kävely taivutti polvet eri suuntaan kuin istuminen (jalka painui lattian alle noustessa).
+- Testit `lib/soundtrack.test.ts`: askel ±1 ruutu tukivaiheen alusta (riippumaton tunnistus), ducking > 8 dB, kolme lähdettä miksauksessa ja viennin WAV-polussa, determinismi.
+
+**Rajat / todentamatta:** tämä vaihe ei tuota repliikkejä; repliikit ovat tuotuja, äänitettyjä tai erillisen Kokoro-vaiheen (E0) synteettisiä. MP4:n AAC-koodaus (WebCodecs/VideoToolbox/FFmpeg) ja kuuntelu oikealla Macilla todentamatta pilvessä; testattu PCM/WAV-taso. Tehosteiden ja musiikin äänenlaatu on yksinkertaista synteesiä.
+
+**Seuraava:** vaihe F — palikkaeditori (tapahtuma = palikka, kaksisuuntainen synkronointi tekstiin).
+
+### 2.9 — Vaihe F: palikkaeditori (2026-10-07)
+
+**Valmis:**
+- `lib/blocks.ts`: jokainen tapahtuma (liike, ilme, katse, esine, kamera, tausta, tauko, repliikki, siirtymä) ja äänimerkintä on palikka raidalla (hahmo / kamera / näyttämö / ääni). Komennot: siirto (napsahtaa tapahtumarajoille = rivijärjestys), venytys (kesto), kopio, poisto, parametrimuutos, uusi palikka kirjastosta.
+- Kaksisuuntainen synkronointi: käsikirjoitusteksti on totuuslähde. Palikan muutos kirjoittaa vain vastaavan rivin; kesto- ja suuntamuutos korvaa vain kesto-/suuntasanan (esim. “sisään vasemmalta kaksi sekuntia” → “… 3 s”). Monen lauseen rivillä muut lauseet säilyvät. Vanhentunut palikka (rivi muuttunut) → `BlockConflict`, ei hiljaista ratkaisua. Repliikkien sanoja ei muuteta palikoista.
+- Tapahtumatunnisteet perustuvat rivin sisältöön, joten rivien lisäys/siirto ei irrota äänileikkeitä, hyväksyntöjä tai lukituksia.
+- Lukitut kuvat: rakennus/palikkamuutos estetään kuvakohtaisella vaikutustarkistuksella (`affectedShots`), muut muutokset sallitaan.
+- `components/block-timeline.tsx`: aikajana, vedä/venytä hiirellä, näppäimistö (←/→ siirto, Vaihto+←/→ kesto ±0,5 s, Delete, Ctrl/⌘+D, Enter), ruudunlukijan nimet, vedettävä palikkakirjasto, inspector ja hahmojen tilakone (`lib/character-states.ts`: lepo, puhe, kävely, juoksu, ele, reaktio, istuu + siirtymäehdot).
+- Testit: palikka → teksti → palikka identtinen, pienin rivimuutos, siirto/kopio/poisto/lisäys, äänileike säilyy, ristiriidat, lukitussuoja, alle 100 ms uudelleenrakennus, UI-merkinnät.
+
+**Rajat:** siirto napsahtaa tapahtumarajoille (vapaa ajoitus sekunnin murto-osiin vaatii tauko-palikan). Tilakone on johdettu näkymä, ei erillinen ohjausdata. Hiiren veto ja näppäinkäyttö todennettu merkintätasolla, ei oikealla laitteella.
+
+**Seuraava:** vaihe G — nopeus, ensikäyttö (Esimerkki → Rakenna jakso → Vie) ja raportointi.
+
+### 2.10 — Vaihe G: nopeus, ensikäyttö ja raportointi (2026-10-07)
+
+**Valmis:**
+- Ensikäyttö kolmella toimenpiteellä: *Kokeile esimerkkiä* lataa esimerkkikäsikirjoituksen (`public/library/Esimerkki-pysakointisakko.md`) → **Rakenna jakso** (⌘↵) → **Vie**.
+- Lähi- ja puolikuvan zoom hahmon koosta (lähikuva = kasvot ja hartiat), silmälinja säilyy.
+- Puhelimeen katsominen tuo puhelimen käteen (arvioitu); “odottaa”/“pitää” esittelee hahmon ohjeriviltä.
+- `docs/KASIKIRJOITUS-KIELIOPPI.md`: takuut (jokaisella rivillä lopputulos, kanoninen muoto 100 %, determinismi, ei kaatumista) ja kaikki kanoniset lauseet; testi tarkistaa jokaisen dokumentin lauseen.
+- `docs/DESIGN-PALIKKAEDITORI.md`: komponenttispeksi (design-järjestelmän laajennus) ja 10 minuutin työnkulku, vertailu Riveen.
+- Ruutukuvat oikean `renderPresentation`-polun kautta SVG-sovitteella: `scripts/render-episode-frames.ts` → `docs/episode-frames/`.
+- Mittaukset `docs/benchmarks/episode-build.md`: rakennus 60 s jaksosta ~60 ms pilvikoneella; toiston laskenta p95 0,6 ms.
+- `npm test` 1044 (1043 läpi, 1 ohitettu, 0 virhettä); `npm run build` ja `npm run desktop:build` OK.
+
+**Ei todennettu pilvessä:** M1-Mac, oikea canvas-piirto 60 fps, VideoToolbox-vienti, pakattu .app, kamera/mikrofoni, hiiren veto oikealla laitteella. `studio example playback render stays within regression budget` -aikarajatesti voi ylittyä raskaassa rinnakkaiskuormassa (ohimenevä, läpäisee yksinään).
+
+**Seuraava:** oikean Macin tarkistus (pakattu sovellus, vienti, ääni), juoksun lentovaihe, palikoiden vapaa sekuntiajoitus ja monivalinta, toon3d/kartonkipolun esineet.
+
+### 2.11 — Kokoro-yhteispeli ja käyttötesti oikealla käyttöliittymällä (2026-10-07)
+
+**Valmis:**
+- Rakentaja asettaa hahmoille Kokoro-oletusäänet (säilyttää käyttäjän valinnan) ja arvioi rivikohtaisesti `audioPlan.dialogue[].synth` (englanti = tuotettavissa, suomi/tyhjä = oma ääni). Tarkistukseen `voices-synth`/`voices-own`.
+- Käsikirjoitusnäkymään **Puuttuvat repliikkiäänet** -osio: *Luo puuttuvat repliikit Kokorolla* (vain Mac-sovellus; selaimessa vihje). Käynnistää paneelin synteesin vain riveille, joilla ei ole ääntä; oma/tuotu ääni ei koskaan ylikirjoitu, synteettiset merkitään.
+- Käyttötesti oikealla UI:lla (Playwright + Chromium, Vite dev, ei Electronia): löysi ja korjasi (1) marginaalin “Ei tunnistettu” rivillä “Hän pysähtyy ja katsoo Miraa.” (marginaali ei käyttänyt rakentajan hahmolöytöä), (2) palikkaeditori oli 280 px sivupalkissa → keskialueelle, (3) hetkelliset palikat 18 px ja päällekkäiset peittivät toisensa → rivitys raidan sisällä + minimileveys, (4) rakentajan vanha kuollut kaksoispalautus. Kuvat ja kulku `docs/ui-checks/`.
+- Todennettu oikeassa UI:ssa: Kokeile esimerkkiä → Rakenna jakso (2 hahmoa, 14 tapahtumaa, 7,2 s) → Vaihto+→ pidentää kestoa 0,5 s ja kirjoittaa rivin → hiiren veto venytyskahvasta → inspector.
+- `npm test` 1145 (1144 läpi, 1 ohitettu).
+
+**Mitattu:** palikkamuutoksen kokonaisviive UI:ssa 661 ms (dev-palvelin; tallennus + rakennus + renderöinti). Pelkkä rakennus < 100 ms. Tavoite “esikatselu alle 100 ms” täyttyy siis vain rakennuksen osalta; kokonaisviive vaatii optimointia (rakennus workeriin, kevyempi persistointi) ja mittauksen tuotantokoonnilla.
+
+**Ei todennettu:** Electron/Mac, Kokoro-synteesi oikealla mallilla (vain testimoottori), tuotantokoonti, trackpad-veto.
+
+**Seuraava:** mallipohjat (kohta 7), palikkamuutoksen viiveen pienentäminen, tarkistuksen yhden napin korjausehdotukset.
+
+### 2.12 — Aloituspohjat (2026-10-07)
+
+**Valmis:** `lib/episode-templates.ts`: 7 pohjaa (dialogi kahdelle, uutiskatsaus, tuote-esittely, opetusvideo, pieni tarina, puhelinsoitto, English chat/Kokoro), valinta Käsikirjoitus-vaiheen tyhjästä tilasta. Pohjat käyttävät vain kanonisia lauseita ja rakentuvat heti ilman tunnistamattomia rivejä (testi + oikea UI). Esimerkkirepliikit on merkitty korvattaviksi; ohjelma ei keksi repliikkejä. Kesto ilman ääniä 3–14 s (arvio näkyy vihjeessä).
+Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson kahtia (tyhjä esijakso). `splitEpisodes` liittää pelkät resurssi-/asetusrivit seuraavaan jaksoon (testi). `npm test` 1147 (1146 läpi, 1 ohitettu). Kuva `docs/ui-checks/03-aloituspohjat.png`.
+
+**Seuraava:** palikkamuutoksen kokonaisviive (661 ms dev), tarkistuksen yhden napin korjausehdotukset, vapaa ajoitus/monivalinta palikoille, Mac-tarkistus.

@@ -1,4 +1,5 @@
-import {buildScreenplay} from './screenplay.ts';
+import {applyGait,applyGesture,applyLowerBody,gestures,lowerBodyMotions} from './motion-library.ts';
+import type {CharacterView} from './character-view.ts';
 import {neutral,putKeyframe,sampleTrack,type Animation} from './animation-model.ts';
 import {viewAtFrame} from './character-view.ts';
 import type {QuickProfile} from './quick-animation.ts';
@@ -14,40 +15,26 @@ export function compileBodyMotion(a:Animation,q:QuickProfile,p:Presentation,spea
   const overlap=p.events.find(other=>other.id!==e.id&&other.target===speaker&&other.kind==='action'&&productionMotions.includes(other.value as any)&&other.value!=='stop'&&channels(e.value).some(c=>channels(other.value).includes(c))&&other.at!<e.at!+seconds&&other.at!+other.duration!>e.at!);if(overlap)throw Error('Kaksi vartaloliikettä osuu päällekkäin: rivit '+e.sourceRef.line+' ja '+overlap.sourceRef.line+'.');
   const small=p.direction?.noLargeGestures||p.events.some(c=>c.kind==='constraint'&&c.value==='small-gestures'&&[speaker,'scene'].includes(c.target)&&c.at!<=e.at!);
   if(small&&['jump','run-left','run-right','run-front'].includes(e.value))throw Error('Suuren liikkeen kielto on ristiriidassa hypyn tai juoksun kanssa. Muuta ohjetta tai valitse kävely/nyökkäys.');
-  const view=viewAtFrame(q,next,Math.max(0,start-1)),roles=q.views?.[view]??q.roles,profile={...q,roles};
-  if(e.value==='fist'){
-   const end=Math.min(full-1,Math.round(((e.at??0)+seconds)*a.fps)),count=Math.max(2,end-start);
-   for(let i=0;i<=count;i++){
-    const t=i/count,frame=start+i,envelope=Math.sin(Math.PI*t)**2;
-    for(const role of ['leftArm','leftForearm'] as const){const key=roles[role];if(key)next=putKeyframe(next,key,{...sampleTrack(next.tracks.find(x=>x.key===key),Math.max(0,start-1)),rotation:sampleTrack(next.tracks.find(x=>x.key===key),Math.max(0,start-1)).rotation-(role==='leftArm'?55:20)*envelope,frame,easing:'linear'});}
-   }
-   continue;
-  }
-  if(e.value==='sit'){
-   const end=Math.min(full-1,Math.round(((e.at??0)+seconds)*a.fps)),count=Math.max(2,end-start);
-   for(let i=0;i<=count;i++){
-    const t=i/count,frame=start+i,envelope=Math.sin(Math.PI*t)**2,rootKey=roles.root;
-    if(rootKey){const baseY=sampleTrack(next.tracks.find(x=>x.key===rootKey),Math.max(0,start-1)).y;next=putKeyframe(next,rootKey,{...sampleTrack(next.tracks.find(x=>x.key===rootKey),Math.max(0,start-1)),y:baseY+a.rig.source.height*.04*envelope,frame,easing:'linear'});}
-    for(const side of ['left','right'] as const){for(const part of [side+'Thigh',side+'Shin'] as const){const key=roles[part];if(key)next=putKeyframe(next,key,{...sampleTrack(next.tracks.find(x=>x.key===key),Math.max(0,start-1)),rotation:sampleTrack(next.tracks.find(x=>x.key===key),Math.max(0,start-1)).rotation-(part.includes('Thigh')?45:35)*envelope,frame,easing:'linear'});}}
-   }
-   continue;
-  }
-  if(e.value==='point'){
-   const end=Math.min(full-1,Math.round(((e.at??0)+seconds)*a.fps)),count=Math.max(2,end-start);
-   for(let i=0;i<=count;i++){
-    const t=i/count,frame=start+i,envelope=Math.sin(Math.PI*t)**2;
-    const arm=roles.leftArm,fore=roles.leftForearm;
-    if(arm)next=putKeyframe(next,arm,{...sampleTrack(next.tracks.find(x=>x.key===arm),Math.max(0,start-1)),rotation:sampleTrack(next.tracks.find(x=>x.key===arm),Math.max(0,start-1)).rotation-65*envelope,frame,easing:'linear'});
-    if(fore)next=putKeyframe(next,fore,{...sampleTrack(next.tracks.find(x=>x.key===fore),Math.max(0,start-1)),rotation:sampleTrack(next.tracks.find(x=>x.key===fore),Math.max(0,start-1)).rotation-25*envelope,frame,easing:'linear'});
-   }
-   continue;
-  }
-  const prefix={...next,duration:Math.max(1,start),tracks:next.tracks.map(t=>({...t,frames:t.frames.filter(k=>k.frame<Math.max(1,start))}))};
-  const text='['+e.value.replace(/^react-nod$/,'nyökkää').replace(/^react-wave$/,'vilkuta').replace(/^react-surprise$/,'nyökkää').replace('walk','kävele').replace('run','juokse').replace('-left',' vasemmalle').replace('-right',' oikealle').replace('-front',' suoraan').replace('wave','vilkuta').replace('jump','hyppää').replace('crouch','kyykisty').replace('nod','nyökkää')+' '+seconds+'s]';
-  const result=buildScreenplay(prefix,profile,{width:p.world.width,height:p.world.height,background:p.world.background,guides:false,x:0,y:0,scale:1},{text,beats:[],warnings:[],seconds});
+  const count=Math.max(2,Math.min(full-start,Math.round(seconds*a.fps)));if(start>=full)continue;
   const factor=small?.3:p.direction?.profiles.find(v=>v.speaker===speaker)?.intensity??1;
-  const motionKeys=new Set(result.animation.tracks.filter(t=>t.frames.some(k=>k.frame>=prefix.duration)).map(t=>t.key));
-  next={...next,tracks:[...next.tracks.filter(t=>!motionKeys.has(t.key)),...result.animation.tracks.filter(t=>motionKeys.has(t.key)).map(t=>({...t,frames:t.frames.map(k=>{if(k.frame<prefix.duration)return k;const frame=k.frame-(start===0?1:0),base=sampleTrack(next.tracks.find(t2=>t2.key===t.key),Math.max(0,start-1));return {...k,frame,rotation:['wave','nod'].includes(e.value)?base.rotation+(k.rotation-base.rotation)*factor:k.rotation};}).filter(k=>k.frame<full)}))],duration:full};
+  const gait=e.value.match(/^(walk|run)-(left|right|front)$/);
+  // Kuvakulma: liikkeen suunta valitsee profiilin, jos hahmossa on se; muuten nykyinen kuvakulma.
+  const current=viewAtFrame(q,next,Math.max(0,start-1)),wanted:CharacterView=gait?(gait[2]==='front'?'front':gait[2] as CharacterView):current,view=q.views?.[wanted]?wanted:current,roles=q.views?.[view]??q.roles;
+  const roots=[...new Set(Object.values(q.views??{}).map(m=>m?.root).filter((k):k is string=>!!k&&k!==roles.root))];
+  if(q.views&&view!==current)next=switchView(next,q,start,view);
+  if(gait)next=applyGait(next,roles,gait[1] as 'walk'|'run',gait[2] as 'left'|'right'|'front',start,count,roots,6,view==='left'||view==='right');
+  else if(lowerBodyMotions[e.value]){const m=lowerBodyMotions[e.value];next=applyLowerBody(next,roles,start,count,m.phases.map(ph=>({...ph,knee:ph.knee*Math.max(.5,factor),air:(ph.air??0)*Math.max(.5,factor),arms:(ph.arms??0)*factor})),roots);}
+  else if(gestures[e.value])next=applyGesture(next,roles,e.value,start,count,factor);
+  // Kävelyn jälkeen hahmo kääntyy takaisin edestä kuvattavaksi, ellei seuraava liike jatka samaan suuntaan.
+  if(gait&&q.views&&view!==current&&view!=='front'&&q.views.front){const end=start+count,nextGait=p.events.find(o=>o.target===speaker&&o.kind==='action'&&o.at!==undefined&&Math.abs(o.at*a.fps-end)<2&&o.value===e.value);if(!nextGait&&end<full)next=switchView(next,q,end,'front');}
  }
+ return next;
+}
+
+/** Kova kuvakulman vaihto ruudussa `frame`: edellinen ruutu lukitaan (hold), jotta kaksi kuvakulmaa ei näy yhtä aikaa. */
+export function switchView(a:Animation,q:QuickProfile,frame:number,view:CharacterView):Animation{
+ let next=a;for(const [name,map] of Object.entries(q.views??{})){if(!map?.root)continue;const track=next.tracks.find(t=>t.key===map.root);
+  if(frame>0)next=putKeyframe(next,map.root,{...sampleTrack(track,frame-1),frame:frame-1,easing:'hold'});
+  next=putKeyframe(next,map.root,{...sampleTrack(next.tracks.find(t=>t.key===map.root),frame),frame,easing:'hold',opacity:name===view?1:0});}
  return next;
 }
