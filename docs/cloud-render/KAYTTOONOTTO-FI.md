@@ -34,7 +34,7 @@ Hahmostudion nollakustannustila estää lisäksi kaikki maksulliset taustajärje
 - Jos haluat kirjallisen varmuuden, kysy Kagglelta (kaggle.com/contact).
 
 ### Hyvä tietää
-- Pilvirenderöinti toimii **yksityisellä web-palvelimella selaimessa** (`npm run start:private`), ei työpöytäsovelluksessa. Projektisi pysyvät ennallaan työpöytäsovelluksessa.
+- Pilvirenderöinti toimii **yksityisellä web-palvelimella selaimessa** (`npm run start:private`, osat A–F) tai **työpöytäsovelluksessa** (osa G). Työpöytäsovelluksessa et tarvitse palvelinta etkä ympäristömuuttujia. Projektisi pysyvät ennallaan kummassakin.
 - Yksi muistikirja = yksi renderöinti. *Character animation* tekee yhden klipin kerrallaan, eli jokaisesta klipistä tulee oma muistikirja.
 - Jos Hahmostudion palvelin käynnistetään uudelleen ennen kuin tulos on tuotu, työ katoaa ja se aloitetaan alusta (mallit on silloin jo ladattu Kagglessa vain, jos sama istunto on yhä auki).
 
@@ -220,7 +220,7 @@ npm run build:private && npm run start:private
 
 **F1. Hahmostudio (selain)**
 1. http://127.0.0.1:4176 → jakso → **Pilvirenderöinti…** → **Synkronoi säännöistä** → valitse kohtaus → **Hyväksy ja lukitse kohtaus**.
-2. **Hahmojen hyväksytyt vertailukuvat**: lataa jokaiselle kohtauksen hahmolle PNG, JPEG tai WebP (enintään 8 Mt). Video käyttää tätä lähtökuvana.
+2. **Hahmojen hyväksytyt vertailukuvat**: lataa jokaiselle kohtauksen hahmolle PNG, JPEG tai WebP (enintään 8 Mt). Video käyttää tätä lähtökuvana. Kuva hyväksytään hahmon nykyiselle grafiikalle: jos hahmon grafiikka muuttuu myöhemmin, renderöinti estyy syyllä `reference-stale`, kunnes synkronoit uudelleen ja hyväksyt uuden kuvan.
 3. Työnkulku **Image to video** → **Tarkista valtuutus**.
    ✅ Kortissa: taustajärjestelmä `kaggle-notebook`, luokka `free`, hinta €0.00, enimmäishinta €0.00, maksullinen laskenta ja varavaihtoehto POIS, mallin revisio (40 merkkiä), lisenssi apache-2.0, kaupallinen käyttö allowed, **HYVÄKSYTTY**.
 4. **Hyväksy ja renderöi.** Tilaksi tulee *Renderöidään* ja näkyviin tulee **Lataa Kaggle-muistikirja**. Paina sitä.
@@ -248,6 +248,42 @@ npm run build:private && npm run start:private
 2. Vasta tämän jälkeen: työnkulku **Character animation** (yksi muistikirja per klippi).
 
 Tuonti hylätään, jos tiedosto on toisesta työstä tai paketista, mallin kuitti ei täsmää lukitukseen, tiedoston tarkistussumma ei täsmää tai mukana on kielletty tiedostotyyppi. Hylkäys ei peru työtä: voit tuoda oikean tiedoston.
+
+
+---
+
+## Osa G: sama työpöytäsovelluksessa (Mac)
+
+⚠️ EPÄVARMA: tämä polku on testattu oikealla Electronilla Linuxissa, mutta ei vielä oikealla Macilla (Keychain-kysely ja natiivit dialogit voivat näyttää erilaisilta).
+
+Työpöytäsovellus tekee osien A ja E työn itse. Tarvitset yhä osan B `pins.json`-tiedoston, osan C Kaggle-tunnuksen ja halutessasi osan D Drive-tunnukset.
+
+**G1. Ota käyttöön.** Näytä → **Tekoäly…** → **Ota pilvirenderöinti käyttöön…** → vahvista dialogissa.
+✅ Pilvirivillä lukee *Otettu käyttöön* ja kustannus *estetty*, kunnes taustajärjestelmä on vahvistettu ilmaiseksi.
+
+**G2. Vahvista Kaggle ilmaiseksi.** Samassa paneelissa **Vahvista Kaggle-muistikirja ilmaiseksi…** → **Vahvistan**. (Vastaa selaimen asetusta `HAHMOSTUDIO_NOTEBOOK_CLASSIFIED_FREE=yes`.)
+✅ Kustannus: **€0,00**.
+
+**G3. Mallin lukitus.** **Tuo mallien lukitus…** → valitse osan B `pins.json`.
+✅ *Mallien lukitus: tuotu*.
+
+**G4. (Vapaaehtoinen) Drive.** Tee tekstitiedosto, jossa on kolme riviä:
+```
+GOOGLE_OAUTH_CLIENT_ID=…apps.googleusercontent.com
+GOOGLE_OAUTH_CLIENT_SECRET=…
+GOOGLE_OAUTH_REFRESH_TOKEN=…
+```
+Valitse **Tuo asetustiedosto…** → valitse tiedosto → vahvista. **Poista tiedosto heti tämän jälkeen.** Arvot tallennetaan macOS:n avainnipun suojaamina sovelluksen datakansioon, eivätkä ne näy sovelluksen ikkunassa. Ilman Drivea tulokset tallennetaan tälle koneelle.
+✅ Paneelissa avaimet näkyvät tilassa *asetettu* (arvoja ei näytetä).
+
+**G5. Renderöi.** **Avaa pilvirenderöinti…** → toimi kuten osassa F1.
+- **Hyväksy ja renderöi** kysyy ensin natiivissa dialogissa, mitä lähetetään ja minne. **Peruuta** ei lähetä mitään.
+- **Lataa Kaggle-muistikirja** avaa tallennusdialogin.
+- Osan F3 tuonti tehdään painikkeella **Tuo tulos…**.
+
+Jos suljet sovelluksen kesken työn, työ näkyy seuraavalla kerralla keskeytettynä. Aloita renderöinti silloin uudelleen; mitään ei lähetetä automaattisesti.
+
+**Pois käytöstä:** Tekoäly-paneeli → **Poista pilvirenderöinti käytöstä**. Tallennetut tunnukset poistat painikkeella **Poista tallennetut asetukset**.
 
 ---
 

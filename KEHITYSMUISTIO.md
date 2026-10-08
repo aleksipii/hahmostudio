@@ -631,3 +631,11 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todennettu:** `npm test` 1253 (1252 läpi, 1 ohitettu), typecheck, `desktop:test:cloud` 24/24 (Electron, Linux). **Todentamatta:** dialogin ehdotusnäkymä selaimessa (vaatii pilvipalvelimen; lisäksi lista on tyhjä), oikea renderöinti vertailukuvalla, Mac.
 
 **Seuraava:** vaihe 7, dokumentaatio ja valmiusraportti.
+
+## 2.30 Tekoäly · vaihe 7: dokumentaatio ja valmiusraportti (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 7/7. **Tehty:** `docs/cloud-render/DESKTOP.md` (työpöydän pilviarkkitehtuuri, salaisuudet, lähtevä data, palautuminen, vertailukuvat, paketointi ja todennustasot) sekä `docs/cloud-render/KAYTTOONOTTO-FI.md`, johon tuli osa G (sama polku työpöytäsovelluksessa) ja vertailukuvan vanhenemisen selitys. Valmiusraportti on tasoittain (simuloitu / pakattu / oikea Mac / oikea ComfyUI-GPU) tiimin lokissa.
+
+**Todennettu:** ks. 2.24–2.29. **Todentamatta (ei väitetä):** pakattu .app, oikea Mac (Keychain, natiivit dialogit), whisper-litterointi oikealla mallilla, oikea Kaggle-, ComfyUI-, Drive- tai GPU-ajo.
+
+**Seuraava:** testaajan ja lopputarkastajan palaute. Vertailukuvaehdotukset otetaan käyttöön hahmo kerrallaan, kun hahmon grafiikka on hyväksytty.
