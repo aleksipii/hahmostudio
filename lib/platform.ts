@@ -1,7 +1,8 @@
+import {trackAi} from './ai-status.ts';
 export type UiSettings={panels?:{library:number;inspector:number;timeline:number};workspace?:'character'|'performance'|'animation';layout?:{library:boolean;inspector:boolean;timeline:boolean};accordions?:Record<string,boolean>;window?:{x:number;y:number;width:number;height:number}};
 export type FileKind='project'|'character'|'audio'|'rig'|'animation'|'series';
 export type NativeFile={id:string;name:string;bytes:Uint8Array};
-export type DesktopAction={action:'open'|'import'|'audio'|'save'|'saveAs'|'export'|'undo'|'redo'|'play'|'save-for-close'|'help'|'fit'|'library'|'inspector'|'timeline'|'focus-stage'|'reset-layout'|'zoom-in'|'zoom-out'|'guides'|'center'|'settings'|'advanced'|'panels';id?:string};
+export type DesktopAction={action:'open'|'import'|'audio'|'save'|'saveAs'|'export'|'undo'|'redo'|'play'|'save-for-close'|'help'|'fit'|'library'|'inspector'|'timeline'|'focus-stage'|'reset-layout'|'zoom-in'|'zoom-out'|'guides'|'center'|'settings'|'advanced'|'panels'|'ai';id?:string};
 export type ProjectRevision={id:string;projectId:string;name:string;label:string;hash:string;createdAt:string};
 export type DesktopBridge={
  revisionsList:(projectId:string)=>Promise<ProjectRevision[]>;revisionsSave:(data:{projectId:string;name:string;label:string;bytes:Uint8Array})=>Promise<ProjectRevision>;revisionsRead:(projectId:string,id:string)=>Promise<ProjectRevision&{bytes:Uint8Array}>;revisionsRemove:(projectId:string,id:string)=>Promise<void>;
@@ -21,7 +22,17 @@ export type DesktopBridge={
  speech:(bytes:Uint8Array,language:string)=>Promise<unknown>;cancelSpeech:()=>Promise<void>;onAction:(callback:(payload:DesktopAction)=>void)=>()=>void;
 };
 declare global{interface Window{hahmostudio?:DesktopBridge;}}
-export function desktop():DesktopBridge|undefined{return typeof window==='undefined'?undefined:window.hahmostudio;}
+const tracked=new WeakMap<DesktopBridge,DesktopBridge>();
+/** Tekoälykutsujen tulos kirjataan istunnon muistiin Tekoäly-paneelia varten; kutsut ja tulokset pysyvät ennallaan. */
+function withAiActivity(bridge:DesktopBridge):DesktopBridge{
+ let out=tracked.get(bridge);if(out)return out;
+ out=Object.freeze({...bridge,
+  speech:(bytes:Uint8Array,language:string)=>trackAi('rhubarb',bridge.speech(bytes,language),v=>Array.isArray(v)?`${v.length} suun asentoa`:'Valmis'),
+  transcribe:(bytes:Uint8Array,language:string)=>trackAi('whisper',bridge.transcribe(bytes,language),()=>'Litterointi valmis ('+language+')'),
+  kokoroSynthesize:(request:{text:string;voice:string;speed:number})=>trackAi('kokoro',bridge.kokoroSynthesize(request),v=>`${(v.samples.length/v.sampleRate).toFixed(1)} s puhetta (${request.voice})`)});
+ tracked.set(bridge,out);return out;
+}
+export function desktop():DesktopBridge|undefined{const bridge=typeof window==='undefined'?undefined:window.hahmostudio;return bridge&&withAiActivity(bridge);}
 /** Dialogit kuuluvat editorin kuoreen, jotta teema ja painikkeet periytyvät. */
 export function studioPortalHost():HTMLElement{return document.querySelector('main.studio')??document.body;}
 export function nativeFile(value:NativeFile):File{const type:Record<string,string>={png:'image/png',psd:'application/octet-stream',hahmo:'application/octet-stream',wav:'audio/wav',mp3:'audio/mpeg',ogg:'audio/ogg',m4a:'audio/mp4'};return new File([new Uint8Array(value.bytes)],value.name,{type:type[value.name.split('.').at(-1)!.toLowerCase()]??'application/octet-stream'});}

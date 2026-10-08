@@ -1,9 +1,16 @@
 # Tekoäly KOETA-työpöytäsovellukseen: suunnitelma
 
-Tekijä: tekoälyasiantuntija (Kilsat Studio -tiimi, agentti 3) · 2026-10-08 · tila: **SUUNNITELMA TARKASTETTAVANA**
+Tekijä: tekoälyasiantuntija (Kilsat Studio -tiimi, agentti 3) · 2026-10-08 · tila: **SUUNNITELMA HYVÄKSYTTY** (lopputarkastaja 2026-10-08, ehdoin alla)
 Haara: `claude/tiimi-tekoaly-q1331b` (luotu `origin/hahmostudio1.0`:sta, kohta 6c51b83).
 
 Tämä on pelkkä suunnitelma. Koodia ei muuteta ennen kuin lopputarkastaja merkitsee TIIMI.md:hen SUUNNITELMA HYVÄKSYTTY.
+
+## Hyväksynnän ehdot (lopputarkastaja, 2026-10-08)
+
+1. Pilvirenderöinnin lähetys noudattaa työpöydän palautussääntöä: checkpoint kirjoitetaan ennen dispatchia, ja palautunut renderöinti on `interrupted` ja vaatii käyttäjän uudelleenyrityksen. Kuuluu vaiheeseen 3 ja sen testiin.
+2. Kuvaehdotukset käyttävät vain syntaksia, jonka nykyinen tunnistin jo ymmärtää; sanaston lisäys vaatii rivin `tests/fixtures/vocabulary-corpus.txt`:hen. Rivimuutoksen pitää kiertää `blockSentence`-edestakaisin muuttumattomana.
+3. `presentation-panel.tsx` ja `components/ai-panel.tsx`: tarkka muutos kirjataan Pyyntöihin ennen tekoa, ja se pidetään kytkentänä; ulkoasu jää UI/UX:lle. Testataan, ettei vaihe 1 näytä pilviriviä toimintona ennen vaihetta 3 (teksti "ei saatavilla", ei painiketta).
+4. Pushaus vain omaan haaraan, ei PR:iä.
 
 ## 0. Lähtötilanne (tarkistettu koodista)
 

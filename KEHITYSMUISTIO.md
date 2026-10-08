@@ -541,3 +541,18 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Kaggle-muistikirja-ajo (käyttäjän pyynnöstä, ilmainen ja ehtojen mukainen reitti):** uusi taustajärjestelmä `kaggle-notebook`: palvelin ei ota yhteyttä ajoympäristöön, vaan tekee renderöinnistä yhden .ipynb-tiedoston (työnkulku, syötteet, mallin manifesti, paketin hash), jonka käyttäjä ajaa Kagglessa (ComfyUI vain 127.0.0.1:ssä, ei tunnelia) ja tuo tulostiedoston takaisin. Tuonti tarkistetaan (työ, paketin hash, kuitti vs. pin, tarkistussummat, tyypit) ennen tavallista putkea. Live-todennus käyttää ajoympäristön omaa tarkistusta ja kuittia (`runtime-reported`). Rajoitus: odottavat työt ovat muistissa, joten palvelimen uudelleenkäynnistys hävittää ne. Python-skripti testattu vale-ComfyUI:ta ja vale-Hugging Facea vasten; testi löysi vian (tyhjä solmumääritys tulkittiin puuttuvaksi), korjattu.
 
 **Edelleen todentamatta:** oikea Colab-, ComfyUI- ja Drive-ajo, oikea Kaggle-ajo (Import Notebook, levytila, aika T4/P100:lla), `SaveVideo`-solmun `format`/`codec`-syötteiden hyväksyntä oikeassa ComfyUI:ssa, muistin riittävyys ja renderöintiaika T4:llä.
+
+### 2.24 — Tekoäly-paneeli, vaihe 1: todelliset tilat (2026-10-08, Kilsat Studio -tiimi, tekoälyasiantuntija)
+
+**Suunnitelma:** `docs/cloud-render/TEKOALY-SUUNNITELMA-FI.md` (lopputarkastaja: SUUNNITELMA HYVÄKSYTTY ehdoin 1–4).
+
+**Valmis (koodi):**
+- `lib/ai-status.ts`: puhdas tilamalli. Rivi vain ominaisuudelle, jonka tila on luettu: Rhubarb (aina paikallinen), whisper.cpp (`audioModel`), Kokoro (`kokoroStatus`), MediaPipe (kameran lupa `navigator.permissions`), pilvirenderöinti. Jokaisella rivillä sijainti, lupa, mitä dataa lähtee minne, kustannus (aina €0,00 tai estetty) ja istunnon viimeisin tulos.
+- Viimeisin tulos: `lib/platform.ts` `desktop()` kääri `speech`-, `transcribe`- ja `kokoroSynthesize`-kutsut (`trackAi`), tulos ja virhe välittyvät muuttumattomina. Kirjaus on vain muistissa, ei projektiin eikä levylle.
+- Pilvirenderöinti näkyy vaiheessa 1 vain tekstinä "Ei saatavilla" (pois, estetty), ei painiketta (ehto 3).
+- `components/ai-panel.tsx` (dialogi nykyisillä luokilla, vain Sulje), avaus Näytä → Tekoäly… (`desktop/main.mjs`, toiminto `ai`), kytkentä `components/editor.tsx`:ään. Ulkoasu ja sijainti jäävät UI/UX-suunnittelijalle. Paneeli on vain työpöydällä.
+- Testit: `lib/ai-status.test.ts` (4), `server/ai-panel.test.mjs` (2). `npm test` 1211 (1210 läpi, 1 ohitettu), typecheck, `build:private` ja `desktop:build` OK.
+
+**Todentamatta:** paneelia ei ole avattu oikeassa Electron-ikkunassa (ei GUI:ta tässä ympäristössä); kameran luvan luku Electronissa (`navigator.permissions` palauttaa tarvittaessa "ei voitu lukea"). Simuloitu: kyllä · pakattu sovellus: ei · oikea Mac: ei · ComfyUI-GPU: ei koske.
+
+**Seuraava:** vaihe 2, salaisuusvarasto (safeStorage) ja pilvi-IPC:n validointi.
