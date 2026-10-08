@@ -60,14 +60,18 @@ export function createCloudRenderApi(d:ApiDeps){
     if(st&&s[2]==='characters'&&s[3]&&s[4]==='reference'&&m==='POST'){
      // Approved reference image for a canonical character. Validated by content, stored in the project's references folder (not weights).
      if(!own(st.characters,s[3]))return err(404,'character-unknown','Unknown character.');
-     const b=r.body as {mime?:string;dataBase64?:string;label?:string}|undefined;
+     const b=r.body as {mime?:string;dataBase64?:string;label?:string;sourceSha256?:string}|undefined;
      if(!b||typeof b.dataBase64!=='string'||typeof b.mime!=='string'||b.dataBase64.length>11_200_000||!/^[A-Za-z0-9+/=]+$/.test(b.dataBase64))return err(400,'bad-request','Invalid image upload.');
+     // The reference is approved for the character graphics the client saw. If canon knows the graphics hash, they must agree.
+     const source=st.characters[s[3]].sourceSha256;
+     if(b.sourceSha256!==undefined&&(typeof b.sourceSha256!=='string'||!/^[0-9a-f]{64}$/.test(b.sourceSha256)))return err(400,'bad-request','Invalid sourceSha256.');
+     if(source&&b.sourceSha256!==source)return err(409,'reference-stale','Character graphics changed since this reference was proposed. Sync and approve again.');
      const bytes=new Uint8Array(Buffer.from(b.dataBase64,'base64')),is=(sig:number[],off=0)=>sig.every((x,i)=>bytes[off+i]===x);
      const kind=is([0x89,0x50,0x4e,0x47])?'png':is([0xff,0xd8,0xff])?'jpeg':is([0x52,0x49,0x46,0x46])&&is([0x57,0x45,0x42,0x50],8)?'webp':undefined;
      if(!kind||b.mime!=='image/'+kind||bytes.length>8*1024*1024)return err(400,'bad-image','Reference must be a PNG, JPEG or WebP image of at most 8 MiB whose content matches its type.');
      const assetId=`${s[3]}_ref_${(await sha256(bytes)).slice(0,10)}`,ref=await d.storage.uploadAsset(st.projectId,'references',`${assetId}.${kind==='jpeg'?'jpg':kind}`,bytes,b.mime);
-     await d.refs.register(st.projectId,{characterId:s[3],assetId,label:typeof b.label==='string'?b.label.slice(0,80):'reference',mime:b.mime,storageRef:ref});
-     return ok({assetId,size:bytes.length});
+     await d.refs.register(st.projectId,{characterId:s[3],assetId,label:typeof b.label==='string'?b.label.slice(0,80):'reference',mime:b.mime,storageRef:ref,...(b.sourceSha256?{sourceSha256:b.sourceSha256}:{})});
+     return ok({assetId,size:bytes.length,...(b.sourceSha256?{sourceSha256:b.sourceSha256}:{})});
     }
     if(st&&s[2]==='scenes'&&!s[3]&&m==='GET')return ok({scenes:Object.values(st.scenes).map(x=>({id:x.id,locationId:x.locationId,start:x.start,end:x.end,characterIds:x.characterIds,locked:!!d.projects.getLock(st.projectId,x.id)}))});
     if(st&&s[2]==='scenes'&&s[3]&&s[4]==='lock'&&m==='POST'){if(!own(st.scenes,s[3]))return err(404,'scene-unknown','Unknown scene.');const l=await d.projects.lock(st.projectId,s[3],r.user);return ok({id:l.id,hash:l.hash,lockedAt:l.lockedAt});}

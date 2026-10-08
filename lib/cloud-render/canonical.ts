@@ -3,7 +3,8 @@ import {Blocked} from './types.ts';
 
 /** The Rule Engine owns truth. This module defines canonical state, the only legal state transitions, and the only writer. */
 export const RULE_ENGINE_VERSION='rule-engine-1.0.0';
-export type CanonicalCharacter={id:string;name:string;attributes:Record<string,Attr>;location:string;holding:string[]};
+/** sourceSha256: SHA-256 of the character's graphics source (pack file). A reference approved for another hash is stale. */
+export type CanonicalCharacter={id:string;name:string;attributes:Record<string,Attr>;location:string;holding:string[];sourceSha256?:string};
 export type CanonicalLocation={id:string;name:string;attributes:Record<string,Attr>};
 export type CanonicalProp={id:string;type:string;attributes:Record<string,Attr>;location:string|null;heldBy:string|null};
 export type ActionEffect='visual'|'pick_up'|'put_down'|'move_to';
@@ -36,7 +37,7 @@ export function validateCanonicalState(value:unknown):CanonicalState{
  const seenA=new Set<string>();for(const a of s.allowedActions){if(!a||!safeId(a.action)||seenA.has(a.action)||!['none','prop','character','location','any'].includes(a.targetKind)||!['visual','pick_up','put_down','move_to'].includes(a.effect))throw new RuleViolation('Action rule is invalid.');seenA.add(a.action);}
  if(!s.visualStyle||!Array.isArray(s.visualStyle.allowed)||!s.visualStyle.allowed.every(x=>safeId(x))||!Array.isArray(s.visualStyle.constraints)||!s.visualStyle.constraints.every(x=>typeof x==='string'&&x.length<=200))throw new RuleViolation('Visual style constraints are invalid.');
  for(const [id,l] of Object.entries(locs)){if(!safeId(id)||l?.id!==id||typeof l.name!=='string'||l.name.length>100)throw new RuleViolation(`Location "${id}" is invalid.`);attrs(l.attributes,'location '+id);}
- for(const [id,c] of Object.entries(chars)){if(!safeId(id)||c?.id!==id||typeof c.name!=='string'||!c.name||c.name.length>100||!own(locs,c.location)||!Array.isArray(c.holding))throw new RuleViolation(`Character "${id}" is invalid.`);attrs(c.attributes,'character '+id);}
+ for(const [id,c] of Object.entries(chars)){if(!safeId(id)||c?.id!==id||typeof c.name!=='string'||!c.name||c.name.length>100||!own(locs,c.location)||!Array.isArray(c.holding)||c.sourceSha256!==undefined&&!/^[0-9a-f]{64}$/.test(c.sourceSha256))throw new RuleViolation(`Character "${id}" is invalid.`);attrs(c.attributes,'character '+id);}
  for(const [id,p] of Object.entries(props)){if(!safeId(id)||p?.id!==id||typeof p.type!=='string'||!p.type||p.type.length>60||p.location!==null&&!own(locs,p.location)||p.heldBy!==null&&!own(chars,p.heldBy))throw new RuleViolation(`Prop "${id}" is invalid.`);attrs(p.attributes,'prop '+id);}
  for(const c of Object.values(chars) as CanonicalCharacter[])for(const h of c.holding)if(own(props,h)?.heldBy!==c.id)throw new RuleViolation(`Character "${c.id}" holding list disagrees with prop "${h}".`);
  for(const p of Object.values(props) as CanonicalProp[])if(p.heldBy&&!own(chars,p.heldBy)!.holding.includes(p.id))throw new RuleViolation(`Prop "${p.id}" holder list disagrees.`);
