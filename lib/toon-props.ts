@@ -7,7 +7,7 @@
 import type {Mesh3D,V3} from './toon3d.ts';
 
 type Faces=Mesh3D['faces'];
-const volume=(vertices:V3[],faces:Faces)=>faces.reduce((sum,[a,b,c])=>{const p=vertices[a],q=vertices[b],r=vertices[c];return sum+(p[0]*(q[1]*r[2]-q[2]*r[1])-p[1]*(q[0]*r[2]-q[2]*r[0])+p[2]*(q[0]*r[1]-q[1]*r[0]));},0)/6;
+export const volume=(vertices:V3[],faces:Faces)=>faces.reduce((sum,[a,b,c])=>{const p=vertices[a],q=vertices[b],r=vertices[c];return sum+(p[0]*(q[1]*r[2]-q[2]*r[1])-p[1]*(q[0]*r[2]-q[2]*r[0])+p[2]*(q[0]*r[1]-q[1]*r[0]));},0)/6;
 const boxFaces:Faces=[[0,2,1],[0,3,2],[4,5,6],[4,6,7],[0,1,5],[0,5,4],[1,2,6],[1,6,5],[2,3,7],[2,7,6],[3,0,4],[3,4,7]];
 const boxCorners=(c:V3,w:number,h:number,d:number):V3[]=>[-d/2,d/2].flatMap(z=>[[-w/2,-h/2],[w/2,-h/2],[w/2,h/2],[-w/2,h/2]].map(([x,y])=>[c[0]+x,c[1]+y,c[2]+z] as V3));
 /** Samaan suuntaan kuin puhelimen laatikko (renderöijän takapintakarsinta riippuu pinnan kiertosuunnasta). */
