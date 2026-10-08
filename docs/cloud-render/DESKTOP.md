@@ -32,6 +32,15 @@ Sallitut avaimet: `HAHMOSTUDIO_COLAB_COMFYUI_URL`, `HAHMOSTUDIO_COMFYUI_BEARER`,
 - Arvot eivät kulje IPC:ssä, lokeissa, virheviesteissä, projektitiedostoissa eikä gitissä. `npm run desktop:test:cloud` tarkistaa tämän merkkijonolla koko datakansiosta, DOMista ja IPC-vastauksista.
 - Selaimen yksityisen palvelimen omistajatunnuksia ei lueta eikä muuteta.
 
+## Jäännösriski: pilviprosessi ei ole tiedostohiekkalaatikko
+
+`utilityProcess` on Node-prosessi samalla käyttäjällä. Rendererin hiekkalaatikko ei koske sitä. Jos pilviprosessi kaapattaisiin, se näkisi pilvisalaisuudet ja voisi lukea käyttäjän tiedostoja, myös projekteja. Rajaukset:
+- Prosessi ajaa vain sovelluspaketin omaa koodia ja käynnistyy vasta opt-inin jälkeen.
+- Ulkoisista vastauksista ei koskaan ajeta koodia; ne validoidaan datana.
+- Prosessi ei avaa porttia.
+
+Käyttöjärjestelmätason eristystä (esim. macOS App Sandbox erilliselle apuohjelmalle) ei ole toteutettu.
+
 ## Mitä lähtee koneelta ja milloin
 
 | Toiminto | Kysytäänkö lupa | Mitä lähtee |

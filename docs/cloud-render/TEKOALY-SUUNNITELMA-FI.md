@@ -93,7 +93,7 @@ window.hahmostudio.cloud*  → ipcMain.handle('studio:cloud-*')
 | Tunnelin osoite (ComfyUI ei tarkista bearer-otsaketta) vuotaa | Osoite käsitellään salaisuutena; ohjeistus Kaggle-reitistä (ei tunnelia) säilyy ensisijaisena |
 | Haitallinen tai rikki tausta palauttaa väärää dataa | Nykyinen `validateOutput` (tyyppi, magic bytes, koko, painotiedostot), paletti-inspektori valinnainen |
 | Tekoälyn ehdotus yrittää lisätä hahmoja/esineitä/repliikkejä | Nykyiset kerrokset 1–7 (`HALLUCINATION_PREVENTION.md`) ennen kuin mitään näytetään hyväksyttävänä |
-| Pilviprosessi kaapataan | Sillä on salaisuudet (hyväksytty jäännösriski); sillä ei ole pääsyä projektitiedostoihin eikä ikkunaan, vain sille lähetettyyn dataan |
+| Pilviprosessi kaapataan | **Jäännösriski (korjattu 2026-10-08):** `utilityProcess` on Node-prosessi samalla käyttäjällä, ei käyttöjärjestelmätason hiekkalaatikko. Kaapattu prosessi näkisi salaisuudet ja voisi lukea käyttäjän tiedostoja, myös projekteja. Lieventäminen: prosessi ajaa vain sovelluspaketin omaa koodia, käynnistyy vasta opt-inin jälkeen ja pysähtyy, kun pilvi otetaan pois; ulkoiset vastaukset käsitellään datana (JSON- ja kuvavalidointi), eikä niistä koskaan ajeta koodia. Kaappaus vaatisi siis jäsennysvian. Ikkunaan ja IPC:hen sillä ei ole pääsyä. |
 | Leikepöytä: muut sovellukset näkevät liitetyn arvon | Käyttäjä kopioi arvon itse; sovellus ei tyhjennä leikepöytää kysymättä. Dokumentoidaan |
 
 ## 2. Tekoäly-paneeli (tehtävä 1)
