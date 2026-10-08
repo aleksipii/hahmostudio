@@ -20,3 +20,11 @@ test('the same canonical state drives validation: an invented character or attri
  assert.equal(validateSuggestion(c,sid,{...base,characterActions:[{id:sc.characterIds[0],action:'speak',claims:{hair:'blonde'}}]}).status,'REJECTED');
  assert.ok((await lockScene(c,sid,'t')).hash);
 });
+
+import {buildEpisode,catalogFromNames} from '../episode-builder.ts';
+import {CHARACTER_PACK_OPTIONS} from '../speaker-pack-options.ts';
+test('a script without any phone projects into valid canonical state (no phantom phone carrier)',()=>{
+ const b=buildEpisode('Tausta: keittiö\n\nMIRA:\n“Siirsitkö auton eilen?”\n\nNiko kävelee sisään vasemmalta kaksi sekuntia.\nHän pysähtyy ja katsoo Miraa.\n\nNIKO:\n“En siirtänyt.”',{packs:catalogFromNames(CHARACTER_PACK_OPTIONS),assets:{}});
+ const c=canonicalFromPresentation(b.presentation);
+ assert.ok(!('phone' in c.props)&&Object.values(c.characters).every(x=>x.holding.length===0));
+});
