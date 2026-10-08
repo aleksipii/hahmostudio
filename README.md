@@ -1,6 +1,8 @@
 # KILSAT Studio 2
 
-Suomenkielinen animaatiostudio Macille ja selaimeen: kirjoitat käsikirjoituksen, valitset hahmot ja saat muokattavan animaation, jonka viet MP4-videoksi. Kaikki käsittely tapahtuu omalla koneella, eikä mitään ladata pilveen.
+Suomenkielinen animaatiostudio Macille ja selaimeen: kirjoitat käsikirjoituksen, valitset hahmot ja saat muokattavan animaation, jonka viet MP4-videoksi. Kaikki käsittely tapahtuu omalla koneella. Ainoa poikkeus on valinnainen, oletuksena pois päältä oleva tekoälyrenderöinti (ks. [Pilvirenderöinti](#pilvirenderöinti-valinnainen)).
+
+**Haarat:** `main` ja `hahmostudio1.0` sisältävät saman version (yhdistetty 2026-10-08). Uusi työ tehdään PR:nä `hahmostudio1.0`-haaraan.
 
 ## Pika-aloitus
 
@@ -16,13 +18,14 @@ Asennettu Mac-sovellus päivittyy vasta uudella paketilla: `npm run desktop:pack
 
 Tumma studiotyökalu, jossa sama kehys säilyy kaikissa vaiheissa: yläpalkki, vasen paneeli, näyttämö, oikea paneeli ja tilarivi.
 
-- **Työvaiheet 1–5** yläpalkissa (pikanäppäin ⌥1–⌥5): **Käsikirjoitus**, **Hahmot**, **Storyboard**, **Kuva**, **Aikajana**.
-- **Projektivalikko** projektin nimestä: avaa, tallenna, tallenna nimellä, versiot, tuo kuva/PSD, lisää ääni, erilliset JSON-tiedostot, asetukset, käyttöohje ja tuotantokierros.
+- **Tuotanto: työvaiheet 1–5** yläpalkissa (pikanäppäin ⌥1–⌥5) elokuvan vaiheiden mukaan: **Tarina**, **Roolitus**, **Storyboard**, **Kuvaus**, **Leikkaus**.
+- **Työpaja** (⌥6) vaiheiden vieressä: hahmon rakentaminen eli tasot, piirto, nivelet, tuonnin tarkistus ja esikatselun tausta. Valmiista ohjauksesta puuttuva PSD avautuu sinne.
+- **Projektivalikko** projektin nimestä: avaa, tallenna, tallenna nimellä, versiot, tuo kuva/PSD, lisää ääni, erilliset JSON-tiedostot, asetukset, käyttöohje, tuotantokierros ja (yksityisellä palvelimella) Pilvirenderöinti.
 - **⌘K** hakee minkä tahansa toiminnon nimellä.
-- **Hahmot**: Rakenna (tasot, piirto, nivelet, alkuperäinen PSD) tai Esitys (kamera, mikrofoni, näppäimet, oton tallennus).
+- **Roolitus**: hahmokirjasto, puhujasidokset ja esitys (kamera, mikrofoni, näppäimet, oton tallennus).
 - **Storyboard**: kuvakortit, hyväksyntä ja lukitus, kommentit, työjono, tarkistuslista, hakunäkymät ja CSV.
-- **Kuva**: kuvanauha, sijoittelu, liiketyökalut, ääni ja näyttämö.
-- **Aikajana**: raidat, toisto, vienti ja sarja. Paneelien ja aikajanan kokoa muutetaan reunoista vetämällä.
+- **Kuvaus**: kuvanauha, sijoittelu, liiketyökalut, ääni ja näyttämö.
+- **Leikkaus**: raidat, toisto, vienti ja sarja. Paneelien ja aikajanan kokoa muutetaan reunoista vetämällä.
 - **Asetukset**: ulkoasu (tumma, vaalea tai järjestelmä), saavutettavuus, työvaiheen rajaus ja pikanäppäimet.
 
 Rakenne ja toimintojen paikat: [docs/KILSAT-APP-SHELL.md](docs/KILSAT-APP-SHELL.md).
@@ -67,7 +70,19 @@ Kirjastossa ovat neljä paksureunaista leikkaushahmoa (Pipsa, Ville, Taru ja Ukk
 | Taru: nutturat, kuulokkeet, huppari | `Taru.psd` / `.hahmo` | `Taru-3D.psd` / `.hahmo` |
 | Ukko: viikset, villatakki, tossut | `Ukko.psd` / `.hahmo` | `Ukko-3D.psd` / `.hahmo` |
 
+Kirjasto ryhmittelee hahmot laatutason mukaan: **Studio** (vähintään kolme kuvakulmaa, neljä suumuotoa ja koko vartalo, nyt 3D-versiot), **Omat** (omasta PSD:stä tehdyt, aina näkyvissä) ja **Luonnokset** (muut, puuttuvat vaatimukset näkyvät kortissa). Arvot mitataan testissä .hahmo-paketeista (`lib/character-catalog.ts`).
+
 Uusissa hahmoissa ovat nivelet, silmät, räpäytys ja suuasennot (lepo, auki, pyöreä, hymy, suru). "3D" tarkoittaa erikseen piirrettyjä kuvakulmia, joita Cutout3D-kamera kääntää, ei volumetristä mallia. Grafiikka on omaa (CC0), ja sen voi generoida uudelleen komennolla `npm run assets:cutout-kids`.
+
+## Pilvirenderöinti (valinnainen)
+
+Tekoälyvideo hyväksytystä kohtauksesta (Wan 2.2, Image to video). Pois päältä oletuksena, vain yksityisellä palvelimella (`npm run start:private`), ei Mac-sovelluksessa. Säännöt pysyvät totuutena: tekoälyn tulos tarkistetaan eikä se koskaan muuta käsikirjoitusta tai hahmoja.
+
+- **Ilmainen reitti: Kaggle-muistikirja.** Hahmostudio tekee renderöinnistä yhden `.ipynb`-tiedoston. Ajat sen itse Kagglessa (ilmainen GPU-viikkokiintiö, ei maksukorttia, ei tunnelia) ja tuot tulostiedoston takaisin painikkeella **Tuo tulos**. Tuonti tarkistaa työn, paketin, mallin kuitin ja tiedostojen tarkistussummat.
+- **Ei maksuja:** nollakustannuskäytäntö estää maksullisen laskennan palvelimen asetuksissa; maksullinen varavaihtoehto on aina pois.
+- Valmis video tallentuu Google Driveen (OAuth, `drive.file`) tai paikalliseen kansioon.
+
+Aloittelijan ohje vaihe vaiheelta: [docs/cloud-render/KAYTTOONOTTO-FI.md](docs/cloud-render/KAYTTOONOTTO-FI.md). Asetukset: [docs/cloud-render/DEPLOYMENT.md](docs/cloud-render/DEPLOYMENT.md). Ensimmäistä oikeaa Kaggle-ajoa ei ole vielä tehty.
 
 ## Kehitys
 
