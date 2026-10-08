@@ -23,14 +23,14 @@ export type FlowStepScope = {
 
 export const flowStepScopes: Record<StudioFlowStep, FlowStepScope> = {
   script: {
-    banner: 'Työvaihe: Käsikirjoitus — muokkaat käsikirjoitustekstiä ja jaot kohtauksiin.',
+    banner: 'Työvaihe: Tarina — muokkaat käsikirjoitustekstiä ja jaot kohtauksiin.',
     libraryTabs: ['script'],
     workspaces: ['animation'],
     scriptSourceLocked: false,
     hideTimeline: true,
   },
   characters: {
-    banner: 'Työvaihe: Hahmot — valitse paketit kirjastosta. Käsikirjoitus on lukittu; avaa Työvaihe → Käsikirjoitus.',
+    banner: 'Työvaihe: Roolitus — valitse hahmot ja ympäristöt kirjastosta. Käsikirjoitusta muokataan Tarina-vaiheessa.',
     libraryTabs: ['library', 'layers'],
     workspaces: ['character', 'performance'],
     scriptSourceLocked: true,
@@ -44,14 +44,14 @@ export const flowStepScopes: Record<StudioFlowStep, FlowStepScope> = {
     hideTimeline: true,
   },
   shot: {
-    banner: 'Työvaihe: Kuva — ohjaat valittua kuvaa. Käsikirjoituslähde on lukittu.',
+    banner: 'Työvaihe: Kuvaus — ohjaat valittua kuvaa. Käsikirjoituslähde on lukittu.',
     libraryTabs: ['script'],
     workspaces: ['animation'],
     scriptSourceLocked: true,
     hideTimeline: true,
   },
   timeline: {
-    banner: 'Työvaihe: Aikajana — esikatselu ja vienti. Käsikirjoituslähde on lukittu.',
+    banner: 'Työvaihe: Leikkaus — aikajana, esikatselu ja vienti. Käsikirjoituslähde on lukittu.',
     libraryTabs: ['script', 'episodes'],
     workspaces: ['animation'],
     scriptSourceLocked: true,

@@ -1,12 +1,14 @@
 import type { CSSProperties, DragEventHandler, ReactNode } from 'react';
-import { Redo2, Search, Undo2 } from 'lucide-react';
-import { studioFlowSteps } from '../lib/studio-flow-steps';
+import { Hammer, Redo2, Search, Undo2 } from 'lucide-react';
+import { studioFlowSteps, studioWorkshop } from '../lib/studio-flow-steps';
 import type { StudioFlowStep } from '../lib/studio-flow-scope';
 
-/** KILSAT Studio 2.0 -kehys: yläpalkki (projekti, viisi työvaihetta, toiminnot), sisältö ja tilarivi. Logiikka on editorissa. */
+/** KILSAT Studio 2.0 -kehys: yläpalkki (projekti, viisi tuotannon työvaihetta, Työpaja, toiminnot), sisältö ja tilarivi. Logiikka on editorissa. */
 export default function StudioShell({
   active,
   onSelectPhase,
+  workshop,
+  onWorkshop,
   projectMenu,
   viewMenu,
   onSearch,
@@ -25,6 +27,9 @@ export default function StudioShell({
 }: {
   active: StudioFlowStep;
   onSelectPhase: (step: StudioFlowStep) => void;
+  /** Työpaja (hahmon rakentaminen) on auki; silloin mikään tuotannon vaihe ei ole valittuna. */
+  workshop: boolean;
+  onWorkshop: () => void;
   projectMenu: ReactNode;
   viewMenu: ReactNode;
   onSearch: () => void;
@@ -43,7 +48,7 @@ export default function StudioShell({
 }) {
   return (
     <main
-      className={['kilsat-frame', 's2', `phase-${active}`, className].filter(Boolean).join(' ')}
+      className={['kilsat-frame', 's2', workshop ? 'phase-workshop' : `phase-${active}`, className].filter(Boolean).join(' ')}
       style={style}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -62,8 +67,8 @@ export default function StudioShell({
               type="button"
               className="studio-flow-tab s2-phase"
               data-studio-flow-step={id}
-              aria-current={active === id ? 'page' : undefined}
-              aria-pressed={active === id}
+              aria-current={!workshop && active === id ? 'page' : undefined}
+              aria-pressed={!workshop && active === id}
               title={`${hint} · ⌥${index + 1}`}
               onClick={() => onSelectPhase(id)}
             >
@@ -72,6 +77,17 @@ export default function StudioShell({
             </button>
           ))}
         </nav>
+        <button
+          type="button"
+          className="s2-workshop"
+          aria-current={workshop ? 'page' : undefined}
+          aria-pressed={workshop}
+          title={studioWorkshop.hint}
+          onClick={onWorkshop}
+        >
+          <Hammer size={14} aria-hidden />
+          <span>{studioWorkshop.label}</span>
+        </button>
         <div className="s2-tools">
           <button type="button" className="s2-search" onClick={onSearch} aria-label="Hae toimintoa (⌘K)">
             <Search size={14} aria-hidden />
