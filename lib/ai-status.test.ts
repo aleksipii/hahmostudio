@@ -38,3 +38,16 @@ test('viimeisin tulos tallentuu vain istunnon muistiin ja trackAi palauttaa sama
  off();const before=calls;recordAiActivity('face',true,'y');assert.equal(calls,before);assert.equal(before,3);
  assert.equal(aiStatusRows({camera:'granted',activity:aiActivity()}).find(r=>r.id==='face')!.last!.text,'y');
 });
+
+const cloudState=(o:Record<string,unknown>={})=>({available:true as const,enabled:false,storage:null,settings:{colabClassifiedFree:false,notebookClassifiedFree:false},secrets:{encryption:true,keys:{HAHMOSTUDIO_COLAB_COMFYUI_URL:{label:'ComfyUI-tunnelin osoite',set:false}}},jobs:[] as {state:string}[],...o});
+test('vaihe 3: pilvi on oletuksena pois ja estetty; käyttöönoton jälkeen €0,00 vasta kun ilmainen tausta on vahvistettu',()=>{
+ const off=aiStatusRows({cloud:cloudState()}).find(r=>r.id==='cloud-render')!;
+ assert.deepEqual([off.location,off.permission,off.cost,off.data,off.available],['off','missing','estetty','Ei mitään.',false]);
+ const on=aiStatusRows({cloud:cloudState({enabled:true})}).find(r=>r.id==='cloud-render')!;
+ assert.deepEqual([on.location,on.cost],['cloud','estetty']);assert.match(on.note!,/estetty, kunnes ilmainen ajoympäristö/);assert.match(on.data,/Vain luvallasi.*tälle koneelle.*eivät lähde/);
+ const ready=aiStatusRows({cloud:cloudState({enabled:true,storage:'google-drive',settings:{colabClassifiedFree:false,notebookClassifiedFree:true},jobs:[{state:'interrupted'},{state:'COMPLETED'}]})}).find(r=>r.id==='cloud-render')!;
+ assert.equal(ready.cost,'€0,00');assert.match(ready.data,/Google Driveen/);assert.match(ready.note!,/1 renderöinti keskeytyi.*mitään ei lähetetä automaattisesti/);
+ const tunnelNoUrl=aiStatusRows({cloud:cloudState({enabled:true,settings:{colabClassifiedFree:true,notebookClassifiedFree:false}})}).find(r=>r.id==='cloud-render')!;
+ assert.equal(tunnelNoUrl.cost,'estetty','tunnelin vahvistus ilman osoitetta ei riitä');
+ assert.match(aiStatusRows({cloud:cloudState({secrets:{encryption:false,keys:{}}})}).find(r=>r.id==='cloud-render')!.note!,/avainnippu ei ole käytettävissä/);
+});

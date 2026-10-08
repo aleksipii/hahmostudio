@@ -569,3 +569,19 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todentamatta:** oikea macOS Keychain (`safeStorage`) ja natiivit dialogit; testit käyttävät vale-salausta. Simuloitu: kyllä · pakattu sovellus: ei · oikea Mac: ei.
 
 **Seuraava:** vaihe 3, pilvipalveluprosessi, opt-in, lupadialogi ennen lähetystä, checkpoint ennen dispatchia (ehto 1).
+
+### 2.26 — Pilvirenderöinti työpöydälle, vaihe 3: erillinen pilviprosessi, opt-in ja lupa ennen lähetystä (2026-10-08, tekoälyasiantuntija)
+
+**Valmis (koodi):**
+- `desktop/cloud-service.mjs`: "KOETA · pilvipalvelu" -`utilityProcess`, joka käynnistyy vasta opt-inin jälkeen ensimmäisestä pilvikutsusta. Ei porttia; ajaa saman `createCloudRender`-koodin kuin yksityinen palvelin (Electronin Node 24 poistaa tyypit, todennettu myös asar-paketin sisällä). Ympäristö tulee käynnistysviestissä sallitulista (`buildCloudEnv`): salaisuudet, käyttäjän vahvistamat ilmaisuusilmoitukset ja mallien lukitustiedosto; ei `process.env`iä eikä maksullisen laskennan muuttujia. Ilman Drivea tallennus on paikallinen (`userData/cloud-render`).
+- `desktop/cloud-controller.mjs`: opt-in natiivilla vahvistuksella (oletus pois), "Vahvista ilmaiseksi" Kagglelle/tunnelille natiivilla vahvistuksella, mallien lukituksen tuonti pääprosessin tiedostodialogilla (revisio 40 hex + SHA-256), prosessin elinkaari ja uudelleenkäynnistys asetusten muuttuessa, lähtevän datan lupa (`egressConsent`: renderöinti aina, synkronointi ja vertailukuva Drive-tallennuksella), vastausten peittäminen, Kaggle-muistikirjan tallennus ja tuloksen tuonti pääprosessin dialogeilla.
+- `desktop/cloud-jobs.mjs` (ehto 1): checkpoint levylle ennen dispatchia; keskeneräiset työt muuttuvat `interrupted`-tilaan uudessa käynnistyksessä tai pilviprosessin päättyessä; mitään ei lähetetä uudelleen automaattisesti (enintään 50 kirjausta).
+- `desktop/cloud-policy.mjs`: `cloudRoute` kartoittaa 13 sallittua toimintoa kukin yhteen reittiin; renderer ei voi valita reittiä, taustaa, mallia, parametreja eikä politiikkaa.
+- IPC: `cloudEnable`, `cloudDisable`, `cloudDeclareFree`, `cloudPinsImport`, `cloudPinsClear`, `cloudCall`. Pilvidialogi (`components/cloud-render-dialog.tsx`) käyttää työpöydällä `lib/cloud-desktop.ts`-kuljetusta; Tekoäly-paneelissa pilven asetukset ja "Avaa pilvirenderöinti…".
+- Linuxin `basic_text`-avainnippua ei hyväksytä (paitsi eristetyssä `--cloud-test`-ajossa). `scripts/package-mac.mjs` paketoi `lib/cloud-render`, `lib/studio/hash.ts` ja `cloud/runtime` (ei testejä).
+- **Löydetyt ja korjatut viat (Electron-testi):** Electron 44:n `clipboard.readText()` palauttaa lupauksen (liittäminen ei toiminut); Tekoäly-paneeli näytti pilven "ei saatavilla" ennen kuin tila oli luettu.
+- Testit: `desktop/cloud-controller.test.mjs` (11), `lib/cloud-desktop.test.ts` (2), lisäykset `ai-status`- ja `ai-panel`-testeihin. `npm run desktop:test:cloud`: 24 tarkistusta oikeassa Electronissa (renderer → IPC → utilityProcess → lib/cloud-render), mukaan lukien vuototarkistus koko datakansiosta. `npm test` 1234 (1233 läpi, 1 ohitettu), typecheck ja `build:private` OK.
+
+**Todennettu:** `desktop:test:cloud` läpi Linuxissa (Electron 44.5.1, xvfb, `--no-sandbox` koska ajo oli root-käyttäjänä; heikko avainnippu sallittu vain tässä ajossa). **Todentamatta:** oikea Mac ja Keychain, pakattu .app, natiivit dialogit käsin, oikea Kaggle-, ComfyUI-, Drive- tai GPU-ajo.
+
+**Seuraava:** vaihe 4, kuvakohtaiset ehdotukset.

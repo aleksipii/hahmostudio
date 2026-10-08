@@ -11,9 +11,9 @@ registerHooks({
   return {format:'module',source:ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext,jsx:ts.JsxEmit.ReactJSX}}).outputText,shortCircuit:true};
  }return next(url,context);}
 });
-const {AiPanelView}=await import('../components/ai-panel.tsx');const {aiStatusRows}=await import('../lib/ai-status.ts');
+const {AiPanelView,CloudControls}=await import('../components/ai-panel.tsx');const {aiStatusRows}=await import('../lib/ai-status.ts');
 
-test('tekoälypaneeli: pilvirivi on vaiheessa 1 pelkkä "ei saatavilla" -teksti ilman painiketta',()=>{
+test('tekoälypaneeli: ei saatavilla oleva pilvi on pelkkä "ei saatavilla" -teksti ilman painiketta',()=>{
  const html=renderToStaticMarkup(React.createElement(AiPanelView,{loading:false,rows:aiStatusRows({audioModel:{model:false,binary:true},kokoro:{installed:true},camera:'granted',cloud:{available:false}})}));
  assert.ok(!html.includes('<button'),'paneelin sisällössä ei ole toimintopainikkeita');
  const cloud=html.slice(html.indexOf('data-ai-feature="cloud-render"'));
@@ -26,4 +26,17 @@ test('tekoälypaneeli: pilvirivi on vaiheessa 1 pelkkä "ei saatavilla" -teksti 
 test('työpöydän Näytä-valikko avaa Tekoäly-paneelin ja editori käsittelee toiminnon',()=>{
  assert.match(readFileSync(new URL('desktop/main.mjs',root),'utf8'),/\{label:'Tekoäly…',click:\(\)=>action\('ai'\)\}/);
  assert.match(readFileSync(new URL('components/editor.tsx',root),'utf8'),/case 'ai':setAiOpen\(true\)/);
+});
+
+const status=(o={})=>({available:true,enabled:false,running:false,storage:null,modelPins:false,settings:{enabled:false,colabClassifiedFree:false,notebookClassifiedFree:false},jobs:[],policy:{mode:'zero-cost',allowPaidCompute:false,maxCostEur:0,allowPaidFallback:false,allowUnknownCost:false,allowedBackendClasses:['free']},secrets:{encryption:true,keys:{HAHMOSTUDIO_COLAB_COMFYUI_URL:{label:'ComfyUI-tunnelin osoite',set:true},HAHMOSTUDIO_COMFYUI_BEARER:{label:'ComfyUI-välityspalvelimen tunnus',set:false}}},...o});
+test('pilven asetukset: pois päältä vain käyttöönottopainike; päällä todelliset toiminnot ilman arvoja',()=>{
+ assert.equal(renderToStaticMarkup(React.createElement(CloudControls,{status:{...status(),available:false},busy:false,act:()=>{}})),'');
+ const off=renderToStaticMarkup(React.createElement(CloudControls,{status:status(),busy:false,act:()=>{}}));
+ assert.deepEqual([...off.matchAll(/<button[^>]*>([^<]*)<\/button>/g)].map(m=>m[1]),['Ota pilvirenderöinti käyttöön…']);
+ const on=renderToStaticMarkup(React.createElement(CloudControls,{status:status({enabled:true}),busy:false,act:()=>{},onOpenCloud:()=>{}}));
+ assert.match(on,/ComfyUI-tunnelin osoite: asetettu/);assert.match(on,/ComfyUI-välityspalvelimen tunnus: ei asetettu/);assert.match(on,/ei tuotu; renderöinti on estetty ilman lukittua mallia/);
+ for(const label of ['Liitä tunnelin osoite leikepöydältä…','Tuo asetustiedosto…','Vahvista Kaggle-muistikirja ilmaiseksi…','Tuo mallien lukitus…','Avaa pilvirenderöinti…','Poista pilvirenderöinti käytöstä'])assert.ok(on.includes(label),label);
+ assert.ok(!/https:\/\//.test(on),'ei osoitteita näkyvissä');
+ const noKeychain=renderToStaticMarkup(React.createElement(CloudControls,{status:status({enabled:true,secrets:{encryption:false,keys:{}}}),busy:false,act:()=>{}}));
+ assert.match(noKeychain,/<button type="button" class="secondary" disabled="">Liitä tunnelin osoite/);
 });

@@ -52,22 +52,22 @@ test('peittäminen poistaa salaisuudet ja osoitteet virheviesteistä ennen rende
  await assert.rejects(fn(),e=>e.message==='palvelin hylkäsi tunnuksen ***');
 });
 
-test('työpöydän pilvitila: aina nollakustannus, pilvi ei vielä saatavilla, ei arvoja',async()=>{
+test('työpöydän pilvitila: aina nollakustannus, oletuksena pois, ei arvoja',async()=>{
  const {ZERO_COST_POLICY}=await import('../lib/cloud-render/compute.ts');
  assert.deepEqual({...DESKTOP_COMPUTE_POLICY,allowedBackendClasses:[...DESKTOP_COMPUTE_POLICY.allowedBackendClasses]},{...ZERO_COST_POLICY,allowedBackendClasses:[...ZERO_COST_POLICY.allowedBackendClasses]});
- assert.ok(Object.isFrozen(DESKTOP_COMPUTE_POLICY));assert.equal(CLOUD_RENDER_AVAILABLE,false);
+ assert.ok(Object.isFrozen(DESKTOP_COMPUTE_POLICY));assert.equal(CLOUD_RENDER_AVAILABLE,true);
  const store=new CloudSecretStore({dir:await tmp(),safeStorage:fakeSafe()});await store.set('HAHMOSTUDIO_COLAB_COMFYUI_URL',URL_SECRET);
- const status=await cloudStatus(store);assert.equal(status.available,false);assert.equal(status.enabled,false);assert.equal(status.policy.maxCostEur,0);
+ const status=await cloudStatus(store);assert.equal(status.available,true);assert.equal(status.enabled,false);assert.equal(status.policy.maxCostEur,0);
  assert.ok(!JSON.stringify(status).includes(MARK.toLowerCase()));
 });
 
-test('IPC-pinta: renderer saa vain neljä pilvitoimintoa eikä yksikään palauta arvoja; web-omistajan tunnuksia ei lueta',()=>{
+test('IPC-pinta: renderer saa vain luetellut pilvikanavat eikä yksikään palauta arvoja; web-omistajan tunnuksia ei lueta',()=>{
  const main=readFileSync(new URL('./main.mjs',import.meta.url),'utf8'),preload=readFileSync(new URL('./preload.cjs',import.meta.url),'utf8');
- assert.deepEqual([...preload.matchAll(/'(studio:cloud-[a-z-]+)'/g)].map(m=>m[1]).sort(),['studio:cloud-secret-clear','studio:cloud-secret-import','studio:cloud-secret-paste','studio:cloud-status']);
- assert.deepEqual([...main.matchAll(/handle\('(studio:cloud-[a-z-]+)'/g)].map(m=>m[1]).sort(),['studio:cloud-secret-clear','studio:cloud-secret-import','studio:cloud-secret-paste','studio:cloud-status']);
+ assert.deepEqual([...preload.matchAll(/'(studio:cloud-[a-z-]+)'/g)].map(m=>m[1]).sort(),['studio:cloud-call','studio:cloud-declare-free','studio:cloud-disable','studio:cloud-enable','studio:cloud-pins-clear','studio:cloud-pins-import','studio:cloud-secret-clear','studio:cloud-secret-import','studio:cloud-secret-paste','studio:cloud-status']);
+ assert.deepEqual([...main.matchAll(/handle\('(studio:cloud-[a-z-]+)'/g)].map(m=>m[1]).sort(),['studio:cloud-call','studio:cloud-declare-free','studio:cloud-disable','studio:cloud-enable','studio:cloud-pins-clear','studio:cloud-pins-import','studio:cloud-secret-clear','studio:cloud-secret-import','studio:cloud-secret-paste','studio:cloud-status']);
  assert.ok(!/cloudSecrets\.values\(\)/.test(main),'arvot eivät kulje IPC-käsittelijöistä');
- for(const name of ['cloud-secret-paste','cloud-secret-import','cloud-secret-clear'])assert.match(main,new RegExp(`handle\\('studio:${name}',guarded\\(`));
- assert.match(main,/async function confirmSecrets/);assert.match(main,/handle\('studio:cloud-secret-paste',guarded\(cloudSecrets,async key=>\{secretKey\(key\);const value=clipboard\.readText\(\)\.trim\(\);if\(!await confirmSecrets/);
+ for(const name of ['cloud-secret-paste','cloud-secret-import','cloud-secret-clear','cloud-enable','cloud-disable','cloud-declare-free','cloud-call','cloud-pins-import','cloud-pins-clear'])assert.match(main,new RegExp(`handle\\('studio:${name}',guarded\\(`));
+ assert.match(main,/async function confirmSecrets/);assert.match(main,/handle\('studio:cloud-secret-paste',guarded\(cloudSecrets,async key=>\{secretKey\(key\);const value=String\(await clipboard\.readText\(\)\?\?''\)\.trim\(\);if\(!await confirmSecrets/);
  const sources=execFileSync('git',['ls-files','desktop'],{encoding:'utf8'}).split('\n').filter(f=>/\.(mjs|cjs|js)$/.test(f)&&!f.includes('.test.')&&!f.includes('test-fixtures'));
  for(const f of sources){const text=readFileSync(f,'utf8');for(const banned of ['owner.json','.private-storage','HAHMOSTUDIO_SETUP_TOKEN','HAHMOSTUDIO_DATA_DIR','HAHMOSTUDIO_ALLOW_PAID_COMPUTE','HAHMOSTUDIO_MAX_COST_EUR'])assert.ok(!text.includes(banned),`${f}: ${banned}`);}
 });

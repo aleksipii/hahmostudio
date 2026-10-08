@@ -18,7 +18,7 @@ export type DesktopBridge={
  reportState:(state:{dirty:boolean;ready:boolean;name?:string})=>void;completeClose:(id:string,saved:boolean)=>void;nativeEdit:(action:'undo'|'redo')=>Promise<void>;
  audioDownload:()=>Promise<{model:boolean;binary:boolean;modelName:string}>;
  audioModel:()=>Promise<{backend:string;model:boolean;binary:boolean;modelName:string;offline:boolean}>;transcribe:(bytes:Uint8Array,language:string)=>Promise<unknown>;
- cloudStatus:()=>Promise<CloudStatus>;cloudSecretPaste:(key:CloudSecretKey)=>Promise<{saved:CloudSecretKey[]}>;cloudSecretImport:()=>Promise<{saved:CloudSecretKey[];ignored:string[]}>;cloudSecretClear:(key:CloudSecretKey|'all')=>Promise<CloudStatus>;
+ cloudStatus:()=>Promise<CloudStatus>;cloudEnable:()=>Promise<CloudStatus>;cloudDisable:()=>Promise<CloudStatus>;cloudDeclareFree:(kind:'colab'|'notebook',value:boolean)=>Promise<CloudStatus>;cloudCall:(op:CloudOp,args?:Record<string,unknown>)=>Promise<{status:number;body:Record<string,any>}>;cloudPinsImport:()=>Promise<CloudStatus>;cloudPinsClear:()=>Promise<CloudStatus>;cloudSecretPaste:(key:CloudSecretKey)=>Promise<{saved:CloudSecretKey[]}>;cloudSecretImport:()=>Promise<{saved:CloudSecretKey[];ignored:string[]}>;cloudSecretClear:(key:CloudSecretKey|'all')=>Promise<CloudStatus>;
  kokoroStatus:()=>Promise<KokoroStatus>;kokoroDownload:()=>Promise<KokoroStatus|{cancelled:true}>;kokoroRemove:()=>Promise<KokoroStatus>;kokoroSynthesize:(request:{text:string;voice:string;speed:number})=>Promise<{samples:Float32Array;sampleRate:number;modelVersion:string}>;kokoroCancel:()=>Promise<void>;onKokoroProgress:(callback:(p:{file:string;received:number;total:number|null})=>void)=>()=>void;
  speech:(bytes:Uint8Array,language:string)=>Promise<unknown>;cancelSpeech:()=>Promise<void>;onAction:(callback:(payload:DesktopAction)=>void)=>()=>void;
 };
@@ -43,5 +43,7 @@ export async function saveFile(blob:Blob,name:string,options:{kind?:'project'|'e
 }
 export type CloudSecretKey='HAHMOSTUDIO_COLAB_COMFYUI_URL'|'HAHMOSTUDIO_COMFYUI_BEARER'|'GOOGLE_OAUTH_CLIENT_ID'|'GOOGLE_OAUTH_CLIENT_SECRET'|'GOOGLE_OAUTH_REFRESH_TOKEN';
 /** Työpöydän pilvitila rendererille: ei koskaan salaisuuksien arvoja. */
-export type CloudStatus={available:boolean;enabled:boolean;policy:{mode:'zero-cost';allowPaidCompute:false;maxCostEur:0;allowPaidFallback:false;allowUnknownCost:false;allowedBackendClasses:string[]};secrets:{encryption:boolean;keys:Record<CloudSecretKey,{label:string;set:boolean}>}};
+export type CloudOp='health'|'backends'|'sync'|'lock'|'direct'|'reference'|'preflight'|'render'|'job'|'cancel'|'smoke'|'notebook-save'|'import';
+export type CloudJobEntry={id:string;state:string;sceneId:string;workflowId:string;at:string;jobId?:string};
+export type CloudStatus={available:boolean;enabled:boolean;running:boolean;storage:string|null;modelPins:boolean;settings:{enabled:boolean;colabClassifiedFree:boolean;notebookClassifiedFree:boolean};jobs:CloudJobEntry[];policy:{mode:'zero-cost';allowPaidCompute:false;maxCostEur:0;allowPaidFallback:false;allowUnknownCost:false;allowedBackendClasses:string[]};secrets:{encryption:boolean;keys:Record<CloudSecretKey,{label:string;set:boolean}>}};
 export type KokoroStatus={installed:boolean;modelVersion:string;license:string;bytes:number;error?:string};

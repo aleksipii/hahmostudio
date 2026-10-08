@@ -610,7 +610,7 @@ export default function Editor() {
   saveButton={<button className="secondary s2-save" disabled={saveDisabled} onClick={()=>void downloadProject()} title="Tallenna projekti (⌘S)">{projectBusy?'Odota…':'Tallenna'}</button>}
   exportControl={<div className="s2-export"><ExportPanel episode={doc&&animation&&rig?{doc,animation:{...animation,rig},scene,audio:audioAsset}:null} legacy={()=>void downloadVideo()}/></div>}>
   {cloudRender&&<CloudRenderDialog presentation={activePresentation??null} onClose={()=>setCloudRender(false)}/>}
-  {aiOpen&&<AiPanel onClose={()=>setAiOpen(false)}/>}
+  {aiOpen&&<AiPanel onClose={()=>setAiOpen(false)} onOpenCloud={()=>{setAiOpen(false);setCloudRender(true);}}/>}
   <input ref={audioInput} type="file" accept=".mp3,.wav,.ogg,.m4a" hidden onChange={e=>{const f=e.target.files?.[0];if(f)loadAudio(f);e.target.value='';}}/>
   <input ref={projectInput} type="file" accept=".hahmo" hidden onChange={e=>{const f=e.target.files?.[0];if(f)void openProject(f);e.target.value='';}}/>
   <input ref={input} type="file" accept=".psd,.png" hidden onChange={e => { const file = e.target.files?.[0]; if (file) void openFile(file); e.target.value = ''; }}/>

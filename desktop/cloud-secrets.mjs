@@ -32,8 +32,9 @@ export function parseSecretFile(text){
 
 export class CloudSecretStore{
  /** @param {{dir:string,safeStorage:{isEncryptionAvailable():boolean,encryptString(s:string):Buffer,decryptString(b:Buffer):string}}} options */
- constructor({dir,safeStorage}){this.dir=dir;this.file=join(dir,'cloud-secrets.bin');this.safe=safeStorage;this.cache=null;}
- encryptionAvailable(){try{return this.safe.isEncryptionAvailable()===true;}catch{return false;}}
+ constructor({dir,safeStorage,platform=process.platform,allowWeakBackend=false}){this.dir=dir;this.file=join(dir,'cloud-secrets.bin');this.safe=safeStorage;this.platform=platform;this.allowWeak=allowWeakBackend;this.cache=null;}
+ /** Linuxin basic_text-tausta salaa kiinteällä avaimella eikä ole oikea avainnippu: hylätään (paitsi eristetyssä testiajossa). */
+ encryptionAvailable(){try{if(this.platform==='linux'&&!this.allowWeak&&this.safe.getSelectedStorageBackend?.()==='basic_text')return false;return this.safe.isEncryptionAvailable()===true;}catch{return false;}}
  async #load(){
   if(this.cache)return this.cache;
   let bytes;try{bytes=await readFile(this.file);}catch(e){if(e?.code==='ENOENT'){this.cache={};return this.cache;}throw new Error('Pilviasetuksia ei voitu lukea.');}
