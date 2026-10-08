@@ -514,3 +514,15 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 - Esimerkkianimaatio ja kirjastokäsikirjoitusten resurssirivit (`Resurssi hahmo KILLE: Pipsa`, `HANDU: Ville`) osoittavat uusiin hahmoihin; puhujien nimet (KILLE, HANDU) säilyivät käsikirjoituksissa.
 - Testit: 23 vanhaan aineistoon sidottua testiä poistettiin (cutout-SVG, Otto-robotti, paperileikkaus-75-tasoa); muut siirrettiin uusiin hahmoihin. `npm test` 1190/1190; GUI-diagnostiikat (screenplay-gui, export-e2e, playback-raf 55 fps) läpi.
 - Rajat: pelkkä hahmotyyli on tehty; **taustat, autot, puhelimet ja muut esineet** ovat vielä vanhoja (seuraava vaihe, eri mittasuhteet). Cutout-SVG-moottorin koodi (`lib/cutout`) jäi käyttämättömänä. Profiilinäkymien korvat ja Ukon sivutukat ovat yksinkertaisia. Pakattua .app:ia ei ole rakennettu uudelleen.
+
+### 2.22 — Luotettavuus: muokattu jakso ei kahdennu, vienti kertoo lisäämättömästä jaksosta (2026-10-08)
+
+**Löydetty ja korjattu:**
+1. **Muokattu käsikirjoitus lisäsi kohtauksen toiseen kertaan.** Jakson tunniste laskettiin käsikirjoitustekstistä, joten tekstin muutoksen jälkeen Rakenna jakso antoi uuden tunnisteen. Painike näytti silloin “Rakenna muokattava jakso projektiin” eikä “Päivitä kohtaus”, ja vanha versio jäi projektiin uuden eteen (video sisälsi molemmat, ja 60 s raja täyttyi nopeasti). Nyt saman kohtauksen uudelleenrakennus (`buildEpisode`, `options.previous`) säilyttää kohtauksen tunnisteen, kuten vanha jäsennin (`reconcileProduction`). Testi: muokattu jakso korvaa projektissa olevan version (`lib/export-draft.test.ts`).
+2. **Pelkkä Rakenna jakso → Vie ei vienyt jaksoa.** Vienti käyttää vain projektiin lisättyjä kohtauksia. `lib/export-draft.ts` tunnistaa lisäämättömän uuden jakson (projektissa ei vielä kohtauksia) ja päivittämättömän muutoksen (sama kohtaus, eri teksti tai tapahtumat). Vientidialogi näyttää tarkan ohjeen ja estää jonoon lisäyksen, kunnes jakso on lisätty tai käyttäjä valitsee “Vie silti ilman sitä”; selainviennissä sama vahvistuskysymys. Uusi erillinen kohtaus aiempien rinnalla ei estä aiempien vientiä. Esimerkin ohjeteksti ja `docs/DESIGN-PALIKKAEDITORI.md` kertovat nyt välivaiheen.
+
+**Tarkistettu:** pilvirenderöinnin oppaan Wan-tiedostopolut ovat olemassa repossa `Comfy-Org/Wan_2.2_ComfyUI_Repackaged` (Hubin metatieto: 10,0 + 6,7 + 1,4 Gt, LFS). Oppaan ympäristömuuttujat vastaavat koodia.
+
+**Ei todennettu:** korjauksia ei ajettu selaimessa eikä Electronissa (vain koodin testit). `npm test` 1214 (1213 läpi, 1 ohitettu), typecheck, `build:private` ja `desktop:build` OK.
+
+**Edelleen auki (päätös tai laite käyttäjällä):** tyhjän projektin ensimmäisen käsikirjoitus-commitin kumoaminen työpöytäsovelluksessa (2.19); oikea Colab/ComfyUI/Drive-ajo; kamera, mikrofoni, trackpad ja Kokoro oikealla mallilla Macilla.
