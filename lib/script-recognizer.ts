@@ -40,7 +40,7 @@ export type Clause =
   | { type: 'note'; text: string }
   | { type: 'editing'; value: 'faster' | 'slower' | 'hard-cuts' | 'rhythm'; text: string }
   | { type: 'unsupported'; actor: string; label: string; text: string; reason: string }
-  | { type: 'unknown'; text: string };
+  | { type: 'unknown'; text: string; reason?: string };
 
 export type RecognizedLine = {
   line: number;
@@ -58,6 +58,10 @@ export type RecognizedLine = {
   shot?: { size?: ShotSize; target?: string; move?: CameraMove; angle?: 'pov' | 'over-shoulder' | 'two-shot' | 'high' | 'low' | 'insert' }[];
   metadata?: { key: string; value: string };
   clauses: Clause[];
+  /** Tunnistamattoman rivin syy suomeksi (sääntö, joka esti tulkinnan, tai se, ettei mikään sääntö sopinut). */
+  reason?: string;
+  /** Missä muodossa sovellus olisi ymmärtänyt rivin (esimerkki), kun sellainen on. */
+  hint?: string;
 };
 
 export type RecognizedScript = {
@@ -83,7 +87,18 @@ const ure = (source: string, flags = '') => {
 
 const lower = (s: string) => s.toLocaleLowerCase('fi-FI');
 const upper = (s: string) => s.toLocaleUpperCase('fi-FI');
-const words = (s: string) => lower(s).match(/[\p{L}\d'’-]+/gu) ?? [];
+const tokenRe = /[\p{L}\d'’-]+/gu;
+const hasWordChar = (w: string) => /[\p{L}\d]/u.test(w);
+/** Sanat alkuperäisessä kirjainkoossa (pelkät väliviivat eivät ole sanoja). */
+const rawWords = (s: string) => (s.match(tokenRe) ?? []).filter(hasWordChar);
+const words = (s: string) => rawWords(lower(s));
+/** Lainausmerkit: suorat, kaarevat, suomalaiset ”…” ja kulmalainaukset »…» / «…». */
+const OPEN_Q = '“"„«”»';
+const CLOSE_Q = '”"»“«';
+const startsQuoted = (s: string) => new RegExp('^[' + OPEN_Q + ']').test(s.trim());
+const quotedRe = new RegExp('^[' + OPEN_Q + '](.*?)[' + CLOSE_Q + ']?\\.?$');
+const closedQuoteRe = new RegExp('^[' + OPEN_Q + '].*[' + CLOSE_Q + '][.!?]?$');
+const stripQuotes = (s: string) => s.match(quotedRe)?.[1] ?? s;
 export const normalizeName = (s: string) => upper(s.trim().replace(/[.:]+$/, '').replace(/\s+/g, ' '));
 
 /** Siistii markdown-korostukset, otsikkomerkit ja rivin lopun kenoviivan. */
@@ -267,6 +282,49 @@ const RX25 = ure(String.raw`\b([a-z]+)\s+seconds?\b`, '');
 const anyVerbFi = new RegExp([...motionRules.map(r => r.fi!.source), ...expressionRules.map(r => r.fi!.source), gazeVerb.fi.source, String.raw`^(näyttää|näyttävät|ottaa|laittaa|pitää|pitelee|sanoo)$`].join('|'), 'u');
 const anyVerbEn = new RegExp([...motionRules.map(r => r.en!.source), ...expressionRules.map(r => r.en!.source), gazeVerb.en.source, String.raw`^(shows?|takes|puts|holds?|says)$`].join('|'));
 
+const sayVerbs = String.raw`(?:sanoo|vastaa|kysyy|huutaa|kuiskaa|toteaa|says|replies|asks|shouts|whispers|adds)`;
+const spokenDuration = String.raw`(?:\d+(?:[.,]\d+)?\s*(?:s|sek|sekuntia|sec|secs|seconds?)\b)`;
+/** "Pipsa sanoo: "Hei." 2 s", "Pipsa sanoo Villelle: "…"": puhuja, valinnainen puhuteltava, lainaus ja valinnainen kesto. */
+const saysRe = new RegExp(String.raw`^([\p{L}][\p{L} .'-]{0,35}?)\s+` + sayVerbs + String.raw`(?:\s+([\p{Lu}][\p{L}'-]*))?(?:\s*[:,])?\s*[` + OPEN_Q + String.raw`](.*?)[` + CLOSE_Q + String.raw`]?\s*` + spokenDuration + String.raw`?\.?$`, 'iu');
+/** "– Mitä teet? Pipsa kysyy." */
+const dashDialogueRe = new RegExp(String.raw`^[–—]\s*(.+?)\s+([\p{Lu}][\p{L}'-]*)\s+` + sayVerbs + String.raw`\.?$`, 'u');
+const trailingDuration = /\s+\d+(?:[.,]\d+)?\s*(?:s|sek|sec|secs|sekunti|sekuntia|second|seconds)$/i;
+
+/* ───────────────────────── Tekijäsäännöt ───────────────────────── */
+
+/** Nominatiivipronominit, jotka voivat olla lauseen tekijä (muut sijat, kuten "hänen", "her", eivät voi). */
+const nominativePronouns = { fi: new Set(['hän', 'he', 'molemmat', 'kaikki', 'kumpikin']), en: new Set(['he', 'she', 'they', 'both', 'everyone']) };
+const objectPronouns = { fi: new Set(['häntä', 'hänen', 'häneen', 'hänelle', 'hänestä', 'hänellä', 'heitä', 'heidän']), en: new Set(['him', 'her', 'them', 'his', 'their']) };
+/**
+ * Sanat, jotka saavat olla ennen verbiä ilman, että ne ovat tekijä (aikaa, tapaa ja astetta kuvaavat sanat, sidesanat,
+ * olla-verbi ja kielto). Muu tuntematon sana ennen verbiä on mahdollinen tekijä ("kissa", "the cat"), joten lause ei
+ * silloin peri edellistä hahmoa.
+ */
+const preVerbWords = new Set([
+  'sitten', 'samalla', 'nyt', 'lopuksi', 'lopulta', 'yhtäkkiä', 'äkkiä', 'hetken', 'hetkeksi', 'ensin', 'heti', 'taas', 'jälleen', 'vielä', 'myös', 'vain', 'jo', 'yhä', 'edelleen', 'enää', 'ikinä', 'koskaan', 'aina',
+  'täysin', 'hyvin', 'hieman', 'vähän', 'todella', 'aivan', 'ihan', 'tosi', 'melko', 'hitaasti', 'nopeasti', 'hiljaa', 'varovasti', 'vihdoin', 'noin',
+  'ja', 'sekä', 'mutta', 'kun', 'vaan', 'on', 'ole', 'oli', 'ovat', 'olivat', 'ei', 'eikä', 'en', 'et', 'eivät',
+  'then', 'meanwhile', 'suddenly', 'finally', 'now', 'slowly', 'quickly', 'really', 'just', 'still', 'again', 'quietly', 'carefully', 'also', 'only', 'first', 'and', 'but', 'when',
+  'is', 'are', 'was', 'were', 'not', 'never', 'does', "doesn't", 'doesn’t', 'did', "didn't", 'didn’t', 'the', 'a', 'an',
+]);
+const conjunctions = new Set(['ja', 'sekä', 'and', '&']);
+const negationWord = /^(ei|eikä|en|et|emme|ette|eivät|älä|älkää|not|never|no|without|ilman|isn't|doesn't|don't|isn’t|doesn’t|don’t)$/;
+const contrastWord = /^(vaan|mutta|but|instead)$/;
+const capitalized = (raw: string) => /^\p{Lu}/u.test(raw);
+
+type Subject = { kind: 'named'; actor: string; index: number } | { kind: 'implicit' } | { kind: 'blocked'; reason: string };
+
+/** Tunnistamattoman rivin syyt ja esimerkit muodosta, jonka sovellus ymmärtää. */
+export const UNKNOWN_REASONS = {
+  noRule: { reason: 'Mikään sääntö ei tunnista lausetta: siinä ei ole tuettua liikettä, ilmettä, katsetta, puhelintoimintoa, taukoa tai rakennetta.', hint: 'Kirjoita hahmon nimi ja tuettu verbi, esim. “Pipsa kävelee vasemmalle 2 s.” tai “Ville hymyilee.”' },
+  subject: { reason: 'Lauseen tekijä ei ole yksiselitteinen hahmo.', hint: 'Aloita lause hahmon nimellä perusmuodossa, esim. “Pipsa juoksee oikealle.”' },
+  noAgent: { reason: 'Lauseessa ei ole nimettyä hahmoa eikä aiempaa hahmoa, johon se voisi viitata.', hint: 'Lisää hahmon nimi lauseen alkuun, esim. “Ville nyökkää.”' },
+  multipleActions: { reason: 'Lauseessa on useampi liike ilman erotinta, joten kaikkia ei voi kohdistaa varmasti.', hint: 'Erota toiminnot pisteellä tai sanalla “ja”, esim. “Pipsa juoksee. Ville kävelee.”' },
+  ambiguousDialogue: { reason: 'Moniselitteinen: rivi voi olla repliikin jatko tai näyttämöohje.', hint: 'Erota ohje repliikistä tyhjällä rivillä tai kirjoita repliikki lainausmerkkeihin, esim. PIPSA: “Hei.”' },
+  dashDialogue: { reason: 'Ajatusviivalla alkava repliikki ilman puhujaa: puhujaa ei arvata.', hint: 'Lisää puhuja loppuun, esim. “– Hei! Pipsa sanoo.” tai käytä muotoa PIPSA: “Hei!”' },
+  orphanCue: { reason: 'Rivi näyttää puhujalta, mutta sen jälkeen ei tule heti repliikkiä.', hint: 'Kirjoita repliikki heti puhujarivin alle ilman tyhjää riviä.' },
+} as const;
+
 export class ScriptRecognizer {
   state: RecognizerState = 'header';
   private characters = new Map<string, string>();
@@ -274,7 +332,10 @@ export class ScriptRecognizer {
   private lastActor = '';
   private lastSpeaker = '';
   private sawContent = false;
+  private sawTitle = false;
   private lastGaze: string | undefined;
+  /** Puhuja "NIMI:" ja seuraava ei-tyhjä rivi on lainaus: tyhjä rivi välissä ei katkaise puhujaa. */
+  private cueAwaitsQuote = false;
 
   constructor(characters: string[] = []) { for (const c of characters) this.addCharacter(c); }
 
@@ -305,9 +366,66 @@ export class ScriptRecognizer {
     return undefined;
   }
 
+  /** Onko sana hahmon nimi täsmälleen perusmuodossa (ei sijapäätettä, ei englannin omistusmuotoa)? */
+  private isExactName(token: string): boolean { return this.characters.has(upper(token)); }
+
+  /** Nominatiivipronomini tai isolla alkukirjaimella kirjoitettu nimi perusmuodossa. */
+  private nominativeActor(raw: string, language: ScriptLanguage): string | undefined {
+    const w = lower(raw);
+    if ((language !== 'en' && nominativePronouns.fi.has(w)) || (language !== 'fi' && nominativePronouns.en.has(w))) return this.resolveActor(w, language);
+    return capitalized(raw) && this.isExactName(raw) ? this.resolveActor(w, language) : undefined;
+  }
+
+  /** Hahmoviittaus kohteena: pronomini (mikä tahansa sija) tai isolla alkukirjaimella kirjoitettu nimi missä tahansa sijassa. */
+  private referencedActor(raw: string, language: ScriptLanguage): string | undefined {
+    const w = lower(raw.replace(/[’']s$/, ''));
+    const isPronoun = (language !== 'en' && (pronouns.fi.has(w) || plural.fi.has(w))) || (language !== 'fi' && (pronouns.en.has(w) || plural.en.has(w)));
+    return isPronoun || capitalized(raw) ? this.resolveActor(raw, language) : undefined;
+  }
+
   private actorIn(tokens: string[], language: ScriptLanguage): { actor?: string; index: number } {
     for (let i = 0; i < tokens.length; i++) { const a = this.resolveActor(tokens[i], language); if (a) return { actor: a, index: i }; }
     return { index: -1 };
+  }
+
+  /**
+   * Sääntö `tekijä`: liikkeen, ilmeen, katseen ja puhelintoiminnon tekijä on yksi hahmo perusmuodossa (tai nominatiivipronomini)
+   * ennen verbiä. Taipunut nimi ("Pipsan kissa", "Villelle") tai tuntematon sana ("kissa", "The cat") ennen verbiä estää tulkinnan.
+   * Poikkeukset: omistusrakenne "Pipsalla on …" ja katse "Pipsan katse …". Ilman sanoja ennen verbiä tekijä jatkuu edellisestä.
+   */
+  private subjectOf(raw: string[], ws: string[], verbAt: number, language: ScriptLanguage): Subject {
+    const end = verbAt >= 0 ? verbAt : raw.length;
+    const nominatives: { actor: string; index: number }[] = [];
+    const inflected: { actor?: string; index: number }[] = [];
+    const unknownWords: string[] = [];
+    let conjunction = false;
+    for (let i = 0; i < end; i++) {
+      const r = raw[i], w = ws[i];
+      if (conjunctions.has(w)) conjunction = true;
+      if ((language !== 'en' && nominativePronouns.fi.has(w)) || (language !== 'fi' && nominativePronouns.en.has(w))) {
+        const a = this.resolveActor(w, language);
+        if (!a) return { kind: 'blocked', reason: `Pronominille “${r}” ei ole aiempaa hahmoa tässä kohtauksessa.` };
+        nominatives.push({ actor: a, index: i }); continue;
+      }
+      if (preVerbWords.has(w)) continue;
+      if ((language !== 'en' && objectPronouns.fi.has(w)) || (language !== 'fi' && objectPronouns.en.has(w))) { inflected.push({ actor: this.resolveActor(w, language), index: i }); continue; }
+      const a = capitalized(r) ? this.resolveActor(w, language) : undefined;
+      if (a && a !== ALL_ACTORS) { if (this.isExactName(r)) nominatives.push({ actor: a, index: i }); else inflected.push({ actor: a, index: i }); continue; }
+      unknownWords.push(r);
+    }
+    const distinct = [...new Set(nominatives.map(n => n.actor))];
+    if (distinct.length > 1) return { kind: 'blocked', reason: `Ennen verbiä on useampi hahmo (${distinct.join(', ')}) ilman yhteistä sidesanaa.` };
+    if (conjunction && (inflected.length || (verbAt >= 0 && unknownWords.length))) return { kind: 'blocked', reason: 'Yhteinen tekijä sisältää muun kuin tunnetun hahmon.' };
+    if (distinct.length === 1) return { kind: 'named', actor: distinct[0], index: nominatives[0].index };
+    // Poikkeukset taipuneelle nimelle: "Pipsalla on puhelin" (omistus) ja "Pipsan katse kääntyy" (katse).
+    if (inflected.length === 1 && inflected[0].actor) {
+      const i = inflected[0].index, w = ws[i];
+      if (/(lla|llä)$/.test(w) && ws[i + 1] === 'on') return { kind: 'named', actor: inflected[0].actor, index: i };
+      if (/n$/.test(w) && /^katse/.test(ws[i + 1] ?? '')) return { kind: 'named', actor: inflected[0].actor, index: i };
+    }
+    if (inflected.length) return { kind: 'blocked', reason: `“${raw[inflected[0].index]}” on taipunut muoto, ei lauseen tekijä.` };
+    if (verbAt >= 0 && unknownWords.length) return { kind: 'blocked', reason: `“${unknownWords.join(' ')}” ennen verbiä ei ole tunnettu hahmo.` };
+    return { kind: 'implicit' };
   }
 
   /** Esikatselu: kerää puhujat ja hahmomääritykset ennen varsinaista ajoa, jotta sijamuodot ratkeavat. */
@@ -318,48 +436,75 @@ export class ScriptRecognizer {
       if (decl) { this.addCharacter(decl[1]); continue; }
       const handle = t.match(/^(?:Tunnus\s+)?@[a-zA-Z0-9_.-]{1,32}\s*(?:→|->|:)\s*([\p{L}][\p{L}\s.]{0,35})$/u);
       if (handle) { this.addCharacter(handle[1]); continue; }
-      const cue = this.cueName(t, following[i]);
+      const cue = this.cueName(t, following[i], lines[i + 1] ?? '');
       if (cue) this.addCharacter(cue.name);
       const says = t.match(RX0);
-      if (says && !nonCueWords.has(upper(says[1]))) this.addCharacter(says[1]);
+      if (says && !nonCueWords.has(upper(says[1])) && this.newSpeakerName(says[1])) this.addCharacter(says[1]);
     }
   }
 
-  /** Puhujarivi: "KILLE", "KILLE (V.O.)", "Kille:", "MIRA:" ennen repliikkiä. */
-  private cueName(t: string, next: string): { name: string; extension?: string; inline?: string } | undefined {
+  /** "X sanoo:" esittelee uuden hahmon vain, jos X ei ole pronomini eikä tunnetun hahmon taivutusmuoto. */
+  private newSpeakerName(token: string): boolean {
+    const w = lower(token);
+    if (pronouns.fi.has(w) || pronouns.en.has(w) || plural.fi.has(w) || plural.en.has(w) || nominativePronouns.en.has(w)) return false;
+    return !this.resolveActor(w) || this.isExactName(token);
+  }
+
+  /** Puhujarivi: "KILLE", "KILLE (V.O.)", "Kille:", "MIRA:" ennen repliikkiä. `adjacent` on heti seuraava rivi (voi olla tyhjä). */
+  private cueName(t: string, next: string, adjacent: string): { name: string; extension?: string; inline?: string; awaitsQuote?: boolean } | undefined {
     const t0 = /\)\s*:$/.test(t) ? t.replace(/:\s*$/, '') : t;
     const ext = t0.match(cueExtensionRe)?.[1];
     const base = (ext ? t0.replace(cueExtensionRe, '') + (t0 !== t ? ':' : '') : t).trim().replace(/^([^:]+):$/, '$1:');
     const colon = base.match(/^([\p{L}][\p{L} .'-]{0,35}?):\s*(.*)$/u);
+    const adj = adjacent.trim();
+    const adjacentIsText = !!adj && !sceneHeadingRe.test(adj) && !timecodeRe.test(adj) && !transitionRe.test(adj) && !/^[\p{Lu}][\p{Lu}\d .'-]{0,35}:?$/u.test(adj) && !/^(\/\/|\/\*|\[\[|<!--|#)/.test(adj);
     if (colon) {
       const name = colon[1].trim(), rest = colon[2].trim(), key = upper(name);
       if (nonCueWords.has(key) || metaKeys.some(([re]) => re.test(name)) || /^(Hahmo|Character|Tausta|Background|Kamera|Camera|Leikkaus|Cut|Samalla|Meanwhile|Kohtaus|Scene|Resurssi|Resource|Otsikkokortti|Title card|Lopetus|Ending|Sijainti|Position|Rekvisiitta|Prop|Puhelin|Phone|Huom|Note|Animaatio|Animation|Ääni|Voice|Luonne|Personality|Suhde|Relationship|Tunnus)$/i.test(name)) return undefined;
       if (name.split(/\s+/).length > 3) return undefined;
-      if (/\s(sanoo|vastaa|kysyy|huutaa|kuiskaa|toteaa|says|replies|asks|shouts|whispers|adds)$/i.test(name) || nonCueWords.has(upper(name.split(/\s+/)[0]))) return undefined;
-      if (!rest && /^[“"„(]/.test(next.trim())) return { name, extension: ext };
-      if (/^[“"„]/.test(rest)) return { name, extension: ext, inline: rest };
-      if (rest && (this.characters.has(key) || /^[\p{Lu}][\p{Lu} .'-]+$/u.test(name))) return { name, extension: ext, inline: rest };
+      if (/\s(sanoo|vastaa|kysyy|huutaa|kuiskaa|toteaa|says|replies|asks|shouts|whispers|adds)(\s|$)/i.test(name) || nonCueWords.has(upper(name.split(/\s+/)[0]))) return undefined;
+      const namedCue = this.characters.has(key) || /^[\p{Lu}][\p{Lu} .'-]+$/u.test(name);
+      if (!rest && (startsQuoted(next) || /^\(/.test(next.trim()))) return { name, extension: ext, awaitsQuote: !adj };
+      // Sääntö `puhuja-kaksoispiste-rivi`: "VILLE:" omalla rivillään ja heti alla tekstiä (ei tyhjää riviä välissä).
+      if (!rest && namedCue && adjacentIsText) return { name, extension: ext };
+      if (startsQuoted(rest)) return { name, extension: ext, inline: rest };
+      if (rest && namedCue) return { name, extension: ext, inline: rest };
       return undefined;
     }
     if (/^[\p{Lu}][\p{Lu}\d .'-]{0,35}$/u.test(base) && /\p{Lu}/u.test(base) && base.split(/\s+/).length <= 3) {
       const key = upper(base);
       if (nonCueWords.has(upper(base.split(/\s+/)[0])) || /^(CUT|LEIKKAUS|FADE|HÄIVYTYS|INT|EXT|SISÄ|ULKO)\b/.test(base)) return undefined;
       if (nonCueWords.has(key) || shotWords.some(([re]) => re.test(base)) || transitionRe.test(base) || sceneHeadingRe.test(base)) return undefined;
+      // Sääntö `puhuja-isot-kirjaimet` (Fountain): repliikki alkaa heti seuraavalta riviltä, ei tyhjän rivin jälkeen.
+      if (!adj) return undefined;
       const n = next.trim();
-      const nextIsSpeech = /^[“"„«(]/.test(n) || (!!n && !/^[\p{Lu}\d\s.'’:()\/-]+$/u.test(n) && !sceneHeadingRe.test(n) && !timecodeRe.test(n) && !transitionRe.test(n));
-      if (this.characters.has(key) || ext || (/^[“"„«(]/.test(n)) || (nextIsSpeech && base.length >= 2 && this.state !== 'header' && !/[.!?]$/.test(base))) return { name: base, extension: ext };
+      const nextIsSpeech = startsQuoted(n) || /^\(/.test(n) || (!!n && !/^[\p{Lu}\d\s.'’:()\/-]+$/u.test(n) && !sceneHeadingRe.test(n) && !timecodeRe.test(n) && !transitionRe.test(n));
+      if (this.characters.has(key) || ext || startsQuoted(n) || /^\(/.test(n) || (nextIsSpeech && base.length >= 2 && this.state !== 'header' && !/[.!?]$/.test(base))) return { name: base, extension: ext };
     }
     return undefined;
   }
 
-  /** Tunnistaa yhden rivin ja päivittää tilan. */
-  recognize(raw: string, lineNumber: number, next = ''): RecognizedLine {
-    const text = raw.trim() === '#!kilsat' ? '#!kilsat' : cleanLine(raw);
+  /** Tunnistaa yhden rivin ja päivittää tilan. `next` = seuraava ei-tyhjä rivi, `adjacent` = heti seuraava rivi. */
+  recognize(raw: string, lineNumber: number, next = '', adjacent = next): RecognizedLine {
+    let text = raw.trim() === '#!kilsat' ? '#!kilsat' : cleanLine(raw);
     const language = text ? detectLanguage(text) : 'neutral';
     const out: RecognizedLine = { line: lineNumber, raw, text, kind: 'unknown', state: this.state, language, clauses: [] };
-    const finish = (kind: LineKind, state: RecognizerState) => { out.kind = kind; this.state = state; out.state = state; return out; };
+    const finish = (kind: LineKind, state: RecognizerState) => {
+      out.kind = kind; this.state = state; out.state = state;
+      if (kind === 'unknown' && !out.reason) {
+        const why = out.clauses.find((c): c is Extract<Clause, { type: 'unknown' }> => c.type === 'unknown' && !!c.reason)?.reason;
+        out.reason = why ?? UNKNOWN_REASONS.noRule.reason;
+        out.hint = Object.values(UNKNOWN_REASONS).find(r => r.reason === out.reason)?.hint ?? (why?.startsWith('Pronominille') || why?.includes('tekijä') || why?.includes('ennen verbiä') ? UNKNOWN_REASONS.subject.hint : UNKNOWN_REASONS.noRule.hint);
+      }
+      return out;
+    };
+    const awaited = this.cueAwaitsQuote;
+    this.cueAwaitsQuote = false;
 
-    if (!text) return finish('empty', this.state === 'dialogue' || this.state === 'cue' ? 'body' : this.state);
+    if (!text) {
+      if (this.state === 'cue' && awaited) { this.cueAwaitsQuote = true; return finish('empty', 'cue'); }
+      return finish('empty', this.state === 'dialogue' || this.state === 'cue' ? 'body' : this.state);
+    }
 
     // Kommenttilohkot: /* … */, [[ … ]], Character Animator -ohjausosiot.
     if (this.state === 'comment-block') return finish('comment', /\*\/\s*$|\]\]\s*$/.test(text) ? (this.sawContent ? 'body' : 'header') : 'comment-block');
@@ -376,17 +521,22 @@ export class ScriptRecognizer {
     }
     if (/^(?:Resurssi|Resource)\s/i.test(text) || /^(?:Tunnus\s+)?@[a-zA-Z0-9_.-]{1,32}\s*(?:→|->|:)/.test(text)) return finish('metadata', this.state);
 
-    // Metatiedot: "Pituus: 30 s", "Title: …", "KILSAT — S01E01: …".
+    // Metatiedot: "Pituus: 30 s", "Title: …", "KILSAT — S01E01: …". Markdown-otsikko "# …" on otsikko vain ensimmäisenä.
+    const mdHeading = /^#{1,6}\s/.test(raw.trim());
     const episode = text.match(/^(.*?)\s*[—–-]\s*S(\d+)E(\d+)\s*:\s*[“"']?(.*?)[”"']?$/i);
-    if (episode) { out.metadata = { key: 'episode', value: text }; return finish('metadata', 'header'); }
-    if (/^#\s/.test(raw.trim()) && !this.sawContent && !sceneLabelRe.test(text) && !timecodeRe.test(text)) { out.metadata = { key: 'title', value: text }; return finish('metadata', 'header'); }
+    if (episode) { out.metadata = { key: 'episode', value: text }; this.sawTitle = true; return finish('metadata', 'header'); }
+    if (mdHeading && !this.sawContent && !this.sawTitle && !sceneLabelRe.test(text) && !timecodeRe.test(text)) { out.metadata = { key: 'title', value: text }; this.sawTitle = true; return finish('metadata', 'header'); }
     const meta = text.match(/^([\p{L} ]{2,24}?)(?:\s+\d+)?:\s*(.+)$/u);
     if (meta) {
       const key = metaKeys.find(([re]) => re.test(meta[1].trim()))?.[1];
-      if (key) { out.metadata = { key, value: meta[2].trim() }; if (key === 'environment') out.clauses.push({ type: 'environment', value: meta[2].trim(), text }); return finish('metadata', this.sawContent ? 'body' : 'header'); }
+      if (key) {
+        out.metadata = { key, value: meta[2].trim() }; if (key === 'title') this.sawTitle = true;
+        if (key === 'environment') out.clauses.push({ type: 'environment', value: meta[2].trim(), text });
+        return finish('metadata', this.sawContent ? 'body' : 'header');
+      }
     }
 
-    // Kohtausrajat.
+    // Kohtausrajat. Pronomini ei viittaa edellisen kohtauksen hahmoon.
     const tc = text.match(timecodeRe);
     if (tc) {
       const sec = (s: string) => s.split(':').map(Number).reduce((a, b) => a * 60 + b, 0);
@@ -398,16 +548,18 @@ export class ScriptRecognizer {
       const p = upper(heading[1]).replace(/\s/g, '');
       const [name, time] = heading[2].split(/\s+[-–—]\s+/);
       out.scene = { name: name.trim(), place: /\//.test(p) ? 'int-ext' : /^(INT|SISÄ)/.test(p) ? 'int' : 'ext', time: time?.trim() };
-      this.sawContent = true; return finish('scene-heading', 'body');
+      this.newScene(); return finish('scene-heading', 'body');
     }
     const label = text.match(sceneLabelRe);
-    if (label) { out.scene = { name: (label[2] || `Kohtaus ${label[1] ?? ''}`).trim() }; this.sawContent = true; return finish('scene-heading', 'body'); }
+    if (label) { out.scene = { name: (label[2] || `Kohtaus ${label[1] ?? ''}`).trim() }; this.newScene(); return finish('scene-heading', 'body'); }
 
     if (transitionRe.test(text)) {
       const t = upper(text);
       out.transition = /FADE IN|SISÄÄN/.test(t) ? 'fade-in' : /FADE|HÄIVYTYS|LOPPU|THE END/.test(t) ? 'fade-out' : /DISSOLVE|RISTIKUVA/.test(t) ? 'dissolve' : /SMASH/.test(t) ? 'smash-cut' : /MATCH/.test(t) ? 'match-cut' : 'cut';
       this.sawContent = true; return finish('transition', 'body');
     }
+    // Muu markdown-otsikko on väliotsikko (kommentti), ei ohje.
+    if (mdHeading) return finish('comment', this.state === 'cue' || this.state === 'dialogue' ? 'body' : this.state);
 
     // Hahmomääritys.
     const decl = text.match(/^(?:Hahmo|Character)\s*:\s*([\p{L}][\p{L}\d .'-]{0,35})$/u);
@@ -426,28 +578,48 @@ export class ScriptRecognizer {
     }
 
     // Repliikki puhujan jälkeen (lainausmerkeillä tai ilman).
-    const quoted = text.match(/^[“"„«](.*?)[”"»]?\.?$/);
-    const closed = /^[“"„«].*[”"»][.!?]?$/.test(text);
+    const quoted = text.match(quotedRe);
+    const closed = closedQuoteRe.test(text);
     if (this.state === 'cue' || this.state === 'dialogue') {
       if (quoted) { out.speaker = this.lastSpeaker; out.dialogue = quoted[1]; this.lastActor = this.lastSpeaker; return finish('dialogue', closed ? 'body' : 'dialogue'); }
-      if (!this.looksLikeDirection(text) && !this.isExplicitDirection(text, language)) { out.speaker = this.lastSpeaker; out.dialogue = text; this.lastActor = this.lastSpeaker; return finish('dialogue', 'dialogue'); }
+      if (!this.looksLikeDirection(text, next, adjacent)) {
+        // Sääntö `repliikki-vai-ohje`: hahmon nimellä tai pronominilla alkava, kokonaan ohjeena tunnistuva rivi puhujan alla
+        // on moniselitteinen. Muu rivi (myös käskymuoto "Istu alas!") on repliikki.
+        if (this.isExplicitDirection(text, language)) { out.reason = UNKNOWN_REASONS.ambiguousDialogue.reason; out.hint = UNKNOWN_REASONS.ambiguousDialogue.hint; return finish('unknown', 'body'); }
+        out.speaker = this.lastSpeaker; out.dialogue = text; this.lastActor = this.lastSpeaker; return finish('dialogue', 'dialogue');
+      }
       this.state = 'body';
     }
 
+    // Luettelonumero tai -merkki ohjerivin alussa ("1. Pipsa hyppää.", "• Ville nyökkää.") ei kuulu ohjeeseen.
+    const listMark = text.match(/^(?:\d{1,3}[.)]|[*•])\s+(?=\S)/);
+    if (listMark) text = text.slice(listMark[0].length);
+
     // Puhuja (oma rivi tai inline "MIRA: …").
-    const cue = this.cueName(text, next);
+    const cue = this.cueName(text, next, adjacent);
     if (cue) {
       const name = this.addCharacter(cue.name);
       out.speaker = name; out.extension = cue.extension; this.lastSpeaker = name; this.lastActor = name; this.sawContent = true;
-      if (cue.inline) { const q = cue.inline.match(/^[“"„«](.*?)[”"»]?\.?$/); out.dialogue = q ? q[1] : cue.inline; return finish('dialogue', 'body'); }
+      if (cue.inline) { out.dialogue = stripQuotes(cue.inline); return finish('dialogue', 'body'); }
+      this.cueAwaitsQuote = !!cue.awaitsQuote;
       return finish('cue', 'cue');
     }
-    const says = text.match(/^([\p{L}][\p{L} .'-]{0,35}?)\s+(?:sanoo|vastaa|kysyy|huutaa|kuiskaa|toteaa|says|replies|asks|shouts|whispers|adds)(?:\s*[:,])?\s*[“"„«](.*?)[”"»]?\s*(\d+(?:[.,]\d+)?\s*s)?\.?$/iu);
+    const says = text.match(saysRe);
     if (says) {
-      const who = this.resolveActor(says[1], language) ?? this.addCharacter(says[1]);
-      out.speaker = who; out.dialogue = says[2]; this.lastActor = who; this.lastSpeaker = who; this.sawContent = true;
-      return finish('dialogue', 'body');
+      const who = this.speakerOf(says[1], language);
+      const addressee = !says[2] || this.referencedActor(says[2], language);
+      if (who && addressee) {
+        out.speaker = who; out.dialogue = says[3]; this.lastActor = who; this.lastSpeaker = who; this.sawContent = true;
+        return finish('dialogue', 'body');
+      }
     }
+    // Sääntö `ajatusviivarepliikki`: "– Mitä teet? Pipsa kysyy." (puhuja nimettynä lopussa).
+    const dash = text.match(dashDialogueRe);
+    if (dash) {
+      const who = this.speakerOf(dash[2], language);
+      if (who) { out.speaker = who; out.dialogue = dash[1].replace(/,$/, '').trim(); this.lastActor = who; this.lastSpeaker = who; this.sawContent = true; return finish('dialogue', 'body'); }
+    }
+    if (/^[–—]\s*\S/.test(text)) { this.sawContent = true; out.reason = UNKNOWN_REASONS.dashDialogue.reason; out.hint = UNKNOWN_REASONS.dashDialogue.hint; return finish('unknown', 'body'); }
 
     // Kamera / kuvakoko / kuvakulma.
     const cutTo = text.match(/^CUT\s+TO\s+([^.:]+)[.:]?$/i);
@@ -459,7 +631,16 @@ export class ScriptRecognizer {
       if (head) { out.shot = head; out.clauses = this.clauses(sentences.slice(1).join(' '), language); this.sawContent = true; return finish(out.clauses.every(c => c.type !== 'unknown') ? 'shot' : 'unknown', 'body'); }
     }
     const shots = this.shots(text, language);
-    if (shots) { out.shot = shots; this.sawContent = true; return finish('shot', 'body'); }
+    if (shots) {
+      out.shot = shots; this.sawContent = true;
+      // Sääntö `kuva-kaksoispiste-toiminta`: "Tracking shot: Niko walks forward." → kuva + liike (toiminta ei katoa).
+      const action = text.match(/^([^:]{1,40}):\s+(.+)$/)?.[2];
+      if (action && !/^(?:Kamera|Camera|CUT|LEIKKAUS|Leikkaus|Cut)\b/i.test(text) && words(action).some(w => anyVerbFi.test(w) || anyVerbEn.test(w))) {
+        out.clauses = this.clauses(action, language);
+        return finish(out.clauses.every(c => c.type !== 'unknown') ? 'shot' : 'unknown', 'body');
+      }
+      return finish('shot', 'body');
+    }
 
     // Väliotsikko ilman puhujaa ("Kun kysely alkaa:", "Ending:").
     if (/:$/.test(text) && words(text).length <= 6) { out.clauses = [{ type: 'note', text }]; return finish('direction', 'body'); }
@@ -475,21 +656,31 @@ export class ScriptRecognizer {
     return finish(kind, 'body');
   }
 
-  /** Ohjerivi puhujan jälkeen: lause alkaa nimetyllä hahmolla/pronominilla tai tunnetulla ohjesanalla ja tunnistuu kokonaan. */
+  /** Uusi kohtaus: pronomini- ja katseviittaukset eivät jatku kohtauksen yli. */
+  private newScene(): void { this.sawContent = true; this.lastActor = ''; this.lastGaze = undefined; }
+
+  /** "X sanoo" / "– …, X sanoo": X on tunnettu hahmo perusmuodossa, nominatiivipronomini tai yksi uusi isolla kirjoitettu nimi. */
+  private speakerOf(token: string, language: ScriptLanguage): string | undefined {
+    const name = token.trim();
+    const w = lower(name);
+    if ((language !== 'en' && nominativePronouns.fi.has(w)) || (language !== 'fi' && nominativePronouns.en.has(w))) { const a = this.resolveActor(w, language); return a && a !== ALL_ACTORS ? a : undefined; }
+    if (this.isExactName(name)) return this.addCharacter(name);
+    if (/\s/.test(name) || !capitalized(name) || this.resolveActor(w, language)) return undefined;
+    return this.addCharacter(name);
+  }
+
+  /** Ohjerivi puhujan jälkeen: alkaa nimetyllä hahmolla tai nominatiivipronominilla ja tunnistuu kokonaan ohjeeksi. */
   private isExplicitDirection(text: string, language: ScriptLanguage): boolean {
-    const first = words(text)[0] ?? '';
-    const startsWithActor = this.resolveActor(first, language) !== undefined;
-    const startsWithVerb = [...motionRules, ...expressionRules].some(r => r.fi?.test(first) || r.en?.test(first)) || gazeVerb.fi.test(first) || gazeVerb.en.test(first);
-    const directionWord = RX1.test(text);
-    if (!startsWithActor && !startsWithVerb && !directionWord) return false;
+    const first = rawWords(text)[0] ?? '';
+    if (!this.nominativeActor(first, language)) return false;
     const saved = { lastActor: this.lastActor, lastGaze: this.lastGaze };
     const probe = this.clauses(text, language, this.lastActor);
     this.lastActor = saved.lastActor; this.lastGaze = saved.lastGaze;
-    return probe.length > 0 && probe.every(c => c.type !== 'unknown');
+    return probe.length > 0 && probe.every(c => c.type !== 'unknown' && c.type !== 'note');
   }
 
-  private looksLikeDirection(text: string): boolean {
-    if (this.cueName(text, '')) return true;
+  private looksLikeDirection(text: string, next: string, adjacent: string): boolean {
+    if (this.cueName(text, next, adjacent)) return true;
     if (sceneHeadingRe.test(text) || timecodeRe.test(text) || transitionRe.test(text)) return true;
     return this.shots(text, detectLanguage(text)) !== undefined;
   }
@@ -534,16 +725,31 @@ export class ScriptRecognizer {
       // Yhteinen subjekti: "Kille ja Handu kävelevät oikealle", "Mira and Niko nod".
       const compound = this.compoundSubject(s, language);
       if (compound) { for (const who of compound.actors) { const c = this.clause(compound.rest, language, who); out.push('actor' in c ? { ...c, actor: who } as Clause : c); } continue; }
+      // Sääntö `pilkku-uusi-tekijä`: "Pipsa juoksee, Ville kävelee." → kaksi lausetta, kun pilkun jälkeen alkaa uusi tekijä ja verbi.
+      const commaParts = s.split(/,\s+/);
+      if (commaParts.length > 1 && this.hasVerb(commaParts[0]) && commaParts.slice(1).every(part => !!this.nominativeActor(rawWords(part)[0] ?? '', language) && this.hasVerb(part))) {
+        out.push(...this.clauses(commaParts.join('. '), language, defaultActor)); continue;
+      }
       const found = this.clause(s, language, defaultActor);
       const extra = this.modifiers(s, language, found);
-      // "Kille kävelee ja vilkuttaa" → kaksi liikettä samalle hahmolle.
-      if (found.type === 'motion' || found.type === 'gaze' || found.type === 'expression') {
+      // "Kille kävelee ja vilkuttaa" → kaksi liikettä samalle hahmolle (vain kun ensimmäisessä osassa on verbi).
+      if (found.type === 'motion' || found.type === 'gaze' || found.type === 'expression' || (found.type === 'unknown' && !found.reason)) {
         const joined = s.split(/\s+(?:ja|and)\s+/i);
-        if (joined.length > 1) { const first = this.clause(joined[0], language, defaultActor); const actor = 'actor' in first ? first.actor : defaultActor; out.push(first, ...joined.slice(1).map(j => this.clause(j, language, actor))); continue; }
+        if (joined.length > 1 && this.hasVerb(joined[0])) { const first = this.clause(joined[0], language, defaultActor); const actor = 'actor' in first ? first.actor : defaultActor; out.push(first, ...joined.slice(1).map(j => this.clause(j, language, actor))); continue; }
       }
+      // Sääntö `yksi-liike-per-lause`: kaksi eri liikeverbiä samassa lauseessa ilman erotinta → ei arvata kumpi.
+      if (found.type === 'motion' && this.motionVerbCount(s, language) > 1) { out.push({ type: 'unknown', text: s, reason: UNKNOWN_REASONS.multipleActions.reason }); continue; }
       out.push(found, ...extra);
     }
     return out;
+  }
+
+  private hasVerb(s: string): boolean { return words(s).some(w => anyVerbFi.test(w) || anyVerbEn.test(w)); }
+
+  private motionVerbCount(s: string, language: ScriptLanguage): number {
+    const isFi = language !== 'en', isEn = language !== 'fi';
+    const ws = this.positive(words(s));
+    return motionRules.filter(r => ws.some(w => (isFi && r.fi?.test(w)) || (isEn && r.en?.test(w)))).length;
   }
 
   private compoundSubject(s: string, language: ScriptLanguage): { actors: string[]; rest: string } | undefined {
@@ -551,7 +757,7 @@ export class ScriptRecognizer {
     const verbAt = ws.findIndex(w => anyVerbFi.test(lower(w).replace(/[.,!?]/g, '')) || anyVerbEn.test(lower(w).replace(/[.,!?]/g, '')));
     if (verbAt < 3) return undefined;
     const head = ws.slice(0, verbAt).map(w => w.replace(/,$/, '')).filter(w => !/^(ja|and|sekä|&)$/i.test(w));
-    const actors = head.map(w => this.resolveActor(w, language));
+    const actors = head.map(w => this.nominativeActor(w, language));
     if (actors.length < 2 || actors.some(a => !a || a === ALL_ACTORS)) return undefined;
     return { actors: [...new Set(actors as string[])], rest: ws.slice(verbAt).join(' ') };
   }
@@ -567,18 +773,51 @@ export class ScriptRecognizer {
     return [];
   }
 
-  /** Poistaa kiellon alaiset sanat: "ei vihaiselta", "not angry", "mutta ei". */
+  /**
+   * Sääntö `kielto`: kieltosana ("ei", "not", "ilman") kumoaa sitä seuraavat sanat lauseen loppuun asti tai
+   * vastakohtasanaan ("vaan", "mutta", "but", "instead"): "ei enää ikinä juokse", "ei ole vihainen vaan huolestunut".
+   */
   private positive(ws: string[]): string[] {
-    return ws.filter((_, i) => !ws.slice(Math.max(0, i - 2), i).some(w => /^(ei|eikä|en|et|emme|ette|eivät|not|never|no|without|ilman|isn't|doesn't|don't)$/.test(w)));
+    const out: string[] = [];
+    let negated = false;
+    for (const w of ws) {
+      if (contrastWord.test(w)) negated = false;
+      if (!negated) out.push(w);
+      if (negationWord.test(w)) negated = true;
+    }
+    return out;
   }
 
+  /** Lause → tulkinta. Hahmoon kohdistuva tulkinta vaatii tekijän (`tekijä`-sääntö); muuten lause jää tunnistamatta syyn kanssa. */
   private clause(s: string, language: ScriptLanguage, defaultActor = ''): Clause {
-    const ws = words(s), low = lower(s);
+    const raw = rawWords(s), ws = raw.map(lower);
+    const verbAt = ws.findIndex(w => anyVerbFi.test(w) || anyVerbEn.test(w));
+    const subject = this.subjectOf(raw, ws, verbAt, language);
+    let agent: string | undefined;
+    if (subject.kind === 'named') agent = subject.actor;
+    else if (subject.kind === 'implicit') {
+      agent = defaultActor || this.lastActor || undefined;
+      // "Täysin ilmeetön Handu": ilmesanan jälkeen tuleva nimi perusmuodossa on tekijä.
+      if (verbAt >= 0 && expressionRules.some(r => r.fi?.test(ws[verbAt]) || r.en?.test(ws[verbAt]))) {
+        const after = raw.slice(verbAt + 1).map(r => capitalized(r) && this.isExactName(r) ? this.resolveActor(r, language) : undefined).find(Boolean);
+        if (after) agent = after;
+      }
+    }
+    if (subject.kind === 'named' && subject.actor !== ALL_ACTORS) this.lastActor = subject.actor;
+    if (subject.kind === 'blocked') this.lastActor = '';
+    const savedGaze = this.lastGaze;
+    const c = this.clauseFor(s, raw, ws, language, agent ?? '');
+    if (!('actor' in c) || c.type === 'hold' || c.type === 'constraint') return c;
+    if (agent) return c;
+    this.lastGaze = savedGaze;
+    return { type: 'unknown', text: s, reason: subject.kind === 'blocked' ? subject.reason : UNKNOWN_REASONS.noAgent.reason };
+  }
+
+  private clauseFor(s: string, raw: string[], ws: string[], language: ScriptLanguage, actor: string): Clause {
+    const low = lower(s);
     const verbAt = ws.findIndex(w => anyVerbFi.test(w) || anyVerbEn.test(w));
     const found = this.actorIn(verbAt >= 0 ? ws.slice(0, verbAt) : ws, language);
-    const subject = found.actor ? found : verbAt >= 0 ? { index: -1 } as { actor?: string; index: number } : found;
-    const actor = subject.actor ?? (defaultActor || this.lastActor);
-    if (subject.actor && subject.actor !== ALL_ACTORS && subject.index <= 1) this.lastActor = subject.actor;
+    const scoped = found.actor && found.actor !== ALL_ACTORS ? found.actor : undefined;
     const duration = parseDuration(s);
     const isFi = language !== 'en', isEn = language !== 'fi';
     const pos = this.positive(ws);
@@ -587,34 +826,34 @@ export class ScriptRecognizer {
     // Rajoitukset ja kiellot ensin ("Ei isoa elettä", "Do not move").
     if (RX4.test(s)) {
       const value = /kameraliik|kamera\p{L}*|camera/iu.test(s) && /liik|liiku|move|movement|motion|pan|zoom/i.test(s) ? 'camera-still' : /ei dialogia|no dialogue|no lines/i.test(s) ? 'no-dialogue' : RX5.test(s) ? 'still' : /dissolve|ristikuva|häivytys/i.test(s) ? 'hard-cuts' : /ylimäär|extra props|taustakama/i.test(s) ? 'no-extra-props' : /ele|gesture|animaatio|animation/i.test(s) ? 'small-gestures' : 'other';
-      return { type: 'constraint', actor: subject.actor ?? 'scene', value, text: s };
+      return { type: 'constraint', actor: found.actor ?? 'scene', value, text: s };
     }
     if (/^(huom|note|animaatio|animation|vinkki|tip)\s*:/i.test(s)) return { type: 'note', text: s };
     // Kielto lauseen keskellä: "Mira ei liiku", "Niko pysyy paikallaan", "Mira does not move".
-    if (/(?<![\p{L}])(ei liiku|ei liikahda|ei liikuta|pysyy paikallaan|pysyy liikkumatta|jähmettyy|does not move|doesn't move|stays still|remains still|freezes|froze)(?![\p{L}])/iu.test(s)) return { type: 'constraint', actor: subject.actor ?? (actor || 'scene'), value: 'still', text: s };
+    if (/(?<![\p{L}])(ei liiku|ei liikahda|ei liikuta|pysyy paikallaan|pysyy liikkumatta|jähmettyy|does not move|doesn't move|stays still|remains still|freezes|froze)(?![\p{L}])/iu.test(s)) return { type: 'constraint', actor: found.actor ?? (actor || this.lastActor || 'scene'), value: 'still', text: s };
 
     // Leikkauksen rytmi ja siirtymät ("Leikkausrytmi nopeutuu", "Hard cut lähes kaikkialla", "hidastaa hetkeksi").
-    if (RX6.test(s) || (RX7.test(s) && !subject.actor)) {
+    if (RX6.test(s) || (RX7.test(s) && !found.actor)) {
       const value = /nopeutu|speeds? up|faster/i.test(s) ? 'faster' : /hidast|slows? down|slower/i.test(s) ? 'slower' : /hard cut|leikkaus.*kaikkialla|ei dissolve/i.test(s) ? 'hard-cuts' : 'rhythm';
       return { type: 'editing', value, text: s };
     }
-    // Ympäristö ja otsikkokortti.
+    // Ympäristö ja otsikkokortti (loppuun kirjoitettu kesto ei kuulu nimeen).
     const env = s.match(/^(?:Tausta|Background|Miljöö|Setting)\s*:\s*(.+)$/i);
-    if (env) return { type: 'environment', value: env[1].replace(/\s+\d+(?:[.,]\d+)?\s*s$/, '').trim(), text: s };
+    if (env) return { type: 'environment', value: env[1].replace(trailingDuration, '').trim(), text: s };
     const title = s.match(/^(?:Otsikkokortti|Title card|TITLE|SUPER|Teksti ruudulla|On-screen text|Lopetus|Ending)\s*:\s*(.+)$/i);
-    if (title) return { type: 'title-card', value: title[1].replace(/\s+\d+(?:[.,]\d+)?\s*s$/, '').trim(), seconds: duration?.seconds, text: s };
+    if (title) return { type: 'title-card', value: title[1].replace(trailingDuration, '').trim(), seconds: duration?.seconds, text: s };
 
     // Tauot ("Pieni tauko.", "Beat.", "Pidä 0,5 s Handun ilmeessä", "Tähän ei dialogia noin 0,5 sekuntiin").
     if (RX8.test(s) || (duration && RX9.test(s))) {
       const seconds = duration?.seconds ?? (RX10.test(s) ? 0.5 : RX11.test(s) ? 1.5 : undefined);
-      const value = /ei dialogia|no dialogue|hiljaisuus|silence/i.test(s) ? 'silence' : /ilmee|ilmeessä|stare|tuijot/i.test(s) ? 'dead_stare' : 'pause';
-      return { type: 'hold', actor: subject.actor ?? (actor || 'scene'), value, seconds, text: s };
+      const value = /ei dialogia|no dialogue|hiljaisuu|silence/iu.test(s) ? 'silence' : /ilmee|ilmeessä|stare|tuijot/i.test(s) ? 'dead_stare' : 'pause';
+      return { type: 'hold', actor: scoped ?? (actor || this.lastActor || 'scene'), value, seconds, text: s };
     }
 
     // Puhelin (ennen katsetta: "katsoo puhelinta" on puhelinkatse).
     const phone = has(phoneNoun.fi, phoneNoun.en);
     if (phone) {
-      if (has(gazeVerb.fi, gazeVerb.en)) { this.lastGaze = 'phone'; return { type: 'gaze', actor, target: 'phone', text: s }; }
+      if (has(gazeVerb.fi, gazeVerb.en)) { if (actor) this.lastGaze = 'phone'; return { type: 'gaze', actor, target: 'phone', text: s }; }
       const value: PhoneAction | 'phone-on' | 'phone-off' | undefined =
         /siirtää.*kä|vaihtaa.*käteen|transfer|switch(?:es)? hands?/i.test(s) ? 'phone_transfer'
         : RX12.test(s) ? 'phone_ear'
@@ -629,12 +868,13 @@ export class ScriptRecognizer {
       if (value) return { type: 'phone', actor, value, text: s };
     }
 
-    // Katse.
+    // Katse. Kohde on hahmo (pronomini tai isolla kirjoitettu nimi missä tahansa sijassa), kamera tai puhelin.
+    const gazeAt = ws.findIndex(w => gazeVerb.fi.test(w) || gazeVerb.en.test(w));
     if (has(gazeVerb.fi, gazeVerb.en)) {
-      const rest = ws.slice(Math.max(0, ws.findIndex(w => gazeVerb.fi.test(w) || gazeVerb.en.test(w))) + 1);
-      const other = rest.map(w => this.resolveActor(w, language)).find(a => a && a !== actor);
-      if (other) { this.lastGaze = other; return { type: 'gaze', actor, target: other, ...(duration ? { seconds: duration.seconds } : {}), text: s }; }
-      if (rest.some(w => cameraNoun.fi.test(w) || cameraNoun.en.test(w))) return { type: 'gaze', actor, target: 'camera', ...(duration ? { seconds: duration.seconds } : {}), text: s };
+      const rest = raw.slice(Math.max(0, gazeAt) + 1);
+      const other = rest.map(w => this.referencedActor(w, language)).find(a => a && a !== actor);
+      if (other) { if (actor) this.lastGaze = other; return { type: 'gaze', actor, target: other, ...(duration ? { seconds: duration.seconds } : {}), text: s }; }
+      if (rest.some(w => cameraNoun.fi.test(lower(w)) || cameraNoun.en.test(lower(w)))) return { type: 'gaze', actor, target: 'camera', ...(duration ? { seconds: duration.seconds } : {}), text: s };
       if (RX15.test(s) && this.lastGaze) return { type: 'gaze', actor, target: this.lastGaze, text: s };
       // "Kille katsoo puhelintaan hieman huolestuneena" → katse + ilme käsitellään omana lauseenaan alempana.
     }
@@ -666,8 +906,8 @@ export class ScriptRecognizer {
     for (const rule of unsupportedExpressionRules) if (has(rule.fi, rule.en)) return { type: 'unsupported', actor, label: rule.label, text: s, reason: `Ilme “${rule.label}” tunnistettiin, mutta sitä ei ole hahmopaketeissa.` };
 
     if (has(gazeVerb.fi, gazeVerb.en)) {
-      const rest = ws.slice(ws.findIndex(w => gazeVerb.fi.test(w) || gazeVerb.en.test(w)) + 1);
-      const other = rest.map(w => this.resolveActor(w, language)).find(Boolean);
+      const rest = raw.slice(gazeAt + 1);
+      const other = rest.map(w => this.referencedActor(w, language)).find(Boolean);
       if (other && other !== actor) return { type: 'gaze', actor, target: other, text: s };
     }
     return { type: 'unknown', text: s };
@@ -683,7 +923,7 @@ const nonActorStarters = new Set(['sitten', 'samalla', 'nyt', 'lopuksi', 'yhtäk
  * Puhumattomat hahmot ohjeriveiltä: rivin ensimmäinen sana on isolla alkukirjaimella kirjoitettu nimi,
  * jota seuraa suoraan tunnettu toimintaverbi ("Niko kävelee", "Mom waves"). Suljettu sääntö, ei arvausta.
  */
-export function discoverActors(lines: string[]): string[] {
+export function discoverActors(lines: string[], known: string[] = []): string[] {
   const found: string[] = [];
   const lowerWords = new Set(lines.flatMap(l => l.match(/(?<![\p{L}])[\p{Ll}][\p{L}'-]*/gu) ?? []));
   for (const raw of lines) {
@@ -698,7 +938,9 @@ export function discoverActors(lines: string[]): string[] {
       if (!found.includes(n)) found.push(n);
     }
   }
-  return found;
+  // Tunnetun tai toisen löydetyn nimen taivutusmuoto ("Pipsan katse", "Villelle tulee") ei ole uusi hahmo.
+  const names = [...new Set([...known.map(normalizeName), ...found])];
+  return found.filter(n => !names.some(other => other !== n && new ScriptRecognizer([other]).resolveActor(lower(n), 'fi') === other));
 }
 
 /** Koko käsikirjoitus: esiskannaus (puhujat, hahmot) + rivitilakone. */
@@ -707,9 +949,9 @@ export function recognizeScript(text: string, characters: string[] = [], options
   const r = new ScriptRecognizer(characters);
   const following = nextNonEmpty(lines);
   r.prescan(lines, following);
-  if (options.discoverActors) for (const n of discoverActors(lines)) r.addCharacter(n);
+  if (options.discoverActors) for (const n of discoverActors(lines, r.knownCharacters)) r.addCharacter(n);
   const out: RecognizedLine[] = [];
-  for (let i = 0; i < lines.length; i++) out.push(r.recognize(lines[i], i + 1, following[i]));
+  for (let i = 0; i < lines.length; i++) out.push(r.recognize(lines[i], i + 1, following[i], lines[i + 1] ?? ''));
   const content = out.filter(l => l.kind !== 'empty');
   const unknown = content.filter(l => l.kind === 'unknown').length;
   return {

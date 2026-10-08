@@ -1,0 +1,4 @@
+tapauksia 34 rivejä 215 {"oikein":214,"väärin":0,"tunnistamaton":1} oikein-tunnistettu 184 oikein-jätetty 30
+TUNNISTAMATON  20  3 "pipsa katsoo villeä." 
+     odotus: direction gaze@PIPSA>VILLE 
+     saatiin: unknown
