@@ -8,7 +8,7 @@ import {isModelWeightName} from './weights.ts';
 
 type F=typeof fetch;
 export type ComfyConfig={descriptor:BackendDescriptor;baseUrl:string;/** Explicit, operator-declared cost of this exact execution path; null = unknown (always blocked). */declaredCostEur:number|null;models:ModelRegistry;workflows:WorkflowRegistry;fetch?:F;headers?:Record<string,string>;pollMs?:number;timeoutMs?:number;maxOutputBytes?:number};
-const OUT_EXT=new Map([['png','image/png'],['jpg','image/jpeg'],['jpeg','image/jpeg'],['webp','image/webp'],['gif','image/gif'],['mp4','video/mp4'],['webm','video/webm']]);
+export const OUT_EXT=new Map([['png','image/png'],['jpg','image/jpeg'],['jpeg','image/jpeg'],['webp','image/webp'],['gif','image/gif'],['mp4','video/mp4'],['webm','video/webm']]);
 const LOADER_FIELDS:Record<string,string>={CheckpointLoaderSimple:'ckpt_name',UNETLoader:'unet_name',CLIPLoader:'clip_name',VAELoader:'vae_name'};
 /**
  * Renders through a ComfyUI HTTP API. ComfyUI is only a backend: the studio never exposes graphs publicly.
@@ -62,7 +62,9 @@ export class ComfyUIBackend implements RenderBackend{
    }
    const max=this.cfg.maxOutputBytes??512*1024*1024,artifacts:RenderArtifact[]=[];let total=0;
    for(const node of Object.values(outputs))for(const list of Object.values(node))if(Array.isArray(list))for(const o of list){
-    if(!o?.filename||isModelWeightName(o.filename))throw new Blocked('output-weights','Runtime returned a disallowed file.');
+    // SaveVideo's UI output also carries flags such as animated:[true]; only file entries (objects) are outputs.
+    if(typeof o!=='object'||o===null)continue;
+    if(!o.filename||isModelWeightName(o.filename))throw new Blocked('output-weights','Runtime returned a disallowed file.');
     const ext=o.filename.split('.').pop()?.toLowerCase()??'',mime=OUT_EXT.get(ext);if(!mime)throw new Blocked('output-type',`Unsupported output type ".${ext}".`);
     const r=await this.req('/view?'+new URLSearchParams({filename:o.filename,subfolder:o.subfolder??'',type:o.type??'output'}),{signal:ctl.signal});
     const bytes=new Uint8Array(await r.arrayBuffer());total+=bytes.length;if(total>max)throw new Blocked('output-size','Output exceeds the size limit.');

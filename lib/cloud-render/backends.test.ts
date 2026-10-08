@@ -49,6 +49,12 @@ test('ComfyUI backend: submit, poll, fetch outputs; the graph carries the exact 
  const r=await b.render(job,await auth(b));
  assert.equal(r.artifacts[0].mime,'image/png');assert.equal(submitted.prompt.ks.inputs.seed,3);assert.equal(submitted.prompt.m.inputs.ckpt_name,'sd.safetensors');assert.equal(submitted.prompt.pos.inputs.text,'a cup');
 });
+test('ComfyUI backend: SaveVideo output flags (animated:[true]) are not treated as files',async()=>{
+ const {b}=comfy((url)=>url.pathname==='/prompt'?json({prompt_id:'p'}):url.pathname.startsWith('/history')?json({p:{outputs:{out:{images:[{filename:'v_00001_.mp4',subfolder:'hahmostudio',type:'output'}],animated:[true]}},status:{status_str:'success'}}}):new Response(new Uint8Array([0,0,0,8])));
+ const r=await b.render(job,await auth(b));assert.equal(r.artifacts.length,1);assert.equal(r.artifacts[0].mime,'video/mp4');
+ const bad=comfy((url)=>url.pathname==='/prompt'?json({prompt_id:'p'}):url.pathname.startsWith('/history')?json({p:{outputs:{o:{images:[{subfolder:'x'}]}}}}):new Response(PNG_1X1));
+ await assert.rejects(bad.b.render(job,await auth(bad.b)),/disallowed/);
+});
 test('ComfyUI backend refuses weight-like or unknown outputs and oversize results',async()=>{
  for(const [file,re] of [['x.safetensors',/disallowed/],['x.exe',/Unsupported/]] as const){
   const {b}=comfy((url)=>url.pathname==='/prompt'?json({prompt_id:'p'}):url.pathname.startsWith('/history')?json({p:{outputs:{o:{images:[{filename:file}]}}}}):new Response(PNG_1X1));

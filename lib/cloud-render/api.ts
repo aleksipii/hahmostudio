@@ -14,10 +14,11 @@ import {smokeCheck} from './smoke.ts';
 import type {CharacterReferenceSystem} from './character-refs.ts';
 import type {StorageBackend} from './storage.ts';
 import {sha256} from '../studio/hash.ts';
+import type {NotebookBackend} from './notebook-backend.ts';
 
 export type ApiRequest={method:string;path:string;query?:URLSearchParams;body?:unknown;user:string};
 export type ApiResponse={status:number;body:unknown};
-export type ApiDeps={service:RenderService;projects:ProjectStore;models:ModelRegistry;workflows:WorkflowRegistry;backends:BackendRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;storageId:string;ledger:LiveVerificationLedger;refs:CharacterReferenceSystem;storage:StorageBackend};
+export type ApiDeps={service:RenderService;projects:ProjectStore;models:ModelRegistry;workflows:WorkflowRegistry;backends:BackendRegistry;policy:ComputePolicy;modelMode:ModelMode;director?:AIDirector;storageId:string;ledger:LiveVerificationLedger;refs:CharacterReferenceSystem;storage:StorageBackend;notebook?:NotebookBackend};
 const ok=(body:unknown,status=200):ApiResponse=>({status,body});
 const err=(status:number,code:string,message:string):ApiResponse=>({status,body:{error:message,code}});
 const seg=(p:string)=>p.replace(/^\/api\//,'').split('/').map(decodeURIComponent);
@@ -91,6 +92,7 @@ export function createCloudRenderApi(d:ApiDeps){
      const id=(r.body as {backendId?:string}|undefined)?.backendId??d.backends.list().find(b=>b.descriptor.enabled)?.descriptor.id,b=id?d.backends.get(id):undefined;if(!b)return err(404,'backend-unknown','Unknown backend.');
      const out=await smokeCheck(b,d.models,d.workflows,d.policy,d.modelMode);
      if(!out.authorized)return ok({authorized:false,reasons:out.reasons,rows:[],note:'Blocked by the cost gate/firewall. No provider was contacted.'});
+     if(b.descriptor.provider==='notebook')return ok({authorized:true,rows:[],recorded:0,note:'Notebook runs are checked inside the notebook session, not from this server.'});
      const recorded=await d.ledger.recordSmoke(b.descriptor.id,b.descriptor.provider,out.rows);
      return ok({authorized:true,rows:out.rows,recorded,note:'Render-free check. A workflow becomes liveVerified only after a completed, uploaded, audited render.'});
     }
@@ -101,6 +103,8 @@ export function createCloudRenderApi(d:ApiDeps){
     if(!s[1]&&m==='POST'){const q=parseRenderRequest(r.body,r.user);const {jobId,done}=d.service.start(q);done.catch(()=>{});return ok({jobId,record:d.service.get(jobId)},202);}
     if(!s[1]&&m==='GET')return ok({jobs:d.service.list()});
     if(s[1]&&!s[2]&&m==='GET'){const x=d.service.get(s[1]);return x?ok(x):err(404,'job-unknown','Unknown job.');}
+    if(s[1]&&s[2]==='notebook'&&m==='GET'){const nb=d.notebook?.notebookFor(s[1]);return nb?ok(nb):err(404,'notebook-unknown','This job has no notebook waiting for a result.');}
+    if(s[1]&&s[2]==='import'&&m==='POST'){if(!d.notebook)return err(404,'notebook-unknown','Notebook runs are not enabled on this server.');return ok(await d.notebook.importResult(s[1],r.body));}
     if(s[1]&&s[2]==='cancel'&&m==='POST'){return d.service.get(s[1])?ok({cancelled:await d.service.cancel(s[1])}):err(404,'job-unknown','Unknown job.');}
    }
    return err(404,'not-found','Not found.');

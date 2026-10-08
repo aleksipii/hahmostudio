@@ -2,6 +2,7 @@ import {readFileSync,readdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {BackendRegistry,DisabledBackend} from './backends.ts';
 import {ComfyUIBackend} from './comfyui-backend.ts';
+import {NotebookBackend} from './notebook-backend.ts';
 import {loadComputePolicy} from './compute.ts';
 import {ModelRegistry,ModelRouter} from './models.ts';
 import {WorkflowRegistry} from './workflows.ts';
@@ -27,10 +28,19 @@ export function createCloudRender(env:Env,dataDir:string,opts:{director?:AIDirec
  const hasDrive=!!(env.GOOGLE_OAUTH_CLIENT_ID&&env.GOOGLE_OAUTH_CLIENT_SECRET&&env.GOOGLE_OAUTH_REFRESH_TOKEN);
  const storage:StorageBackend=hasDrive||env.HAHMOSTUDIO_STORAGE!=='local-dev'?new GoogleDriveStorage({getAccessToken:driveTokenFromEnv(env,opts.fetch)}):new LocalDevelopmentStorage(resolve(dataDir,'cloud-render-dev'));
  const backends=new BackendRegistry(),url=env.HAHMOSTUDIO_COLAB_COMFYUI_URL,classifiedFree=env.HAHMOSTUDIO_COLAB_CLASSIFIED_FREE==='yes';
+ const tmo=Number(env.HAHMOSTUDIO_COMFYUI_TIMEOUT_MS??600000);
+ if(env.HAHMOSTUDIO_COMFYUI_TIMEOUT_MS!==undefined&&!(Number.isInteger(tmo)&&tmo>=60000&&tmo<=3600000))throw new Error('HAHMOSTUDIO_COMFYUI_TIMEOUT_MS must be an integer between 60000 and 3600000.');
  // The free classification is an explicit operator statement about this exact execution path, never inferred from a free tier.
  const colabUsable=!!url&&/^https:\/\//.test(url)&&classifiedFree;
- backends.register(colabUsable?new ComfyUIBackend({descriptor:{id:'colab-free',class:'free',provider:'comfyui',billingProvider:'google-colab-free',enabled:true},baseUrl:url as string,declaredCostEur:0,models,workflows,fetch:opts.fetch,headers:env.HAHMOSTUDIO_COMFYUI_BEARER?{Authorization:'Bearer '+env.HAHMOSTUDIO_COMFYUI_BEARER}:undefined})
+ backends.register(colabUsable?new ComfyUIBackend({descriptor:{id:'colab-free',class:'free',provider:'comfyui',billingProvider:'google-colab-free',enabled:true},baseUrl:url as string,declaredCostEur:0,models,workflows,fetch:opts.fetch,timeoutMs:tmo,headers:env.HAHMOSTUDIO_COMFYUI_BEARER?{Authorization:'Bearer '+env.HAHMOSTUDIO_COMFYUI_BEARER}:undefined})
   :new DisabledBackend({id:'colab-free',class:'free',provider:'comfyui',billingProvider:'google-colab-free',enabled:false}));
+ // Manual notebook runs (e.g. Kaggle): the server never contacts the runtime. Free only by the operator's explicit statement.
+ const nbt=Number(env.HAHMOSTUDIO_NOTEBOOK_TIMEOUT_MS??24*3600*1000);
+ if(env.HAHMOSTUDIO_NOTEBOOK_TIMEOUT_MS!==undefined&&!(Number.isInteger(nbt)&&nbt>=600000&&nbt<=48*3600*1000))throw new Error('HAHMOSTUDIO_NOTEBOOK_TIMEOUT_MS must be an integer between 600000 and 172800000.');
+ const nbDesc={id:'kaggle-notebook',class:'free' as const,provider:'notebook',billingProvider:'kaggle-free',enabled:true};
+ const runtimeSources=()=>Object.fromEntries(['provision_models.py','hahmo_notebook.py'].map(f=>[f,readFileSync(new URL('../../cloud/runtime/'+f,import.meta.url),'utf8')]));
+ const notebook=env.HAHMOSTUDIO_NOTEBOOK_CLASSIFIED_FREE==='yes'?new NotebookBackend({descriptor:nbDesc,models,workflows,mode:modelMode,policy,runtimeSources,timeoutMs:nbt}):undefined;
+ backends.register(notebook??new DisabledBackend({...nbDesc,enabled:false}));
  backends.register(new DisabledBackend({id:'runpod',class:'paid',provider:'runpod',billingProvider:'runpod',enabled:false}));
  backends.register(new DisabledBackend({id:'modal',class:'paid',provider:'modal',billingProvider:'modal',enabled:false}));
  const projects=new ProjectStore(storage),refs=new CharacterReferenceSystem(storage);
@@ -43,6 +53,6 @@ export function createCloudRender(env:Env,dataDir:string,opts:{director?:AIDirec
  // Opt-in. Output strictness stays 'reject': a drift flag blocks the output; there is no setting that downgrades flags.
  const inspector=env.HAHMOSTUDIO_OUTPUT_INSPECTOR==='palette'?new PaletteInspector(storage,thr):undefined;
  const service=new RenderService({inspector,projects,storage,backends,router:new ModelRouter(models),workflows,policy,modelMode,director:opts.director,refs,requireSceneLock:true,requireAuthorizationFingerprint:true,ledger});
- const handle=createCloudRenderApi({service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id,ledger,refs,storage});
- return{handle,service,projects,policy,modelMode,storage,backends,models,refs,workflows,ledger};
+ const handle=createCloudRenderApi({notebook,service,projects,models,workflows,backends,policy,modelMode,director:opts.director,storageId:storage.id,ledger,refs,storage});
+ return{handle,notebook,service,projects,policy,modelMode,storage,backends,models,refs,workflows,ledger};
 }

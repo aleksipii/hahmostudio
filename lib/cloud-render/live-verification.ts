@@ -10,7 +10,9 @@ import type {SmokeRow} from './smoke.ts';
 export type ProvisionReceipt={schema:1;repo:string;revision:string;files:{path:string;sha256:string}[]};
 export type SmokeEvidence={backendId:string;workflowId:string;modelId:string;fingerprint:string;at:string};
 export type Promotion={workflowId:string;modelId:string;backendId:string;fingerprint:string;jobId:string;at:string};
-export type PromotionResult={promoted:boolean;missing:string[]};
+export type PromotionResult={promoted:boolean;missing:string[];source?:'runtime-reported'};
+/** Notebook runs: the server never reaches the runtime, so its own smoke check cannot run. Evidence comes from the imported result instead. */
+export const NOTEBOOK_PROVIDER='notebook';
 export const SMOKE_MAX_AGE_MS=24*3600*1000;
 /** Identity of exactly what was verified: revision + every pinned file hash. A changed pin invalidates old evidence. */
 export async function modelFingerprint(m:ModelDefinition){return sha256(new TextEncoder().encode(canonicalJson({id:m.id,rev:m.revision,files:(m.files??[]).map(f=>[f.path,f.sha256]).sort()})));}
@@ -28,7 +30,8 @@ export class LiveVerificationLedger{
  private models:ModelRegistry;private policy:ComputePolicy;private mode:ModelMode;private storage:StorageBackend;private receipts:()=>ProvisionReceipt[];private now:()=>Date;
  constructor(o:{models:ModelRegistry;policy:ComputePolicy;mode:ModelMode;storage:StorageBackend;receipts:()=>ProvisionReceipt[];now?:()=>Date}){this.models=o.models;this.policy=o.policy;this.mode=o.mode;this.storage=o.storage;this.receipts=o.receipts;this.now=o.now??(()=>new Date());}
  async recordSmoke(backendId:string,provider:string,rows:SmokeRow[]){
-  if(provider==='mock')return 0;let n=0;
+  // A notebook backend's validate() never reaches the runtime, so a server-side smoke check proves nothing about it.
+  if(provider==='mock'||provider===NOTEBOOK_PROVIDER)return 0;let n=0;
   for(const r of rows){if(!r.ok)continue;const m=this.models.get(r.modelId);if(!m)continue;
    this.smoke=this.smoke.filter(x=>!(x.backendId===backendId&&x.workflowId===r.workflowId&&x.modelId===r.modelId));
    this.smoke.push({backendId,workflowId:r.workflowId,modelId:r.modelId,fingerprint:await modelFingerprint(m),at:this.now().toISOString()});n++;}
@@ -40,9 +43,12 @@ export class LiveVerificationLedger{
   if(!m)return{promoted:false,missing:[...missing,'model-unknown']};
   const fp=await modelFingerprint(m),at=Date.parse(job.createdAt);
   const s=this.smoke.find(x=>x.backendId===job.backendId&&x.workflowId===job.workflowId&&x.modelId===job.modelId&&x.fingerprint===fp);
-  if(!s||Date.parse(s.at)>at||at-Date.parse(s.at)>SMOKE_MAX_AGE_MS)missing.push('smoke-not-passed');
+  // Notebook runs: the check and receipt were made in the same runtime session, bound to this job's package (hash verified on import).
+  const ev=provider===NOTEBOOK_PROVIDER?rec.runtimeEvidence:undefined;
+  const smokeOk=ev?ev.rows.some(r=>r.ok&&r.workflowId===job.workflowId&&r.modelId===job.modelId):!!s&&Date.parse(s.at)<=at&&at-Date.parse(s.at)<=SMOKE_MAX_AGE_MS;
+  if(!smokeOk)missing.push('smoke-not-passed');
   if(!m.revision||!/^[0-9a-f]{40}$/.test(m.revision))missing.push('revision-not-pinned');
-  if(!this.receipts().some(r=>receiptMatches(m,r)))missing.push('checksums-not-verified');
+  if(!this.receipts().some(r=>receiptMatches(m,r))&&!(ev&&receiptMatches(m,ev.receipt)))missing.push('checksums-not-verified');
   if(this.mode!=='PRODUCTION_SAFE'||!assessModel(m,'PRODUCTION_SAFE',this.policy).ok)missing.push('license-not-validated');
   if(rec.state!=='COMPLETED'||rec.model?.revision!==m.revision)missing.push('render-not-completed');
   if(!rec.outputs.length||!rec.outputValidation?.ok)missing.push('output-not-uploaded');
@@ -51,8 +57,8 @@ export class LiveVerificationLedger{
    if(!names.includes(`metadata/${job.id}.record.json`)||!names.includes(`logs/${job.id}.audit.json`))missing.push('audit-not-written');}
   catch{missing.push('audit-not-written');}
   const uniq=[...new Set(missing)];
-  if(!uniq.length&&s){this.promotions=this.promotions.filter(p=>!(p.workflowId===job.workflowId&&p.modelId===job.modelId&&p.backendId===job.backendId));this.promotions.push({workflowId:job.workflowId,modelId:job.modelId,backendId:job.backendId as string,fingerprint:fp,jobId:job.id,at:this.now().toISOString()});}
-  return{promoted:!uniq.length,missing:uniq};
+  if(!uniq.length&&smokeOk){this.promotions=this.promotions.filter(p=>!(p.workflowId===job.workflowId&&p.modelId===job.modelId&&p.backendId===job.backendId));this.promotions.push({workflowId:job.workflowId,modelId:job.modelId,backendId:job.backendId as string,fingerprint:fp,jobId:job.id,at:this.now().toISOString()});}
+  return ev?{promoted:!uniq.length,missing:uniq,source:'runtime-reported'}:{promoted:!uniq.length,missing:uniq};
  }
  /** True only while the promoted evidence still matches the current pin. */
  async isVerified(workflowId:string,modelId?:string){

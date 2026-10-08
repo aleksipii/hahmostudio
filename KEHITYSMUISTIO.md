@@ -516,3 +516,18 @@ Kokoro synnyttää vain englanninkielisten repliikkien äänen (`synthPossibilit
 **Ei todennettu:** korjauksia ei ajettu selaimessa eikä Electronissa (vain koodin testit). `npm test` 1214 (1213 läpi, 1 ohitettu), typecheck, `build:private` ja `desktop:build` OK.
 
 **Edelleen auki (päätös tai laite käyttäjällä):** tyhjän projektin ensimmäisen käsikirjoitus-commitin kumoaminen työpöytäsovelluksessa (2.19); oikea Colab/ComfyUI/Drive-ajo; kamera, mikrofoni, trackpad ja Kokoro oikealla mallilla Macilla.
+
+### 2.23 — Pilvirenderöinnin käyttöönotto-ohje aloittelijalle (2026-10-08)
+
+**Tehty:** `docs/cloud-render/KAYTTOONOTTO-FI.md` kirjoitettu uudelleen askel askeleelta (mitä klikataan, mitä pitäisi näkyä, yleisimmät virheet). Komennot ja ympäristömuuttujat tarkistettu koodia vasten; Wan2.2-tiedostojen polut ja koot (≈18,1 Gt) tarkistettu Hugging Facesta.
+
+**Korjatut viat (löytyivät ohjetta tarkistaessa, testit lisätty):**
+1. ComfyUI:n `SaveVideo` palauttaa UI-tuloksessa myös `animated:[true]`; `ComfyUIBackend` tulkitsi lipun kelvottomaksi tiedostoksi ja olisi hylännyt jokaisen oikean videorenderöinnin. Nyt vain objektit käsitellään tiedostoina.
+2. ComfyUI-aikakatkaisu oli kiinteä 10 min; uusi `HAHMOSTUDIO_COMFYUI_TIMEOUT_MS` (60000–3600000).
+3. Ohjeen Drive-vaihe neuvoi Desktop app -tyyppisen OAuth-asiakkaan, joka ei toimi OAuth Playgroundin kanssa (`redirect_uri_mismatch`); nyt Web application + Playgroundin paluuosoite. Testing-tilan refresh token vanhenee 7 päivässä; dokumentoitu.
+
+**Löydös, päätös käyttäjälle:** Colab-FAQ kieltää ilmaisilla ajoympäristöillä mm. muistikirjan ohittamisen web-käyttöliittymän kautta; ComfyUI + tunneli ilmaisessa Colabissa on todennäköisesti sitä. Maksullinen Colab ei ole ilmainen eikä `HAHMOSTUDIO_COLAB_CLASSIFIED_FREE=yes` silloin päde.
+
+**Kaggle-muistikirja-ajo (käyttäjän pyynnöstä, ilmainen ja ehtojen mukainen reitti):** uusi taustajärjestelmä `kaggle-notebook`: palvelin ei ota yhteyttä ajoympäristöön, vaan tekee renderöinnistä yhden .ipynb-tiedoston (työnkulku, syötteet, mallin manifesti, paketin hash), jonka käyttäjä ajaa Kagglessa (ComfyUI vain 127.0.0.1:ssä, ei tunnelia) ja tuo tulostiedoston takaisin. Tuonti tarkistetaan (työ, paketin hash, kuitti vs. pin, tarkistussummat, tyypit) ennen tavallista putkea. Live-todennus käyttää ajoympäristön omaa tarkistusta ja kuittia (`runtime-reported`). Rajoitus: odottavat työt ovat muistissa, joten palvelimen uudelleenkäynnistys hävittää ne. Python-skripti testattu vale-ComfyUI:ta ja vale-Hugging Facea vasten; testi löysi vian (tyhjä solmumääritys tulkittiin puuttuvaksi), korjattu.
+
+**Edelleen todentamatta:** oikea Colab-, ComfyUI- ja Drive-ajo, oikea Kaggle-ajo (Import Notebook, levytila, aika T4/P100:lla), `SaveVideo`-solmun `format`/`codec`-syötteiden hyväksyntä oikeassa ComfyUI:ssa, muistin riittävyys ja renderöintiaika T4:llä.

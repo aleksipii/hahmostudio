@@ -2,7 +2,7 @@ import {canonicalJson,sha256} from '../studio/hash.ts';
 import type {ComputeAuthorization} from './compute.ts';
 import type {Issue} from './continuity.ts';
 import type {Check} from './ai-validator.ts';
-import type {RenderJob,RenderState} from './types.ts';
+import type {RenderJob,RenderState,RuntimeEvidence} from './types.ts';
 import type {AssetRef} from './storage.ts';
 
 export type AuditEntry={seq:number;at:string;jobId:string;type:string;data:unknown;prev:string;hash:string};
@@ -32,7 +32,9 @@ export type RenderRecord={
  reproducibility?:Record<string,unknown>;
  outputs:AssetRef[];errors:string[];blocked?:{code:string;banner:string};
  providerContacted:boolean;
- liveVerification?:{promoted:boolean;missing:string[]};
+ liveVerification?:{promoted:boolean;missing:string[];source?:'runtime-reported'};
+ /** Notebook runs: what the runtime reported about itself (not observed by the server). */
+ runtimeEvidence?:RuntimeEvidence;
  /** character_animation only: the clip jobs, in timeline order, and the uploaded ordered manifest. */
  children?:{jobId:string;eventId:string;state:RenderState}[];
  sequence?:AssetRef;
