@@ -141,6 +141,7 @@ export class RenderService{
    if(!val.ok)throw new Blocked('backend-unavailable',val.problems.join(' ')||'Backend unavailable.');
    await this.set(rec,'RENDERING');
    const result=await backend.render(job,token,bytes);
+   if(result.runtimeEvidence){rec.runtimeEvidence=result.runtimeEvidence;await this.audit.append(job.id,'runtime-evidence',result.runtimeEvidence);}
    if(ctl.cancelled){await this.set(rec,'CANCELLED');return rec;}
    // 18 output validation
    await this.set(rec,'VALIDATING_OUTPUT');

@@ -15,7 +15,7 @@ test('defaults: zero-cost policy, PRODUCTION_SAFE, no backend usable, policy is 
   for(const m of ['PUT','POST','PATCH','DELETE'])assert.equal((await call(m,'/api/compute/policy',{maxCostEur:5,allowPaidCompute:true})).status,405);
   assert.equal((await call('POST','/api/models/flux1-schnell',{commercialUse:'allowed'})).status,405);
   const b=(await call('GET','/api/backends')).body as any;
-  assert.deepEqual(b.backends.map((x:any)=>[x.id,x.class,x.enabled,x.eligibleUnderPolicy]),[['colab-free','free',false,false],['runpod','paid',false,false],['modal','paid',false,false]]);
+  assert.deepEqual(b.backends.map((x:any)=>[x.id,x.class,x.enabled,x.eligibleUnderPolicy]),[['colab-free','free',false,false],['kaggle-notebook','free',false,false],['runpod','paid',false,false],['modal','paid',false,false]]);
   const m=(await call('GET','/api/models')).body as any;assert.ok(m.models.length>=5&&m.models.every((x:any)=>!x.assessment.ok),'nothing production-safe until pinned');
   assert.equal((await call('GET','/api/models/nope')).status,404);
   const e=(await call('GET','/api/compute/estimate?backendId=runpod')).body as any;assert.equal(e.authorized,false);
@@ -30,6 +30,16 @@ test('colab backend stays disabled unless the operator classifies the path as fr
   const {call,done}=await setup(env);try{assert.equal(((await call('GET','/api/backends')).body as any).backends[0].enabled,false);}finally{await done();}
  }
  const {call,done}=await setup({HAHMOSTUDIO_COLAB_COMFYUI_URL:'https://x.example',HAHMOSTUDIO_COLAB_CLASSIFIED_FREE:'yes'});try{const b=((await call('GET','/api/backends')).body as any).backends[0];assert.deepEqual([b.enabled,b.eligibleUnderPolicy],[true,true]);}finally{await done();}
+});
+test('notebook backend is enabled only by the operator statement; its routes refuse unknown jobs',async()=>{
+ {const {call,done}=await setup();try{assert.equal((await call('POST','/api/render/rj_x/import',{})).status,404);assert.equal((await call('GET','/api/render/rj_x/notebook')).status,404);}finally{await done();}}
+ const {call,done}=await setup({HAHMOSTUDIO_NOTEBOOK_CLASSIFIED_FREE:'yes'});try{
+  const b=((await call('GET','/api/backends')).body as any).backends.find((x:any)=>x.id==='kaggle-notebook');assert.deepEqual([b.enabled,b.eligibleUnderPolicy],[true,true]);
+  assert.equal((await call('GET','/api/render/rj_x/notebook')).status,404);
+  const imp=await call('POST','/api/render/rj_x/import',{schema:1});assert.equal(imp.status,400);assert.match((imp.body as any).error,/not waiting/);
+  const sm=(await call('POST','/api/live-verification/smoke',{backendId:'kaggle-notebook'})).body as any;assert.deepEqual(sm.rows,[]);assert.match(sm.note,/inside the notebook/);
+ }finally{await done();}
+ for(const bad of ['599999','172800001','x'])await assert.rejects(setup({HAHMOSTUDIO_NOTEBOOK_TIMEOUT_MS:bad}),/NOTEBOOK_TIMEOUT_MS/);
 });
 test('project, lock, direct, validate and render endpoints enforce the pipeline',async()=>{
  const {call,done}=await setup();try{

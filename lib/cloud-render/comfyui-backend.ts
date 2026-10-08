@@ -8,7 +8,7 @@ import {isModelWeightName} from './weights.ts';
 
 type F=typeof fetch;
 export type ComfyConfig={descriptor:BackendDescriptor;baseUrl:string;/** Explicit, operator-declared cost of this exact execution path; null = unknown (always blocked). */declaredCostEur:number|null;models:ModelRegistry;workflows:WorkflowRegistry;fetch?:F;headers?:Record<string,string>;pollMs?:number;timeoutMs?:number;maxOutputBytes?:number};
-const OUT_EXT=new Map([['png','image/png'],['jpg','image/jpeg'],['jpeg','image/jpeg'],['webp','image/webp'],['gif','image/gif'],['mp4','video/mp4'],['webm','video/webm']]);
+export const OUT_EXT=new Map([['png','image/png'],['jpg','image/jpeg'],['jpeg','image/jpeg'],['webp','image/webp'],['gif','image/gif'],['mp4','video/mp4'],['webm','video/webm']]);
 const LOADER_FIELDS:Record<string,string>={CheckpointLoaderSimple:'ckpt_name',UNETLoader:'unet_name',CLIPLoader:'clip_name',VAELoader:'vae_name'};
 /**
  * Renders through a ComfyUI HTTP API. ComfyUI is only a backend: the studio never exposes graphs publicly.

@@ -11,7 +11,9 @@ export type CostEstimate={estimatedCostEur:number|null;confidence:CostConfidence
 export type BackendCapabilities={workflows:string[];maxVramGb?:number;outputFormats:string[]};
 export type BackendValidation={ok:boolean;problems:string[]};
 export type RenderArtifact={name:string;mime:string;bytes:Uint8Array};
-export type RenderResult={artifacts:RenderArtifact[];backendJobId?:string;durationMs?:number};
+/** Evidence a runtime reports about itself (node/model check and provision receipt), e.g. from a notebook run the server cannot reach. */
+export type RuntimeEvidence={source:'runtime-reported';checkedAt:string;rows:{workflowId:string;modelId:string;ok:boolean;problems:string[]}[];receipt:{schema:1;repo:string;revision:string;files:{path:string;sha256:string}[]};comfyCommit?:string;gpu?:string};
+export type RenderResult={artifacts:RenderArtifact[];backendJobId?:string;durationMs?:number;runtimeEvidence?:RuntimeEvidence};
 export type PolicyMode='zero-cost'|'paid-limited';
 /** Server-side only. Never accepted from request bodies. */
 export type ComputePolicy={readonly mode:PolicyMode;readonly allowPaidCompute:boolean;readonly maxCostEur:number;readonly allowPaidFallback:false;readonly allowUnknownCost:false;readonly allowedBackendClasses:readonly BackendClass[]};

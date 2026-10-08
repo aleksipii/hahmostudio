@@ -1,36 +1,51 @@
 # Pilvirenderöinnin käyttöönotto, askel askeleelta (aloittelijalle)
 
-Tämä ohje vie ensimmäiseen oikeaan pilvirenderöintiin: Hahmostudio omalla koneella, mallit ja ComfyUI Google Colabissa, tulokset Google Driveen.
+Tämä ohje vie ensimmäiseen oikeaan pilvirenderöintiin: Hahmostudio omalla koneellasi (selaimessa), video tehdään **Kaggle-muistikirjassa, jonka ajat itse**, ja tulos tallennetaan Google Driveen (tai koneellesi).
 
 **Mitä on tarkistettu ja mitä ei (2026-10-08):**
-- ✅ Komennot, ympäristömuuttujat ja tiedostopolut on tarkistettu koodia vasten (`scripts/make-model-pin.ts`, `scripts/make-provision-manifest.ts`, `cloud/runtime/provision_models.py`, `lib/cloud-render/server.ts`).
-- ✅ Wan2.2-mallin kolme tiedostoa on tarkistettu olevan Hugging Facessa oikeilla poluilla (yhteensä noin 18,1 Gt).
-- ✅ ComfyUI:n `SaveVideo`-solmun palautusmuoto on tarkistettu ComfyUI:n lähdekoodista, ja siihen liittyvä vika on korjattu (ks. loppu).
-- ⚠️ **Kukaan ei ole vielä ajanut tätä oikeasti** Colabissa, oikeaa ComfyUI:ta tai oikeaa Drivea vasten. Kohdat, joissa en ole varma, on merkitty **⚠️ EPÄVARMA**.
+- ✅ Komennot, ympäristömuuttujat ja tiedostopolut on tarkistettu koodia vasten.
+- ✅ Wan2.2-mallin kolme tiedostoa on tarkistettu olevan Hugging Facessa oikeilla poluilla (yhteensä noin 18,1 Gt), ja mallin lukitus (osa B) on ajettu onnistuneesti oikeaa Hugging Facea vasten.
+- ✅ Muistikirjan skripti on testattu automaattisesti paikallista vale-ComfyUI:ta vasten: mallien tarkistus, ajoympäristön tarkistus, työnkulun ajo, tulostiedosto ja sen tuonti.
+- ⚠️ **Oikeaa Kaggle-ajoa ei ole vielä tehty.** Kohdat, joissa en ole varma, on merkitty **⚠️ EPÄVARMA**.
 
-> 🔒 **Salaisuudet:** Hugging Face -token, Googlen *client secret*, *refresh token* ja `trycloudflare.com`-osoite ovat salaisuuksia. **Älä liitä niitä keskusteluun Clauden kanssa, GitHubiin, kuvakaappauksiin tai lokeihin.** Jos lähetät virheilmoituksen, peitä ne ensin (esim. `hf_xxx…`). Jos salaisuus vuotaa, mitätöi se heti (ohjeet kunkin vaiheen kohdalla).
+> 🔒 **Salaisuudet:** Hugging Face -token, Googlen *client secret* ja *refresh token* ovat salaisuuksia. **Älä liitä niitä keskusteluun Clauden kanssa, GitHubiin, kuvakaappauksiin tai lokeihin.** Jos lähetät virheilmoituksen, peitä ne ensin (esim. `hf_xxx…`). Jos salaisuus vuotaa, mitätöi se heti (ohjeet kunkin vaiheen kohdalla).
 
 ---
 
-## 0. Ennen kuin aloitat: lue tämä (päätös)
+## 0. Ennen kuin aloitat
 
-### ⚠️ Ilmaisen Colabin käyttöehdot
-Googlen Colab-FAQ (research.google.com/colaboratory/faq.html, luettu 2026-10-08) sanoo, että **ilmaisissa** Colab-ajoympäristöissä ei saa mm. *"ohittaa muistikirjan käyttöliittymää ja käyttää palvelua pääasiassa web-käyttöliittymän kautta"* eikä käyttää *etäohjausta*, ja että tällaiset ajot voidaan katkaista varoituksetta. Kaikilta Colab-ajoilta on kielletty myös *"verkkopalvelut, jotka eivät liity interaktiiviseen laskentaan"*.
+### Ei maksuja: yksi sääntö
+**Älä lisää maksukorttia tai laskutustiliä mihinkään alla olevista palveluista.** Ilman maksutapaa sinua ei voida veloittaa.
 
-Tämän ohjeen Colab-reitti käynnistää ComfyUI:n ja avaa sille tunnelin, jonka kautta Hahmostudio ohjaa sitä. **Se on hyvin todennäköisesti juuri sitä, mitä ilmaisessa Colabissa ei sallita.** Vaihtoehdot:
-1. **Ilmainen Colab:** voit kokeilla, mutta Google voi katkaista ajon tai rajoittaa tiliäsi. Päätös ja riski ovat sinun. En suosittele tätä pitkäaikaiseksi ratkaisuksi.
-2. **Maksullinen Colab (Pro tai compute units):** FAQ:n mukaan maksullinen saldo poistaa nämä rajoitukset. Silloin ajo **ei ole ilmainen**, eikä asetusta `HAHMOSTUDIO_COLAB_CLASSIFIED_FREE=yes` saa asettaa (se on sinun lausuntosi siitä, että reitti on ilmainen). Projektin nollakustannussääntö estää silloin renderöinnin, ja maksullisen reitin käyttöönotto vaatii erillisen päätöksen ja koodimuutoksen.
-3. **Oma tai vuokrattu Linux-kone, jossa on NVIDIA-näytönohjain:** osat B–F toimivat samoin, osa C tehdään sillä koneella Colabin sijaan. (Mallipainoja ei projektin säännön mukaan ladata omalle työkoneellesi.)
+| Palvelu | Voiko tulla maksu? |
+|---|---|
+| Kaggle | Ei. Muistikirjoilla ei ole maksullista tasoa. Kun viikon GPU-kiintiö (noin 30 h) loppuu, GPU:ta ei vain saa ennen seuraavaa viikkoa. |
+| Hugging Face (mallin lataus) | Ei. |
+| Google Drive | Ei. Ilmaista tilaa on 15 Gt; jos se täyttyy, tallennus epäonnistuu. |
+| Google Cloud (Drive-tunnukset, osa D) | Ei, kunhan et lisää laskutustiliä (*billing account*). Ohita ilmaisen kokeilun ehdotukset. |
 
-Osat A, B ja D voit tehdä joka tapauksessa; ne eivät käytä Colabia.
+Hahmostudion nollakustannustila estää lisäksi kaikki maksulliset taustajärjestelmät, eikä maksullista varavaihtoehtoa ole.
+
+### Miksi Kaggle-muistikirja eikä Colab + tunneli
+- **Ilmaisen Colabin** ehdot kieltävät palvelun ohjaamisen pääasiassa web-käyttöliittymän kautta ja etäohjauksen.
+- **Kagglen** käyttöpolitiikka (Acceptable Use Policy, voimassa 2025-06-22) sallii koneoppimisen. Se kieltää muun muassa *server farming* -käytön ja palvelun rajoitusten kiertämisen.
+- Siksi Hahmostudio **ei ohjaa Kagglea etänä**. Se tekee renderöinnistä yhden muistikirjatiedoston, jonka ajat itse Kagglessa. ComfyUI käynnistyy vain muistikirjan sisälle (127.0.0.1): **ei tunnelia, ei palvelinta, ei julkista osoitetta**. Lopuksi lataat tulostiedoston ja tuot sen takaisin.
+- Pelisäännöt: käytä vain Kagglen viikkokiintiötä, sammuta istunto kun ajo on valmis, äläkä jaa muistikirjaa tai tuloksia palveluna muille.
+- Jos haluat kirjallisen varmuuden, kysy Kagglelta (kaggle.com/contact).
+
+### Hyvä tietää
+- Pilvirenderöinti toimii **yksityisellä web-palvelimella selaimessa** (`npm run start:private`), ei työpöytäsovelluksessa. Projektisi pysyvät ennallaan työpöytäsovelluksessa.
+- Yksi muistikirja = yksi renderöinti. *Character animation* tekee yhden klipin kerrallaan, eli jokaisesta klipistä tulee oma muistikirja.
+- Jos Hahmostudion palvelin käynnistetään uudelleen ennen kuin tulos on tuotu, työ katoaa ja se aloitetaan alusta (mallit on silloin jo ladattu Kagglessa vain, jos sama istunto on yhä auki).
 
 ### Mitä tarvitset
 | Mitä | Mihin | Maksaa |
 |---|---|---|
 | Oma kone (Mac käy), Node.js 22.18 tai uudempi, git | Hahmostudio-palvelin | – |
-| Google-tili | Colab ja Drive | ilmainen |
-| Hugging Face -tili (vapaaehtoinen) | Wan2.2-repo ei ole lukittu, joten token ei ole pakollinen. Tarvitaan vain, jos lataus antaa virheen 401/403/429. | ilmainen |
-| Google Cloud -projekti ja OAuth-asiakas | Driveen tallennus | ilmainen (ei laskutustiliä tarvita) |
+| Kaggle-tunnus ja vahvistettu puhelinnumero | GPU ja internet muistikirjassa | ilmainen |
+| Google-tili | Drive | ilmainen |
+| Hugging Face -tili (vapaaehtoinen) | Wan2.2-repo ei ole lukittu, joten token ei ole pakollinen. | ilmainen |
+| Google Cloud -projekti ja OAuth-asiakas | Driveen tallennus | ilmainen (ei laskutustiliä) |
 
 Aikaa kuluu ensimmäisellä kerralla noin 2–3 tuntia, josta suurin osa on odottamista.
 
@@ -112,7 +127,7 @@ cat pins.json
 ```
 Arvot tulevat Hubista; **älä muokkaa niitä käsin**. `pins.json` ei ole salaisuus, mutta älä lisää sitä gitiin.
 
-**B3.** Tee ajoympäristön manifesti:
+**B3.** Tarkista, että malli kelpaa ajoon (tekee myös manifestin, jota Colab-liite käyttää; Kaggle-reitti ei tarvitse tiedostoa, koska palvelin upottaa manifestin muistikirjaan):
 ```bash
 node --experimental-strip-types scripts/make-provision-manifest.ts wan2.2-ti2v-5b pins.json > manifest.json
 cat manifest.json
@@ -123,9 +138,163 @@ FLUX.1-schnell ei ole vielä käyttökelpoinen (sen tekstikooderit ovat eri repo
 
 ---
 
-## Osa C: ComfyUI Colabissa (noin 45–90 min, enimmäkseen latausta)
+## Osa C: Kaggle-tunnus (noin 10 min, kerran)
 
-Lue ensin kohta 0. Tee tämä **Colabissa**, ei omalla koneellasi.
+**C1.** Mene kaggle.com → **Register** → kirjaudu Google-tilillä.
+
+**C2.** Oikean yläkulman profiilikuva → **Settings** → **Phone verification** → anna puhelinnumero → syötä tekstiviestin koodi.
+✅ Settings-sivulla lukee, että puhelin on vahvistettu. Ilman tätä GPU ja internet eivät ole käytettävissä muistikirjassa.
+
+**C3. Kokeile asetukset** (ei vielä renderöintiä): vasen valikko **+ Create** → **New Notebook**. Oikeassa reunassa on **Session options** (tai *Notebook options*):
+- **Accelerator** → **GPU T4 x2** (tai **GPU P100**)
+- **Internet** → **On**
+
+✅ Kumpikin valinta onnistuu. Jos ne ovat harmaina, puhelinvahvistus ei ole vielä voimassa. Samassa paneelissa näkyy jäljellä oleva GPU-kiintiö.
+Sulje kokeilu: oikean yläkulman **Stop session** (virtapainike).
+
+⚠️ EPÄVARMA: Kagglen valikkonimet voivat poiketa hieman tästä.
+
+---
+
+## Osa D: Google Drive -tunnukset (noin 20 min)
+
+Voit ohittaa tämän ensimmäisellä kerralla ja käyttää `HAHMOSTUDIO_STORAGE=local-dev` (tulokset jäävät koneellesi). Huom: ilman Drive-tunnuksia ja ilman `local-dev`-asetusta palvelin yrittää Drivea ja jokainen tallennus estyy.
+
+Googlen konsolin valikot on nimetty uudelleen vuonna 2025; nimet alla ovat uudet, sulkeissa vanhat. ⚠️ EPÄVARMA: valikot voivat näyttää hieman erilaisilta.
+
+**D1. Projekti ja Drive API**
+1. console.cloud.google.com → yläpalkin projektivalitsin → **New project** → nimi esim. `hahmostudio` → **Create**. Varmista, että uusi projekti on valittuna yläpalkissa.
+2. Hakukenttään `Google Drive API` → avaa se → **Enable**.
+✅ Sivulla lukee *API enabled*.
+
+**D2. OAuth-suostumusnäkymä**
+1. Vasen valikko **APIs & Services → OAuth consent screen** (uusi nimi: **Google Auth Platform**) → **Get started**.
+2. App name `Hahmostudio`, support email = oma osoitteesi → Audience: **External** → yhteystieto = oma osoitteesi → hyväksy ehdot → **Create**.
+3. **Audience**-sivu → **Test users → Add users** → lisää oma Gmail-osoitteesi → **Save**.
+
+**D3. OAuth-asiakas** (tärkeä korjaus aiempaan ohjeeseen: tyypin pitää olla **Web application**, koska OAuth Playground vaatii oman paluuosoitteensa, eikä Desktop app -tyyppiin voi lisätä sitä)
+1. **Clients** (vanha: Credentials → Create credentials → OAuth client ID) → **Create client**.
+2. Application type: **Web application**, nimi `hahmostudio-playground`.
+3. **Authorized redirect URIs → Add URI** → `https://developers.google.com/oauthplayground` (tarkalleen näin, ei kauttaviivaa loppuun).
+4. **Create** → kopioi **Client ID** ja **Client secret** salasanojen hallintaan.
+⚠️ Google näyttää secretin uusissa asiakkaissa vain luontihetkellä; jos se katosi, luo uusi secret asiakkaan sivulta.
+
+**D4. Refresh token OAuth Playgroundissa**
+1. Avaa developers.google.com/oauthplayground.
+2. Oikean yläkulman **rataskuvake** → rasti **Use your own OAuth credentials** → liitä Client ID ja Client secret → sulje.
+3. Vasemmalla kenttään *Input your own scopes* kirjoita `https://www.googleapis.com/auth/drive.file` → **Authorize APIs**.
+4. Valitse Google-tilisi. Näet varoituksen *Google hasn't verified this app* → **Continue** (tämä on oma sovelluksesi) → salli.
+5. **Exchange authorization code for tokens** → kopioi **Refresh token** (alkaa yleensä `1//`) salasanojen hallintaan.
+
+`drive.file`-oikeus näkee vain Hahmostudion itse luomat tiedostot, ei muuta Driveasi. Tiedostot tulevat Driveen kansioon `AnimationStudio/Projects/<projektin tunnus>/`.
+
+⚠️ **Refresh token vanhenee 7 päivässä**, niin kauan kuin sovelluksen tila on *Testing* (Googlen OAuth-dokumentaatio). Vaihtoehdot: hae uusi token D4:llä viikoittain, tai **Audience → Publish app** (tila *In production*). Julkaisu ei tee sovelluksesta julkista; `drive.file` ei ole Googlen "arkaluonteinen" oikeus. ⚠️ EPÄVARMA: Google voi silti pyytää vahvistusta tai näyttää varoitussivun; omaan käyttöön se on ohitettavissa.
+
+Vuodon sattuessa: Clients → asiakas → **Reset secret** tai poista asiakas; refresh token mitätöityy myös myaccount.google.com → Security → *Third-party apps* → Hahmostudio → **Remove access**.
+
+---
+
+## Osa E: palvelin oikeilla asetuksilla (omalla koneellasi, noin 5 min)
+
+Pysäytä A3:n palvelin (Ctrl+C) ja aja samassa pääteikkunassa repon juuressa. Salaiset arvot luetaan `read -s` -komennolla, jotta ne eivät jää komentohistoriaan; liitä kukin arvo ja paina Enter.
+```bash
+export HAHMOSTUDIO_CLOUD_RENDER=1
+export HAHMOSTUDIO_MODEL_PINS_FILE="$PWD/pins.json"
+export HAHMOSTUDIO_NOTEBOOK_CLASSIFIED_FREE=yes   # sinun lausuntosi: Kaggle-muistikirja on ilmainen (ei maksukorttia)
+# Drive (osa D):
+export GOOGLE_OAUTH_CLIENT_ID=…                   # ei salainen, mutta älä silti jaa
+read -s GOOGLE_OAUTH_CLIENT_SECRET && export GOOGLE_OAUTH_CLIENT_SECRET
+read -s GOOGLE_OAUTH_REFRESH_TOKEN && export GOOGLE_OAUTH_REFRESH_TOKEN
+# TAI ilman Drivea: export HAHMOSTUDIO_STORAGE=local-dev
+# valinnainen: export HAHMOSTUDIO_NOTEBOOK_TIMEOUT_MS=86400000   # kauanko tulosta odotetaan (10 min – 48 h, oletus 24 h)
+npm run build:private && npm run start:private
+```
+✅ Näkyy `Hahmostudio: http://127.0.0.1:4176`. Jos palvelin kaatuu heti viestiin `… must be …`, jokin arvo on väärässä muodossa (viesti kertoo minkä).
+
+- Maksullinen laskenta pysyy pois. Älä aseta `HAHMOSTUDIO_ALLOW_PAID_*`-muuttujia.
+- Muuttujat ovat voimassa vain tässä pääteikkunassa. Uudessa ikkunassa ne annetaan uudelleen.
+
+---
+
+## Osa F: ensimmäinen oikea renderöinti
+
+**F1. Hahmostudio (selain)**
+1. http://127.0.0.1:4176 → jakso → **Pilvirenderöinti…** → **Synkronoi säännöistä** → valitse kohtaus → **Hyväksy ja lukitse kohtaus**.
+2. **Hahmojen hyväksytyt vertailukuvat**: lataa jokaiselle kohtauksen hahmolle PNG, JPEG tai WebP (enintään 8 Mt). Video käyttää tätä lähtökuvana.
+3. Työnkulku **Image to video** → **Tarkista valtuutus**.
+   ✅ Kortissa: taustajärjestelmä `kaggle-notebook`, luokka `free`, hinta €0.00, enimmäishinta €0.00, maksullinen laskenta ja varavaihtoehto POIS, mallin revisio (40 merkkiä), lisenssi apache-2.0, kaupallinen käyttö allowed, **HYVÄKSYTTY**.
+4. **Hyväksy ja renderöi.** Tilaksi tulee *Renderöidään* ja näkyviin tulee **Lataa Kaggle-muistikirja**. Paina sitä.
+   ✅ Selain lataa tiedoston `hahmo-rj_….ipynb` (noin 1–15 Mt).
+
+(Live-todennus-kohdan esitarkistusta ei tarvita: muistikirja tekee saman tarkistuksen Kagglessa.)
+
+**F2. Kaggle**
+1. kaggle.com → **+ Create** → **New Notebook**.
+2. Valikko **File → Import Notebook** → valitse ladattu `.ipynb` → **Import**.
+   ✅ Muistikirjassa on ohjesolu ja yksi koodisolu (pitkä, älä muokkaa).
+   ⚠️ EPÄVARMA: jos Import ei hyväksy tiedostoa (esim. koko), kerro siitä, niin teen vaihtoehtoisen tavan.
+3. Oikea paneeli → **Session options**: **Accelerator** = GPU T4 x2 (tai P100), **Internet** = On.
+4. (Vain jos tarvitset tokenia) Valikko **Add-ons → Secrets** → **Add secret** → nimi `HF_TOKEN`, arvo = token → rasti tälle muistikirjalle. Muistikirja lukee sen sieltä itse. Wan-malli ei tarvitse tokenia, joten yleensä ohita tämä.
+5. **Run All** (tai ▶ koodisolun vierestä).
+   ⏳ Ensimmäinen ajo asentaa ComfyUI:n ja lataa noin 18 Gt; edistymispalkkia ei näy. Renderöinnin aikana tulostuu rivi `…renderöidään (N min)` minuutin välein. ⚠️ EPÄVARMA: kokonaisaikaa T4:llä/P100:lla ei ole mitattu.
+   ✅ Lopussa: `✅ VALMIS: hahmo-rj_…-tulos.json`.
+6. Oikea paneeli → **Output** (tai *Data → Output*) → `hahmo-rj_…-tulos.json` → **Download**.
+7. **Stop session** (virtapainike), jotta kiintiötä ei kulu.
+
+**F3. Takaisin Hahmostudioon**
+1. Pilvirenderöinti-dialogissa (sama työ, tila *Renderöidään*) → **Tuo tulos** → valitse ladattu `-tulos.json`.
+   ✅ Viesti *Tulos hyväksytty*, tila etenee *Tulosteen tarkistus* → *Tallennetaan Driveen* → **Valmis**. Video on Drivessa kansiossa `AnimationStudio/Projects/<projekti>/renders/` (tai `local-dev`-kansiossa).
+   ✅ Tietueessa: *Live-todennus: läpäisty (ajoympäristön ilmoittama)*.
+2. Vasta tämän jälkeen: työnkulku **Character animation** (yksi muistikirja per klippi).
+
+Tuonti hylätään, jos tiedosto on toisesta työstä tai paketista, mallin kuitti ei täsmää lukitukseen, tiedoston tarkistussumma ei täsmää tai mukana on kielletty tiedostotyyppi. Hylkäys ei peru työtä: voit tuoda oikean tiedoston.
+
+---
+
+## Yleisimmät virheet
+
+| Missä | Mitä näkyy | Korjaus |
+|---|---|---|
+| A1/A3 | `ERR_UNKNOWN_FILE_EXTENSION ".ts"` | Node on alle 22.18: `export NODE_OPTIONS=--experimental-strip-types` tai päivitä Node. |
+| B2 | `Hugging Face returned 401/403/429` | Tee token (B1) ja aja uudelleen. |
+| B2 | `No SHA-256 for …` | Polku on kirjoitettu väärin. Kopioi komento tästä ohjeesta sellaisenaan. |
+| B2 | `bad spec …` / `bad role …` | Rivin muoto on `polku=kansio:rooli`, esim. `…=vae:vae`. |
+| B3 | `REFUSED: …` | Aja B2 ensin samassa kansiossa; tarkista, että `pins.json` on olemassa. |
+| C3 | GPU tai Internet harmaana | Puhelinvahvistus (C2) puuttuu tai ei ole vielä voimassa. |
+| D4 | `Error 400: redirect_uri_mismatch` | Asiakas on Desktop-tyyppinen tai paluuosoite puuttuu/on väärin (D3). |
+| D4 | `Error 403: access_denied` | Oma osoite ei ole testikäyttäjänä (D2 kohta 3). |
+| F1 | kortissa ESTETTY, taustajärjestelmä pois päältä | `HAHMOSTUDIO_NOTEBOOK_CLASSIFIED_FREE=yes` puuttuu, tai `HAHMOSTUDIO_MODEL_PINS_FILE` ei osoita `pins.json`-tiedostoon. |
+| F2 | `❌ GPU ei ole käytössä` / `❌ Internet ei ole käytössä` | Session options: Accelerator GPU ja Internet On, sitten Run All uudelleen. |
+| F2 | `❌ Levytilaa ei ole tarpeeksi` | Kaggle ei antanut tarpeeksi tilaa; aloita uusi istunto. ⚠️ EPÄVARMA, ei vielä nähty. |
+| F2 | `checksum mismatch …` | Lataus korruptoitui tai Hubin tiedosto muuttui; aja uudelleen. Jos toistuu, tee B2 uudelleen ja aloita renderöinti alusta. |
+| F2 | `❌ Ajoympäristön tarkistus epäonnistui` | Lähetä listan rivit minulle (solmu puuttuu = ComfyUI-versio; malli puuttuu = lataus). |
+| F2 | `❌ ComfyUI hylkäsi työnkulun` / `ilmoitti renderöintivirheestä` | Lähetä virheteksti minulle. |
+| F2 | istunto kaatuu tai katkeaa | Muisti tai aikaraja; kerro, mitä näkyi. Aloita renderöinti Hahmostudiossa alusta. |
+| F3 | *This job is not waiting for a notebook result* | Palvelin käynnistettiin uudelleen, työ peruttiin tai aikaraja täyttyi; aloita renderöinti uudelleen. |
+| F3 | *different job* / *different package* | Väärä tulostiedosto tähän työhön. |
+| F3 | *provision receipt does not match* | `pins.json` muuttui renderöinnin aloittamisen jälkeen; aloita uudelleen. |
+| F3 | `Google Drive authorization failed` | Refresh token vanheni (7 päivää) tai on väärin; tee D4 uudelleen. |
+| F3 | `Google Drive credentials are not configured` | D-muuttujat puuttuvat, eikä `HAHMOSTUDIO_STORAGE=local-dev` ole asetettu. |
+
+## Jos jokin epäonnistuu, lähetä
+- muistikirjan solun loppu (❌-rivi ja sitä edeltävät rivit),
+- renderöintitietueen `blocked`, `errors` ja `liveVerification.missing` (dialogi näyttää ne),
+- kuvakaappaus dialogista.
+
+**Älä liitä** Hugging Face -tokenia, client secretiä tai refresh tokenia. Peitä ne, jos ne näkyvät tulosteessa.
+
+## Tähän ohjeeseen liittyvät koodimuutokset (2026-10-08)
+- **Kaggle-muistikirja-ajo:** uusi taustajärjestelmä `kaggle-notebook` (`lib/cloud-render/notebook-backend.ts`) ja muistikirjan skripti (`cloud/runtime/hahmo_notebook.py`). Palvelin ei ota yhteyttä ajoympäristöön; tuotu tulos tarkistetaan (työ, paketin hash, mallin kuitti, tarkistussummat, tiedostotyypit) ennen tavallista tulosten tarkistusta, tallennusta ja auditointia. Live-todennus perustuu muistikirja-ajossa ajoympäristön omaan tarkistukseen ja kuittiin, ja tietueeseen merkitään *ajoympäristön ilmoittama*.
+- ComfyUI:n `SaveVideo` palauttaa tuloksissaan myös lipun `animated: [true]`; aiemmin se kaatoi jokaisen oikean videorenderöinnin. Korjattu.
+- Uusi valinnainen `HAHMOSTUDIO_COMFYUI_TIMEOUT_MS` (Colab/oma GPU -reitti).
+
+---
+
+## Liite: Colab + tunneli (ei suositella)
+
+> ⚠️ Ilmaisen Colabin FAQ kieltää palvelun ohjaamisen pääasiassa web-käyttöliittymän kautta ja etäohjauksen; tämä reitti on todennäköisesti sitä. Käytä tätä vain omalla tai maksullisella GPU-koneella, jossa ehdot sallivat sen. Silloin palvelimelle asetetaan osan E sijaan `HAHMOSTUDIO_COLAB_COMFYUI_URL`, `HAHMOSTUDIO_COLAB_CLASSIFIED_FREE=yes` (vain jos reitti on oikeasti ilmainen), `HAHMOSTUDIO_PROVISION_RECEIPTS_DIR` (kuitti kopioidaan sinne) ja tarvittaessa `HAHMOSTUDIO_COMFYUI_TIMEOUT_MS`, ja esitarkistus ajetaan dialogin Live-todennus-kohdasta ennen renderöintiä.
+
+Tee tämä **Colabissa**, ei omalla koneellasi.
 
 **C1. Uusi muistikirja ja GPU**
 1. Mene colab.research.google.com → **New notebook** (Uusi muistikirja).
@@ -207,125 +376,3 @@ read -s COMFY_URL && curl -s "$COMFY_URL/system_stats" | head -c 300; echo
 **Pidä Colab-välilehti auki** koko renderöinnin ajan. Ilmainen istunto katkeaa, jos välilehti on pitkään käyttämättä tai noin 12 tunnin jälkeen; silloin kaikki tiedostot katoavat ja C2–C8 tehdään uudelleen (B-osaa ja kuittia ei tarvitse tehdä uudelleen, ellei pins.json muutu). **Tunnelin osoite vaihtuu joka kerta.**
 
 ⚠️ EPÄVARMA, muisti: ilmaisessa Colabissa on noin 12–13 Gt keskusmuistia ja T4:ssä 15 Gt näyttömuistia; mallitiedostot ovat yhteensä 18 Gt. ComfyUI siirtää osia muistien välillä, mutta istunto voi kaatua (`Your session crashed after using all available RAM`) tai ajo voi olla hyvin hidas. Jos näin käy, tarvitaan isompi kone (kohta 0).
-
----
-
-## Osa D: Google Drive -tunnukset (noin 20 min)
-
-Voit ohittaa tämän ensimmäisellä kerralla ja käyttää `HAHMOSTUDIO_STORAGE=local-dev` (tulokset jäävät koneellesi). Huom: ilman Drive-tunnuksia ja ilman `local-dev`-asetusta palvelin yrittää Drivea ja jokainen tallennus estyy.
-
-Googlen konsolin valikot on nimetty uudelleen vuonna 2025; nimet alla ovat uudet, sulkeissa vanhat. ⚠️ EPÄVARMA: valikot voivat näyttää hieman erilaisilta.
-
-**D1. Projekti ja Drive API**
-1. console.cloud.google.com → yläpalkin projektivalitsin → **New project** → nimi esim. `hahmostudio` → **Create**. Varmista, että uusi projekti on valittuna yläpalkissa.
-2. Hakukenttään `Google Drive API` → avaa se → **Enable**.
-✅ Sivulla lukee *API enabled*.
-
-**D2. OAuth-suostumusnäkymä**
-1. Vasen valikko **APIs & Services → OAuth consent screen** (uusi nimi: **Google Auth Platform**) → **Get started**.
-2. App name `Hahmostudio`, support email = oma osoitteesi → Audience: **External** → yhteystieto = oma osoitteesi → hyväksy ehdot → **Create**.
-3. **Audience**-sivu → **Test users → Add users** → lisää oma Gmail-osoitteesi → **Save**.
-
-**D3. OAuth-asiakas** (tärkeä korjaus aiempaan ohjeeseen: tyypin pitää olla **Web application**, koska OAuth Playground vaatii oman paluuosoitteensa, eikä Desktop app -tyyppiin voi lisätä sitä)
-1. **Clients** (vanha: Credentials → Create credentials → OAuth client ID) → **Create client**.
-2. Application type: **Web application**, nimi `hahmostudio-playground`.
-3. **Authorized redirect URIs → Add URI** → `https://developers.google.com/oauthplayground` (tarkalleen näin, ei kauttaviivaa loppuun).
-4. **Create** → kopioi **Client ID** ja **Client secret** salasanojen hallintaan.
-⚠️ Google näyttää secretin uusissa asiakkaissa vain luontihetkellä; jos se katosi, luo uusi secret asiakkaan sivulta.
-
-**D4. Refresh token OAuth Playgroundissa**
-1. Avaa developers.google.com/oauthplayground.
-2. Oikean yläkulman **rataskuvake** → rasti **Use your own OAuth credentials** → liitä Client ID ja Client secret → sulje.
-3. Vasemmalla kenttään *Input your own scopes* kirjoita `https://www.googleapis.com/auth/drive.file` → **Authorize APIs**.
-4. Valitse Google-tilisi. Näet varoituksen *Google hasn't verified this app* → **Continue** (tämä on oma sovelluksesi) → salli.
-5. **Exchange authorization code for tokens** → kopioi **Refresh token** (alkaa yleensä `1//`) salasanojen hallintaan.
-
-`drive.file`-oikeus näkee vain Hahmostudion itse luomat tiedostot, ei muuta Driveasi. Tiedostot tulevat Driveen kansioon `AnimationStudio/Projects/<projektin tunnus>/`.
-
-⚠️ **Refresh token vanhenee 7 päivässä**, niin kauan kuin sovelluksen tila on *Testing* (Googlen OAuth-dokumentaatio). Vaihtoehdot: hae uusi token D4:llä viikoittain, tai **Audience → Publish app** (tila *In production*). Julkaisu ei tee sovelluksesta julkista; `drive.file` ei ole Googlen "arkaluonteinen" oikeus. ⚠️ EPÄVARMA: Google voi silti pyytää vahvistusta tai näyttää varoitussivun; omaan käyttöön se on ohitettavissa.
-
-Vuodon sattuessa: Clients → asiakas → **Reset secret** tai poista asiakas; refresh token mitätöityy myös myaccount.google.com → Security → *Third-party apps* → Hahmostudio → **Remove access**.
-
----
-
-## Osa E: palvelin oikeilla asetuksilla (omalla koneellasi, noin 5 min)
-
-**E1.** Kopioi kuitti (repon juuressa):
-```bash
-mkdir -p receipts && cp ~/Downloads/provision-receipt.json receipts/
-```
-
-**E2.** Pysäytä A3:n palvelin (Ctrl+C) ja aja samassa pääteikkunassa. Salaiset arvot luetaan `read -s` -komennolla, jotta ne eivät jää komentohistoriaan; liitä kukin arvo ja paina Enter.
-```bash
-export HAHMOSTUDIO_CLOUD_RENDER=1
-export HAHMOSTUDIO_MODEL_PINS_FILE="$PWD/pins.json"
-export HAHMOSTUDIO_PROVISION_RECEIPTS_DIR="$PWD/receipts"
-read -s HAHMOSTUDIO_COLAB_COMFYUI_URL && export HAHMOSTUDIO_COLAB_COMFYUI_URL   # C8:n https://….trycloudflare.com
-export HAHMOSTUDIO_COLAB_CLASSIFIED_FREE=yes   # sinun lausuntosi, että tämä reitti on ilmainen (ks. kohta 0)
-export HAHMOSTUDIO_COMFYUI_TIMEOUT_MS=1800000  # 30 min; T4 on hidas, oletus 10 min voi loppua kesken
-# Drive (D-osa):
-export GOOGLE_OAUTH_CLIENT_ID=…                # ei salainen, mutta älä silti jaa
-read -s GOOGLE_OAUTH_CLIENT_SECRET && export GOOGLE_OAUTH_CLIENT_SECRET
-read -s GOOGLE_OAUTH_REFRESH_TOKEN && export GOOGLE_OAUTH_REFRESH_TOKEN
-# TAI ilman Drivea: export HAHMOSTUDIO_STORAGE=local-dev
-# valinnainen: export HAHMOSTUDIO_OUTPUT_INSPECTOR=palette
-npm run build:private && npm run start:private
-```
-✅ Näkyy `Hahmostudio: http://127.0.0.1:4176`. Jos palvelin kaatuu heti viestiin `… must be …`, jokin arvo on väärässä muodossa (viesti kertoo minkä).
-
-- Osoitteen pitää alkaa `https://`; muuten taustajärjestelmä jää pois päältä ilman virheilmoitusta.
-- Maksullinen laskenta pysyy pois. Älä aseta `HAHMOSTUDIO_ALLOW_PAID_*`-muuttujia.
-- Muuttujat ovat voimassa vain tässä pääteikkunassa. Uudessa ikkunassa ne annetaan uudelleen.
-
----
-
-## Osa F: tarkistus ja ensimmäinen oikea renderöinti (selaimessa)
-
-1. http://127.0.0.1:4176 → jakso → **Pilvirenderöinti…** → **Synkronoi säännöistä** → valitse kohtaus → **Hyväksy ja lukitse kohtaus**.
-2. **Hahmojen hyväksytyt vertailukuvat**: lataa jokaiselle kohtauksen hahmolle PNG, JPEG tai WebP (enintään 8 Mt). Video käyttää tätä lähtökuvana.
-3. Avaa **Live-todennus** → **Suorita renderöinniton esitarkistus**.
-   ✅ Rivi `image_to_video / wan2.2-ti2v-5b` on **✓**. Muiden mallien rivit ovat ✗ (*Model not acceptable…*): **se on odotettua**, koska vain Wan on lukittu.
-   ✗ Wan-rivillä: *Node … is not installed* → ComfyUI on liian vanha (aja C2 uudelleen). *Model file … is not provisioned* → C5 ei mennyt läpi. *ComfyUI runtime is unavailable* → tunneli tai ComfyUI on alhaalla tai osoite on väärä.
-4. Työnkulku **Image to video** → **Tarkista valtuutus**. ✅ Kortissa: taustajärjestelmä `colab-free`, luokka `free`, hinta €0.00, enimmäishinta €0.00, maksullinen laskenta ja varavaihtoehto POIS, mallin revisio (40 merkkiä), lisenssi apache-2.0, kaupallinen käyttö allowed, **HYVÄKSYTTY**.
-5. **Hyväksy ja renderöi.** ⏳ T4:llä tämä voi kestää kymmeniä minuutteja (⚠️ EPÄVARMA, ei mitattu). Pidä Colab-välilehti auki.
-   ✅ Valmiin jälkeen tietueessa lukee *Live-todennus: läpäisty* tai lista puuttuvista ehdoista. Video on Drivessa kansiossa `AnimationStudio/Projects/<projekti>/renders/`.
-6. Vasta tämän jälkeen: työnkulku **Character animation**.
-
-**Tärkeää:** esitarkistuksen tulos pidetään palvelimen muistissa ja on voimassa 24 tuntia. **Älä käynnistä palvelinta uudelleen kohtien 3 ja 5 välissä.** Jos käynnistät (tai tunnelin osoite vaihtuu), tee kohta 3 uudelleen ennen renderöintiä.
-
----
-
-## Yleisimmät virheet
-
-| Missä | Mitä näkyy | Korjaus |
-|---|---|---|
-| A1/A3 | `ERR_UNKNOWN_FILE_EXTENSION ".ts"` | Node on alle 22.18: `export NODE_OPTIONS=--experimental-strip-types` tai päivitä Node. |
-| B2 | `Hugging Face returned 401/403/429` | Tee token (B1) ja aja uudelleen. |
-| B2 | `No SHA-256 for …` | Polku on kirjoitettu väärin. Kopioi komento tästä ohjeesta sellaisenaan. |
-| B2 | `bad spec …` / `bad role …` | Rivin muoto on `polku=kansio:rooli`, esim. `…=vae:vae`. |
-| B3 | `REFUSED: …` | Aja B2 ensin samassa kansiossa; tarkista, että `pins.json` on olemassa. |
-| C1 | `NVIDIA-SMI has failed` / *Cannot connect to GPU backend* | GPU ei valittuna tai ilmaista kiintiötä ei juuri nyt ole. |
-| C5 | `checksum mismatch …` | Lataus korruptoitui tai Hubin tiedosto muuttui; aja C5 uudelleen. Jos toistuu, tee B2–B3 uudelleen ja lataa uusi manifesti. |
-| C5 | `HTTP Error 401/403` | Tee C4 (token). |
-| C5 | `No space left on device` | Colabin levy loppui; **Runtime → Disconnect and delete runtime** ja aloita C1:stä. |
-| C5–F5 | *Your session crashed after using all available RAM* | Ilmaisen Colabin muisti ei riitä (ks. C-osan varoitus). |
-| C8 | tyhjä rivi | Odota 10 s ja aja grep-rivi uudelleen; katso `!cat /content/tunnel.log`. |
-| D4 | `Error 400: redirect_uri_mismatch` | Asiakas on Desktop-tyyppinen tai paluuosoite puuttuu/on väärin (D3). |
-| D4 | `Error 403: access_denied` | Oma osoite ei ole testikäyttäjänä (D2 kohta 3). |
-| F | `Google Drive authorization failed` | Refresh token vanheni (7 päivää) tai on väärin; tee D4 uudelleen. |
-| F | `Google Drive credentials are not configured` | D-muuttujat puuttuvat, eikä `HAHMOSTUDIO_STORAGE=local-dev` ole asetettu. |
-| F3 | ei rivejä lainkaan, vain estosyy (esim. taustajärjestelmä pois päältä tai hinta tuntematon) | `HAHMOSTUDIO_COLAB_COMFYUI_URL` puuttuu, ei ala `https://`:llä, tai `HAHMOSTUDIO_COLAB_CLASSIFIED_FREE` ei ole `yes`. |
-| F5 | `Render cancelled or timed out.` | Nosta `HAHMOSTUDIO_COMFYUI_TIMEOUT_MS` (enintään 3600000) tai lyhennä videota. |
-| F5 | `ComfyUI rejected the prompt.` / `ComfyUI reported a render error.` | Aja Colabissa `!tail -n 40 /content/comfy.log` ja lähetä tuloste. |
-
-## Jos jokin epäonnistuu, lähetä
-- esitarkistuksen rivit (erityisesti ✗),
-- renderöintitietueen `blocked`, `errors` ja `liveVerification.missing` (dialogi näyttää ne; koko tietue: `GET /api/render/<jobId>`),
-- asennusskriptin tuloste ja `comfy.log`:n loppu,
-- kuvakaappaus dialogista.
-
-**Älä liitä** Hugging Face -tokenia, client secretiä, refresh tokenia tai trycloudflare-osoitetta. Peitä ne, jos ne näkyvät tulosteessa.
-
-## Tähän ohjeeseen liittyvät koodimuutokset (2026-10-08)
-- ComfyUI:n `SaveVideo` palauttaa tuloksissaan myös lipun `animated: [true]`. Aiemmin taustajärjestelmä tulkitsi sen kelvottomaksi tiedostoksi ja hylkäsi **jokaisen** oikean videorenderöinnin virheellä *Runtime returned a disallowed file*. Nyt vain tiedosto-objektit käsitellään; tiedosto-objekti ilman nimeä hylätään edelleen.
-- Uusi valinnainen `HAHMOSTUDIO_COMFYUI_TIMEOUT_MS` (60000–3600000, oletus 600000 = 10 min), koska hidas GPU voi ylittää 10 minuuttia.
