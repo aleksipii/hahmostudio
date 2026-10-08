@@ -541,3 +541,101 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Kaggle-muistikirja-ajo (käyttäjän pyynnöstä, ilmainen ja ehtojen mukainen reitti):** uusi taustajärjestelmä `kaggle-notebook`: palvelin ei ota yhteyttä ajoympäristöön, vaan tekee renderöinnistä yhden .ipynb-tiedoston (työnkulku, syötteet, mallin manifesti, paketin hash), jonka käyttäjä ajaa Kagglessa (ComfyUI vain 127.0.0.1:ssä, ei tunnelia) ja tuo tulostiedoston takaisin. Tuonti tarkistetaan (työ, paketin hash, kuitti vs. pin, tarkistussummat, tyypit) ennen tavallista putkea. Live-todennus käyttää ajoympäristön omaa tarkistusta ja kuittia (`runtime-reported`). Rajoitus: odottavat työt ovat muistissa, joten palvelimen uudelleenkäynnistys hävittää ne. Python-skripti testattu vale-ComfyUI:ta ja vale-Hugging Facea vasten; testi löysi vian (tyhjä solmumääritys tulkittiin puuttuvaksi), korjattu.
 
 **Edelleen todentamatta:** oikea Colab-, ComfyUI- ja Drive-ajo, oikea Kaggle-ajo (Import Notebook, levytila, aika T4/P100:lla), `SaveVideo`-solmun `format`/`codec`-syötteiden hyväksyntä oikeassa ComfyUI:ssa, muistin riittävyys ja renderöintiaika T4:llä.
+
+### 2.24 — Tekoäly-paneeli, vaihe 1: todelliset tilat (2026-10-08, Kilsat Studio -tiimi, tekoälyasiantuntija)
+
+**Suunnitelma:** `docs/cloud-render/TEKOALY-SUUNNITELMA-FI.md` (lopputarkastaja: SUUNNITELMA HYVÄKSYTTY ehdoin 1–4).
+
+**Valmis (koodi):**
+- `lib/ai-status.ts`: puhdas tilamalli. Rivi vain ominaisuudelle, jonka tila on luettu: Rhubarb (aina paikallinen), whisper.cpp (`audioModel`), Kokoro (`kokoroStatus`), MediaPipe (kameran lupa `navigator.permissions`), pilvirenderöinti. Jokaisella rivillä sijainti, lupa, mitä dataa lähtee minne, kustannus (aina €0,00 tai estetty) ja istunnon viimeisin tulos.
+- Viimeisin tulos: `lib/platform.ts` `desktop()` kääri `speech`-, `transcribe`- ja `kokoroSynthesize`-kutsut (`trackAi`), tulos ja virhe välittyvät muuttumattomina. Kirjaus on vain muistissa, ei projektiin eikä levylle.
+- Pilvirenderöinti näkyy vaiheessa 1 vain tekstinä "Ei saatavilla" (pois, estetty), ei painiketta (ehto 3).
+- `components/ai-panel.tsx` (dialogi nykyisillä luokilla, vain Sulje), avaus Näytä → Tekoäly… (`desktop/main.mjs`, toiminto `ai`), kytkentä `components/editor.tsx`:ään. Ulkoasu ja sijainti jäävät UI/UX-suunnittelijalle. Paneeli on vain työpöydällä.
+- Testit: `lib/ai-status.test.ts` (4), `server/ai-panel.test.mjs` (2). `npm test` 1211 (1210 läpi, 1 ohitettu), typecheck, `build:private` ja `desktop:build` OK.
+
+**Todentamatta:** paneelia ei ole avattu oikeassa Electron-ikkunassa (ei GUI:ta tässä ympäristössä); kameran luvan luku Electronissa (`navigator.permissions` palauttaa tarvittaessa "ei voitu lukea"). Simuloitu: kyllä · pakattu sovellus: ei · oikea Mac: ei · ComfyUI-GPU: ei koske.
+
+**Seuraava:** vaihe 2, salaisuusvarasto (safeStorage) ja pilvi-IPC:n validointi.
+
+### 2.25 — Pilviasetusten salaisuusvarasto ja kapea IPC, vaihe 2 (2026-10-08, tekoälyasiantuntija)
+
+**Valmis (koodi):**
+- `desktop/cloud-secrets.mjs`: `CloudSecretStore` salaa arvot `safeStorage`lla tiedostoon `userData/cloud-secrets.bin` (0600, atominen tmp+rename). Jos salaus ei ole käytettävissä, tallennus estetään; selväkielistä varaa ei ole. Viisi sallittua avainta (tunnelin https-osoite ilman käyttäjätietoja, bearer, Google OAuth -tunnukset) muototarkistuksin; virheviesti ei koskaan sisällä arvoa. `parseSecretFile` lukee KEY=VALUE-tiedoston ja ohittaa muut avaimet (myös maksullisen laskennan muuttujat) nimeltä. `redact` peittää tunnetut arvot ja kaikki http(s)-osoitteet.
+- `desktop/cloud-policy.mjs`: `DESKTOP_COMPUTE_POLICY` (sama kuin `ZERO_COST_POLICY`, jäädytetty), `cloudStatus` (vain onko avain asetettu), `guarded` (peittää virheet ennen rendereriä).
+- IPC (`desktop/main.mjs`, `preload.cjs`): `cloudStatus`, `cloudSecretPaste(avain)` (arvo luetaan pääprosessissa leikepöydältä, ei rendereristä), `cloudSecretImport()` (pääprosessin tiedostodialogi, ≤ 64 KiB), `cloudSecretClear(avain|'all')`. Tallennus vaatii natiivin vahvistuksen, joka näyttää tunnelin palvelimen nimen. Ei käyttöliittymää vielä (vaihe 3).
+- `desktop/test-fixtures/electron-stub.mjs`: lisätty `clipboard` ja `safeStorage`, koska `main.mjs` tuo ne (startup-testi vaati).
+- Testit `desktop/cloud-secrets.test.mjs` (8): salattu tiedosto ei sisällä merkkiarvoa, tila ei palauta arvoja, ei tallennusta ilman salausta, virheet ilman arvoa, tiedostotuonnin sallittulista, peittäminen, politiikka = zero-cost, IPC-pinta täsmälleen neljä kanavaa, desktop ei viittaa web-omistajan tunnuksiin tai maksullisen laskennan muuttujiin, testisalaisuus ei esiinny gitissä muualla. `npm test` 1219 (1218 läpi, 1 ohitettu), typecheck OK.
+
+**Todentamatta:** oikea macOS Keychain (`safeStorage`) ja natiivit dialogit; testit käyttävät vale-salausta. Simuloitu: kyllä · pakattu sovellus: ei · oikea Mac: ei.
+
+**Seuraava:** vaihe 3, pilvipalveluprosessi, opt-in, lupadialogi ennen lähetystä, checkpoint ennen dispatchia (ehto 1).
+
+### 2.26 — Pilvirenderöinti työpöydälle, vaihe 3: erillinen pilviprosessi, opt-in ja lupa ennen lähetystä (2026-10-08, tekoälyasiantuntija)
+
+**Valmis (koodi):**
+- `desktop/cloud-service.mjs`: "KOETA · pilvipalvelu" -`utilityProcess`, joka käynnistyy vasta opt-inin jälkeen ensimmäisestä pilvikutsusta. Ei porttia; ajaa saman `createCloudRender`-koodin kuin yksityinen palvelin (Electronin Node 24 poistaa tyypit, todennettu myös asar-paketin sisällä). Ympäristö tulee käynnistysviestissä sallitulista (`buildCloudEnv`): salaisuudet, käyttäjän vahvistamat ilmaisuusilmoitukset ja mallien lukitustiedosto; ei `process.env`iä eikä maksullisen laskennan muuttujia. Ilman Drivea tallennus on paikallinen (`userData/cloud-render`).
+- `desktop/cloud-controller.mjs`: opt-in natiivilla vahvistuksella (oletus pois), "Vahvista ilmaiseksi" Kagglelle/tunnelille natiivilla vahvistuksella, mallien lukituksen tuonti pääprosessin tiedostodialogilla (revisio 40 hex + SHA-256), prosessin elinkaari ja uudelleenkäynnistys asetusten muuttuessa, lähtevän datan lupa (`egressConsent`: renderöinti aina, synkronointi ja vertailukuva Drive-tallennuksella), vastausten peittäminen, Kaggle-muistikirjan tallennus ja tuloksen tuonti pääprosessin dialogeilla.
+- `desktop/cloud-jobs.mjs` (ehto 1): checkpoint levylle ennen dispatchia; keskeneräiset työt muuttuvat `interrupted`-tilaan uudessa käynnistyksessä tai pilviprosessin päättyessä; mitään ei lähetetä uudelleen automaattisesti (enintään 50 kirjausta).
+- `desktop/cloud-policy.mjs`: `cloudRoute` kartoittaa 13 sallittua toimintoa kukin yhteen reittiin; renderer ei voi valita reittiä, taustaa, mallia, parametreja eikä politiikkaa.
+- IPC: `cloudEnable`, `cloudDisable`, `cloudDeclareFree`, `cloudPinsImport`, `cloudPinsClear`, `cloudCall`. Pilvidialogi (`components/cloud-render-dialog.tsx`) käyttää työpöydällä `lib/cloud-desktop.ts`-kuljetusta; Tekoäly-paneelissa pilven asetukset ja "Avaa pilvirenderöinti…".
+- Linuxin `basic_text`-avainnippua ei hyväksytä (paitsi eristetyssä `--cloud-test`-ajossa). `scripts/package-mac.mjs` paketoi `lib/cloud-render`, `lib/studio/hash.ts` ja `cloud/runtime` (ei testejä).
+- **Löydetyt ja korjatut viat (Electron-testi):** Electron 44:n `clipboard.readText()` palauttaa lupauksen (liittäminen ei toiminut); Tekoäly-paneeli näytti pilven "ei saatavilla" ennen kuin tila oli luettu.
+- Testit: `desktop/cloud-controller.test.mjs` (11), `lib/cloud-desktop.test.ts` (2), lisäykset `ai-status`- ja `ai-panel`-testeihin. `npm run desktop:test:cloud`: 24 tarkistusta oikeassa Electronissa (renderer → IPC → utilityProcess → lib/cloud-render), mukaan lukien vuototarkistus koko datakansiosta. `npm test` 1234 (1233 läpi, 1 ohitettu), typecheck ja `build:private` OK.
+
+**Todennettu:** `desktop:test:cloud` läpi Linuxissa (Electron 44.5.1, xvfb, `--no-sandbox` koska ajo oli root-käyttäjänä; heikko avainnippu sallittu vain tässä ajossa). **Todentamatta:** oikea Mac ja Keychain, pakattu .app, natiivit dialogit käsin, oikea Kaggle-, ComfyUI-, Drive- tai GPU-ajo.
+
+**Seuraava:** vaihe 4, kuvakohtaiset ehdotukset.
+
+## 2.27 Tekoäly · vaihe 4: kuvakohtaiset kuvaehdotukset (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 4/7. **Tehty:**
+- `lib/shot-suggestions.ts`: sääntöpohjaiset kuvaehdotukset Korjausehdotukset-listaan. Ehdotus syntyy vain, kun käsikirjoituksessa on jo omia kuvaohjeita ja tunnistettu hahmo reagoi tunteella (surullinen, peloissaan, vihainen, huolestunut, loukkaantunut, ilmeetön tuijotus) tai katsoo kameraan toisen kuvan aikana. Ehdotus lisää `LÄHIKUVA NIMI` -rivin ja palauttaa edellisen kuvan repliikkijatkon jälkeen.
+- Käytetään vain olemassa olevaa tunnistinsyntaksia (`blockSentence`), joten sanastoon ei tullut uutta. Jokainen ehdotus luetaan takaisin tunnistimella ennen näyttämistä; jos rivi ei lue täsmälleen samaksi kuvaksi, ehdotusta ei näytetä.
+- Ohitetaan: lukitut tai suojatut tapahtumat, tuotannossa lukitut kuvat (`lockedShotEvents`), `Samalla`-rivit ja tilanteet, joissa hahmo on jo lähikuvassa.
+- Ehdotus näytetään tarkkana rivimuutoksena. Se otetaan käyttöön vasta painikkeesta käsikirjoituksen tavallisella, kumottavalla rakennuspolulla (yksi kumottava muutos). Hylätty eli käyttämätön ehdotus ei jätä jälkeä.
+- `components/presentation-panel.tsx`: yksi kytkentärivi (`reviewFixes`), kirjattu TIIMI.md:n Pyyntöihin etukäteen.
+- Testit `lib/shot-suggestions.test.ts` (6): oikea ehdotus ja rivinumero, muun sisällön säilyminen ennallaan käytön jälkeen, `blockSentence`-pyöräytys, lukitun kuvan ohitus, ei ehdotuksia ilman omia kuvaohjeita, ei kaksoisehdotuksia.
+
+**Todennettu:** `npm test` 1240 (1239 läpi, 1 ohitettu), typecheck OK. Selaintarkistus (Vite dev, Chromium): esimerkin tuonti → Rakenna jakso → "Kuvaehdotus: lähikuva Niko (surullinen)" näkyy tarkkana muutoksena → Käytä ehdotusta lisää rivit `LÄHIKUVA NIKO` ja `LÄHIKUVA MIRA` → Kumoa poistaa ne ja ehdotus palaa. **Todentamatta:** Mac-sovellus.
+
+**Seuraava:** vaihe 5, puuttuvat repliikkiäänet.
+
+## 2.28 Tekoäly · vaihe 5: repliikkiäänten etusija ja äänityksen tarkistus (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 5/7. **Tehty:**
+- `lib/voice-sources.ts`: yksi etusijasääntö. Käyttäjän ääni (oma äänitys tai tuotu tiedosto) voittaa aina synteettisen äänen. `replaceBlockedBy` estää synteettistä ääntä korvaamasta käyttäjän ääntä tai lukittua synteettistä riviä. Lisäksi `lineVoices`, `voiceCounts` ja litteraatin sanatason vertailu `compareTranscript` (pisin yhteinen alijono, enintään 600 sanaa; sulkeohjeet ja litteroijan [MERKINNÄT] ohitetaan).
+- `components/presentation-panel.tsx` (kirjattu Pyyntöihin etukäteen):
+  - `importVoice` tarkistaa säännön tallennushetkellä. Kokoro ei siis voi korvata omaa ääntä, vaikka rivi saisi oman äänen synteesin aikana. Aiemmin tämän esti vain synteesin alussa tehty tarkistus.
+  - Ääninäyttelijän työpisteeseen tuli `VoiceCheck`.
+- `components/voice-check.tsx`: "Tarkista äänitys" näkyy vain, kun valitulla repliikillä on käyttäjän ääni ja paikallinen whisper.cpp-malli on asennettu. Ilman mallia näytetään ohje eikä painiketta. Toiminto litteroi rivin äänivälin paikallisesti ja näyttää puuttuvat ja ylimääräiset sanat. Se ei kirjoita käsikirjoitukseen, projektiin eikä ääneen. Pilvipuhesynteesiä tai pilvilitterointia ei ole.
+- Testit `lib/voice-sources.test.ts` (6).
+
+**Todennettu:** `npm test` 1246 (1245 läpi, 1 ohitettu), typecheck, `build:private`. Selaimessa (Vite dev, Chromium, valemikrofoni): repliikin äänitys → työpiste näyttää ohjeen "vaatii paikallisen puhemallin", koska mallia ei ole. **Todentamatta:** varsinainen litterointi oikealla whisper.cpp-mallilla (mallia ei ole tässä ympäristössä), Mac-sovellus.
+
+**Seuraava:** vaihe 6, vertailukuvat.
+
+## 2.29 Tekoäly · vaihe 6: vertailukuvat sidotaan hahmon grafiikkaan (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 6/7. **Tehty:**
+- `lib/character-sources.ts`: hahmon grafiikan tunniste on hahmopaketin tiedoston SHA-256. Tuodulla hahmolla tiiviste on jo tunnisteessa (`cast-sha256-…`); kirjastopaketti luetaan `BASE_URL/library/<nimi>.hahmo`. Lähdettä, jota ei voi lukea, ei arvata.
+- `REFERENCE_READY_PACKS` on tyhjä: sovellus ehdottaa paketin omaa kuvaa (`library/<nimi>.png`) vertailukuvaksi vain listan paketeille. Lista täytetään vasta, kun hahmon grafiikka on hyväksytty valmiiksi.
+- Ehdotus ei hyväksy itseään. Hyväksyntä on käyttäjän painallus "Hyväksy vertailukuvaksi". Käyttämätön ehdotus ei jätä jälkeä.
+- `lib/cloud-render`:
+  - `CanonicalCharacter.sourceSha256` ja `CharacterReference.sourceSha256` ovat valinnaisia, joten vanhat tilat ja kuvat pysyvät luettavina.
+  - Vertailukuvan lataus hylätään (409 `reference-stale`), jos tiiviste ei vastaa synkronoitua tilaa.
+  - Putki käyttää vain samalle grafiikalle hyväksyttyä kuvaa. Grafiikan muutoksen jälkeen pakollinen syöte estyy syyllä `reference-stale`, eikä taustaan oteta yhteyttä; valinnainen vanhentunut kuva jätetään pois.
+- `components/cloud-render-dialog.tsx`: synkronointi laskee tiivisteet. Vertailukuvaosio näyttää grafiikan tunnisteen ja ehdotuksen (vain valmiille paketeille), ja oma kuvatiedosto sidotaan samaan tiivisteeseen. Työpöydän IPC-reitti (`cloud-policy.mjs`) ja `cloud-desktop.ts` välittävät validoidun tiivisteen.
+- Testit: `lib/character-sources.test.ts` (3), `lib/cloud-render/references.test.ts` (4) ja reittitarkistus `desktop/cloud-controller.test.mjs`:ssä. Kaikissa on erillinen testidata (Testihahmo, alice), ei kirjaston hahmoja.
+- Raja: tiiviste kattaa hahmopaketin tiedoston, ei editorissa tehtyjä paketin muokkauksia ilman uutta tiedostoa.
+
+**Todennettu:** `npm test` 1253 (1252 läpi, 1 ohitettu), typecheck, `desktop:test:cloud` 24/24 (Electron, Linux). **Todentamatta:** dialogin ehdotusnäkymä selaimessa (vaatii pilvipalvelimen; lisäksi lista on tyhjä), oikea renderöinti vertailukuvalla, Mac.
+
+**Seuraava:** vaihe 7, dokumentaatio ja valmiusraportti.
+
+## 2.30 Tekoäly · vaihe 7: dokumentaatio ja valmiusraportti (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 7/7. **Tehty:** `docs/cloud-render/DESKTOP.md` (työpöydän pilviarkkitehtuuri, salaisuudet, lähtevä data, palautuminen, vertailukuvat, paketointi ja todennustasot) sekä `docs/cloud-render/KAYTTOONOTTO-FI.md`, johon tuli osa G (sama polku työpöytäsovelluksessa) ja vertailukuvan vanhenemisen selitys. Valmiusraportti on tasoittain (simuloitu / pakattu / oikea Mac / oikea ComfyUI-GPU) tiimin lokissa.
+
+**Todennettu:** ks. 2.24–2.29. **Todentamatta (ei väitetä):** pakattu .app, oikea Mac (Keychain, natiivit dialogit), whisper-litterointi oikealla mallilla, oikea Kaggle-, ComfyUI-, Drive- tai GPU-ajo.
+
+**Seuraava:** testaajan ja lopputarkastajan palaute. Vertailukuvaehdotukset otetaan käyttöön hahmo kerrallaan, kun hahmon grafiikka on hyväksytty.

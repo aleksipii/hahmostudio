@@ -22,6 +22,7 @@
     "desktop:test:screenplay-gui": "node scripts/desktop-screenplay-gui.mjs",
     "desktop:test:playback-raf": "node scripts/desktop-playback-raf.mjs",
     "desktop:test:export-e2e": "node scripts/desktop-export-e2e.mjs",
+    "desktop:test:cloud": "node scripts/desktop-cloud-test.mjs",
     "assets:generate": "python3 scripts/create-characters.py && node scripts/create-library.mjs && python3 scripts/create-mouths.py && node scripts/create-mouths.mjs && node --experimental-strip-types scripts/create-backgrounds.mjs && python3 scripts/create-backgrounds.py && python3 scripts/create-cutout-kids.py && node scripts/create-cutout-kids.mjs",
     "native:prepare": "node scripts/prepare-native-runtime.mjs",
     "benchmark": "node --experimental-strip-types scripts/benchmark-studio.ts",
