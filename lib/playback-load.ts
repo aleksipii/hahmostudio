@@ -22,7 +22,7 @@ export function createStubCanvas(width:number,height:number){
 export type PlaybackLoadReport={fps:number;durationFrames:number;sampledFrames:number;stepMs:number;viewports:Record<string,{render:ReturnType<typeof summarizeRenderTimings>;raf:ReturnType<typeof frameMetrics>}>};
 
 /** Simulates 60 Hz rAF steps and measures stub-canvas presentation render cost per viewport. */
-export function measurePresentationPlayback(compiled:Presentation,assets:PresentationAssets,options:{fps:number;durationFrames:number;frames:number[];viewports?:readonly {label:string;width:number;height:number}[];stepMs?:number}):PlaybackLoadReport{
+export function measurePresentationPlayback(compiled:Presentation,assets:PresentationAssets,options:{fps:number;durationFrames:number;frames:number[];viewports?:readonly {label:string;width:number;height:number}[];stepMs?:number;repeats?:number}):PlaybackLoadReport{
  const viewports=options.viewports??PLAYBACK_VIEWPORTS,step=options.stepMs??1000/60;
  const controller=new PlaybackController(options.fps,options.durationFrames,[]);
  controller.send('play',0);
@@ -35,11 +35,11 @@ export function measurePresentationPlayback(compiled:Presentation,assets:Present
   const time=targetFrame/options.fps;
   for(const vp of viewports){
    const {canvas,scratch}=createStubCanvas(vp.width,vp.height);
-   // CPU time, not wall time: parallel test files or a busy CI host must not inflate the sample.
-   const start=process.cpuUsage();
-   renderPresentation(canvas,scratch,compiled,assets,time,vp.width,vp.height);
-   const used=process.cpuUsage(start);
-   renderSamples[vp.label].push((used.user+used.system)/1000);
+   // CPU time, not wall time, and the best of a few repeats: parallel test files or a busy host must not inflate the sample
+   // (a regression raises every repeat; a transient stall raises only some).
+   let best=Infinity;
+   for(let r=0;r<(options.repeats??3);r++){const start=process.cpuUsage();renderPresentation(canvas,scratch,compiled,assets,time,vp.width,vp.height);const used=process.cpuUsage(start);best=Math.min(best,(used.user+used.system)/1000);}
+   renderSamples[vp.label].push(best);
   }
  }
  const viewportsOut:PlaybackLoadReport['viewports']={};
