@@ -8,7 +8,8 @@ test('environment library ids, names and aliases are unique and well formed',()=
  for(const e of environmentLibrary){
   assert.match(e.id,/^[a-z-]+-scene-v1$/);
   assert.ok(['studio','sisätila','ulkoilma'].includes(e.category),e.id);
-  assert.ok(e.aliases.length>=2&&e.aliases.every(a=>a.trim()===a&&a.length>0),e.id);
+  // Vähintään yksi alias; sama sana voi kelvata molemmilla kielillä (esim. sauna).
+  assert.ok(e.aliases.length>=1&&e.aliases.every(a=>a.trim()===a&&a.length>0),e.id);
   assert.equal(e.representation,'2d');
   assert.ok(e.placement.xMin<e.placement.xMax&&e.placement.xMin>=0&&e.placement.xMax<=1&&e.placement.y>0&&e.placement.y<1,e.id);
  }
