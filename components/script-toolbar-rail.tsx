@@ -31,8 +31,8 @@ export default function ScriptToolbarRail({
       <div className="script-toolbar" role="toolbar" aria-label="Käsikirjoitustoiminnot">
         {docked ? (
           <label className="script-file-import secondary" title="Tuo UTF-8-tekstitiedosto">
-            <span className="script-file-import-title">Tuo UTF-8</span>
-            <span className="script-file-import-hint">.md tai .txt</span>
+            <span className="script-file-import-title">Tuo tekstitiedosto</span>
+            <span className="script-file-import-hint">.md tai .txt (UTF-8)</span>
             <input
               type="file"
               accept=".md,.txt"

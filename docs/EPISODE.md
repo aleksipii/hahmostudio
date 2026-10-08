@@ -61,7 +61,7 @@ Live-kamera, mikrofoni ja näppäimet säilyvät tavallisessa Esitys-työtilassa
 
 Käsikirjoitus-välilehden **Kokeile esimerkkianimaatiota** rakentaa ja toistaa liike-esimerkin. Tyhjässä projektissa ladataan Aino-Monikulma. Valmiiksi avatun pikaanimointihahmon kanssa esimerkki lisätään aikajanan loppuun kumottavasti. Esimerkissä ei ole puheääntä; tekstistä ei tuoteta ääntä. Oman hahmon tilalle lataaminen käyttää olemassa olevaa tallentamiskehotetta ja säilyttää edellisen työn palautettavaksi.
 
-Näyttämön alareunan **Pienennä kuvaa** ja **Suurenna kuvaa** muuttavat hahmon kokoa myös videoviennissä. Dialogikohtauksissa ne muuttavat kaikkien kohtauksen hahmojen kokoa. Sijainti, liikkeet ja äänen ajoitus säilyvät. Muutoksen voi kumota. Loitonna/Lähennä/Sovita muuttavat vain esikatselun zoomausta. Pysäytä toisto ennen koon muuttamista.
+Näyttämön alareunan **Pienennä hahmoa** ja **Suurenna hahmoa** muuttavat hahmon kokoa myös videoviennissä. Dialogikohtauksissa ne muuttavat kaikkien kohtauksen hahmojen kokoa. Sijainti, liikkeet ja äänen ajoitus säilyvät. Muutoksen voi kumota. Loitonna/Lähennä/Sovita muuttavat vain esikatselun zoomausta. Pysäytä toisto ennen koon muuttamista.
 
 ## Kamera, oma ääni ja Studio-hahmot (0.8.0)
 

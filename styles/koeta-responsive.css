@@ -1,0 +1,159 @@
+/*
+ * KOETA – kapeat ja keskikokoiset ikkunat (UI/UX-korjaukset 2026-10-08).
+ * Ladataan viimeisenä. Muuttaa vain asettelua: jokainen toiminto pysyy paikallaan
+ * ja saavutettavissa myös kapealla ruudulla.
+ */
+
+/* ─── Yläpalkki: työvaiheiden nimet näkyvät kaikilla leveyksillä ───
+ * Aiemmin alle 1060 px:n ikkunassa nimet piilotettiin ja numero oli
+ * ruudunlukijalle tarkoitettu, joten painikkeet olivat tyhjiä. */
+@media (max-width: 1060px) {
+  .s2 .s2-phase .studio-flow-tab-label { display: inline; }
+  .s2 .s2-phase { padding: 3px 7px; }
+  .s2 .s2-phase[aria-current='page']::after { left: 7px; right: 7px; }
+  .s2 .s2-workshop span { display: inline; }
+  .s2 .s2-workshop { padding: 3px 8px 3px 10px; margin-left: 2px; }
+  .s2 .s2-workshop[aria-current='page']::after { left: 10px; right: 8px; }
+  .s2 .s2-project-menu > summary { max-width: 140px; }
+}
+
+@media (max-width: 960px) {
+  .s2 .s2-brand > span { display: none; }
+  .s2 .s2-tools { gap: 0; }
+  .s2 .s2-tools .view-menu > summary,
+  .s2 .s2-tools .s2-save { padding: 0 7px; }
+}
+
+/* Kapea ikkuna: työvaiheet omalle rivilleen, vieritettävinä. */
+@media (max-width: 860px) {
+  .s2 .s2-top {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 0;
+    padding-top: 6px;
+  }
+  .s2 .s2-tools { margin-left: auto; }
+  /* Rivinvaihto: työvaiheet ja Työpaja aina toiselle riville. */
+  .s2 .s2-top::after { content: ''; order: 9; flex-basis: 100%; height: 0; }
+  .s2 .s2-phases {
+    order: 10;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    margin: 0;
+    padding-bottom: 2px;
+    overflow-x: auto;
+  }
+  .s2 .s2-workshop { order: 11; margin: 0; }
+  .s2 .s2-phase,
+  .s2 .s2-workshop { min-height: 36px; }
+  .s2 .s2-phase[aria-current='page']::after,
+  .s2 .s2-workshop[aria-current='page']::after { bottom: 0; }
+}
+
+@media (max-width: 480px) {
+  .s2 .s2-brand { display: none; }
+  .s2 .s2-project-menu > summary { max-width: 120px; }
+  .s2 .s2-tools .s2-icon { width: 30px; padding: 0; }
+}
+
+/* ─── Työtila kapealla ruudulla ───
+ * Leveä asettelu käyttää viisi saraketta (paneeli, jakaja, näyttämö, jakaja,
+ * paneeli). Alle 851 px:n jakajat piilotetaan, jolloin näyttämö valui 1 px:n
+ * jakajasarakkeeseen ja katosi. Paikat annetaan nyt nimettyinä alueina. */
+@media (max-width: 850px) {
+  .studio.s2 .workspace,
+  .studio.s2.hide-library .workspace,
+  .studio.s2.hide-inspector .workspace {
+    grid-template-columns: minmax(200px, 34%) minmax(0, 1fr);
+    grid-template-rows: minmax(420px, 1fr) max-content;
+    grid-template-areas:
+      'library stage'
+      'inspector inspector';
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .studio.s2 .workspace > .layers-panel { grid-area: library; max-height: none; border-right: 1px solid var(--s2-line); }
+  .studio.s2 .workspace > .preview-panel { grid-area: stage; min-height: 420px; }
+  .studio.s2 .workspace > .details-panel {
+    grid-area: inspector;
+    max-height: none;
+    overflow: visible;
+    border-top: 1px solid var(--s2-line);
+  }
+  .studio.s2.hide-library .workspace > .preview-panel { grid-column: 1 / -1; }
+  .studio.s2.hide-library.hide-inspector .workspace { grid-template-rows: minmax(0, 1fr); }
+}
+
+/* Puhelin: näyttämö ylimpänä koko leveydeltä, paneelit sen alla. */
+@media (max-width: 600px) {
+  .studio.s2 .workspace,
+  .studio.s2.hide-library .workspace,
+  .studio.s2.hide-inspector .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(360px, 58dvh) max-content max-content;
+    grid-template-areas:
+      'stage'
+      'library'
+      'inspector';
+  }
+  .studio.s2 .workspace > .preview-panel { min-height: 360px; }
+  .studio.s2 .workspace > .layers-panel { max-height: 70dvh; border-right: 0; border-top: 1px solid var(--s2-line); }
+  .studio.s2.hide-library .workspace > .preview-panel { grid-column: auto; }
+}
+
+/* ─── Käsikirjoitus kapeassa sivupaneelissa ───
+ * Kolmen sarakkeen kirjoitusasettelu (reunamerkinnät · teksti · reunamerkinnät)
+ * on tehty keskialueelle. Vasemmassa paneelissa sarakkeet puristuivat
+ * muutaman kymmenen pikselin levyisiksi. Kapeassa tilassa teksti saa koko
+ * leveyden; reunamerkinnät näkyvät edelleen Tarina-vaiheen leveässä näkymässä. */
+.studio.s2 .layers-panel { container-type: inline-size; }
+@container (max-width: 520px) {
+  .studio .script-compose-grid,
+  .studio.script-ux-luonnos .script-compose-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .studio .script-compose-grid > .script-margin { display: none; }
+}
+
+/* ─── Näyttämön alapalkki ───
+ * Hahmon koko (muuttaa videota) ja näkymän zoomaus (ei muuta videota)
+ * erotetaan pystyviivalla, jotta ne eivät sekoitu. */
+.studio.s2 .zoom-controls > .s2-footer-sep {
+  flex: none; width: 1px; min-width: 0; height: 18px; margin: 0 4px; padding: 0;
+  border: 0; border-radius: 0; background: var(--s2-line2);
+}
+@media (max-width: 850px) {
+  .studio.s2 .preview-footer {
+    width: auto; height: auto; transform: none;
+    justify-content: center; border-radius: 14px;
+  }
+  .studio.s2 .preview-footer .zoom-controls { flex-wrap: wrap; justify-content: center; min-width: 0; max-width: 100%; }
+  .studio.s2 .zoom-controls > .s2-footer-sep { display: none; }
+}
+
+/* Puhelimella aikajana ei saa viedä näyttämöltä koko ruutua. */
+@media (max-width: 600px) {
+  .studio.s2 .timeline-dock { max-height: 40dvh; overflow-y: auto; }
+}
+
+/* ─── Hahmokortti: "Lataa ja muokkaa" on toissijainen linkki, ei laatikko ───
+ * Laatikon sisennykset rivittivät tekstin kahdelle riville kapeassa kortissa. */
+.studio.s2 .character-card details { margin-top: 6px; padding: 0; border: 0; background: none; }
+.studio.s2 .character-card details > summary {
+  display: inline-flex; align-items: center; gap: 4px; width: auto; min-height: 24px;
+  padding: 2px 0; background: none; border: 0;
+  color: var(--s2-muted); font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer;
+}
+.studio.s2 .character-card details > summary:hover { color: var(--s2-text); }
+.studio.s2 .character-card details[open] > summary { color: var(--s2-text); }
+
+/* Kapealla näyttämöllä zoom-palkki näyttämön alle, ei hahmon päälle. */
+@media (max-width: 850px) {
+  .studio.s2 .preview-panel .preview-footer {
+    position: relative; left: auto; right: auto; bottom: auto;
+    align-self: center; margin: 6px 8px 8px; max-width: calc(100% - 16px);
+  }
+}
