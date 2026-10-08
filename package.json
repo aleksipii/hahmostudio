@@ -30,7 +30,8 @@
     "assets:cutout-kids": "python3 scripts/create-cutout-kids.py && node scripts/create-cutout-kids.mjs",
     "grammar:coverage": "node --experimental-strip-types scripts/grammar-coverage.ts",
     "vocabulary:gaps": "node --experimental-strip-types scripts/vocabulary-gaps.ts",
-    "kokoro:prepare": "node scripts/prepare-kokoro-runtime.mjs"
+    "kokoro:prepare": "node scripts/prepare-kokoro-runtime.mjs",
+    "ui:census": "node scripts/ui-census.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.32",
