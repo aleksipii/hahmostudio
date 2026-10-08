@@ -11,7 +11,7 @@ import {initProduction} from './production-model.ts';
 
 const cache=new Map<string,{doc:Awaited<ReturnType<typeof readProject>>['doc'];animation:Awaited<ReturnType<typeof readProject>>['animation']}>();
 async function pack(n:string){if(!cache.has(n)){const r=await readProject(new Blob([readFileSync(new URL(`../public/library/${n}.hahmo`,import.meta.url))]));cache.set(n,{doc:r.doc,animation:r.animation});}return cache.get(n)!;}
-const example=`Resurssi hahmo MIRA: Roni-Monikulma
+const example=`Resurssi hahmo MIRA: Ukko-3D
 Resurssi hahmo NIKO: Pipsa
 INT. KEITTIÖ - AAMU
 Mira seisoo ikkunan vieressä puhelin kädessä.
@@ -23,11 +23,11 @@ LÄHIKUVA MIRA
 Mira näyttää Nikolle puhelinta.
 Mira katsoo Nikoa.
 Niko istuutuu.`;
-async function built(text=example,width=1080,height=1920){const assets={'Roni-Monikulma':await pack('Roni-Monikulma'),Pipsa:await pack('Pipsa')};return {b:buildEpisode(text,{packs:catalogFromNames(CHARACTER_PACK_OPTIONS),assets},{width,height}),assets};}
+async function built(text=example,width=1080,height=1920){const assets={'Ukko-3D':await pack('Ukko-3D'),Pipsa:await pack('Pipsa')};return {b:buildEpisode(text,{packs:catalogFromNames(CHARACTER_PACK_OPTIONS),assets},{width,height}),assets};}
 
 test('vertailukorkeus ja hahmotyyppi jokaiselle kirjaston hahmolle; lapsi 0,72 × aikuinen',async()=>{
- for(const name of ['Pipsa','Ville','Taru','Ukko','Roni-Monikulma','Salla-Monikulma','Aino-Monikulma','Otto-Monikulma','Roni-Studio','Pipsa-3D']){const {doc}=await pack(name),m=measureCharacter(doc);assert.ok(m.height>doc.height*.5&&m.height<=doc.height,name+' '+m.height);assert.ok(m.eyeY>m.top&&m.eyeY<m.top+m.height*.45,name+' silmälinja');}
- assert.equal(characterKind((await pack('Pipsa')).doc),'lapsi');assert.equal(characterKind((await pack('Ukko')).doc),'aikuinen');assert.equal(characterKind((await pack('Otto-Monikulma')).doc),'robotti');assert.equal(characterKind((await pack('Roni-Monikulma')).doc),'aikuinen');
+ for(const name of ['Pipsa','Ville','Taru','Ukko','Pipsa-3D','Ville-3D','Taru-3D','Ukko-3D','Pipsa','Pipsa-3D']){const {doc}=await pack(name),m=measureCharacter(doc);assert.ok(m.height>doc.height*.5&&m.height<=doc.height,name+' '+m.height);assert.ok(m.eyeY>m.top&&m.eyeY<m.top+m.height*.45,name+' silmälinja');}
+ assert.equal(characterKind((await pack('Pipsa')).doc),'lapsi');assert.equal(characterKind((await pack('Ukko')).doc),'aikuinen');assert.equal(characterKind((await pack('Ukko-3D')).doc),'aikuinen');assert.equal(characterKind((await pack('Pipsa-3D')).doc),'lapsi');
  const {b,assets}=await built(),h=(speaker:string)=>{const bind=b.presentation.bindings.find(x=>x.speaker===speaker)!,m=measureCharacter(assets[bind.asset as keyof typeof assets].doc);return m.height*stageActor(b.presentation,bind,0).scale;};
  assert.ok(Math.abs(h('NIKO')/h('MIRA')-kindScale.lapsi)<.01,`lapsi/aikuinen ${h('NIKO')/h('MIRA')}`);assert.ok(Math.abs(h('MIRA')-adultStageHeight(1080,1920))<1);
 });
@@ -48,8 +48,8 @@ test('esineen ja käden kokosuhde: esine skaalautuu käden koon mukaan hahmon ko
 
 test('lähikuva rajautuu silmälinjaan (1/3 ±5 % korkeudesta) ja jättää tilaa katseen suuntaan',async()=>{
  const {b,assets}=await built(),p=b.presentation,close=p.events.find(e=>e.kind==='shot'&&e.value==='close')!,t=close.at!+.3,bind=p.bindings.find(x=>x.speaker==='MIRA')!;
- const cam=cameraTransform(p,assets,t),r=stageActor(p,bind,t),m=measureCharacter(assets['Roni-Monikulma'].doc),a=p.actorAnimations!.MIRA;
- const root=a.tracks.find(x=>x.key===assets['Roni-Monikulma'].doc.quick!.roles.root),pose={x:0,y:0,...(root?{}:{})};void pose;
+ const cam=cameraTransform(p,assets,t),r=stageActor(p,bind,t),m=measureCharacter(assets['Ukko-3D'].doc),a=p.actorAnimations!.MIRA;
+ const root=a.tracks.find(x=>x.key===assets['Ukko-3D'].doc.quick!.roles.root),pose={x:0,y:0,...(root?{}:{})};void pose;
  const eye={x:r.x+(m.eyeX-300)*r.scale,y:r.y+(m.eyeY-450)*r.scale},screen={x:eye.x*cam.scale+cam.x,y:eye.y*cam.scale+cam.y};
  assert.ok(Math.abs(screen.y/1920-shotEyeLine.close)<=.05,`silmälinja ${(screen.y/1920).toFixed(3)}`);
  // Mira on vasemmalla ja katsoo Nikoa (oikealle): silmät ruudun vasemmalla puolella, tilaa oikealle.

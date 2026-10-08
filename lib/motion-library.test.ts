@@ -8,8 +8,8 @@ import {animationTransforms} from './animation-transform.ts';
 import {sampleTrack,type Animation} from './animation-model.ts';
 import {viewAtFrame} from './character-view.ts';
 
-/** Kirjaston hahmot, joilla on täysi raajaketju (kartonki-Mr.Kille/Handu käyttävät omaa kartonkipolkuaan). */
-const packs=['Pipsa','Ville','Taru','Ukko','Pipsa-3D','Ville-3D','Taru-3D','Ukko-3D','Roni-Monikulma','Salla-Monikulma','Aino-Monikulma','Otto-Monikulma','Roni-Studio','Salla-Studio'];
+/** Kirjaston hahmot, joilla on täysi raajaketju (kartonki-Pipsa/Handu käyttävät omaa kartonkipolkuaan). */
+const packs=['Pipsa','Ville','Taru','Ukko','Pipsa-3D','Ville-3D','Taru-3D','Ukko-3D','Pipsa-3D','Ville-3D','Taru-3D','Ukko-3D','Pipsa','Ville'];
 const motions:[string,string][]=[['walk-right','kävelee oikealle 2 s'],['walk-left','kävelee vasemmalle 2 s'],['walk-front','kävelee suoraan 2 s'],['run-right','juoksee oikealle 2 s'],['wave','vilkuttaa'],['nod','nyökkää'],['point','osoittaa'],['sit','istuu'],['jump','hyppää'],['crouch','kyykistyy'],['react-surprise','hämmästyy'],['fist','nyrkki']];
 /** Rajat 24 fps:llä: kulmakiihtyvyys °/ruutu² ja jerk °/ruutu³. Juoksun polvi liikkuu luonnostaan nopeammin. */
 const limits=(m:string)=>m.startsWith('run')?{acc:35,jerk:40}:{acc:20,jerk:20};
@@ -54,7 +54,7 @@ test('päällekkäinen toiminta: pää, kädet ja vartalo alkavat 2–4 ruudun p
 });
 
 test('siirtymät: liike alkaa edellisen loppuasennosta (istumasta kävelyyn ilman hyppyä), kävelynopeus keston ja jalan pituuden mukaan',async()=>{
- const r=await pack('Roni-Monikulma'),q=r.doc.quick!,b=build('Roni-Monikulma','Mira istuu.\nMira vilkuttaa.\nMira kävelee oikealle 2 s.',r),a=b.animationPerActor.MIRA;
+ const r=await pack('Pipsa-3D'),q=r.doc.quick!,b=build('Pipsa-3D','Mira istuu.\nMira vilkuttaa.\nMira kävelee oikealle 2 s.',r),a=b.animationPerActor.MIRA;
  assert.deepEqual(b.diagnostics.filter(d=>d.severity==='error'),[]);
  for(const t of a.tracks){const s=rotationSeries(a,t.key),y=rotationSeries(a,t.key,0,a.duration-1,'y');assert.ok(maxAcceleration(s)<=20,t.key+' '+maxAcceleration(s));for(let i=1;i<s.length;i++){assert.ok(Math.abs(s[i]-s[i-1])<40,`hyppy ${t.key} ruutu ${i}: ${s[i-1]}→${s[i]}`);assert.ok(Math.abs(y[i]-y[i-1])<12,`y-hyppy ${t.key} ruutu ${i}`);}}
  for(let f=0;f<a.duration;f++)assert.ok(visibleViewRoots(q,a,f)<=1,'kaksi kuvakulmaa ruudussa '+f);
@@ -75,7 +75,7 @@ test('lepoelämä: silmät räpäyttävät 2,8–4,6 s välein ja hengitys liiku
 });
 
 test('juoksussa on lentovaihe (molemmat jalat ilmassa), kävelyssä ei; kohti kameraa kävellessä hahmo kasvaa ja jalat pysyvät maassa',async()=>{
- for(const name of ['Pipsa','Roni-Monikulma','Ville-3D']){
+ for(const name of ['Pipsa','Pipsa-3D','Ville-3D']){
   const r=await pack(name),q=r.doc.quick!;
   const flightFrames=(line:string)=>{const a=build(name,'Mira '+line+'.',r).animationPerActor.MIRA,pts=(['left','right'] as const).map(s=>Array.from({length:a.duration},(_,f)=>footPoint(r.doc,a,f,s)));
    const floor=Math.max(...pts.flat().map(p=>p?.y??-1e9));let n=0;for(let f=0;f<a.duration;f++){const l=pts[0][f],rt=pts[1][f];if(l&&rt&&floor-l.y>2.5&&floor-rt.y>2.5)n++;}return n;};

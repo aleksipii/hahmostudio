@@ -42,7 +42,7 @@ Nimetty paikallinen projektihistoria, kuvakorttien hyväksyntä/lukitus, validoi
 
 0.13 lisää nykyisten moottorien päälle tuotantoidentiteetin, repliikkiäänen vaihtokomennon, kahden projektivedoksen automaattipalautuksen, resurssimanifestin, Mac-viennin esitarkistuksen ja kuvataulun. Näiden käyttö, arkkitehtuuri ja keskeneräiset osat kuvataan [0.13-muistiossa](DEVELOPMENT-0.13.md). Tämä ei vielä ole täydellinen studiotason tuotantojärjestelmä.
 
-Kaksi alkuperäistä Mr.Kille/Mr.Handu-hahmoa, kartonkitaustat, yhdeksän suun ohjaus ja sääntöpohjaiset SVG/JSON-moduulit on kuvattu [0.12-muutosmuistiossa](DEVELOPMENT-0.12.md). Aiemmat projektimuodot ja moottorit säilyvät.
+Vanhat Mr.Kille/Mr.Handu-hahmot poistettiin 2026-10-08 (ohjelmakoodi ja kartonkitaustat säilyivät; hahmoaineisto löytyy gitin historiasta); kartonkitaustat, yhdeksän suun ohjaus ja sääntöpohjaiset SVG/JSON-moduulit on kuvattu [0.12-muutosmuistiossa](DEVELOPMENT-0.12.md). Aiemmat projektimuodot ja moottorit säilyvät.
 
 # KILSAT Studio — käyttöliittymä 0.11
 
@@ -118,7 +118,7 @@ Pään irtoaminen vartalosta voi johtua puuttuvasta liitoksesta tai aiemmin tall
 
 ### Hahmokirjasto ja esitystavat
 
-Kirjastossa ovat vanhat alkuperäiset hahmot ja lähde-PSD:t sekä Aino-/Otto-/Roni-/Salla-monikulmapaketit ja Studio-lisäykset. Valmis `.hahmo` voi sisältää kuvat, nivelet ja pikaanimoinnin roolisidokset. Monikulmainen 2D-hahmo käyttää erillisiä etu- ja profiilipiirroksia sekä kullekin kulmalle omia sidoksia.
+Kirjastossa ovat neljä paksureunaista leikkaushahmoa (Pipsa, Ville, Taru, Ukko) 2D- ja 3D-versioina sekä Hahmopohja. Valmis `.hahmo` voi sisältää kuvat, nivelet ja pikaanimoinnin roolisidokset. Monikulmainen 2D-hahmo käyttää erillisiä etu- ja profiilipiirroksia sekä kullekin kulmalle omia sidoksia.
 
 Nykyiset kolme esitystapaa on erotettava:
 
@@ -126,7 +126,7 @@ Nykyiset kolme esitystapaa on erotettava:
 | --- | --- | --- |
 | **2D** | Tasokuvat ja niihin kohdistuvat muunnokset | Kuvakulma vaatii siihen kuuluvan piirroksen |
 | **Paperi/2.5D** | PSD-tasojen projektiot syvyysasetuksilla | Ei tilavuudellinen kehomalli |
-| **Roni/Salla-toon 3D** | Tilavuusgeometria, luuranko ja nivelpainot | Mallit ovat `review`-tilassa, eivät taiteellisesti lopullisia |
+| **3D-toon (Pipsa, Ville, Taru, Ukko)** | Tilavuusgeometria, luuranko ja nivelpainot | Mallit ovat `review`-tilassa, eivät taiteellisesti lopullisia |
 
 3D-malli käyttää samoja hahmoprofiileja ja liike-/suuohjauksia esikatselussa ja viennissä. Ihon, hiusten, paidan, housujen ja kenkien värit tallentuvat hahmoprofiiliin. Mallit ovat kolmiulotteisia pintoja; niitä ei toteuteta yhtenä kuvana 3D-tasolla. Renderöinti on Canvasin CPU-kolmiorenderöintiä ortografisella kameralla ja toon-väreillä. Syvyysratkaisu perustuu kolmioiden järjestykseen, ei täydelliseen z-bufferiin. Vapaa mallinnuseditori, vaatteen fysiikka ja mielivaltaisten 3D-mallien tuonti puuttuvat.
 

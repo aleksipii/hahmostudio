@@ -3,16 +3,6 @@ import type { PresentationAssets } from './presentation-compile.ts';
 
 /** Oletusvalinnat käsikirjoituksen hahmopaketeille (ei automaattista .hahmo-sidontaa). */
 export const CHARACTER_PACK_OPTIONS = [
-  'Kille-Oma',
-  'Handu-Oma',
-  'Roni-Studio',
-  'Salla-Studio',
-  'Roni-Monikulma',
-  'Salla-Monikulma',
-  'Aino-Monikulma',
-  'Otto-Monikulma',
-  'Aino',
-  'Otto',
   'Pipsa-3D',
   'Ville-3D',
   'Taru-3D',
@@ -38,9 +28,5 @@ export function suggestPackForSpeaker(speaker: string, handle?: string): string 
     if (packNorm.includes(norm) || norm.includes(packNorm.replace(/\s/g, ''))) return pack;
     if (handleNorm && packNorm.includes(handleNorm)) return pack;
   }
-  if (norm.includes('KILLE')) return 'Kille-Oma';
-  if (norm.includes('HANDU')) return 'Handu-Oma';
-  if (norm.includes('RONI')) return 'Roni-Studio';
-  if (norm.includes('SALLA')) return 'Salla-Studio';
   return undefined;
 }

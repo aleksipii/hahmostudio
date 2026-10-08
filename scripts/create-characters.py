@@ -1,11 +1,9 @@
-"""Original layered raster characters. No Adobe or reference-image graphics are copied."""
+"""Muokattava tyhjä hahmopohja (Hahmopohja). Alkuperäistä grafiikkaa; ei kopioitu mistään lähteestä."""
 from PIL import Image, ImageDraw
 from pathlib import Path
 import json
 root=Path(__file__).resolve().parent.parent
 for name,asset,skin,shirt,hair,portrait,blank in [
- ('Aino','hahmostudio-aino-human-v1','#b97957','#8b60c9','#352b36',False,False),
- ('Leo','hahmostudio-leo-portrait-v1','#efbc96','#b56f46','#49352e',True,False),
  ('Hahmopohja','hahmostudio-blank-v1','#ffffff','#ffffff','#dbe3eb',False,True)]:
  height=700 if portrait else 900;out=root/'.character-build'/name;out.mkdir(parents=True,exist_ok=True);layers=[];composite=Image.new('RGBA',(600,height));dark='#24364b';eye='#ffffff'
  def layer(key,label,group,role,pivot,parent,draw,hidden=False,joints=[]):

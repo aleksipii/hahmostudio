@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 import {mixPerformance,cameraCaptureTimes} from './performance-mixer.ts';import {readProject,saveProject} from './project-file.ts';import {neutral} from './animation-model.ts';import {initialQuick,dispatchQuick,quickPoses} from './quick-animation.ts';import {workspaceView,readTheme} from './workspace.ts';
-const fixture=()=>readProject(new Blob([readFileSync(new URL('../public/library/Otto.hahmo',import.meta.url))]));
+const fixture=()=>readProject(new Blob([readFileSync(new URL('../public/library/Ukko.hahmo',import.meta.url))]));
 test('camera head, two keyboard arms, microphone mouth and timeline legs coexist in recorded project',async()=>{
  const p=await fixture(),q=p.doc.quick!,state=initialQuick();dispatchQuick(state,'left',true,0);dispatchQuick(state,'right',true,0);const quick=quickPoses(state,q,p.animation.rig,.1,.08),head={...neutral,x:31,y:14,rotation:12,scale:1.15},eye={...neutral,opacity:0};
  const animation={...p.animation,tracks:[...p.animation.tracks,{key:q.roles.leftForearm,frames:[{...neutral,rotation:21,frame:0,easing:'hold' as const}]}]};const camera={[q.roles.head]:head,[q.roles.leftPupil]:eye,[q.roles.mouthOpen]:{...neutral,scale:1.6}};

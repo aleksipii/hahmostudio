@@ -21,8 +21,8 @@ test('decoded envelope peaks align with scheduled dialogue inside a shot',()=>{
 
 test('studio example without voice blobs keeps timing fallback rail',async()=>{
  const load=async(name:string)=>readProject(new Blob([readFileSync(new URL('../public/library/'+name+'.hahmo',import.meta.url))]));
- const [kille,handu]=await Promise.all([load('Kille-Oma'),load('Handu-Oma')]);
- const built=buildStudioExample({kille:{doc:kille.doc,animation:kille.animation},handu:{doc:handu.doc,animation:handu.animation}},createScene({width:1080,height:1920}));
+ const [kille,handu]=await Promise.all([load('Pipsa'),load('Ville')]);
+ const built=buildStudioExample({pipsa:{doc:kille.doc,animation:kille.animation},ville:{doc:handu.doc,animation:handu.animation}},createScene({width:1080,height:1920}));
  const p=built.scene.presentations![0],shot=adaptPresentation(p).shots[0];
  const rail=shotWaveformRail(p,shot,new Map(),12);
  assert.equal(rail.decoded,false);

@@ -11,11 +11,11 @@ import {inspectRenderSnapshot} from './studio/render-contract.ts';
 import {exportPresets} from './export-presets.ts';
 
 async function studioCompiled(){
- const [kille,handu]=await Promise.all(['Kille-Oma','Handu-Oma'].map(async name=>{
+ const [kille,handu]=await Promise.all(['Pipsa','Ville'].map(async name=>{
   const p=await readProject(new Blob([readFileSync(new URL('../public/library/'+name+'.hahmo',import.meta.url))]));
   return {doc:p.doc,animation:p.animation};
  }));
- const built=buildStudioExample({kille,handu},createScene({width:1080,height:1920}));
+ const built=buildStudioExample({pipsa:kille,ville:handu},createScene({width:1080,height:1920}));
  for(const pack of Object.values(built.assets))for(const n of flatten(pack.doc.layers))if(n.kind==='layer')n.image={key:n.key} as unknown as HTMLImageElement;
  const presentation=built.scene.presentations![0];
  return {presentation,assets:built.assets,doc:built.doc,animation:built.animation,scene:built.scene};

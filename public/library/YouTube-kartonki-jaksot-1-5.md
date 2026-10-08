@@ -8,8 +8,8 @@
 Jakson nimi: Kartonki 1 · Studio-avaus
 Pituus: 10–14 s
 Resurssi tausta: cutout-studio-v1
-Resurssi hahmo KILLE: kille
-Resurssi hahmo HANDU: handu
+Resurssi hahmo KILLE: Pipsa
+Resurssi hahmo HANDU: Ville
 Hahmo: Kille
 Hahmo: Handu
 Kohtaus: Kartonkistudio
@@ -24,8 +24,8 @@ Odota 1 s
 Jakson nimi: Kartonki 2 · Kamera lähemmäs
 Pituus: 10–14 s
 Resurssi tausta: cutout-studio-v1
-Resurssi hahmo KILLE: kille
-Resurssi hahmo HANDU: handu
+Resurssi hahmo KILLE: Pipsa
+Resurssi hahmo HANDU: Ville
 Hahmo: Kille
 Hahmo: Handu
 Kohtaus: Studio
@@ -41,8 +41,8 @@ Odota 1 s
 Jakson nimi: Kartonki 3 · Katu
 Pituus: 12–16 s
 Resurssi tausta: cutout-street-v1
-Resurssi hahmo KILLE: kille
-Resurssi hahmo HANDU: handu
+Resurssi hahmo KILLE: Pipsa
+Resurssi hahmo HANDU: Ville
 Resurssi esine: table-prop-v1
 Hahmo: Kille
 Hahmo: Handu
@@ -59,8 +59,8 @@ Odota 1 s
 Jakson nimi: Kartonki 4 · Auto
 Pituus: 10–14 s
 Resurssi tausta: cutout-car-v1
-Resurssi hahmo KILLE: kille
-Resurssi hahmo HANDU: handu
+Resurssi hahmo KILLE: Pipsa
+Resurssi hahmo HANDU: Ville
 Hahmo: Kille
 Hahmo: Handu
 Kohtaus: Auton penkki
@@ -75,8 +75,8 @@ Odota 1 s
 Jakson nimi: Kartonki 5 · Lopetus
 Pituus: 10–14 s
 Resurssi tausta: cutout-studio-v1
-Resurssi hahmo KILLE: kille
-Resurssi hahmo HANDU: handu
+Resurssi hahmo KILLE: Pipsa
+Resurssi hahmo HANDU: Ville
 Hahmo: Kille
 Hahmo: Handu
 Kohtaus: Studio loppu
