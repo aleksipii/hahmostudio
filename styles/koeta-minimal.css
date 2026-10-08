@@ -1,0 +1,68 @@
+/*
+ * KOETA – minimalistinen näkymä (docs/UI-MINIMALISMI-SUUNNITELMA.md, V1–V3).
+ * Ladataan viimeisenä. Vain piilotetaan: komponentit pysyvät mounted-tilassa (AGENTS.md),
+ * ja jokainen piilotettu toiminto on edelleen omassa kodissaan (Tarina, ⌘K, Näytä-valikko).
+ */
+
+/* Selittävät bannerit pois: yläpalkin työvaihe kertoo missä ollaan, eikä banneri auta tekemään mitään. */
+.studio.s2 .flow-step-banner { display: none; }
+
+/* Välilehtirivi, jossa on vain yksi näkyvä välilehti, ei kerro mitään. */
+.studio.s2 .layers-panel > .library-tabs:not(:has(> button:not([hidden]) ~ button:not([hidden]))) { display: none !important; }
+
+/* Lukituissa vaiheissa (Storyboard, Kuvaus, Leikkaus) käsikirjoituksen lähdetyökalut ovat
+ * pois käytöstä, joten niitä ei näytetä. Muokkaus on Tarinassa, ⌘K ja "Työkalut /". */
+.studio.s2.phase-storyboard .script-shell-sidebar,
+.studio.s2.phase-shot .script-shell-sidebar,
+.studio.s2.phase-timeline .script-shell-sidebar,
+.studio.s2.phase-storyboard .script-docked-hint,
+.studio.s2.phase-shot .script-docked-hint,
+.studio.s2.phase-timeline .script-docked-hint,
+.studio.s2.phase-storyboard .script-guide,
+.studio.s2.phase-shot .script-guide,
+.studio.s2.phase-timeline .script-guide { display: none; }
+
+/* Leikkauksessa äänitys ei ole päätehtävä; "Ääni ja videovienti" pysyy tarkastelijassa,
+ * ja äänitys on Kuvauksessa ja ⌘K:ssa. */
+.studio.s2.phase-timeline .audio-analysis { display: none; }
+
+/* Lukituissa vaiheissa kirjoitusalueen rakennus- ja jakopainikkeet kuuluvat Tarinaan. */
+.studio.s2.phase-storyboard .script-sticky-bar,
+.studio.s2.phase-shot .script-sticky-bar,
+.studio.s2.phase-timeline .script-sticky-bar,
+.studio.s2.phase-storyboard .script-compose-meta,
+.studio.s2.phase-shot .script-compose-meta,
+.studio.s2.phase-timeline .script-compose-meta { display: none; }
+
+/* Tyhjä tila: yksi lause, yksi painike. */
+.studio.s2 .phase-empty {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 24px; text-align: center; color: var(--s2-muted);
+}
+.studio.s2 .phase-empty p { margin: 0; color: var(--s2-text); font-size: 15px; font-weight: 600; }
+.studio.s2 .phase-empty .phase-empty-hint { color: var(--s2-muted); font-size: 13px; font-weight: 400; }
+.studio.s2 .phase-empty button { margin-top: 8px; }
+
+/* ─── Vasen paneeli rakennetussa jaksossa: vain vaiheen oma sisältö ───
+ * Jokainen osio pysyy mountattuna ja on omassa kodissaan:
+ * käsikirjoituskopio ja korjausehdotukset Tarinassa, palikkaeditori ja repliikkiäänet Kuvauksessa,
+ * ääniraita ja puhesynteesi Leikkauksessa. */
+.studio.s2.phase-storyboard .layers-panel .script-compose,
+.studio.s2.phase-shot .layers-panel .script-compose,
+.studio.s2.phase-timeline .layers-panel .script-compose,
+.studio.s2.phase-storyboard .layers-panel .review-suggestions,
+.studio.s2.phase-shot .layers-panel .review-suggestions,
+.studio.s2.phase-timeline .layers-panel .review-suggestions,
+.studio.s2.phase-storyboard .layers-panel .kokoro-panel,
+.studio.s2.phase-shot .layers-panel .kokoro-panel,
+.studio.s2.phase-storyboard .layers-panel .block-editor-dock,
+.studio.s2.phase-timeline .layers-panel .block-editor-dock,
+.studio.s2.phase-storyboard .layers-panel .voices-missing,
+.studio.s2.phase-timeline .layers-panel .voices-missing,
+.studio.s2.phase-storyboard .layers-panel .soundtrack-summary,
+.studio.s2.phase-shot .layers-panel .soundtrack-summary { display: none; }
+
+/* Kuvataulun suodattimet ja lajittelu ovat yhden avattavan osion takana; kortit näkyvät ensin. */
+.studio.s2 .studio-shot-board .board-more { margin: 4px 0 8px; }
+.studio.s2 .studio-shot-board .board-more > summary { cursor: pointer; color: var(--s2-muted); font-size: 12px; padding: 6px 0; }
+.studio.s2 .studio-shot-board .board-more > summary:hover { color: var(--s2-text); }

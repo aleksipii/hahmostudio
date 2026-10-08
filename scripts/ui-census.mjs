@@ -49,7 +49,7 @@ const countInPage = () => {
       !e.closest('[hidden]') && !e.closest('details:not([open]) > :not(summary)')
     );
   };
-  const els = [...document.querySelectorAll('button,input,select,textarea,summary,[role=tab],[role=slider],a[href]')].filter(visible);
+  const els = [...document.querySelectorAll('button,input,select,textarea:not(.script-line-field),summary,[role=tab],[role=slider],a[href]')].filter(visible);
   const zone = (e) =>
     e.closest('.s2-top') ? 'ylapalkki' : e.closest('.layers-panel') ? 'vasen' : e.closest('.details-panel') ? 'oikea'
       : e.closest('.timeline-dock') ? 'aikajana' : e.closest('.preview-panel') ? 'nayttamo' : 'muu';
@@ -64,7 +64,7 @@ const page = await browser.newPage({ viewport: { width, height } });
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1000);
 
-// Sama lähtötila kuin suunnitelman mittauksessa: Pipsa-3D valittuna ja esimerkkikäsikirjoitus ladattuna.
+// Lähtötila: Pipsa-3D valittuna, esimerkkikäsikirjoitus ladattuna ja jakso rakennettuna.
 await page.click('.s2-phase[data-studio-flow-step="characters"]');
 await page.waitForTimeout(500);
 await page.getByRole('button', { name: 'Valitse Pipsa' }).first().click();
@@ -80,8 +80,14 @@ for (const id of ['script', 'characters', 'storyboard', 'shot', 'timeline']) {
       await example.first().click();
       await page.waitForTimeout(2500);
     }
+    const build = page.getByRole('button', { name: 'Rakenna jakso' });
+    if (await build.count()) {
+      await build.first().click();
+      await page.waitForTimeout(5000);
+    }
   }
   results[id] = await page.evaluate(countInPage);
+  if (opt('shots', '')) await page.screenshot({ path: `${opt('shots', '')}-${id}.png` });
 }
 await page.click('.s2-workshop');
 await page.waitForTimeout(900);
