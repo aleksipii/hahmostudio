@@ -599,3 +599,17 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todennettu:** `npm test` 1240 (1239 läpi, 1 ohitettu), typecheck OK. Selaintarkistus (Vite dev, Chromium): esimerkin tuonti → Rakenna jakso → "Kuvaehdotus: lähikuva Niko (surullinen)" näkyy tarkkana muutoksena → Käytä ehdotusta lisää rivit `LÄHIKUVA NIKO` ja `LÄHIKUVA MIRA` → Kumoa poistaa ne ja ehdotus palaa. **Todentamatta:** Mac-sovellus.
 
 **Seuraava:** vaihe 5, puuttuvat repliikkiäänet.
+
+## 2.28 Tekoäly · vaihe 5: repliikkiäänten etusija ja äänityksen tarkistus (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 5/7. **Tehty:**
+- `lib/voice-sources.ts`: yksi etusijasääntö. Käyttäjän ääni (oma äänitys tai tuotu tiedosto) voittaa aina synteettisen äänen. `replaceBlockedBy` estää synteettistä ääntä korvaamasta käyttäjän ääntä tai lukittua synteettistä riviä. Lisäksi `lineVoices`, `voiceCounts` ja litteraatin sanatason vertailu `compareTranscript` (pisin yhteinen alijono, enintään 600 sanaa; sulkeohjeet ja litteroijan [MERKINNÄT] ohitetaan).
+- `components/presentation-panel.tsx` (kirjattu Pyyntöihin etukäteen):
+  - `importVoice` tarkistaa säännön tallennushetkellä. Kokoro ei siis voi korvata omaa ääntä, vaikka rivi saisi oman äänen synteesin aikana. Aiemmin tämän esti vain synteesin alussa tehty tarkistus.
+  - Ääninäyttelijän työpisteeseen tuli `VoiceCheck`.
+- `components/voice-check.tsx`: "Tarkista äänitys" näkyy vain, kun valitulla repliikillä on käyttäjän ääni ja paikallinen whisper.cpp-malli on asennettu. Ilman mallia näytetään ohje eikä painiketta. Toiminto litteroi rivin äänivälin paikallisesti ja näyttää puuttuvat ja ylimääräiset sanat. Se ei kirjoita käsikirjoitukseen, projektiin eikä ääneen. Pilvipuhesynteesiä tai pilvilitterointia ei ole.
+- Testit `lib/voice-sources.test.ts` (6).
+
+**Todennettu:** `npm test` 1246 (1245 läpi, 1 ohitettu), typecheck, `build:private`. Selaimessa (Vite dev, Chromium, valemikrofoni): repliikin äänitys → työpiste näyttää ohjeen "vaatii paikallisen puhemallin", koska mallia ei ole. **Todentamatta:** varsinainen litterointi oikealla whisper.cpp-mallilla (mallia ei ole tässä ympäristössä), Mac-sovellus.
+
+**Seuraava:** vaihe 6, vertailukuvat.
