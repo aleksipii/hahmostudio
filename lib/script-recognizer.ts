@@ -962,6 +962,12 @@ export function recognizeScript(text: string, characters: string[] = [], options
   };
 }
 
+/** Tunnistamattoman rivin selitys käyttäjälle: rivi, sijainti, syy ja muoto, jonka sovellus olisi ymmärtänyt. */
+export function explainUnknownLine(l: RecognizedLine): string {
+  const reason = l.reason ?? UNKNOWN_REASONS.noRule.reason;
+  return `Rivi ${l.line}: “${l.text}”. ${reason}` + (l.hint ? ` Sovellus ymmärtää muodon: ${l.hint}` : '');
+}
+
 /** Lyhyt suomenkielinen kuvaus marginaaliin ja diagnostiikkaan. */
 export function describeLine(l: RecognizedLine): string {
   const motion: Record<string, string> = { 'walk-left': 'kävely ←', 'walk-right': 'kävely →', 'walk-front': 'kävely ↓', 'run-left': 'juoksu ←', 'run-right': 'juoksu →', 'run-front': 'juoksu ↓', wave: 'vilkutus', point: 'osoitus', fist: 'nyrkki', sit: 'istuminen', jump: 'hyppy', crouch: 'kyykky', nod: 'nyökkäys', 'react-nod': 'reaktio: nyökkäys', 'react-surprise': 'reaktio: hämmästys', 'react-wave': 'reaktio: vilkutus', stop: 'pysähdys' };

@@ -1,4 +1,4 @@
-import { recognizeScript, describeLine } from './script-recognizer.ts';
+import { recognizeScript, describeLine, explainUnknownLine } from './script-recognizer.ts';
 
 /** Debounce live-marginaaliskannaukselle (ms) — alle ~100 ms tuntuva viive pitkissä teksteissä. */
 export const SCRIPT_ANNOTATE_DEBOUNCE_MS = 150;
@@ -12,6 +12,8 @@ export type ScriptLineAnnotation = {
   kind: 'empty' | 'scene' | 'speaker' | 'character' | 'time' | 'heading' | 'comment' | 'body';
   /** Sääntötunnistin ei ymmärtänyt riviä: näytetään varoituksena marginaalissa. */
   unrecognized?: boolean;
+  /** Tunnistamattoman rivin selitys: rivi, syy ja muoto, jonka tunnistin ymmärtää (työkaluvihjettä varten). */
+  reason?: string;
 };
 
 const sceneRe = /^(?:Kohtaus|Scene):\s*(.*)$/i;
@@ -93,7 +95,7 @@ export function scanScriptLineAnnotations(text: string): ScriptLineAnnotation[] 
       if (!r || r.kind === 'empty') continue;
       const label = describeLine(r);
       if (label) a.right = label.length > 28 ? label.slice(0, 26) + '…' : label;
-      if (r.kind === 'unknown') a.unrecognized = true;
+      if (r.kind === 'unknown') { a.unrecognized = true; a.reason = explainUnknownLine(r); }
     }
   }
   return out;
