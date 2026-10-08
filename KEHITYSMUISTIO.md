@@ -639,3 +639,11 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todennettu:** ks. 2.24–2.29. **Todentamatta (ei väitetä):** pakattu .app, oikea Mac (Keychain, natiivit dialogit), whisper-litterointi oikealla mallilla, oikea Kaggle-, ComfyUI-, Drive- tai GPU-ajo.
 
 **Seuraava:** testaajan ja lopputarkastajan palaute. Vertailukuvaehdotukset otetaan käyttöön hahmo kerrallaan, kun hahmon grafiikka on hyväksytty.
+
+## 2.31 Tekoäly-paneeli löytyy sovelluksen omasta Näytä-valikosta (2026-10-08)
+
+**Käyttäjän palaute:** "Sovelluksessa ei näy tekoäly". **Syy:** Tekoäly… oli vain macOS:n valikkorivillä (Näytä → Tekoäly…). Sitä ei ollut sovelluksen ikkunan omassa Näytä-valikossa eikä Hae toimintoa -haussa. **Korjaus:** `components/editor.tsx` (kytkentä, kirjattu TIIMI.md:n Pyyntöihin):
+- ikkunan oikean yläkulman Näytä-valikkoon tuli "Tekoäly…";
+- toimintohakuun (⌘K) tuli "Tekoäly: tilat ja pilvirenderöinti…".
+
+Testi `server/ai-panel.test.mjs`. **Todennettu:** selaimessa (Vite, Chromium) Näytä → Tekoäly… avaa paneelin ja ⌘K-haku löytää sen. **Todentamatta:** pakattu Mac-sovellus.

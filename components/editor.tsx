@@ -572,6 +572,7 @@ export default function Editor() {
   {id:'library',group:'Näkymä',label:layout.library?'Piilota vasen paneeli':'Näytä vasen paneeli',run:()=>setLayout(l=>({...l,library:!l.library}))},
   {id:'inspector',group:'Näkymä',label:layout.inspector?'Piilota oikea paneeli':'Näytä oikea paneeli',run:()=>setLayout(l=>({...l,inspector:!l.inspector}))},
   {id:'focus-stage',group:'Näkymä',label:'Keskity näyttämöön',run:focusStage},
+  {id:'ai',group:'Näkymä',label:'Tekoäly: tilat ja pilvirenderöinti…',keywords:'ai tekoäly kokoro whisper rhubarb pilvi',run:()=>setAiOpen(true)},
   {id:'reset-panels',group:'Näkymä',label:'Palauta paneelien koot',run:()=>{setPanelSizes({...defaultSizes});setZoom(null);}},
   ...(['checker','dark','white'] as const).map(b=>({id:'preview-bg-'+b,group:'Näkymä',label:`Esikatselun tausta: ${b==='checker'?'läpinäkyvyysruudukko':b==='dark'?'tumma':'valkoinen'}`,keywords:'tausta ruudukko työpaja',run:()=>setBackground(b)})),
   {id:'fit',group:'Näkymä',label:'Sovita koko näyttämö',disabled:!doc,run:()=>setZoom(null)},
@@ -606,7 +607,7 @@ export default function Editor() {
    {privateServer&&<button className="secondary" onClick={()=>setCloudRender(true)}><span>Pilvirenderöinti…</span></button>}
    {privateServer&&<button className="secondary" disabled={quickBusy} onClick={()=>void logout()}>Kirjaudu ulos</button>}
   </AppMenu>}
-  viewMenu={<ViewMenu layout={{...layout,timeline:timelineOpen}} update={next=>{setLayout(next);setTimelineOpen(next.timeline);}} extra={<><button className="secondary" onClick={focusStage}>Keskity näyttämöön</button><button className="secondary" onClick={()=>{setPanelSizes({...defaultSizes});setZoom(null);}}>Palauta paneelien koot</button><button className="secondary" disabled={!doc} onClick={()=>setZoom(null)}>Sovita koko näyttämö</button></>}/>}
+  viewMenu={<ViewMenu layout={{...layout,timeline:timelineOpen}} update={next=>{setLayout(next);setTimelineOpen(next.timeline);}} extra={<><button className="secondary" onClick={()=>setAiOpen(true)}>Tekoäly…</button><button className="secondary" onClick={focusStage}>Keskity näyttämöön</button><button className="secondary" onClick={()=>{setPanelSizes({...defaultSizes});setZoom(null);}}>Palauta paneelien koot</button><button className="secondary" disabled={!doc} onClick={()=>setZoom(null)}>Sovita koko näyttämö</button></>}/>}
   saveButton={<button className="secondary s2-save" disabled={saveDisabled} onClick={()=>void downloadProject()} title="Tallenna projekti (⌘S)">{projectBusy?'Odota…':'Tallenna'}</button>}
   exportControl={<div className="s2-export"><ExportPanel episode={doc&&animation&&rig?{doc,animation:{...animation,rig},scene,audio:audioAsset}:null} legacy={()=>void downloadVideo()}/></div>}>
   {cloudRender&&<CloudRenderDialog presentation={activePresentation??null} onClose={()=>setCloudRender(false)}/>}

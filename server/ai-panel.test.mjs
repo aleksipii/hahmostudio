@@ -40,3 +40,10 @@ test('pilven asetukset: pois päältä vain käyttöönottopainike; päällä to
  const noKeychain=renderToStaticMarkup(React.createElement(CloudControls,{status:status({enabled:true,secrets:{encryption:false,keys:{}}}),busy:false,act:()=>{}}));
  assert.match(noKeychain,/<button type="button" class="secondary" disabled="">Liitä tunnelin osoite/);
 });
+
+test('Tekoäly-paneeli löytyy sovelluksen omasta Näytä-valikosta ja toimintohausta, ei vain macOS:n valikkoriviltä',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const editor=await readFile(new URL('../components/editor.tsx',import.meta.url),'utf8');
+ assert.match(editor,/extra=\{<><button className="secondary" onClick=\{\(\)=>setAiOpen\(true\)\}>Tekoäly…<\/button>/);
+ assert.match(editor,/\{id:'ai',group:'Näkymä',label:'Tekoäly: tilat ja pilvirenderöinti…'[^}]*run:\(\)=>setAiOpen\(true\)\}/);
+});
