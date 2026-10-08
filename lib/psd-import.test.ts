@@ -50,9 +50,13 @@ test('readStructure group nesting limit: 19 groups around a layer pass, deeper n
  const nest=(depth:number):Layer=>depth?{name:'g'+depth,children:[nest(depth-1)]}:{name:'lehti'};
  assert.doesNotThrow(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(19)]})));
  assert.throws(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(21)]})),/sisäkkäin/);
- // Nykytoiminta: 20 sisäkkäistä ryhmää ja niiden sisällä taso hylätään, vaikka viesti sanoo "enintään 20".
- // Kirjattu TIIMI.md:hen epäilynä (matala); testi lukitsee nykyisen rajan, jotta muutos on tietoinen.
- assert.throws(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(20)]})),/sisäkkäin/);
+});
+
+// Tunnettu bugi (TIIMI.md, testaaja): check() tarkistaa myös tason tyhjän lapsilistan syvyydellä 21,
+// joten 20 ryhmää + taso hylätään, vaikka viesti lupaa "enintään 20". todo ei kaada ajoa; korjauksen jälkeen poista todo.
+test('readStructure accepts a layer inside exactly 20 nested groups',{todo:'tunnettu off-by-one lib/psd-import.ts check()'},()=>{
+ const nest=(depth:number):Layer=>depth?{name:'g'+depth,children:[nest(depth-1)]}:{name:'lehti'};
+ assert.doesNotThrow(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(20)]})));
 });
 
 test('readStructure rejects a layer wider than 16384 px before decoding',()=>{
