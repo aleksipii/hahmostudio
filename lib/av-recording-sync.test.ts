@@ -19,7 +19,7 @@ test('analysis delay places head keyframes on capture time while arms follow the
 });
 
 test('camera offset shifts recorded face frames without moving keyboard-driven channels',async()=>{
- const p=await readProject(new Blob([readFileSync(new URL('../public/library/Otto.hahmo',import.meta.url))]));
+ const p=await readProject(new Blob([readFileSync(new URL('../public/library/Ukko.hahmo',import.meta.url))]));
  const q={...p.doc.quick!,cameraOffsetMs:120},startMs=1000,fps=24,maxFrame=100;
  const sampleTimes=cameraCaptureTimes(q,{[q.roles.head]:neutral},1100,false,false);
  const tick=performanceTakeFrame(1200,startMs/1000,fps,maxFrame);
@@ -29,7 +29,7 @@ test('camera offset shifts recorded face frames without moving keyboard-driven c
 });
 
 test('speech tail keeps camera mouth until voice activity ends then microphone mouth follows RMS',async()=>{
- const p=await readProject(new Blob([readFileSync(new URL('../public/library/Otto.hahmo',import.meta.url))]));
+ const p=await readProject(new Blob([readFileSync(new URL('../public/library/Ukko.hahmo',import.meta.url))]));
  const q={...p.doc.quick!,mouthSource:'auto' as const},camera={[q.roles.mouthOpen]:{...neutral,opacity:1,scale:1.3}};
  const silent=mixPerformance(p.animation,0,q,quickPoses(initialQuick(),q,p.animation.rig,1,0),camera,true,false);
  assert.equal(silent[q.roles.mouthOpen].scale,1.3);
@@ -43,7 +43,7 @@ test('speech tail keeps camera mouth until voice activity ends then microphone m
 
 test('long sustained blink samples stay on timeline across simulated seconds',async()=>{
  const {facePoses,initialFaceFilter}=await import('./face-motion.ts');
- const p=await readProject(new Blob([readFileSync(new URL('../public/library/Roni-Studio.hahmo',import.meta.url))]));
+ const p=await readProject(new Blob([readFileSync(new URL('../public/library/Pipsa.hahmo',import.meta.url))]));
  const q=p.doc.quick!,filter=initialFaceFilter(),base={x:.5,y:.5,width:.2,roll:0,blinkLeft:0,blinkRight:0,jaw:0};
  const fps=24,startMs=0;
  for(const sec of [0,1,2,3]){

@@ -25,8 +25,8 @@ import {readProject} from './project-file.ts';
 import {renderToonCast} from './toon-render.ts';
 
 test('toon3d-renderöinti piirtää kirjaston esineen kädessä ja vapautettuna; ilman esinettä kolmioita on vähemmän',async()=>{
- const asset=await readProject(new Blob([readFileSync(new URL('../public/library/Roni-Studio.hahmo',import.meta.url))])),assets={'Roni-Studio':{doc:asset.doc,animation:asset.animation}};
- const build=(body:string)=>{const b=buildEpisode(`Resurssi hahmo MIRA: Roni-Studio\nINT. STUDIO\n${body}`,{packs:catalogFromNames(CHARACTER_PACK_OPTIONS),assets});const p=b.presentation;assert.deepEqual(b.diagnostics.filter(d=>d.severity==='error').map(d=>d.message),[]);p.production!.representations={MIRA:'toon3d'};return p;};
+ const asset=await readProject(new Blob([readFileSync(new URL('../public/library/Pipsa.hahmo',import.meta.url))])),assets={'Pipsa':{doc:asset.doc,animation:asset.animation}};
+ const build=(body:string)=>{const b=buildEpisode(`Resurssi hahmo MIRA: Pipsa\nINT. STUDIO\n${body}`,{packs:catalogFromNames(CHARACTER_PACK_OPTIONS),assets});const p=b.presentation;assert.deepEqual(b.diagnostics.filter(d=>d.severity==='error').map(d=>d.message),[]);p.production!.representations={MIRA:'toon3d'};return p;};
  const fills=(p:ReturnType<typeof build>,t:number)=>{let n=0;const ctx:any=new Proxy({canvas:{},globalAlpha:1,createLinearGradient:()=>({addColorStop:()=>{}})},{get:(target,key)=>String(key)==='fill'?()=>{n++;}:String(key) in target?(target as any)[String(key)]:()=>{},set:(target,key,value)=>{(target as any)[String(key)]=value;return true;}});renderToonCast(ctx,p,assets,t,1920,1080);return n;};
  const empty=build('Mira odottaa 2 s.\nMira odottaa 2 s.\nMira odottaa 2 s.'),mug=build('Mira pitää kahvikuppia.\nMira odottaa 2 s.\nMira laskee kahvikupin pöydälle.\nMira odottaa 2 s.');
  assert.ok(mug.events.some(e=>e.kind==='prop'&&/^hold:mug/.test(e.value)),'kuppi tunnistettu');

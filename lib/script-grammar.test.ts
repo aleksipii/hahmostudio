@@ -7,7 +7,7 @@ import {test} from 'node:test';import assert from 'node:assert/strict';
 import {parseRuleScript,verbs,grammarCoverage} from './script-grammar.ts';
 import {parsePresentation} from './presentation-parser.ts';
 const commands=['Kille kävelee oikealle 2 s','Kille juoksee vasemmalle 2 s','Kille vilkuttaa 2 s','Kille ilme: huolestunut 2 s','Kamera: lähikuva Kille 2 s','Tausta: studio 2 s','Kille puhelin: takaa 2 s','Kille katsoo: Handu 2 s','Kille sanoo: "Hei Handu!" 2 s','Odota 2 s'];
-const resources=Promise.all(['Roni','Salla'].map(n=>readProject(new Blob([readFileSync(new URL('../public/library/'+n+'-Monikulma.hahmo',import.meta.url))]))));
+const resources=Promise.all(['Pipsa','Ville'].map(n=>readProject(new Blob([readFileSync(new URL('../public/library/'+n+'-3D.hahmo',import.meta.url))]))));
 const expectedValues=['walk-right','run-left','wave','worried','close','studio-v1','phone-on','HANDU','neutral_talk','pause'];
 const expectedKinds=['action','action','action','expression','camera','environment','prop','gaze','dialogue','hold'];
 for(let i=0;i<500;i++)test(`strict corpus ${i+1}: scenes, source refs, ordered/parallel and ${expectedKinds[i%10]}`,async()=>{

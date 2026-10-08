@@ -102,59 +102,61 @@ def build(name, c, view):
     mit = c['mitten']
 
     # ── Jalat: reisi → sääri → kenkä (erilliset tasot IK:ta varten, mutta kiinni vartalossa) ──
-    for which, x in [('right', 282 if side else 256), ('left', 318 if side else 344)]:
+    # Nivelkorkeudet vastaavat 3D-luurankoa (toon3d): lonkka 603, polvi 660, nilkka 732.
+    for which, x in [('right', 282 if side else 262), ('left', 318 if side else 338)]:
         lab = 'Oikea' if which == 'right' else 'Vasen'
         pants = c['pants']
-        layer(which + 'Thigh', lab + ' reisi', 'Vartalo', 'leg', (x, 650), 'root',
-              lambda p, x=x, pants=pants: p.rr((x - 34, 628, x + 34, 716), 24, pants), joints=[(x, 704)])
-        layer(which + 'Shin', lab + ' sääri', 'Vartalo', 'leg', (x, 704), which + 'Thigh',
-              lambda p, x=x, pants=pants: p.rr((x - 32, 690, x + 32, 774), 22, pants), joints=[(x, 766)])
+        layer(which + 'Thigh', lab + ' reisi', 'Vartalo', 'leg', (x, 603), 'root',
+              lambda p, x=x, pants=pants: p.rr((x - 34, 584, x + 34, 676), 24, pants), joints=[(x, 660)])
+        layer(which + 'Shin', lab + ' sääri', 'Vartalo', 'leg', (x, 660), which + 'Thigh',
+              lambda p, x=x, pants=pants: p.rr((x - 32, 644, x + 32, 744), 22, pants), joints=[(x, 732)])
 
         def foot(p, x=x):
             toe = 50 if side else 34
-            p.rr((x - 40, 750, x + toe, 806), 26, c['shoes'])
+            p.rr((x - 40, 712, x + toe, 768), 26, c['shoes'])
             if c['shoes'] == '#c8372d':  # kumisaappaan varsi
-                p.rr((x - 30, 724, x + 30, 770), 12, c['shoes'])
-        layer(which + 'Foot', lab + ' kenkä', 'Vartalo', 'foot', (x, 766), which + 'Shin', foot)
+                p.rr((x - 30, 690, x + 30, 736), 12, c['shoes'])
+        layer(which + 'Foot', lab + ' kenkä', 'Vartalo', 'foot', (x, 732), which + 'Shin', foot)
 
     # ── Vartalo ──
     def body(p):
-        l, t, r, b = (252, 412, 352, 662) if side else (190, 412, 410, 662)
+        l, t, r, b = (252, 412, 352, 604) if side else (206, 412, 394, 604)
         cx = 300
         if c['top'] == 'raincoat':
             p.rr((l, t, r, b), 70, top)
             p.rr((l, b - 40, r, b), 24, dark)
             p.line([(cx, t + 60), (cx, b - 8)], width=5)
-            for y in (490, 548, 606):
+            for y in (480, 530, 578):
                 p.dot(cx + 22, y, 9, '#7a4a1e')
         elif c['top'] == 'sweater':
             p.rr((l, t, r, b), 64, top)
             p.rr((l, b - 44, r, b), 24, dark)
             for k in range(3):
-                p.line([(l + 30, t + 80 + k * 46), (r - 30, t + 80 + k * 46)], fill=dark, width=5)
+                p.line([(l + 30, t + 66 + k * 40), (r - 30, t + 66 + k * 40)], fill=dark, width=5)
         elif c['top'] == 'hoodie':
             p.rr((l, t, r, b), 64, top)
-            p.rr((l + 36, 568, r - 36, 636), 26, dark, width=5)
-            p.line([(cx - 20, t + 50), (cx - 24, 540)], fill=c['trim'], width=5)
-            p.line([(cx + 20, t + 50), (cx + 24, 540)], fill=c['trim'], width=5)
+            p.rr((l + 30, 528, r - 30, 584), 24, dark, width=5)
+            p.line([(cx - 20, t + 50), (cx - 24, 510)], fill=c['trim'], width=5)
+            p.line([(cx + 20, t + 50), (cx + 24, 510)], fill=c['trim'], width=5)
         else:  # cardigan
             p.rr((l, t, r, b), 62, c['trim'])
             p.poly([(l + 4, t + 24), (cx - 6, t + 14), (cx - 22, b - 4), (l + 4, b - 4)], top)
             p.poly([(r - 4, t + 24), (cx + 6, t + 14), (cx + 22, b - 4), (r - 4, b - 4)], top)
-            for y in (500, 552, 604):
+            for y in (480, 526, 572):
                 p.dot(cx - 40, y, 7, dark)
     layer('root', 'Vartalo', 'Vartalo', 'body', (300, 640), None, body)
 
     # ── Kädet: olkavarsi → kyynärvarsi → kämmen (lapanen, kiinni hihassa) ──
-    for which, x in [('right', 290 if side else 176), ('left', 310 if side else 424)]:
+    # Nivelet vastaavat 3D-luurankoa: olka (±96, 435), kyynärpää 505, ranne 582.
+    for which, x in [('right', 290 if side else 204), ('left', 310 if side else 396)]:
         lab = 'Oikea' if which == 'right' else 'Vasen'
         sleeve = top if c['top'] != 'cardigan' else c['top_color']
-        layer(which + 'Arm', lab + ' olkavarsi', 'Vartalo', 'arm', (x, 458), 'root',
-              lambda p, x=x, sl=sleeve: p.rr((x - 30, 436, x + 30, 556), 28, sl), joints=[(x, 540)])
-        layer(which + 'Forearm', lab + ' kyynärvarsi', 'Vartalo', 'arm', (x, 540), which + 'Arm',
-              lambda p, x=x, sl=sleeve: p.rr((x - 28, 522, x + 28, 628), 26, sl), joints=[(x, 618)])
-        layer(which + 'Hand', lab + ' kämmen', 'Vartalo', 'hand', (x, 618), which + 'Forearm',
-              lambda p, x=x: p.ellipse((x - 36, 598, x + 36, 672), mit))
+        layer(which + 'Arm', lab + ' olkavarsi', 'Vartalo', 'arm', (x, 435), 'root',
+              lambda p, x=x, sl=sleeve: p.rr((x - 30, 414, x + 30, 522), 28, sl), joints=[(x, 505)])
+        layer(which + 'Forearm', lab + ' kyynärvarsi', 'Vartalo', 'arm', (x, 505), which + 'Arm',
+              lambda p, x=x, sl=sleeve: p.rr((x - 28, 488, x + 28, 594), 26, sl), joints=[(x, 582)])
+        layer(which + 'Hand', lab + ' kämmen', 'Vartalo', 'hand', (x, 582), which + 'Forearm',
+              lambda p, x=x: p.ellipse((x - 36, 546, x + 36, 618), mit))  # keskipiste = nivel (tartuntapiste osuu ranteeseen)
 
     # ── Pää (isompi kuin vartalo; tukka tai asuste samassa tasossa) ──
     hb = (126, 82, 474, 448) if not side else (150, 86, 450, 448)

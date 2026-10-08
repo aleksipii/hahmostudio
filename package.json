@@ -22,7 +22,7 @@
     "desktop:test:screenplay-gui": "node scripts/desktop-screenplay-gui.mjs",
     "desktop:test:playback-raf": "node scripts/desktop-playback-raf.mjs",
     "desktop:test:export-e2e": "node scripts/desktop-export-e2e.mjs",
-    "assets:generate": "python3 scripts/create-characters.py && node scripts/create-library.mjs && python3 scripts/create-mouths.py && node scripts/create-mouths.mjs && node --experimental-strip-types scripts/create-backgrounds.mjs && python3 scripts/create-backgrounds.py && python3 scripts/create-multiview.py && node scripts/create-multiview.mjs && python3 scripts/create-otto-views.py && node scripts/create-multiview.mjs Otto && python3 scripts/create-paper-characters.py && node scripts/create-multiview.mjs Roni && node scripts/create-multiview.mjs Salla && python3 scripts/create-paper-characters.py --studio && node scripts/create-multiview.mjs Roni --studio && node scripts/create-multiview.mjs Salla --studio",
+    "assets:generate": "python3 scripts/create-characters.py && node scripts/create-library.mjs && python3 scripts/create-mouths.py && node scripts/create-mouths.mjs && node --experimental-strip-types scripts/create-backgrounds.mjs && python3 scripts/create-backgrounds.py && python3 scripts/create-cutout-kids.py && node scripts/create-cutout-kids.mjs",
     "native:prepare": "node scripts/prepare-native-runtime.mjs",
     "benchmark": "node --experimental-strip-types scripts/benchmark-studio.ts",
     "playback:benchmark": "node --experimental-strip-types scripts/playback-benchmark.ts",

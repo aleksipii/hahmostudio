@@ -38,7 +38,7 @@ export function buildScreenplay(animation:Animation,q:QuickProfile,scene:Scene,p
   if(start+end+2>Math.min(1800,60*fps))throw new Error('Nykyinen aikajana ja käsikirjoitus ylittävät 60 sekuntia. Aloita uusi jakso tai lyhennä tekstiä.');
   if(beat.phone)phoneCues.push({frame:start+offset,view:beat.phone});
   if(beat.design){if(!backgrounds.some(b=>b.id===beat.design))throw new Error('Tuntematon tausta.');cuts.push({frame:start+offset,design:beat.design});}
-  if((moving||beat.motion==='crouch')&&!['leftThigh','rightThigh','leftShin','rightShin'].every(r=>roles[r]))throw new Error('Kävely tarvitsee kokovartalohahmon. Valitse Aino tai Otto.');
+  if((moving||beat.motion==='crouch')&&!['leftThigh','rightThigh','leftShin','rightShin'].every(r=>roles[r]))throw new Error('Kävely tarvitsee kokovartalohahmon. Valitse hahmo, jolla on jalat (esim. Pipsa, Ville, Taru tai Ukko).');
   for(const role of ['head','leftArm','rightArm','leftForearm','rightForearm','leftThigh','rightThigh','leftShin','rightShin','leftFoot','rightFoot'])if(roles[role]&&!rig.parts.find(p=>p.key===roles[role])?.parentKey)throw new Error('Liitä hahmon osat toisiinsa ennen käsikirjoituksen animointia.');
   const frontal=moving&&beat.motion.endsWith('front'),distance=moving&&!frontal?(beat.motion.endsWith('left')?-1:1)*rig.source.width*(running?.32:.11)*beat.seconds:0,period=running?.62:1.1,rootBase=sampleTrack(animation.tracks.find(t=>t.key===q.roles.root),start-1);
   const worldStart=scene.x+(rootBase.x+travel)*scene.scale,walk=boundedWalk(worldStart,distance*scene.scale,limits.left,limits.right,scene.edgeBehavior??'stop');

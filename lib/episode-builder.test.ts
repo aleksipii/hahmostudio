@@ -61,8 +61,8 @@ test('testiaineisto ja kirjaston käsikirjoitukset rakentuvat ilman virheitä, k
  const files=[...readdirSync(new URL('../tests/fixtures/scripts/',import.meta.url)).map(f=>new URL('../tests/fixtures/scripts/'+f,import.meta.url)),...readdirSync(new URL('../public/library/',import.meta.url)).filter(f=>f.endsWith('.md')).map(f=>new URL('../public/library/'+f,import.meta.url)),new URL('./test-fixtures/general-episode.md',import.meta.url)];
  assert.ok(files.length>=6);
  for(const file of files){let text=readFileSync(file,'utf8');
-  // KILSATin samannimisillä Kille-Oma/Handu-Oma-paketeilla ei ole kyynärvartta puhelimen näyttämiseen: valitaan resurssiriveillä paketit, joissa se on.
-  if(file.pathname.endsWith('KILSAT-S01E01.md'))text='Resurssi hahmo KILLE: Roni-Monikulma\nResurssi hahmo HANDU: Salla-Monikulma\n'+text;
+  // KILSATin samannimisillä Pipsa/Ville-paketeilla ei ole kyynärvartta puhelimen näyttämiseen: valitaan resurssiriveillä paketit, joissa se on.
+  if(file.pathname.endsWith('KILSAT-S01E01.md'))text='Resurssi hahmo KILLE: Pipsa-3D\nResurssi hahmo HANDU: Ville-3D\n'+text;
   const series=buildSeries(text,await library(text));assert.ok(series.length>=1,file.pathname);
   for(const b of series){assert.deepEqual(errors(b.diagnostics).map(d=>d.message),[],file.pathname+' jakso '+b.source.index);assert.ok(b.presentation.events.length>0);validatePresentation(b.presentation);}
  }
@@ -84,8 +84,8 @@ test('miljöön synonyymit ja taivutusmuodot; tuntematon tausta on virhe ja neut
 });
 
 test('roolitus: resurssirivi, tunnus ja nimi ennen oletuspaketteja; oletus merkitään tarkistukseen',()=>{
- const c=planCast(['KILLE','PIPSA','MIRA','NIKO'],packs,{resources:{KILLE:'kille'},handles:{taru:'MIRA'}});
- assert.deepEqual(c.map(x=>[x.speaker,x.pack,x.reason]),[['KILLE','Mr.Kille','resource'],['PIPSA','Pipsa','name'],['MIRA','Taru','handle'],['NIKO','Ville','default']]);
+ const c=planCast(['KILLE','PIPSA','MIRA','NIKO'],packs,{resources:{KILLE:'Ukko'},handles:{taru:'MIRA'}});
+ assert.deepEqual(c.map(x=>[x.speaker,x.pack,x.reason]),[['KILLE','Ukko','resource'],['PIPSA','Pipsa','name'],['MIRA','Taru','handle'],['NIKO','Ville','default']]);
 });
 
 test('musiikkiohje: tunnelma, tiedosto ja pois',()=>{

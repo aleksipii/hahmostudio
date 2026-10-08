@@ -12,7 +12,7 @@ MP4/H.264/AAC-vienti käyttää Mediabunny 1.61.0 -kirjastoa (MPL-2.0). Muuttama
 
 # Hahmostudio: bundled third-party notices
 
-Own Otto/Studio artwork: CC0. Electron includes LICENSE and LICENSES.chromium.html in the app bundle. Rhubarb and its third-party notices are included at Contents/Resources/rhubarb/LICENSE.md.
+Own character, background and prop artwork (Pipsa, Ville, Taru, Ukko, studio backgrounds): CC0. Electron includes LICENSE and LICENSES.chromium.html in the app bundle. Rhubarb and its third-party notices are included at Contents/Resources/rhubarb/LICENSE.md.
 
 ## @mediapipe/tasks-vision 0.10.32
 

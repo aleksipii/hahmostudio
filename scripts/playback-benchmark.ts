@@ -9,8 +9,8 @@ import {inspectRenderSnapshot} from '../lib/studio/render-contract.ts';
 import {exportPresets} from '../lib/export-presets.ts';
 
 const load=async(name:string)=>{const p=await readProject(new Blob([new Uint8Array(await readFile('public/library/'+name+'.hahmo'))]));return {doc:p.doc,animation:p.animation};};
-const [kille,handu]=await Promise.all([load('Kille-Oma'),load('Handu-Oma')]);
-const built=buildStudioExample({kille,handu},createScene({width:1080,height:1920}));
+const [kille,handu]=await Promise.all([load('Pipsa'),load('Ville')]);
+const built=buildStudioExample({pipsa:kille,ville:handu},createScene({width:1080,height:1920}));
 for(const pack of Object.values(built.assets))for(const n of flatten(pack.doc.layers))if(n.kind==='layer')n.image={key:n.key} as unknown as HTMLImageElement;
 const presentation=built.scene.presentations![0],fps=24,durationFrames=Math.ceil(presentation.seconds*fps);
 const frames=Array.from({length:48},(_,i)=>Math.min(durationFrames-1,Math.floor(i*durationFrames/48)));

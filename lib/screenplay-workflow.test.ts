@@ -34,7 +34,7 @@ test('first script-source save seeds Tuotanto project and keeps presentationSour
 });
 
 test('presentation draft, cast assets and rawScript survive project roundtrip before commit',async()=>{
- const [kille,handu]=await Promise.all(['Kille-Oma','Handu-Oma'].map(async name=>{
+ const [kille,handu]=await Promise.all(['Pipsa','Ville'].map(async name=>{
   const p=await readProject(new Blob([readFileSync(new URL('../public/library/'+name+'.hahmo',import.meta.url))]));
   return {doc:p.doc,animation:p.animation};
  }));
@@ -54,9 +54,9 @@ test('presentation draft, cast assets and rawScript survive project roundtrip be
 });
 
 test('studio example script matches committed presentationSource after build',async()=>{
- const kille=await readProject(new Blob([readFileSync(new URL('../public/library/Kille-Oma.hahmo',import.meta.url))]));
- const handu=await readProject(new Blob([readFileSync(new URL('../public/library/Handu-Oma.hahmo',import.meta.url))]));
- const built=buildStudioExample({kille:{doc:kille.doc,animation:kille.animation},handu:{doc:handu.doc,animation:handu.animation}},createScene({width:1080,height:1920}));
+ const kille=await readProject(new Blob([readFileSync(new URL('../public/library/Pipsa.hahmo',import.meta.url))]));
+ const handu=await readProject(new Blob([readFileSync(new URL('../public/library/Ville.hahmo',import.meta.url))]));
+ const built=buildStudioExample({pipsa:{doc:kille.doc,animation:kille.animation},ville:{doc:handu.doc,animation:handu.animation}},createScene({width:1080,height:1920}));
  assert.equal(built.scene.presentationSource,studioExampleScript);
  const blob=await saveProject(built.doc,built.animation,undefined,built.scene);
  const loaded=await readProject(blob);
