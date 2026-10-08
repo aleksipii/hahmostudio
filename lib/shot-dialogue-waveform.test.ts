@@ -9,8 +9,8 @@ import {shotDialogueRail} from './shot-dialogue-waveform.ts';
 
 test('studio motion example marks silent shots without fabricating waveform energy',async()=>{
  const load=async(name:string)=>readProject(new Blob([readFileSync(new URL('../public/library/'+name+'.hahmo',import.meta.url))]));
- const [kille,handu]=await Promise.all([load('Kille-Oma'),load('Handu-Oma')]);
- const built=buildStudioExample({kille:{doc:kille.doc,animation:kille.animation},handu:{doc:handu.doc,animation:handu.animation}},createScene({width:1080,height:1920}));
+ const [kille,handu]=await Promise.all([load('Pipsa'),load('Ville')]);
+ const built=buildStudioExample({pipsa:{doc:kille.doc,animation:kille.animation},ville:{doc:handu.doc,animation:handu.animation}},createScene({width:1080,height:1920}));
  const p=built.scene.presentations![0],shots=adaptPresentation(p).shots;
  assert.ok(shots.length>=3);
  for(const shot of shots){

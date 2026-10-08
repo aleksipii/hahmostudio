@@ -58,7 +58,7 @@ Säännöt ja rajat: [docs/KASIKIRJOITUS-TUNNISTIN.md](docs/KASIKIRJOITUS-TUNNIS
 
 ## Hahmot
 
-Kirjastossa ovat Kille, Handu, Mr.Kille, Mr.Handu, Roni, Salla, Aino, Otto, Leo ja Hahmopohja sekä uudet leikkaushahmot:
+Kirjastossa ovat neljä paksureunaista leikkaushahmoa (Pipsa, Ville, Taru ja Ukko; 2D- ja 3D-versiot) sekä muokattava Hahmopohja. Vanhemmat hahmot (Roni, Salla, Aino, Otto, Leo, Mr.Kille, Mr.Handu, Kille-Oma, Handu-Oma) poistettiin 2026-10-08; ne löytyvät gitin historiasta. Hahmot:
 
 | Hahmo | 2D | 3D (kolme kuvakulmaa) |
 |-------|----|------------------------|
@@ -241,7 +241,7 @@ Yläpalkissa ovat animaation **Kumoa / Tee uudelleen**. Projektirivi muistuttaa 
 
 ## Pikaanimointi · Otto (3.10.2026)
 
-Avaa Aloituskirjasto → Käytä Ottoa. Valmis alkuperäinen robotti ja studiotausta avautuvat suoraan 1080 × 1920 -näyttämölle. A/D nostavat hahmon omat kädet (pidä painettuna), W tekee hypyn, 1/2/3 valitsevat ilmeet, B räpäyttää ja R aloittaa/lopettaa uuden oton. Painikkeet käyttävät samoja toimintoja.
+Avaa Aloituskirjasto → Valitse Pipsa. Valmis hahmo ja studiotausta avautuvat suoraan 1080 × 1920 -näyttämölle. A/D nostavat hahmon omat kädet (pidä painettuna), W tekee hypyn, 1/2/3 valitsevat ilmeet, B räpäyttää ja R aloittaa/lopettaa uuden oton. Painikkeet käyttävät samoja toimintoja.
 
 Käynnistä mikrofoni vasta halutessasi käyttää sitä; lupa pyydetään silloin. Sulje mikrofoni pysäyttää laitteen. Suu reagoi paikalliseen äänenvoimakkuuteen, ei tunnista puheen äänteitä. Kameraa ei tarvita. Asetuksista säädät kohinarajaa, herkkyyttä, pehmennystä, liikkeitä ja näppäimiä. Määritykset tallentuvat projektiin; ristiriitaiset näppäinvalinnat on estetty. Kirjoituskentät ja ⌘/⌥/Control/Shift-yhdistelmät eivät laukaise perusliikkeitä. ⌘S lataa projektin, ⌘Z/⇧⌘Z kumoavat animaatiomuutoksia tekstikenttien ulkopuolella.
 
@@ -292,11 +292,11 @@ Korjattu Electronin valmiustapahtumaa odottanut päämoduulin lukkiutuminen. 70 
 
 ## Versio 0.3.0 · helpompi aloitus ja käsikirjoitus
 
-Avaa **Hahmot ja taustat**, valitse Otto, Aino, Leo tai muokattava Hahmopohja, valitse kuvausympäristö ja paina **Kirjoita käsikirjoitus**. Yksi tapahtuma per rivi, esimerkiksi `Hei! [vilkuta 2s]`, `[kävele oikealle 3s]` ja `[tausta auto kuljettaja]`. **Lisää animaatio aikajanan loppuun** säilyttää aiemman työn. Toista, korjaa avainruutuja, tallenna `.hahmo` ja vie 1080×1920 MP4. Viisi jaksoa voi koota nykyisellä sarjatyökalulla YouTube-laajakuvaksi.
+Avaa **Hahmot ja taustat**, valitse Pipsa, Ville, Taru, Ukko tai muokattava Hahmopohja, valitse kuvausympäristö ja paina **Kirjoita käsikirjoitus**. Yksi tapahtuma per rivi, esimerkiksi `Hei! [vilkuta 2s]`, `[kävele oikealle 3s]` ja `[tausta auto kuljettaja]`. **Lisää animaatio aikajanan loppuun** säilyttää aiemman työn. Toista, korjaa avainruutuja, tallenna `.hahmo` ja vie 1080×1920 MP4. Viisi jaksoa voi koota nykyisellä sarjatyökalulla YouTube-laajakuvaksi.
 
 Käsikirjoitus toimii paikallisilla fi/en-liikeohjeilla, ei pilven kielimallilla. Teksti ei vielä tuota puheääntä tai tekstityksiä. Kävely taivuttaa erillisiä sääriä; automaattista jalkalukitusta tai kuvan mesh-venytystä ei ole. Tuntemattomat hakasuljeohjeet ilmoitetaan, puhe ilman tunnistettua liikettä muodostaa tauon.
 
-Kirjasto sisältää aidot tasolliset PSD:t ja valmiit `.hahmo`-paketit (Aino 25, Leo 19, Hahmopohja 25 tasoa; Otto säilytetty), kaksi A–H/X-suupakettia ja kuusi taustaa SVG/PNG-muodossa. Grafiikka on Hahmostudion alkuperäistä CC0-aineistoa; ulkoisia hahmokuvia ei kopioida. Muokkaa PSD Photoshopissa tasoja yhdistämättä. Tavallinen PSD-tuonti tarvitsee erillisen nivelmäärityksen; valmis `.hahmo` sisältää sen.
+Kirjasto sisältää aidot tasolliset PSD:t ja valmiit `.hahmo`-paketit (Pipsa 28, Ville, Taru ja Ukko 27, Hahmopohja 25 tasoa), kaksi A–H/X-suupakettia ja kuusi taustaa SVG/PNG-muodossa. Grafiikka on Hahmostudion alkuperäistä CC0-aineistoa; ulkoisia hahmokuvia ei kopioida. Muokkaa PSD Photoshopissa tasoja yhdistämättä. Tavallinen PSD-tuonti tarvitsee erillisen nivelmäärityksen; valmis `.hahmo` sisältää sen.
 
 **Pää irtoaa?** Pään nimi/rooli ei luo liitosta: Hahmo → Nivelmääritys → Liitä osaan → Vartalo. Aseta kiertokeskus kaulaan ja liitä silmät/suu päähän. Kameraseuranta pitää liitetyn pään paikallaan ja kallistaa sitä ±25°. Vanhoja tallennettuja siirtymiä ei poisteta.
 

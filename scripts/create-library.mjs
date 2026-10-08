@@ -1,7 +1,7 @@
 import fs from 'node:fs';import {writePsdBuffer,readPsd,getLayerImageData,initializeCanvas} from 'ag-psd';import {zipSync,strToU8} from 'fflate';
 initializeCanvas(()=>{throw Error('Canvas not used')},(width,height)=>({width,height,data:new Uint8ClampedArray(width*height*4)}));
 const out=new URL('../public/library/',import.meta.url);let id=5000;
-for(const name of ['Aino','Leo','Hahmopohja']){
+for(const name of ['Hahmopohja']){
  const a=new URL(`../.character-build/${name}/`,import.meta.url).pathname,c=JSON.parse(fs.readFileSync(a+'character.json')),meta=JSON.parse(fs.readFileSync(a+'layers.json'));
  const psd={width:c.width,height:c.height,imageData:{width:c.width,height:c.height,data:new Uint8ClampedArray(fs.readFileSync(a+'composite.rgba'))},children:['Vartalo','Pää','Suut'].map(name=>({name,blendMode:'pass through',children:meta.filter(n=>n.group===name).map(n=>({id:++id,name:n.name,left:n.left,top:n.top,right:n.left+n.width,bottom:n.top+n.height,hidden:n.hidden,imageData:{width:n.width,height:n.height,data:new Uint8ClampedArray(fs.readFileSync(a+n.key+'.rgba'))}}))}))};
  const bytes=writePsdBuffer(psd,{generateThumbnail:false});fs.writeFileSync(new URL(name+'.psd',out),bytes);const parsed=readPsd(bytes,{useRawData:true,skipThumbnail:true}),files={},parts=[],roles={};

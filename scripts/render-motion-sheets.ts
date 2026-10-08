@@ -13,7 +13,7 @@ import {footPoint} from '../lib/motion-quality.ts';
 import {viewAtFrame} from '../lib/character-view.ts';
 
 const args=process.argv.slice(2),outIndex=args.indexOf('--out'),out=outIndex>=0?args[outIndex+1]:'docs/motion-sheets',png=args.includes('--png');
-const names=args.filter((a,i)=>!a.startsWith('--')&&i!==outIndex+1);const packs=names.length?names:['Pipsa','Roni-Monikulma'];
+const names=args.filter((a,i)=>!a.startsWith('--')&&i!==outIndex+1);const packs=names.length?names:['Pipsa','Pipsa-3D','Ville-3D','Taru','Ukko'];
 const motions:[string,string][]=[['kavely-oikealle','kävelee oikealle 2 s'],['kavely-suoraan','kävelee suoraan 2 s'],['juoksu','juoksee oikealle 2 s'],['vilkutus','vilkuttaa'],['nyokkays','nyökkää'],['osoitus','osoittaa'],['istuminen','istuu'],['hyppy','hyppää'],['kyykky','kyykistyy'],['hammastys','hämmästyy'],['nyrkki','nyrkki']];
 mkdirSync(out,{recursive:true});
 const chromium=['/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell','/opt/pw-browsers/chromium-1194/chrome-linux/chrome'].find(existsSync);

@@ -17,7 +17,7 @@ test('STUDIO_APP_VERSION matches package.json',()=>{
 });
 
 test('render manifest uses the current application version',async()=>{
- const r=await readProject(new Blob([readFileSync(new URL('../public/library/Mr.Kille.hahmo',import.meta.url))]));
+ const r=await readProject(new Blob([readFileSync(new URL('../public/library/Pipsa.hahmo',import.meta.url))]));
  const preset={id:'test',name:'test',format:'png' as const,width:1080,height:1920,fps:24,start:0,end:1/24,quality:8,transparent:true,audio:false,loop:0};
  const manifest=await inspectRenderSnapshot(new Uint8Array(await (await saveProject(r.doc,r.animation)).arrayBuffer()),preset);
  assert.equal(manifest.appVersion,STUDIO_APP_VERSION);
@@ -37,17 +37,18 @@ test('character provenance distinguishes studio library from user-derived PSD pa
  const studio=characterProvenance(quick,{name:'Aino.psd',width:1,height:1,size:0,warnings:[],layers:[]} as PsdDocument);
  assert.equal(studio.license,'CC0-1.0');
  assert.equal(studio.origin,'studio-library');
- const user=characterProvenance(quick,{name:'Kille-Oma.psd',width:1,height:1,size:0,warnings:['Oma PSD: test'],layers:[]} as PsdDocument);
+ const user=characterProvenance(quick,{name:'Pipsa.psd',width:1,height:1,size:0,warnings:['Oma PSD: test'],layers:[]} as PsdDocument);
  assert.equal(user.license,'unknown');
  assert.equal(user.author,'user-provided');
 });
 
-test('owner library packs roundtrip with honest provenance metadata',async()=>{
- for(const name of ['Kille-Oma','Handu-Oma']){
+test('library packs roundtrip with honest provenance metadata',async()=>{
+ for(const name of ['Pipsa','Ville']){
   const loaded=await readProject(new Blob([readFileSync(new URL('../public/library/'+name+'.hahmo',import.meta.url))]));
   const pack=await saveProject(loaded.doc,loaded.animation);
   const provenance=JSON.parse(strFromU8(unzipSync(new Uint8Array(await pack.arrayBuffer()))['provenance.json']));
-  assert.equal(provenance.license,'unknown');
-  assert.equal(provenance.origin,'user-import');
+  assert.equal(provenance.license,'CC0-1.0');
+  assert.equal(provenance.origin,'studio-library');
+  assert.deepEqual(provenance.externalAssets,[]);
  }
 });

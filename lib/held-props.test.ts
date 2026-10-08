@@ -29,8 +29,8 @@ function mockCanvas(width:number,height:number){
  return {canvas:{width,height,getContext:()=>proxy} as unknown as HTMLCanvasElement,draws,reset:()=>{draws.length=0;m=[1,0,0,1,0,0];stack.length=0;}};
 }
 async function pack(name:string){const r=await readProject(new Blob([readFileSync(new URL(`../public/library/${name}.hahmo`,import.meta.url))]));for(const n of flatten(r.doc.layers))(n as {image?:unknown}).image={fake:n.key,pack:name};return {doc:r.doc,animation:r.animation};}
-const script=`Resurssi hahmo MIRA: Roni-Monikulma
-Resurssi hahmo NIKO: Salla-Monikulma
+const script=`Resurssi hahmo MIRA: Pipsa-3D
+Resurssi hahmo NIKO: Ville-3D
 Resurssi esine: pöytä
 INT. KEITTIÖ
 Mira seisoo puhelin kädessä.
@@ -46,7 +46,7 @@ Niko laskee kupin pöydälle.
 Mira vilkuttaa.`;
 
 test('esine pysyy kädessä joka ruudussa kaikissa kuvakulmissa: tartuntapisteiden etäisyys < 0,5 px (piirtopolun kautta)',async()=>{
- const assets={'Roni-Monikulma':await pack('Roni-Monikulma'),'Salla-Monikulma':await pack('Salla-Monikulma')};
+ const assets={'Pipsa-3D':await pack('Pipsa-3D'),'Ville-3D':await pack('Ville-3D')};
  const b=buildEpisode(script,{packs:catalogFromNames(CHARACTER_PACK_OPTIONS),assets},{fps:24,width:1080,height:1920});const p=b.presentation;
  assert.deepEqual(b.diagnostics.filter(d=>d.severity==='error').map(d=>d.message),[]);
  const values=p.events.filter(e=>e.kind==='prop'||e.value.startsWith('phone')).map(e=>e.target+' '+e.value);
@@ -78,7 +78,7 @@ test('esinekirjasto: puhelin, kahvikuppi, kirja, laukku ja sateenvarjo kolmena n
  assert.deepEqual(heldProps.map(h=>h.name),['Puhelin','Kahvikuppi','Kirja','Laukku','Sateenvarjo']);
  for(const h of heldProps)for(const v of ['front','side','back'] as const){assert.ok(h.views[v].length>0);assert.match(heldPropSvg(h.id,v),/^<svg/);}
  assert.equal(propViewFor('left'),'side');assert.equal(propViewFor('back'),'back');
- const roni=await pack('Roni-Monikulma');const q=readQuick(roni.doc.quick,roni.animation.rig)!;assert.equal(q.grips,undefined);
+ const roni=await pack('Pipsa-3D');const q=readQuick(roni.doc.quick,roni.animation.rig)!;assert.equal(q.grips,undefined);
  const withGrips={...roni.doc.quick!,grips:{front:{leftHand:{x:10,y:20,angle:15}}}};assert.deepEqual(readQuick(withGrips,roni.animation.rig)!.grips,withGrips.grips);
  assert.throws(()=>readQuick({...roni.doc.quick!,grips:{front:{leftHand:{x:Number.NaN,y:0,angle:0}}}},roni.animation.rig),/tartuntapisteet/);
  assert.deepEqual(handGrip({...roni.doc,quick:withGrips},'front','leftHand'),{x:10,y:20,angle:15});

@@ -48,8 +48,8 @@ Meanwhile: Camera: close-up Handu 2 seconds
 Wait 1 second`},
  {id:'youtube-cutout',name:'YouTube · kartonkikohtaus',description:'KILSAT-cutout, resurssimanifesti, osoitus ja vihainen ilme. Liitä äänet ennen buildiä.',source:`#!kilsat
 Resurssi tausta: cutout-studio-v1
-Resurssi hahmo KILLE: kille
-Resurssi hahmo HANDU: handu
+Resurssi hahmo KILLE: Pipsa
+Resurssi hahmo HANDU: Ville
 Hahmo: Kille
 Hahmo: Handu
 Kohtaus: Studio

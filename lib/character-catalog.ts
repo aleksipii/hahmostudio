@@ -16,27 +16,14 @@ export const STUDIO_MIN_VIEWS = 3;
 export const STUDIO_MIN_MOUTHS = 4;
 
 export const characters: CharacterEntry[] = [
- {name:'Kille-Oma',description:'Oma PSD · polvinivelet, housut ja kengät · etunäkymä',alt:'Kille käyttäjän PSD:stä',quality:{views:1,mouths:9,fullBody:true,origin:'oma'}},
- {name:'Handu-Oma',description:'Oma PSD · kiinnitetyt jalat ja kengät · etunäkymä',alt:'Handu käyttäjän PSD:stä',quality:{views:1,mouths:9,fullBody:true,origin:'oma'}},
- {name:'Mr.Kille',description:'Alkuperäinen kartonkihahmo · 9 suuasentoa · nivelet.',alt:'Mr.Kille, sinivihreä takki ja sininen neulepipo',quality:{views:1,mouths:9,fullBody:false,origin:'studio'}},
- {name:'Mr.Handu',description:'Alkuperäinen kartonkihahmo · 9 suuasentoa · nivelet.',alt:'Mr.Handu, kuparinvärinen takki ja ruskeat hiukset',quality:{views:1,mouths:9,fullBody:false,origin:'studio'}},
- {name:'Pipsa',description:'Leikkaushahmo · keltainen sadetakki ja silmälasit · 2D',alt:'Pipsa, keltainen sadetakki, punaiset silmälasit ja musta polkkatukka',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Pipsa',description:'Paksureunainen leikkaushahmo · keltainen sadetakki, huppu ja silmälasit · 2D',alt:'Pipsa, keltainen sadetakki ja huppu, punaiset silmälasit ja lapaset',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Pipsa-3D',description:'Pipsa · kolme kuvakulmaa · 3D-paperitasot',alt:'Pipsa kolmesta kuvakulmasta',quality:{views:3,mouths:5,fullBody:true,origin:'studio'}},
- {name:'Ville',description:'Leikkaushahmo · kiharat ja pisamat · 2D',alt:'Ville, kihara kuparinen tukka, sinappineule ja shortsit',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Ville',description:'Paksureunainen leikkaushahmo · kiharat ja pisamat · 2D',alt:'Ville, kihara kuparinen tukka, pisamat ja ruskea neule',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Ville-3D',description:'Ville · kolme kuvakulmaa · 3D-paperitasot',alt:'Ville kolmesta kuvakulmasta',quality:{views:3,mouths:5,fullBody:true,origin:'studio'}},
- {name:'Taru',description:'Leikkaushahmo · nutturat ja kuulokkeet · 2D',alt:'Taru, hiusnutturat, violetit kuulokkeet ja oranssi huppari',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Taru',description:'Paksureunainen leikkaushahmo · nutturat ja kuulokkeet · 2D',alt:'Taru, hiusnutturat, violetit kuulokkeet ja oranssi huppari',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Taru-3D',description:'Taru · kolme kuvakulmaa · 3D-paperitasot',alt:'Taru kolmesta kuvakulmasta',quality:{views:3,mouths:5,fullBody:true,origin:'studio'}},
- {name:'Ukko',description:'Leikkaushahmo · viikset ja villatakki · 2D',alt:'Ukko, valkoiset viikset, kalju päälaki ja beige villatakki',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Ukko',description:'Paksureunainen leikkaushahmo · kalju, viikset ja villatakki · 2D',alt:'Ukko, kalju, valkoiset viikset ja vihreä villatakki',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Ukko-3D',description:'Ukko · kolme kuvakulmaa · 3D-paperitasot',alt:'Ukko kolmesta kuvakulmasta',quality:{views:3,mouths:5,fullBody:true,origin:'studio'}},
- {name:'Roni-Studio',description:'Yhtenäiset housut · hymy · kolme kuvakulmaa.',alt:'Roni Studio, viimeistelty sinivihreä takki',quality:{views:3,mouths:4,fullBody:true,origin:'studio'}},
- {name:'Salla-Studio',description:'Yhtenäiset housut · hymy · kolme kuvakulmaa.',alt:'Salla Studio, viimeistelty punainen takki',quality:{views:3,mouths:4,fullBody:true,origin:'studio'}},
- {name:'Roni-Monikulma',description:'Paperileikkaustyyli · kolme kuvakulmaa · kävely ja juoksu.',alt:'Roni, oma hahmo sinivihreässä takissa ja tummilla hiuksilla',quality:{views:3,mouths:3,fullBody:true,origin:'studio'}},
- {name:'Salla-Monikulma',description:'Paperileikkaustyyli · kolme kuvakulmaa · kävely ja juoksu.',alt:'Salla, oma hahmo ruosteenpunaisessa takissa ja ruskealla polkkatukalla',quality:{views:3,mouths:3,fullBody:true,origin:'studio'}},
- {name:'Aino-Monikulma',description:'Edestä ja molemmat sivuprofiilit · kävely ja juoksu',alt:'Aino kolmessa kuvakulmassa',quality:{views:3,mouths:3,fullBody:true,origin:'studio'}},
- {name:'Otto-Monikulma',description:'Robotti · edestä ja molemmat profiilit',alt:'Otto kolmessa kuvakulmassa',quality:{views:3,mouths:3,fullBody:true,origin:'studio'}},
- {name:'Otto',description:'Robotti · koko vartalo',alt:'Turkoosi robotti',quality:{views:1,mouths:3,fullBody:true,origin:'studio'}},
- {name:'Aino',description:'Ihminen · koko vartalo',alt:'Aino, violetti paita ja tummat hiukset',quality:{views:1,mouths:3,fullBody:true,origin:'studio'}},
- {name:'Leo',description:'Ihminen · puhuva muotokuva',alt:'Leo, ruskea paita ja lyhyet hiukset',quality:{views:1,mouths:3,fullBody:false,origin:'studio'}},
  {name:'Hahmopohja',description:'Muokattava PSD-pohja',alt:'Vaalea hahmopohja erillisine osineen',quality:{views:1,mouths:3,fullBody:true,origin:'studio'}}
 ];
 

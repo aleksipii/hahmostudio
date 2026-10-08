@@ -8,7 +8,7 @@ import {zipSync,strToU8} from 'fflate';
 initializeCanvas(()=>{throw Error('Canvas unused');},(width,height)=>({width,height,data:new Uint8ClampedArray(width*height*4)}));
 
 const W=600,H=900,build=new URL('../.cutout-kids-build/',import.meta.url),out=new URL('../public/library/',import.meta.url);
-const cast={Pipsa:{id:14000,about:'keltainen sadetakki, punaiset silmälasit ja kumisaappaat'},Ville:{id:15000,about:'kihara kuparinen tukka, pisamat, sinappineule ja shortsit'},Taru:{id:16000,about:'hiusnutturat, violetit kuulokkeet ja oranssi huppari'},Ukko:{id:17000,about:'valkoiset viikset, villatakki ja tossut'}};
+const cast={Pipsa:{id:14000,about:'keltainen sadetakki ja huppu, punaiset silmälasit, lapaset ja kumisaappaat'},Ville:{id:15000,about:'kihara kuparinen tukka, pisamat, ruskea neule ja valkoiset lapaset'},Taru:{id:16000,about:'hiusnutturat, violetit kuulokkeet, violetit lapaset ja oranssi huppari'},Ukko:{id:17000,about:'kalju, valkoiset viikset ja sivutukat, vihreä villatakki'}};
 const labels={front:'Edestä',right:'Oikea profiili',left:'Vasen profiili'};
 const bindings={left:'KeyA',right:'KeyD',jump:'KeyW',neutral:'Digit1',happy:'Digit2',surprise:'Digit3',blink:'KeyB',record:'KeyR',play:'Space'};
 const pose={x:0,y:0,rotation:0,scale:1,opacity:1,frame:0,easing:'hold'};

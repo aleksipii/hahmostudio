@@ -2,8 +2,8 @@
 Jakson nimi: Kartonki-kohtaus · YouTube-runko
 Pituus: 12–18 s
 Resurssi tausta: cutout-studio-v1
-Resurssi hahmo KILLE: kille
-Resurssi hahmo HANDU: handu
+Resurssi hahmo KILLE: Pipsa
+Resurssi hahmo HANDU: Ville
 Hahmo: Kille
 Hahmo: Handu
 Kohtaus: Kartonkistudio

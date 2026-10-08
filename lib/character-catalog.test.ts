@@ -19,10 +19,11 @@ test('kirjaston laatuarvot vastaavat .hahmo-pakettien todellista sisältöä', a
 
 test('Studio-taso vaatii kaikki kriteerit, omat näkyvät aina ja luonnokset kertovat puutteet', () => {
   const by = (tier: string) => characters.filter((c) => characterTier(c) === tier).map((c) => c.name);
-  assert.deepEqual(by('studio'), ['Pipsa-3D', 'Ville-3D', 'Taru-3D', 'Ukko-3D', 'Roni-Studio', 'Salla-Studio']);
-  assert.deepEqual(by('oma'), ['Kille-Oma', 'Handu-Oma']);
+  assert.deepEqual(by('studio'), ['Pipsa-3D', 'Ville-3D', 'Taru-3D', 'Ukko-3D']);
+  assert.deepEqual(by('oma'), []);
   assert.equal(by('studio').length + by('oma').length + by('luonnos').length, characters.length);
-  const kille = characters.find((c) => c.name === 'Mr.Kille')!;
-  assert.deepEqual(missingStudioCriteria(kille.quality), ['kuvakulmat', 'jalat']);
-  assert.equal(qualitySummary(kille.quality), '1 kulma · 9 suuta · ei jalkoja');
+  const pipsa = characters.find((c) => c.name === 'Pipsa')!;
+  assert.deepEqual(missingStudioCriteria(pipsa.quality), ['kuvakulmat']);
+  assert.equal(qualitySummary(pipsa.quality), '1 kulma · 5 suuta · koko vartalo');
+  assert.deepEqual(missingStudioCriteria({ views: 1, mouths: 9, fullBody: false, origin: 'studio' }), ['kuvakulmat', 'jalat']);
 });

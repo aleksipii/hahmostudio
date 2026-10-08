@@ -18,7 +18,6 @@ export const kindScale:Record<CharacterKind,number>={aikuinen:1,lapsi:.72,robott
 export const assetKinds:Record<string,CharacterKind>={
  'hahmostudio-pipsa-cutout-2d-v1':'lapsi','hahmostudio-pipsa-cutout-3d-v1':'lapsi','hahmostudio-ville-cutout-2d-v1':'lapsi','hahmostudio-ville-cutout-3d-v1':'lapsi',
  'hahmostudio-taru-cutout-2d-v1':'lapsi','hahmostudio-taru-cutout-3d-v1':'lapsi','hahmostudio-ukko-cutout-2d-v1':'aikuinen','hahmostudio-ukko-cutout-3d-v1':'aikuinen',
- 'hahmostudio-otto-robot-v1':'robotti','hahmostudio-otto-multiview-v1':'robotti',
 };
 export function characterKind(doc:PsdDocument):CharacterKind{return assetKinds[doc.quick?.asset??'']??'aikuinen';}
 

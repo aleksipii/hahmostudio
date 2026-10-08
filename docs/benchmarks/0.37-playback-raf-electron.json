@@ -5,18 +5,18 @@
     {
       "width": 1440,
       "height": 900,
-      "fps": 59.3,
-      "p95Ms": 17.6,
-      "transport": "59.3 fps · p95 17.6 ms ",
-      "footer": "59.3 fps"
+      "fps": 55.1,
+      "p95Ms": 17.4,
+      "transport": "55.1 fps · p95 17.4 ms ",
+      "footer": "55.1 fps"
     },
     {
       "width": 1280,
       "height": 720,
-      "fps": 59.3,
-      "p95Ms": 17.6,
-      "transport": "59.3 fps · p95 17.6 ms ",
-      "footer": "59.3 fps"
+      "fps": 55.1,
+      "p95Ms": 17.4,
+      "transport": "55.1 fps · p95 17.4 ms ",
+      "footer": "55.1 fps"
     }
   ],
   "errors": [],

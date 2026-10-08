@@ -11,8 +11,8 @@ import {ScriptRecognizer} from './script-recognizer.ts';
 
 const script='Kohtaus: Studio\nMIRA:\n“Hei.”\nNIKO:\n“Moi.”\nMira hymyilee.\nOdota 1 s.\nMIRA:\n“Kiva nähdä.”\nOdota 1 s.\nNiko näyttää surulliselta.\nMira katsoo kameraan.\nOdota 1 s.\nMira näyttää vihaiselta.\nOdota 1 s.';
 const pack=async(name:string)=>{const r=await readProject(new Blob([readFileSync(new URL('../public/library/'+name+'.hahmo',import.meta.url))]));return {doc:r.doc,animation:r.animation};};
-async function compiled(mira:string,niko:string){
- const p=parsePresentation(script),assets={mira:await pack(mira),niko:await pack(niko)};
+async function compiled(mira:string,niko:string,tweak?:(assets:Record<string,any>)=>void){
+ const p=parsePresentation(script),assets={mira:await pack(mira),niko:await pack(niko)};tweak?.(assets);
  p.bindings=p.characters.map((speaker,i)=>({speaker,asset:i?'niko':'mira',voice:'Imported voice '+i,side:i?'right':'left',functions:Object.fromEntries(functions.map(f=>[f,'supported']))}));
  p.audioClips=p.events.filter(e=>e.kind==='dialogue').map(e=>({id:'voice-'+e.id,dialogue:e.id,asset:'sound',start:0,end:1,duration:1,source:'volume' as const,mouth:[{time:0,shape:'rest' as const},{time:.1,shape:'open' as const},{time:.9,shape:'rest' as const}]}));
  p.direction!.requirements.forEach(r=>r.accepted=true);
@@ -47,7 +47,8 @@ test('sadness tilts the inner brows up and lowers the gaze; camera gaze centres 
 });
 
 test('a pack without a smile mouth warns instead of faking the expression',async()=>{
- const {c}=await compiled('Roni-Monikulma','Salla-Monikulma');
+ // Paketti ilman hymysuuta: poistetaan mouthSmile-rooli kaikista kuvakulmista.
+ const {c}=await compiled('Pipsa-3D','Ville-3D',a=>{const q=a.mira.doc.quick;delete q.roles.mouthSmile;for(const v of Object.values(q.views??{}))delete (v as any).mouthSmile;});
  assert.ok(c.diagnostics.some((d:any)=>d.code==='smile-missing'&&d.severity==='warning'));
 });
 

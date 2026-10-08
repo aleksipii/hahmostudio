@@ -10,7 +10,8 @@ export type CastPack={id:string;name:string;aliases?:string[]};
 export type CastChoice={speaker:string;pack:string|undefined;reason:'resource'|'handle'|'name'|'default'|'none'};
 export const defaultCastPacks=['Pipsa','Ville','Taru','Ukko'];
 /** Käsikirjoituksen hahmonimet ja tunnukset, joilla kirjaston kartonkipaketit löytyvät. */
-export const castPackAliases:Record<string,string[]>={'Mr.Kille':['kille','mr kille'],'Mr.Handu':['handu','mr handu']};
+/** Pakettien lisänimet käsikirjoituksen `Resurssi hahmo`-riveille (paketin oma nimi toimii aina). */
+export const castPackAliases:Record<string,string[]>={};
 /** Resurssirivin pakettiavain → kirjaston paketti (tarkka tunniste, alias tai nimi kirjainkoosta riippumatta). */
 export function resolvePackKey(key:string,packs:CastPack[]):string|undefined{const exact=packs.find(p=>p.id===key);if(exact)return exact.id;const k=normalizeSpeaker(key.replace(/[-_.]/g,' '));return (packs.find(p=>(p.aliases??[]).some(a=>normalizeSpeaker(a)===k))??packs.find(p=>normalizeSpeaker(p.id.replace(/[-_.]/g,' '))===k||normalizeSpeaker(p.name.replace(/[-_.]/g,' '))===k))?.id;}
 const packKey=(s:string)=>normalizeSpeaker(s.replace(/[-_]/g,' ').replace(/\b(3D|MONIKULMA|STUDIO|OMA)\b/gi,'').trim());
