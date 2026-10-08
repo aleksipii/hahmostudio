@@ -1,4 +1,5 @@
 import {phoneActions} from './phone-actions.ts';
+import {heldProps,heldPropIds} from './held-props.ts';
 import {reconcileProduction} from './production-model.ts';
 import {productionMotions,requirementStatus} from './presentation-direction.ts';
 import {validatePresentation,functions,type Presentation,type Diagnostic} from './presentation-model.ts';
@@ -29,7 +30,7 @@ export function timePresentation(input:Presentation,fps:number):Presentation{
   }
   if(['action','expression','gaze','placement'].includes(e.kind)&&!p.characters.includes(e.target))diagnostics.push({code:'unknown-target',severity:'error',event:e.id,message:'Ohjeen hahmo puuttuu: '+e.target});
   if(e.kind==='placement'&&!['left','right','center','custom'].includes(e.value))diagnostics.push({code:'unknown-placement',severity:'error',event:e.id,message:'Sijoittelun arvot: left, right, center, custom.'});
-  if(e.kind==='prop'&&!['phone-on','phone-off'].includes(e.value)&&!/^(hold|drop):(phone-v1|mug-prop-v1|book-prop-v1|bag-prop-v1|umbrella-prop-v1)$/.test(e.value))diagnostics.push({code:'unknown-prop',severity:'error',event:e.id,message:'Tuettu rekvisiitta: puhelin, kahvikuppi, kirja, laukku tai sateenvarjo. Muu esine puuttuu.'});
+  if(e.kind==='prop'&&!['phone-on','phone-off'].includes(e.value)&&!(/^(hold|drop):/.test(e.value)&&heldPropIds.includes(e.value.slice(5))))diagnostics.push({code:'unknown-prop',severity:'error',event:e.id,message:'Tuettu rekvisiitta: '+heldProps.map(h=>h.name.toLocaleLowerCase('fi-FI')).join(', ')+'. Muu esine puuttuu.'});
   if(e.kind==='constraint'&&!['still','release-still','hard-cuts','no-extra-props','small-gestures','camera-still'].includes(e.value))diagnostics.push({code:'unknown-constraint',severity:'error',event:e.id,message:'Rajoituksen toteutus puuttuu.'});
   if(e.kind==='shot'&&!['wide','medium','close'].includes(e.value))diagnostics.push({code:'unknown-shot',severity:'error',event:e.id,message:'Tuntematon kuvakoko: '+e.value});
   if(['action','expression'].includes(e.kind)&&!functions.includes(e.value as any)&&!(e.kind==='expression'&&extraExpressions.includes(e.value))&&!productionMotions.includes(e.value as any)&&!phoneActions.includes(e.value as any))diagnostics.push({code:'unknown-function',severity:'error',event:e.id,message:'Tuntematon liike tai ilme: '+e.value});

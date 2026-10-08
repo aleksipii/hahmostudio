@@ -74,8 +74,8 @@ test('esine pysyy kädessä joka ruudussa kaikissa kuvakulmissa: tartuntapisteid
  assert.ok(hands.has('leftHand')&&hands.has('rightHand'));assert.ok(released>0);assert.ok(worst<1e-6,'suurin poikkeama '+worst);
 });
 
-test('esinekirjasto: puhelin, kahvikuppi, kirja, laukku ja sateenvarjo kolmena näkymänä; vanhat profiilit ilman grips-kenttää kelpaavat',async()=>{
- assert.deepEqual(heldProps.map(h=>h.name),['Puhelin','Kahvikuppi','Kirja','Laukku','Sateenvarjo']);
+test('esinekirjasto: kaikki 17 käsiesinettä kolmena näkymänä; vanhat profiilit ilman grips-kenttää kelpaavat',async()=>{
+ assert.deepEqual(heldProps.map(h=>h.name),['Puhelin','Kahvikuppi','Kirja','Laukku','Sateenvarjo','Tabletti','Avaimet','Juomapullo','Kynä','Paperi','Kansio','Kirje','Jäätelö','Kukka','Mikrofoni','Taskulamppu','Pallo']);
  for(const h of heldProps)for(const v of ['front','side','back'] as const){assert.ok(h.views[v].length>0);assert.match(heldPropSvg(h.id,v),/^<svg/);}
  assert.equal(propViewFor('left'),'side');assert.equal(propViewFor('back'),'back');
  const roni=await pack('Pipsa-3D');const q=readQuick(roni.doc.quick,roni.animation.rig)!;assert.equal(q.grips,undefined);

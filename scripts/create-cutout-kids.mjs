@@ -1,7 +1,7 @@
 // Paketoi .cutout-kids-build-hahmot (scripts/create-cutout-kids.py) PSD- ja .hahmo-tiedostoiksi.
 //  2D: <Nimi>.psd / .hahmo / .png  – etunäkymä, ryhmät Vartalo/Pää/Suut.
-//  3D: <Nimi>-3D.psd / .hahmo / .png – kolme kuvakulmaa (edestä, oikea, vasen) omina ryhminään;
-//      sama rakenne kuin Roni/Salla-monikulmahahmoilla, joten Cutout3D-kamera ja kuvakulmavalinta toimivat.
+//  3D: <Nimi>-3D.psd / .hahmo / .png – neljä kuvakulmaa (edestä, oikea, vasen, takaa) omina ryhminään;
+//      takanäkymä on viimeisenä, joten aiempien kulmien tasojen ID:t eivät muutu. Cutout3D-kamera ja kuvakulmavalinta toimivat.
 import fs from 'node:fs';
 import {writePsdBuffer,readPsd,initializeCanvas} from 'ag-psd';
 import {zipSync,strToU8} from 'fflate';
@@ -9,7 +9,7 @@ initializeCanvas(()=>{throw Error('Canvas unused');},(width,height)=>({width,hei
 
 const W=600,H=900,build=new URL('../.cutout-kids-build/',import.meta.url),out=new URL('../public/library/',import.meta.url);
 const cast={Pipsa:{id:14000,about:'keltainen sadetakki ja huppu, punaiset silmälasit, lapaset ja kumisaappaat'},Ville:{id:15000,about:'kihara kuparinen tukka, pisamat, ruskea neule ja valkoiset lapaset'},Taru:{id:16000,about:'hiusnutturat, violetit kuulokkeet, violetit lapaset ja oranssi huppari'},Ukko:{id:17000,about:'kalju, valkoiset viikset ja sivutukat, vihreä villatakki'}};
-const labels={front:'Edestä',right:'Oikea profiili',left:'Vasen profiili'};
+const labels={front:'Edestä',right:'Oikea profiili',left:'Vasen profiili',back:'Takaa'};
 const bindings={left:'KeyA',right:'KeyD',jump:'KeyW',neutral:'Digit1',happy:'Digit2',surprise:'Digit3',blink:'KeyB',record:'KeyR',play:'Space'};
 const pose={x:0,y:0,rotation:0,scale:1,opacity:1,frame:0,easing:'hold'};
 const hiddenRoles=['leftBlink','rightBlink','mouthOpen','mouthRound','mouthSmile','mouthSad'];
@@ -20,7 +20,7 @@ const pixels=(dir,key)=>new Uint8ClampedArray(fs.readFileSync(new URL(key+'.rgba
 const layerNode=(dir,n,id)=>({name:n.name,id,left:n.left,top:n.top,right:n.left+n.width,bottom:n.top+n.height,hidden:n.hidden,imageData:{width:n.width,height:n.height,data:pixels(dir,n.key)}});
 const groupsOf=(dir,meta,nextId)=>['Vartalo','Pää','Suut'].map(group=>({name:group,blendMode:'pass through',children:meta.filter(n=>n.group===group).map(n=>layerNode(dir,n,nextId(n)))}));
 const node=(key,name,path,kind,extra={})=>({key,name,path,kind,left:0,top:0,width:0,height:0,opacity:1,visible:true,blendMode:kind==='group'?'pass through':'normal',warnings:[],children:[],...extra});
-const guide=(name,views)=>`${name}: Hahmostudion alkuperäistä grafiikkaa (CC0-1.0). ${views>1?'Kolme kuvakulmaa: valitse kulma Hahmon kuvakulma -valinnasta; Cutout3D-kamera kääntää paperitasoja.':'Etunäkymän 2D-hahmo.'} Tasot, liitokset, nivelpisteet ja lähde-PSD ovat mukana. Kädet A/D, hyppy W, ilmeet 1/2/3, räpäytys B. Suu reagoi ääneen; hymy- ja surusuu ovat mukana. Muokkaa PSD:tä yhdistämättä tasoja.`;
+const guide=(name,views)=>`${name}: Hahmostudion alkuperäistä grafiikkaa (CC0-1.0). ${views>1?'Neljä kuvakulmaa (edestä, profiilit, takaa): valitse kulma Hahmon kuvakulma -valinnasta; Cutout3D-kamera kääntää paperitasoja.':'Etunäkymän 2D-hahmo.'} Tasot, liitokset, nivelpisteet ja lähde-PSD ovat mukana. Kädet A/D, hyppy W, ilmeet 1/2/3, räpäytys B. Suu reagoi ääneen; hymy- ja surusuu ovat mukana. Muokkaa PSD:tä yhdistämättä tasoja.`;
 
 function pack(name,cfg,views){
  const three=views.length>1,outName=three?name+'-3D':name,entries=views.map(view=>({view,...read(name,view)}));
@@ -46,4 +46,4 @@ function pack(name,cfg,views){
  console.log(`${outName}: ${views.length} kuvakulmaa, ${parts.length} niveltettyä tasoa, PSD ${Math.round(bytes.length/1024)} kt`);
 }
 
-for(const [name,cfg] of Object.entries(cast)){if(only.length&&!only.includes(name))continue;pack(name,cfg,['front']);pack(name,cfg,['front','right','left']);}
+for(const [name,cfg] of Object.entries(cast)){if(only.length&&!only.includes(name))continue;pack(name,cfg,['front']);pack(name,cfg,['front','right','left','back']);}

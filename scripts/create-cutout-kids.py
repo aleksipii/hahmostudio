@@ -4,7 +4,9 @@ Alkuperäistä ohjelmallista grafiikkaa. Tyyli: iso pyöreä pää, kompakti var
 litteät väripinnat (ei ääriviivoja), valkoiset soikeat silmät ja mustat pupillit. Osat peittävät toisensa (kädet, lapaset ja pää ovat kiinni
 vartalossa ilman rakoja), mutta jokainen osa on silti oma tasonsa nivelineen, joten IK, kävely ja eleet toimivat.
 Ei minkään TV-sarjan hahmoja, asuja, tunnuksia tai tekstejä: omat hahmot, värit ja asusteet.
-Jokainen hahmo piirretään kolmesta kuvakulmasta (edestä, oikea ja vasen profiili).
+Jokainen hahmo piirretään neljästä kuvakulmasta (edestä, oikea ja vasen profiili, takaa).
+Takaa: hahmon oikea puoli on katsojan oikealla, kasvot eivät näy (kasvotasot ovat olemassa mutta tyhjiä, jotta
+roolit ja suuohjaus pysyvät samoina), tukka/huppu peittää takaraivon.
 Taso piirretään 2× koossa ja pienennetään Lanczos-suotimella, jolloin reunat ovat pehmeät.
 
 Tuottaa .cutout-kids-build/<Nimi>/<kulma>/{<taso>.png,<taso>.rgba,layers.json,preview.png,composite.rgba}.
@@ -99,12 +101,15 @@ def smooth_down(big):
 def build(name, c, view):
     out = OUT / name / view
     out.mkdir(parents=True, exist_ok=True)
-    side = view != 'front'
+    side = view in ('right', 'left')
+    back = view == 'back'
+    hidden_face = {'glasses'} | {w + k for w in ('right', 'left') for k in ('Eye', 'Pupil', 'Brow', 'Blink')}
     layers = []
 
     def layer(key, label, group, role, pivot, parent, draw, hidden=False, joints=()):
         big = Image.new('RGBA', (W * S, H * S))
-        draw(Pen(big))
+        if not (back and (key in hidden_face or group == 'Suut')):
+            draw(Pen(big))
         im = smooth_down(big)
         piv, jts = pivot, list(joints)
         if view == 'left':
@@ -127,7 +132,7 @@ def build(name, c, view):
 
     # ── Jalat: reisi → sääri → kenkä (erilliset tasot IK:ta varten, mutta kiinni vartalossa) ──
     # Nivelkorkeudet vastaavat 3D-luurankoa (toon3d): lonkka 603, polvi 660, nilkka 732.
-    for which, x in [('right', 282 if side else 262), ('left', 318 if side else 338)]:
+    for which, x in [('right', 282 if side else 338 if back else 262), ('left', 318 if side else 262 if back else 338)]:
         lab = 'Oikea' if which == 'right' else 'Vasen'
         pants = c['pants']
         layer(which + 'Thigh', lab + ' reisi', 'Vartalo', 'leg', (x, 603), 'root',
@@ -146,7 +151,17 @@ def build(name, c, view):
     def body(p):
         l, t, r, b = (252, 412, 352, 604) if side else (206, 412, 394, 604)
         cx = 300
-        if c['top'] == 'raincoat':
+        if back:  # selkä: ei nappeja, vetoketjua eikä taskua
+            p.rr((l, t, r, b), 64, top)
+            p.rr((l, b - 42, r, b), 24, dark)
+            if c['top'] == 'sweater':
+                for k in range(3):
+                    p.line([(l + 30, t + 66 + k * 40), (r - 30, t + 66 + k * 40)], fill=dark, width=5)
+            elif c['top'] == 'hoodie':
+                p.rr((cx - 62, t + 10, cx + 62, t + 84), 34, dark)  # huppu selässä
+            elif c['top'] == 'raincoat':
+                p.line([(cx, t + 60), (cx, b - 44)], fill=dark, width=5)  # selkäsauma
+        elif c['top'] == 'raincoat':
             p.rr((l, t, r, b), 70, top)
             p.rr((l, b - 40, r, b), 24, dark)
             p.line([(cx, t + 60), (cx, b - 8)], fill=dark, width=5)
@@ -172,7 +187,7 @@ def build(name, c, view):
 
     # ── Kädet: olkavarsi → kyynärvarsi → kämmen (lapanen, kiinni hihassa) ──
     # Nivelet vastaavat 3D-luurankoa: olka (±96, 435), kyynärpää 505, ranne 582.
-    for which, x in [('right', 290 if side else 204), ('left', 310 if side else 396)]:
+    for which, x in [('right', 290 if side else 396 if back else 204), ('left', 310 if side else 204 if back else 396)]:
         lab = 'Oikea' if which == 'right' else 'Vasen'
         sleeve = top if c['top'] != 'cardigan' else c['top_color']
         layer(which + 'Arm', lab + ' olkavarsi', 'Vartalo', 'arm', (x, 435), 'root',
@@ -184,6 +199,37 @@ def build(name, c, view):
 
     # ── Pää (isompi kuin vartalo; tukka tai asuste samassa tasossa) ──
     hb = (126, 82, 474, 448) if not side else (150, 86, 450, 448)
+
+    def head_back(p):
+        st = c['hair_style']
+        if st == 'hood':
+            p.ellipse((hb[0] - 22, hb[1] - 26, hb[2] + 22, hb[3] + 4), top)
+            p.line([(300, hb[1] - 20), (300, hb[1] + 120)], fill=dark, width=5)  # hupun keskisauma (tumma sävy)
+            return
+        for ex in (hb[0] + 4, hb[2] - 4):  # korvat näkyvät reunoilta
+            p.ellipse((ex - 22, 270, ex + 22, 330), skin)
+        p.ellipse(hb, skin)
+        if st == 'curls':
+            p.ellipse((hb[0] + 4, hb[1] - 6, hb[2] - 4, hb[3] - 34), c['hair'])
+            xs = list(range(hb[0] + 10, hb[2], 46))
+            for i, x0 in enumerate(xs):
+                y0 = hb[1] - 30 + (10 if i % 2 else 0)
+                p.ellipse((x0 - 34, y0, x0 + 34, y0 + 70), c['hair'])
+            for x0 in range(hb[0] + 40, hb[2] - 20, 52):
+                p.ellipse((x0 - 30, hb[3] - 78, x0 + 30, hb[3] - 26), c['hair'])
+        elif st == 'buns':
+            for bx in [(hb[0] - 20, hb[1] - 38, hb[0] + 104, hb[1] + 82), (hb[2] - 104, hb[1] - 38, hb[2] + 20, hb[1] + 82)]:
+                p.ellipse(bx, c['hair'])
+            p.ellipse((hb[0] + 2, hb[1] - 2, hb[2] - 2, hb[3] - 30), c['hair'])
+        elif st == 'bald':
+            for sx in (hb[0] - 14, hb[2] + 14):
+                p.ellipse((sx - 38, 230, sx + 38, 316), c['hair'])
+            p.chord((hb[0] + 8, 196, hb[2] - 8, 410), 0, 180, c['hair'])  # hiusreunus takaraivolla
+            p.chord((hb[0] + 40, 150, hb[2] - 40, 330), 0, 180, skin)
+        if c['accessory'] == 'headphones':
+            p.arc((hb[0] - 4, hb[1] - 30, hb[2] + 4, hb[3] - 40), 190, 350, fill=c['accent'], width=16)
+            p.rr((hb[0] - 34, 240, hb[0] + 26, 340), 24, c['accent'])
+            p.rr((hb[2] - 26, 240, hb[2] + 34, 340), 24, c['accent'])
 
     def head(p):
         st = c['hair_style']
@@ -228,7 +274,7 @@ def build(name, c, view):
             else:
                 p.ellipse((222, 336, 304, 392), '#e6e3dc', width=6)
                 p.ellipse((296, 336, 378, 392), '#e6e3dc', width=6)
-    layer('head', 'Pää', 'Pää', 'head', (300, 444), 'root', head)
+    layer('head', 'Pää', 'Pää', 'head', (300, 444), 'root', head_back if back else head)
 
     # ── Silmät: iso valkoinen soikio, musta pupilli; räpäytys piilotettuna ──
     eye_y = 262
@@ -300,5 +346,5 @@ def build(name, c, view):
 
 if __name__ == '__main__':
     for name, cfg in CAST.items():
-        counts = [build(name, cfg, v) for v in ('front', 'right', 'left')]
-        print(f'{name}: {counts[0]} tasoa × 3 kuvakulmaa')
+        counts = [build(name, cfg, v) for v in ('front', 'right', 'left', 'back')]
+        print(f'{name}: {counts[0]} tasoa × 4 kuvakulmaa')

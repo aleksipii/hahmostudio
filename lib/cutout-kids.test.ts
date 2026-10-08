@@ -26,14 +26,14 @@ test('every new cutout character opens as a 2D pack with all controller roles, v
  }
 });
 
-test('3D packs carry three independently drawn views that the camera/view selector can switch between',async()=>{
+test('3D packs carry four independently drawn views that the camera/view selector can switch between',async()=>{
  for(const name of cast){
   const p=await load(name+'-3D'),q=p.doc.quick!;
-  assert.equal(q.asset,`hahmostudio-${name.toLowerCase()}-cutout-3d-v1`);assert.deepEqual(Object.keys(q.views!),['front','right','left']);
-  for(const view of ['front','right','left'] as const)for(const role of required)assert.ok(p.animation.rig.parts.some(x=>x.key===(q.views![view] as Record<string,string>)[role]),`${name} ${view} ${role}`);
-  const roots=Object.values(q.views!).map(v=>sampleTrack(p.animation.tracks.find(t=>t.key===v!.root),0).opacity);assert.deepEqual(roots,[1,0,0]);
+  assert.equal(q.asset,`hahmostudio-${name.toLowerCase()}-cutout-3d-v1`);assert.deepEqual(Object.keys(q.views!),['front','right','left','back']);
+  for(const view of ['front','right','left','back'] as const)for(const role of required)assert.ok(p.animation.rig.parts.some(x=>x.key===(q.views![view] as Record<string,string>)[role]),`${name} ${view} ${role}`);
+  const roots=Object.values(q.views!).map(v=>sampleTrack(p.animation.tracks.find(t=>t.key===v!.root),0).opacity);assert.deepEqual(roots,[1,0,0,0]);
   const right=selectCharacterView(p.animation,q,'right',0);assert.equal(sampleTrack(right.animation.tracks.find(t=>t.key===q.views!.right!.root),0).opacity,1);assert.equal(right.profile.roles.root,q.views!.right!.root);
-  const psd=readPsd(file(name+'-3D.psd'),{skipLayerImageData:true,skipCompositeImageData:true,skipThumbnail:true,useRawData:true});assert.deepEqual(psd.children!.map(g=>g.name),['Edestä','Oikea profiili','Vasen profiili']);
+  const psd=readPsd(file(name+'-3D.psd'),{skipLayerImageData:true,skipCompositeImageData:true,skipThumbnail:true,useRawData:true});assert.deepEqual(psd.children!.map(g=>g.name),['Edestä','Oikea profiili','Vasen profiili','Takaa']);
   const leftHand=p.animation.rig.parts.find(x=>x.key===q.views!.left!.leftHand)!,rightHand=p.animation.rig.parts.find(x=>x.key===q.views!.right!.leftHand)!;assert.equal(leftHand.pivot.x,600-rightHand.pivot.x,'left profile mirrors the drawn right profile');
  }
 });
