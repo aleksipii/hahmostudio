@@ -500,3 +500,15 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 **Löydös, ei korjattu (päätös käyttäjälle):** pelkkä Rakenna jakso → Vie tuottaa **äänettömän** videon, jos jaksossa ei ole repliikkiääniä: miksattu ääni syntyy vasta “Rakenna muokattava jakso projektiin” -painikkeella, ja vientitarkistus (`freezeRender`) varoittaa puuttuvasta äänestä vain, kun repliikkiääniä on. Ohjeteksti “Paina Rakenna jakso ja sitten Vie” on siksi harhaanjohtava; esim. varoitus tai automaattinen miksaus vientiä varten.
 
 **Edelleen todentamatta:** kamera ja mikrofoni, trackpad-veto, Kokoro oikealla mallilla, pakattu .app (testi ajaa kehitysbuildin Electronissa), uudet paneelit pakatussa sovelluksessa.
+
+### 2.21 — Luotettavuus: muokattu jakso ei kahdennu, vienti kertoo lisäämättömästä jaksosta (2026-10-08)
+
+**Löydetty ja korjattu:**
+1. **Muokattu käsikirjoitus lisäsi kohtauksen toiseen kertaan.** Jakson tunniste laskettiin käsikirjoitustekstistä, joten tekstin muutoksen jälkeen Rakenna jakso antoi uuden tunnisteen. Painike näytti silloin “Rakenna muokattava jakso projektiin” eikä “Päivitä kohtaus”, ja vanha versio jäi projektiin uuden eteen (video sisälsi molemmat, ja 60 s raja täyttyi nopeasti). Nyt saman kohtauksen uudelleenrakennus (`buildEpisode`, `options.previous`) säilyttää kohtauksen tunnisteen, kuten vanha jäsennin (`reconcileProduction`). Testi: muokattu jakso korvaa projektissa olevan version (`lib/export-draft.test.ts`).
+2. **Pelkkä Rakenna jakso → Vie ei vienyt jaksoa.** Vienti käyttää vain projektiin lisättyjä kohtauksia. `lib/export-draft.ts` tunnistaa lisäämättömän uuden jakson (projektissa ei vielä kohtauksia) ja päivittämättömän muutoksen (sama kohtaus, eri teksti tai tapahtumat). Vientidialogi näyttää tarkan ohjeen ja estää jonoon lisäyksen, kunnes jakso on lisätty tai käyttäjä valitsee “Vie silti ilman sitä”; selainviennissä sama vahvistuskysymys. Uusi erillinen kohtaus aiempien rinnalla ei estä aiempien vientiä. Esimerkin ohjeteksti ja `docs/DESIGN-PALIKKAEDITORI.md` kertovat nyt välivaiheen.
+
+**Tarkistettu:** pilvirenderöinnin oppaan Wan-tiedostopolut ovat olemassa repossa `Comfy-Org/Wan_2.2_ComfyUI_Repackaged` (Hubin metatieto: 10,0 + 6,7 + 1,4 Gt, LFS). Oppaan ympäristömuuttujat vastaavat koodia.
+
+**Ei todennettu:** korjauksia ei ajettu selaimessa eikä Electronissa (vain koodin testit). `npm test` 1213 (1212 läpi, 1 ohitettu), typecheck, `build:private` ja `desktop:build` OK.
+
+**Edelleen auki (päätös tai laite käyttäjällä):** tyhjän projektin ensimmäisen käsikirjoitus-commitin kumoaminen työpöytäsovelluksessa (2.19); oikea Colab/ComfyUI/Drive-ajo; kamera, mikrofoni, trackpad ja Kokoro oikealla mallilla Macilla.
