@@ -3,7 +3,7 @@
 // Kulkee oikean rendererin sillan (window.hahmostudio), oikean IPC:n, oikean utilityProcess-pilviprosessin
 // ja oikean lib/cloud-render-koodin läpi. Ei verkkoa: yhtään ilmaista taustaa ei ole määritetty toimivaksi.
 import {readFile,readdir,writeFile} from 'node:fs/promises';import {join} from 'node:path';
-const MARK='hsleakmark'+'diag'+'7f3a91c2';
+const MARK='hs'+'leak'+'mark'+'diag'+'7f3a91c2';
 const TUNNEL=`https://${MARK}.trycloudflare.com/`;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function waitFor(fn,{timeoutMs=45000,stepMs=150}={}){const end=Date.now()+timeoutMs;while(Date.now()<end){try{const v=await fn();if(v)return v;}catch{}await sleep(stepMs);}throw new Error('Aikakatkaisu odottaessa ehtoa.');}
