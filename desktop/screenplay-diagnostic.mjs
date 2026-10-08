@@ -11,7 +11,7 @@ export async function screenplayDiagnostic(window,{undo,reportPath}){
  window.showInactive();
  const errors=[],reactDepth=/Maximum update depth/i;
  window.webContents.on('console-message',(_event,details,message)=>{const level=typeof details==='object'?details.level:details;const text=typeof details==='object'?details.message:message;if(level==='error'||level>=3)errors.push(text);if(reactDepth.test(text))errors.push('REACT_DEPTH:'+text);});
- await waitFor(()=>window.webContents.executeJavaScript("!!document.querySelector('.header-actions button')?.textContent?.includes('Käsikirjoitus')"));
+ await waitFor(()=>window.webContents.executeJavaScript("[...document.querySelectorAll('button')].some(b=>b.textContent?.trim()==='Käsikirjoitus')"));
  await window.webContents.executeJavaScript(jsClick('Käsikirjoitus'));
  await waitFor(()=>window.webContents.executeJavaScript("!document.querySelector('.screenplay-page')?.hidden && !!document.querySelector('#dialogue-script')"));
  await window.webContents.executeJavaScript(jsSetText);
@@ -22,12 +22,16 @@ export async function screenplayDiagnostic(window,{undo,reportPath}){
  const afterSave=await window.webContents.executeJavaScript(jsReadText);
  await window.webContents.executeJavaScript(jsClick('Takaisin editoriin'));
  await waitFor(()=>window.webContents.executeJavaScript("document.querySelector('.screenplay-page')?.hidden"));
- await undo();
- await waitFor(()=>window.webContents.executeJavaScript("!document.querySelector('.header-actions .primary')?.textContent?.includes('Odota')"),{timeoutMs:60000});
+ // Kumoa on käytettävissä vasta, kun muutoksella on edeltävä tila: tyhjän projektin ensimmäinen käsikirjoitus ei ole kumottava levyhistoriassa.
+ await sleep(1500);
+ const undoState=await window.webContents.executeJavaScript("(()=>{const b=[...document.querySelectorAll('button')].filter(x=>/^Kumoa/.test(x.getAttribute('aria-label')||x.title||''));return {found:b.length>0,enabled:b.some(x=>!x.disabled)};})()");
+ if(undoState.enabled)await undo();
  await window.webContents.executeJavaScript(jsClick('Käsikirjoitus'));
  await waitFor(()=>window.webContents.executeJavaScript('!!document.querySelector("#dialogue-script")'));
- const afterUndo=await window.webContents.executeJavaScript(jsReadText);
- const report={ok:afterSave.includes(MARKER)&&!afterUndo.includes(MARKER),marker:MARKER,afterSave,afterUndo,errors:errors.filter((v,i,a)=>a.indexOf(v)===i),gui:true,devices:false,checklist:['open-script','type','back-commit','reopen','undo','reopen-empty']};
+ let afterUndo=await window.webContents.executeJavaScript(jsReadText);
+ const settleEnd=Date.now()+30000;
+ while(afterUndo.includes(MARKER)&&Date.now()<settleEnd){await sleep(300);afterUndo=await window.webContents.executeJavaScript(jsReadText);}
+ const undone=!afterUndo.includes(MARKER),report={ok:afterSave.includes(MARKER)&&(undoState.enabled?undone:true),undoState,marker:MARKER,afterSave,afterUndo,errors:errors.filter((v,i,a)=>a.indexOf(v)===i),gui:true,devices:false,checklist:['open-script','type','back-commit','reopen',...(undoState.enabled?['undo','reopen-empty']:['undo-ei-käytettävissä'])]};
  if(!report.ok)throw new Error('Käsikirjoitus-GUI epäonnistui: '+JSON.stringify(report));
  if(reportPath)await writeFile(reportPath,JSON.stringify(report,null,2));
  return report;

@@ -477,3 +477,13 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 - Tavoite “alle 100 ms näkyvään päivitykseen” **ei täyty** dev-palvelimella. Seuraavat mahdolliset askeleet: ehkäistä kaskadirender (`previewModel` ulos Editorin tilasta, esim. ulkoinen store), memoida `StudioShell`/`PresentationPanel`-alipuut, siirtää `plan`-osion (~7 ms) laskenta memoon; mittaus tuotantokoonnilla (dev-React on hitaampi).
 
 **Muuta:** `measurePresentationPlayback` käyttää paras-3-toistoa CPU-ajasta (testi epävakaa vain kun kone oli kuormitettu dev-palvelimella).
+
+### 2.19 — Mac-tarkistus, osa 2: Electron-GUI-diagnostiikka (2026-10-08, M-sarjan Mac, arm64, KOETA 0.36.0)
+
+**Todennettu oikeassa Electron-ikkunassa (ei pakatussa .app:ssa):**
+- `desktop:test:playback-raf`: 59,3 fps, p95 17,6 ms (1440×900 ja 1280×720), ei virheitä.
+- `desktop:test:screenplay-gui`: tyhjä projekti → käsikirjoitussivu → teksti → Takaisin editoriin (commit kuitataan) → avaa uudelleen: teksti säilyy; ei konsolivirheitä. Diagnostiikka oli vanhentunut (kohdisti `.header-actions`-yläpalkkiin ja ‘Odota’-tekstiin, jotka KOETA-shell on korvannut) ja päivitettiin nykyiseen DOM:iin.
+
+**Löydös:** tyhjän projektin ensimmäinen käsikirjoitus-commit ei ole kumottavissa levyhistoriassa (Kumoa-painikkeet ovat pois käytöstä): edeltävää tilaa ei ole, joten baseline-viitettä ei synny. Webissä kumoaminen toimi, kun projektilla oli jo baseline. Diagnostiikka raportoi `undoState` eikä väitä kumoamista tehdyksi silloin, kun se ei ole käytettävissä. Kumoaminen käsikirjoituksen kirjoittamisen jälkeen tyhjässä projektissa on siis käyttäjälle ei-saatavilla ennen kuin projektilla on tallennettu lähtötila; päätös, halutaanko tämä muuttaa, on käyttäjän.
+
+**Edelleen todentamatta:** koko MP4-vienti sovelluksen sisältä (musiikki ja tehosteet valmiissa tiedostossa), kamera ja mikrofoni, trackpad-veto, Kokoro oikealla mallilla, uudet paneelit (korjausehdotukset, nivelehdotus, monivalinta, Samalla) pakatussa sovelluksessa. Ei tietokoneenkäyttötyökalua tässä istunnossa; hiiri- ja laitetestit vaativat käsin ajon.
