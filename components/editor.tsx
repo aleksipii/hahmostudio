@@ -196,7 +196,7 @@ export default function Editor() {
  const activeFlowStep=():StudioFlowStep=>(flowPinEnabled&&pinnedFlowStep)?pinnedFlowStep:derivedFlowStep();
  const goFlowStep=(step:StudioFlowStep)=>{if(flowPinEnabled){writePinnedFlowStep(step);setPinnedFlowStep(step);}setScriptPage(false);setPlaying(false);switch(step){case'script':changeWorkspace('animation');setLibraryTab('script');setScriptMode('dialogue');setBoardOpen(false);setTimelineOpen(false);break;case'characters':changeWorkspace('performance');setLibraryTab('library');setLibraryCategory('characters');setBoardOpen(false);setTimelineOpen(false);break;case'storyboard':changeWorkspace('animation');setLibraryTab('script');setScriptMode('dialogue');setBoardOpen(true);setTimelineOpen(false);break;case'shot':changeWorkspace('animation');setLibraryTab('script');setScriptMode('dialogue');setBoardOpen(true);setInspector('motion');setTimelineOpen(false);break;case'timeline':changeWorkspace('animation');setBoardOpen(false);setLibraryTab('script');setTimelineOpen(true);break;}};
  const inWorkshop=workspace==='character';
- const goWorkshop=()=>{if(inWorkshop){goFlowStep('characters');return;}goFlowStep('characters');changeWorkspace('character');};
+ const goWorkshop=()=>{if(inWorkshop)return;goFlowStep('characters');changeWorkspace('character');};
  const flowTimelineHidden=()=>scriptPage||(activeFlowStep()==='script'&&workspace==='animation')||(!!flowPin&&flowStepScopes[flowPin].hideTimeline&&workspace==='animation');
  useEffect(()=>{if(flowRestored.current)return;flowRestored.current=true;if(!readFlowPinEnabled())return;const pin=readPinnedFlowStep();if(!pin)return;setPinnedFlowStep(pin);goFlowStep(pin);},[]);
  useEffect(()=>{if(!doc?.quick)setDeviceStatus({microphone:false,loading:false,keyboard:false});},[doc?.quick?.asset]);
@@ -556,10 +556,10 @@ export default function Editor() {
   {id:'script-focus',group:'Käsikirjoitus',label:'Keskittymistila: koko näytön käsikirjoitus',keywords:'focus',run:openScript},
   {id:'script-example',group:'Käsikirjoitus',label:'Kokeile esimerkkianimaatiota',disabled:busy||projectBusy||frameExport||cameraActive||quickBusy||speechBusy,run:()=>void tryExample()},
   {id:'script-motion',group:'Käsikirjoitus',label:'Yhden hahmon liikekäsikirjoitus',run:()=>{goFlowStep('script');setScriptMode('motion');}},
-  {id:'char-build',group:'Työpaja',label:'Työpaja: rakenna hahmoa (tasot, piirto, nivelet)',shortcut:'⌥6',keywords:'rakenna hahmo osat',run:()=>{if(!inWorkshop)goWorkshop();}},
+  {id:'char-build',group:'Työpaja',label:'Työpaja: rakenna hahmoa (tasot, piirto, nivelet)',shortcut:'⌥6',keywords:'rakenna hahmo osat',run:goWorkshop},
   {id:'char-perform',group:'Hahmot',label:'Esitys: kamera, mikrofoni ja näppäimet',run:()=>goFlowStep('characters')},
-  {id:'char-rig',group:'Työpaja',label:'Nivelmääritys',disabled:!doc||quickBusy||cameraActive,run:()=>{if(!inWorkshop)goWorkshop();setDrawing(false);setRigMode(true);setMode('layers');setInspector('selection');}},
-  {id:'char-draw',group:'Työpaja',label:'Piirtäminen',disabled:!doc,run:()=>{if(!inWorkshop)goWorkshop();setDrawing(true);setRigMode(false);setMode('layers');}},
+  {id:'char-rig',group:'Työpaja',label:'Nivelmääritys',disabled:!doc||quickBusy||cameraActive,run:()=>{goWorkshop();setDrawing(false);setRigMode(true);setMode('layers');setInspector('selection');}},
+  {id:'char-draw',group:'Työpaja',label:'Piirtäminen',disabled:!doc,run:()=>{goWorkshop();setDrawing(true);setRigMode(false);setMode('layers');}},
   {id:'char-review',group:'Työpaja',label:'Tarkista tuonti',disabled:!doc,run:()=>setImportReview(true)},
   {id:'char-layers',group:'Työpaja',label:'Lataa kaikki tasot',disabled:exporting||!nodes.some(n=>n.png),run:()=>void downloadAll()},
   {id:'char-library',group:'Hahmot',label:'Roolitus: hahmot, ympäristöt ja esineet',run:()=>goFlowStep('characters')},
