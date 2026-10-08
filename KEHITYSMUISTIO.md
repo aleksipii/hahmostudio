@@ -487,3 +487,16 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 **Löydös:** tyhjän projektin ensimmäinen käsikirjoitus-commit ei ole kumottavissa levyhistoriassa (Kumoa-painikkeet ovat pois käytöstä): edeltävää tilaa ei ole, joten baseline-viitettä ei synny. Webissä kumoaminen toimi, kun projektilla oli jo baseline. Diagnostiikka raportoi `undoState` eikä väitä kumoamista tehdyksi silloin, kun se ei ole käytettävissä. Kumoaminen käsikirjoituksen kirjoittamisen jälkeen tyhjässä projektissa on siis käyttäjälle ei-saatavilla ennen kuin projektilla on tallennettu lähtötila; päätös, halutaanko tämä muuttaa, on käyttäjän.
 
 **Edelleen todentamatta:** koko MP4-vienti sovelluksen sisältä (musiikki ja tehosteet valmiissa tiedostossa), kamera ja mikrofoni, trackpad-veto, Kokoro oikealla mallilla, uudet paneelit (korjausehdotukset, nivelehdotus, monivalinta, Samalla) pakatussa sovelluksessa. Ei tietokoneenkäyttötyökalua tässä istunnossa; hiiri- ja laitetestit vaativat käsin ajon.
+
+### 2.20 — Päästä päähän -vienti oikeassa Electronissa (2026-10-08, M-sarjan Mac, arm64)
+
+**Uusi testi:** `npm run desktop:test:export-e2e` (`desktop/export-e2e-diagnostic.mjs`): Electron-ikkuna → käsikirjoitus (musiikki + askeleet) → Rakenna jakso → Rakenna muokattava jakso projektiin → Vie… → Pikavienti (kohde esiasetettu) → oikea ExportQueue, FFmpeg ja VideoToolbox → MP4:n sisällön mittaus (`ffmpeg -i`, `volumedetect`). Ei CI:ssä (vaatii Macin GUI:n).
+
+**Todennettu:** vienti valmistuu; `h264_videotoolbox · laitteisto`, 1080×1920, 30 fps, H.264 + AAC, 10 s, keskiäänenvoimakkuus −28,6 dB (musiikki ja askeleet kuuluvat), huippu −6 dB.
+
+**Löydetyt ja korjatut viat:**
+1. Työpöytäviennin ääni oli **16 kHz mono**: `renderExport` käytti puhetunnistuksen `encodeSpeechWav`-koodausta (uudelleennäytteistys 16 kHz) musiikille ja tehosteille. Nyt `encodePcmWav` (`lib/wav-encode.ts`, alkuperäinen taajuus, ≤2 kanavaa) ja äänikonteksti 48 kHz; MP4:ssä AAC 48 kHz. Testi vaatii ≥44,1 kHz.
+
+**Löydös, ei korjattu (päätös käyttäjälle):** pelkkä Rakenna jakso → Vie tuottaa **äänettömän** videon, jos jaksossa ei ole repliikkiääniä: miksattu ääni syntyy vasta “Rakenna muokattava jakso projektiin” -painikkeella, ja vientitarkistus (`freezeRender`) varoittaa puuttuvasta äänestä vain, kun repliikkiääniä on. Ohjeteksti “Paina Rakenna jakso ja sitten Vie” on siksi harhaanjohtava; esim. varoitus tai automaattinen miksaus vientiä varten.
+
+**Edelleen todentamatta:** kamera ja mikrofoni, trackpad-veto, Kokoro oikealla mallilla, pakattu .app (testi ajaa kehitysbuildin Electronissa), uudet paneelit pakatussa sovelluksessa.
