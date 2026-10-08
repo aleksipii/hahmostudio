@@ -1,7 +1,7 @@
 """Hahmostudion oma paksureunainen leikkaussarjakuvasarja (CC0): Pipsa, Ville, Taru ja Ukko.
 
-Alkuperäistä ohjelmallista grafiikkaa. Tyyli: iso pyöreä pää, kompakti vartalo, lyhyet jalat, paksu musta ääriviiva,
-litteät värit, valkoiset soikeat silmät ja mustat pupillit. Osat peittävät toisensa (kädet, lapaset ja pää ovat kiinni
+Alkuperäistä ohjelmallista grafiikkaa. Tyyli: iso pyöreä pää, kompakti vartalo, lyhyet jalat, viivattomat
+litteät väripinnat (ei ääriviivoja), valkoiset soikeat silmät ja mustat pupillit. Osat peittävät toisensa (kädet, lapaset ja pää ovat kiinni
 vartalossa ilman rakoja), mutta jokainen osa on silti oma tasonsa nivelineen, joten IK, kävely ja eleet toimivat.
 Ei minkään TV-sarjan hahmoja, asuja, tunnuksia tai tekstejä: omat hahmot, värit ja asusteet.
 Jokainen hahmo piirretään kolmesta kuvakulmasta (edestä, oikea ja vasen profiili).
@@ -18,7 +18,12 @@ W, H, S = 600, 900, 2
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / '.cutout-kids-build'
 INK = '#14141a'
-LW = 7  # ääriviivan paksuus (600×900-koordinaateissa)
+LW = 7  # reunan paksuus (600×900-koordinaateissa)
+# Viivaton tyyli: osan reuna maalataan osan omalla täyttövärillä (FILL), jolloin osan muoto, koko ja sijainti
+# pysyvät täsmälleen samoina kuin entisessä paksureunaisessa versiossa, mutta mustaa ääriviivaa ei ole.
+# Samanväriset päällekkäiset osat (paita ja hihat, lahkeet) sulautuvat saumattomasti. Kasvojen yksityiskohdat
+# (silmävalkuaiset, korva, hymysuu) antavat INK-viivan erikseen.
+FILL = 'fill'
 
 CAST = {
     'Pipsa': dict(skin='#f5cfae', top='raincoat', top_color='#f2c230', top_dark='#c99a12', pants='#2f6f8f', shoes='#c8372d', mitten='#c8372d',
@@ -44,13 +49,20 @@ class Pen:
     def _b(box):
         return [v * S for v in box]
 
-    def ellipse(self, box, fill, outline=INK, width=LW):
+    @staticmethod
+    def _edge(fill, outline):
+        return fill if outline == FILL else outline
+
+    def ellipse(self, box, fill, outline=FILL, width=LW):
+        outline = self._edge(fill, outline)
         self.d.ellipse(self._b(box), fill=fill, outline=outline, width=width * S if outline else 0)
 
-    def rr(self, box, r, fill, outline=INK, width=LW):
+    def rr(self, box, r, fill, outline=FILL, width=LW):
+        outline = self._edge(fill, outline)
         self.d.rounded_rectangle(self._b(box), r * S, fill=fill, outline=outline, width=width * S if outline else 0)
 
-    def poly(self, pts, fill, outline=INK, width=LW):
+    def poly(self, pts, fill, outline=FILL, width=LW):
+        outline = self._edge(fill, outline)
         flat = [(x * S, y * S) for x, y in pts]
         self.d.polygon(flat, fill=fill)
         if outline:
@@ -72,6 +84,18 @@ class Pen:
         self.d.ellipse([(x - r) * S, (y - r) * S, (x + r) * S, (y + r) * S], fill=fill)
 
 
+def smooth_down(big):
+    """2×-kangas 600×900:aan. Peittävyys Lanczos-suotimella (pehmeä reuna, osan koko ja sijainti ennallaan), värit
+    esikerrotusta laatikkosuotimesta: Lanczosin ylilyönti tekisi reunaan vaalean juovan, joka näkyisi saumana kun
+    samanvärinen hiha on paidan päällä. Laatikkosuotimella yksivärisen osan reunapikselit ovat täsmälleen täyttöväriä."""
+    soft = big.resize((W, H), Image.LANCZOS)
+    box = big.convert('RGBa').resize((W, H), Image.BOX).convert('RGBA')
+    covered = box.getchannel('A').point(lambda a: 255 if a else 0)
+    rgb = Image.composite(box, soft, covered)
+    rgb.putalpha(soft.getchannel('A'))
+    return rgb
+
+
 def build(name, c, view):
     out = OUT / name / view
     out.mkdir(parents=True, exist_ok=True)
@@ -81,7 +105,7 @@ def build(name, c, view):
     def layer(key, label, group, role, pivot, parent, draw, hidden=False, joints=()):
         big = Image.new('RGBA', (W * S, H * S))
         draw(Pen(big))
-        im = big.resize((W, H), Image.LANCZOS)
+        im = smooth_down(big)
         piv, jts = pivot, list(joints)
         if view == 'left':
             im = ImageOps.mirror(im)
@@ -125,7 +149,7 @@ def build(name, c, view):
         if c['top'] == 'raincoat':
             p.rr((l, t, r, b), 70, top)
             p.rr((l, b - 40, r, b), 24, dark)
-            p.line([(cx, t + 60), (cx, b - 8)], width=5)
+            p.line([(cx, t + 60), (cx, b - 8)], fill=dark, width=5)
             for y in (480, 530, 578):
                 p.dot(cx + 22, y, 9, '#7a4a1e')
         elif c['top'] == 'sweater':
@@ -139,9 +163,9 @@ def build(name, c, view):
             p.line([(cx - 20, t + 50), (cx - 24, 510)], fill=c['trim'], width=5)
             p.line([(cx + 20, t + 50), (cx + 24, 510)], fill=c['trim'], width=5)
         else:  # cardigan
-            p.rr((l, t, r, b), 62, c['trim'])
-            p.poly([(l + 4, t + 24), (cx - 6, t + 14), (cx - 22, b - 4), (l + 4, b - 4)], top)
-            p.poly([(r - 4, t + 24), (cx + 6, t + 14), (cx + 22, b - 4), (r - 4, b - 4)], top)
+            # Villatakin väri ulottuu olkapäille asti (sama kuin hihoissa); paita näkyy vain avoimesta etumuksesta.
+            p.rr((l, t, r, b), 62, top)
+            p.poly([(cx - 6, t + 14), (cx + 6, t + 14), (cx + 22, b - 4), (cx - 22, b - 4)], c['trim'])
             for y in (480, 526, 572):
                 p.dot(cx - 40, y, 7, dark)
     layer('root', 'Vartalo', 'Vartalo', 'body', (300, 640), None, body)
@@ -172,9 +196,9 @@ def build(name, c, view):
         else:
             p.ellipse(hb, skin)
         if side:
-            p.ellipse((hb[2] - 22, 278, hb[2] + 24, 330), skin)  # nenä
+            p.ellipse((hb[2] - 22, 278, hb[2] + 24, 330), skin)  # nenä (viivaton, näkyy siluetissa)
             ex = (hb[0] + hb[2]) // 2 - 30
-            p.ellipse((ex - 22, 270, ex + 22, 330), skin)  # korva
+            p.ellipse((ex - 22, 270, ex + 22, 330), skin, outline=INK)  # korva: kasvojen yksityiskohta, viiva säilyy
         if st == 'curls':
             xs = list(range(hb[0] + 10, hb[2], 46))
             for i, x0 in enumerate(xs):
@@ -215,7 +239,7 @@ def build(name, c, view):
         blank = lambda p: None
 
         def white(p, x=x):
-            p.ellipse((x - 42, eye_y - 52, x + 42, eye_y + 52), WHITE, width=6)
+            p.ellipse((x - 42, eye_y - 52, x + 42, eye_y + 52), WHITE, outline=INK, width=6)
 
         def pupil(p, x=x, which=which):
             dx = 14 if side else (-10 if which == 'left' else 10)
