@@ -61,6 +61,8 @@ test('palette inspector is opt-in and its threshold is validated',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'hs-insp-'));try{
   assert.doesNotThrow(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_OUTPUT_INSPECTOR:'palette',HAHMOSTUDIO_PALETTE_THRESHOLD:'0.6'},dir));
   for(const bad of ['0.01','1','abc'])assert.throws(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_PALETTE_THRESHOLD:bad},dir),/THRESHOLD/);
+  assert.doesNotThrow(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_COMFYUI_TIMEOUT_MS:'1800000'},dir));
+  for(const bad of ['59999','3600001','1.5','abc'])assert.throws(()=>createCloudRender({HAHMOSTUDIO_STORAGE:'local-dev',HAHMOSTUDIO_COMFYUI_TIMEOUT_MS:bad},dir),/TIMEOUT_MS/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
 

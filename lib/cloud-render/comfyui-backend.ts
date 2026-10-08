@@ -62,7 +62,9 @@ export class ComfyUIBackend implements RenderBackend{
    }
    const max=this.cfg.maxOutputBytes??512*1024*1024,artifacts:RenderArtifact[]=[];let total=0;
    for(const node of Object.values(outputs))for(const list of Object.values(node))if(Array.isArray(list))for(const o of list){
-    if(!o?.filename||isModelWeightName(o.filename))throw new Blocked('output-weights','Runtime returned a disallowed file.');
+    // SaveVideo's UI output also carries flags such as animated:[true]; only file entries (objects) are outputs.
+    if(typeof o!=='object'||o===null)continue;
+    if(!o.filename||isModelWeightName(o.filename))throw new Blocked('output-weights','Runtime returned a disallowed file.');
     const ext=o.filename.split('.').pop()?.toLowerCase()??'',mime=OUT_EXT.get(ext);if(!mime)throw new Blocked('output-type',`Unsupported output type ".${ext}".`);
     const r=await this.req('/view?'+new URLSearchParams({filename:o.filename,subfolder:o.subfolder??'',type:o.type??'output'}),{signal:ctl.signal});
     const bytes=new Uint8Array(await r.arrayBuffer());total+=bytes.length;if(total>max)throw new Blocked('output-size','Output exceeds the size limit.');

@@ -500,3 +500,16 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 **Löydös, ei korjattu (päätös käyttäjälle):** pelkkä Rakenna jakso → Vie tuottaa **äänettömän** videon, jos jaksossa ei ole repliikkiääniä: miksattu ääni syntyy vasta “Rakenna muokattava jakso projektiin” -painikkeella, ja vientitarkistus (`freezeRender`) varoittaa puuttuvasta äänestä vain, kun repliikkiääniä on. Ohjeteksti “Paina Rakenna jakso ja sitten Vie” on siksi harhaanjohtava; esim. varoitus tai automaattinen miksaus vientiä varten.
 
 **Edelleen todentamatta:** kamera ja mikrofoni, trackpad-veto, Kokoro oikealla mallilla, pakattu .app (testi ajaa kehitysbuildin Electronissa), uudet paneelit pakatussa sovelluksessa.
+
+### 2.21 — Pilvirenderöinnin käyttöönotto-ohje aloittelijalle (2026-10-08)
+
+**Tehty:** `docs/cloud-render/KAYTTOONOTTO-FI.md` kirjoitettu uudelleen askel askeleelta (mitä klikataan, mitä pitäisi näkyä, yleisimmät virheet). Komennot ja ympäristömuuttujat tarkistettu koodia vasten; Wan2.2-tiedostojen polut ja koot (≈18,1 Gt) tarkistettu Hugging Facesta.
+
+**Korjatut viat (löytyivät ohjetta tarkistaessa, testit lisätty):**
+1. ComfyUI:n `SaveVideo` palauttaa UI-tuloksessa myös `animated:[true]`; `ComfyUIBackend` tulkitsi lipun kelvottomaksi tiedostoksi ja olisi hylännyt jokaisen oikean videorenderöinnin. Nyt vain objektit käsitellään tiedostoina.
+2. ComfyUI-aikakatkaisu oli kiinteä 10 min; uusi `HAHMOSTUDIO_COMFYUI_TIMEOUT_MS` (60000–3600000).
+3. Ohjeen Drive-vaihe neuvoi Desktop app -tyyppisen OAuth-asiakkaan, joka ei toimi OAuth Playgroundin kanssa (`redirect_uri_mismatch`); nyt Web application + Playgroundin paluuosoite. Testing-tilan refresh token vanhenee 7 päivässä; dokumentoitu.
+
+**Löydös, päätös käyttäjälle:** Colab-FAQ kieltää ilmaisilla ajoympäristöillä mm. muistikirjan ohittamisen web-käyttöliittymän kautta; ComfyUI + tunneli ilmaisessa Colabissa on todennäköisesti sitä. Maksullinen Colab ei ole ilmainen eikä `HAHMOSTUDIO_COLAB_CLASSIFIED_FREE=yes` silloin päde.
+
+**Edelleen todentamatta:** oikea Colab-, ComfyUI- ja Drive-ajo, `SaveVideo`-solmun `format`/`codec`-syötteiden hyväksyntä oikeassa ComfyUI:ssa, muistin riittävyys ja renderöintiaika T4:llä.

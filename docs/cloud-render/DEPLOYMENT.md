@@ -9,7 +9,8 @@ GOOGLE_OAUTH_CLIENT_ID=...  GOOGLE_OAUTH_CLIENT_SECRET=...  GOOGLE_OAUTH_REFRESH
 HAHMOSTUDIO_MODEL_PINS_FILE=/path/pins.json          # exact revisions + checksums
 HAHMOSTUDIO_COLAB_COMFYUI_URL=https://<tunnel>       # https only
 HAHMOSTUDIO_COLAB_CLASSIFIED_FREE=yes                # your statement that this path is free
-HAHMOSTUDIO_COMFYUI_BEARER=...                       # protect the runtime
+HAHMOSTUDIO_COMFYUI_BEARER=...                       # only protects the runtime if a proxy in front of ComfyUI checks it; plain ComfyUI ignores it
+HAHMOSTUDIO_COMFYUI_TIMEOUT_MS=1800000               # optional, 60000-3600000 (default 600000); slow GPUs such as a T4 need more
 # optional: HAHMOSTUDIO_MODEL_MODE=DEVELOPMENT (never for production)
 ```
 3. `npm run start:private` (loopback by default; remote hosting still needs HTTPS origin + setup token). The server loads `lib/cloud-render/*.ts` through Node's type stripping (Node ≥ 22.18, or add `--experimental-strip-types`).
