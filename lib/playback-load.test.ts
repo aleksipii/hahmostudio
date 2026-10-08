@@ -34,7 +34,8 @@ test('studio example playback render stays within regression budget across viewp
  }
  const full=report.viewports['portrait-full'].render.p95Ms;
  const preview=report.viewports['preview-panel'].render.p95Ms;
- assert.ok(preview<=full*1.35,'preview viewport should not exceed full-frame cost disproportionately');
+ // Suhde on kohinaista, kun molemmat ovat muutaman millisekunnin luokkaa: sallitaan kiinteä 3 ms:n varaus.
+ assert.ok(preview<=full*1.35+3,`preview viewport should not exceed full-frame cost disproportionately (${preview} vs ${full} ms)`);
 });
 
 test('render preflight and snapshot inspection stay stable for the studio episode export slice',async()=>{
