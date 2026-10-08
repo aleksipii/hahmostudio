@@ -641,3 +641,52 @@ Ukko: "Moi."
 1 scene-heading scene:PIHA/int
 2 dialogue @UKKO «moi»
 3 dialogue @UKKO «Moi.»
+
+=== 35 ryhmäpuhuja ei ole hahmo
+# Ryhmärepliikkiä ei jaeta eikä siitä tehdä uutta hahmoa "PIPSA JA VILLE"; rivi ja sen repliikki jäävät tunnistamatta syyn kanssa.
+--- käsikirjoitus
+Hahmo: Pipsa
+Hahmo: Ville
+INT. PIHA
+PIPSA JA VILLE
+Hei!
+PIPSA & VILLE: "Moi."
+PIPSA, VILLE: Moi.
+PIPSA
+Hei.
+PIPSA JA VILLE
+Pipsa hyppää.
+
+--- odotus
+1 character-decl @PIPSA
+2 character-decl @VILLE
+3 scene-heading scene:PIHA/int
+4 unknown
+5 unknown
+6 unknown
+7 unknown
+8 cue @PIPSA
+9 dialogue @PIPSA «Hei.»
+10 unknown
+11 unknown
+
+=== 36 kesto rajojen ulkopuolella
+# Negatiivinen, nolla- ja yli 60 sekunnin kesto ei saa muuttua hiljaa toiseksi kestoksi.
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+Pipsa odottaa -3 s.
+Pipsa odottaa −2 s.
+Pipsa odottaa 0 s.
+Pipsa odottaa 99999 s.
+Pipsa odottaa 2 s.
+Pipsa odottaa 60 s.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 unknown
+3 unknown
+4 unknown
+5 unknown
+6 direction hold:pause@PIPSA~2
+7 direction hold:pause@PIPSA~60

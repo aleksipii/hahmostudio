@@ -12,8 +12,8 @@ test('korpus: nolla väärää tulkintaa ja jokaisella rivillä käsin kirjattu 
  const r=evaluateRecognizerCorpus(corpus);
  assert.deepEqual(r.missingExpectations,[]);
  assert.deepEqual(r.results.filter(x=>x.verdict==='väärin').map(x=>`${x.case} r${x.line}: odotus ${x.expected} / saatiin ${x.actual}`),[]);
- assert.ok(corpus.length>=34&&r.results.length>=215,'korpus ei kutistu');
- assert.ok(r.counts.oikein>=214,`oikein ${r.counts.oikein}`);
+ assert.ok(corpus.length>=36&&r.results.length>=233,'korpus ei kutistu');
+ assert.ok(r.counts.oikein>=232,`oikein ${r.counts.oikein}`);
 });
 
 /* ───────── Sääntökohtaiset testit: jokaisella nimetyllä säännöllä sopiva ja ei-sopiva tapaus (docs/KASIKIRJOITUSSAANNOT.md) ───────── */
@@ -56,6 +56,10 @@ const rules:Row[]=[
  ['tausta',S+'Tausta: keittiö 2 seconds',2,'direction environment:keittiö'],['tausta',S+'Taustalla keittiö.',2,'unknown'],
  ['otsikkokortti',S+'Otsikkokortti: Loppu 2 s',2,'direction title-card:Loppu~2'],['otsikkokortti',S+'Otsikko näkyy.',2,'unknown'],
  ['luettelomerkki','Hahmo: Pipsa\n'+S+'1. Pipsa hyppää.',3,'direction motion:jump@PIPSA?'],['luettelomerkki','Hahmo: Pipsa\n'+S+'Kohdat 1. ja 2.',3,'unknown'],
+ ['puhuja-yksi-hahmo','Hahmo: Pipsa\nHahmo: Ville\n'+S+'PIPSA JA VILLE\nHei!',4,'unknown'],['puhuja-yksi-hahmo','Hahmo: Pipsa\nHahmo: Ville\n'+S+'PIPSA\nHei!',4,'cue @PIPSA'],
+ ['puhuja-yksi-hahmo','Hahmo: Pipsa\nHahmo: Ville\n'+S+'PIPSA JA VILLE\nHei!',5,'unknown'],['puhuja-yksi-hahmo',S+'PIPSA & VILLE: "Moi."',2,'unknown'],
+ ['kesto-rajat','Hahmo: Pipsa\n'+S+'Pipsa odottaa -3 s.',3,'unknown'],['kesto-rajat','Hahmo: Pipsa\n'+S+'Pipsa odottaa 2 s.',3,'direction hold:pause@PIPSA~2'],
+ ['kesto-rajat','Hahmo: Pipsa\n'+S+'Pipsa odottaa 99999 s.',3,'unknown'],['kesto-rajat','Hahmo: Pipsa\n'+S+'Pipsa kävelee vasemmalle 1–2 s.',3,'direction motion:walk-left@PIPSA~2'],
  ['johdanto','Tämä on johdanto.\n'+S,1,'comment'],['johdanto',S+'Tämä on johdanto.',2,'unknown'],
 ];
 for(const [rule,script,line,expected] of rules)test(`sääntö ${rule}: ${JSON.stringify(script.split('\n')[line-1])}`,()=>assert.equal(sig(script,line),expected));
@@ -128,4 +132,15 @@ test('tunnistamaton rivi näyttää rivin, sijainnin, syyn ja ymmärretyn muodon
 test('ei keksittyjä hahmoja: pronominit, taivutusmuodot ja puhutteluyhdistelmät eivät ole hahmoja',()=>{
  const r=recognizeScript('INT. PIHA\nPIPSA: "Hei."\nHän sanoo: "Moi."\nShe says: "Hi."\nPipsan katse kääntyy.\nVillelle tulee nälkä.\nVILLE: "No."\nPipsalle Ville sanoo: "Ei."\nPipsa sanoo Villelle: "Joo."',[],{discoverActors:true});
  assert.deepEqual(r.characters,['PIPSA','VILLE']);
+});
+
+test('ryhmäpuhuja ja virheellinen kesto: syy näkyy, hahmoa ei keksitä eikä kestoa muuteta',()=>{
+ const r=recognizeScript('Hahmo: Pipsa\nHahmo: Ville\nINT. PIHA\nPIPSA JA VILLE\nHei!\nPipsa odottaa -3 s.\nPipsa odottaa 99999 s.',[],{discoverActors:true});
+ assert.deepEqual([...r.characters].sort(),['PIPSA','VILLE']);
+ const msg=(n:number)=>explainUnknownLine(r.lines[n-1]);
+ assert.match(msg(4),/^Rivi 4: “PIPSA JA VILLE”\. Usean hahmon .*Sovellus ymmärtää muodon: .*PIPSA: “Hei!” ja VILLE: “Hei!”/);
+ assert.match(msg(5),/^Rivi 5: “Hei!”\. Rivi kuuluu usean hahmon yhteiselle puhujariville/);
+ assert.match(msg(6),/Kesto “-3 s” on negatiivinen\..*esim\. “Pipsa odottaa 2 s\.”/);
+ assert.match(msg(7),/Kesto 99999 s on pidempi kuin jakson enimmäispituus 60 s\./);
+ for(const n of [4,5,6,7])assert.ok(r.lines[n-1].clauses.every(c=>c.type==='unknown'),`rivi ${n} ei saa animoida mitään`);
 });

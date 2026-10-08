@@ -21,9 +21,9 @@ Rivi käydään läpi tässä järjestyksessä; ensimmäinen sopiva sääntö vo
 3. aikakoodi → kohtausotsikko → kohtausnimi → siirtymä → muu markdown-otsikko (kommentti)
 4. hahmomääritys → sulkeohje
 5. puhujan jälkeinen rivi: lainaus → repliikki; rakenne-rivi (uusi puhuja, kohtaus, siirtymä, kuva) katkaisee repliikin; nimellä alkava ohjeeksi tunnistuva rivi → moniselitteinen; muu → repliikki
-6. luettelomerkki poistetaan → puhuja → "X sanoo" → ajatusviivarepliikki → CUT TO -otsikkokortti → kuva (+ ohje) → väliotsikko → johdanto → ohjerivi (lauseet)
+6. ryhmäpuhuja (tunnistamaton) → luettelomerkki poistetaan → puhuja → "X sanoo" → ajatusviivarepliikki → CUT TO -otsikkokortti → kuva (+ ohje) → väliotsikko → johdanto → ohjerivi (lauseet)
 
-Ohjerivin lauseessa: rajoitus → huomio → paikallaan-kielto → leikkausrytmi → tausta → otsikkokortti → tauko → puhelin → katse → paikallaanolo (huomio) → liike → ilme → katse toiseen hahmoon → tuntematon.
+Ohjerivin lauseessa: kesto rajojen ulkopuolella (tunnistamaton) → rajoitus → huomio → paikallaan-kielto → leikkausrytmi → tausta → otsikkokortti → tauko → puhelin → katse → paikallaanolo (huomio) → liike → ilme → katse toiseen hahmoon → tuntematon.
 
 ## Säännöt
 
@@ -59,6 +59,9 @@ Fountain: enintään kolmen sanan isoilla kirjoitettu rivi (myös laajennus `(V.
 
 ### `puhuja-kaksoispiste`
 `NIMI: repliikki` kun nimi on tunnettu hahmo tai isoilla, tai repliikki on lainausmerkeissä. Avainsanat (Tausta, Kamera, Huom …) eivät ole puhujia. ✔ `PIPSA: Hei.` · ✘ `Huomenna: sataa.`
+
+### `puhuja-yksi-hahmo`
+Puhujarivi nimeää aina yhden hahmon. Usean nimen yhteinen puhujarivi (`PIPSA JA VILLE`, `PIPSA & VILLE: …`, `PIPSA, VILLE: …`, `MIRA AND NIKO (V.O.)`; liitossanat JA/SEKÄ/AND, `&` ja pilkku) ei ole puhuja eikä siitä tehdä uutta hahmoa. Rivi jää tunnistamattomaksi syyllä "Usean hahmon yhteistä puhujariviä ei tueta". Myös heti sen alla oleva rivi jää tunnistamattomaksi, koska se voi olla ryhmän repliikki tai ohje: sitä ei anneta kenellekään eikä animoida. Sääntö pätee myös repliikin jälkeen. Kaksoispisteellinen nimi, jossa on ja/sekä/and, ei ole puhuja. ✔ `PIPSA JA VILLE` + `Hei!` (molemmat tunnistamattomia) · ✘ `PIPSA` + `Hei!` (puhuja ja repliikki)
 
 ### `puhuja-kaksoispiste-rivi`
 `VILLE:` omalla rivillään: puhuja, jos seuraava ei-tyhjä rivi on lainaus (tyhjä rivi saa olla välissä) tai heti seuraava rivi on tekstiä. ✔ `VILLE:` + `Moi.` · ✘ `Huomenna:` + `Moi.` (väliotsikko)
@@ -123,6 +126,9 @@ Puhelin-sana + toiminto: pitää, näyttää, napauttaa, korvalle, pöydälle, t
 ### `tauko`
 Pieni/pitkä tauko, hiljaisuus, pidä, odota, beat, pause, hold (+ kesto). Beat/pieni tauko = 0,5 s, pitkä tauko = 1,5 s. ✔ `Pieni tauko.` · ✘ `Tauon jälkeen.`
 
+### `kesto-rajat`
+Lauseen kesto on yli 0 ja enintään 60 s (jakson enimmäispituus, `MAX_CLAUSE_SECONDS`). Miinusmerkkinen kesto (`-3 s`, `−2 s`), nolla ja yli 60 s jättävät lauseen tunnistamattomaksi syyn kanssa; miinusmerkkiä ei pudoteta eikä kestoa rajata hiljaa. Väli `1–2 s` ei ole miinusmerkki. Jakson rakennus näyttää syyn varoituksena (`unrecognized-line`) eikä tee lauseesta tapahtumaa. ✔ `Pipsa odottaa -3 s.`, `Pipsa odottaa 99999 s.` (tunnistamaton) · ✘ `Pipsa odottaa 2 s.` (tauko 2 s)
+
 ### `hiljaisuus`
 Tauko on `silence`, kun lauseessa on hiljaisuus (missä tahansa sijassa: hiljaisuutta), silence tai "ei dialogia". ✔ `Pidä 0,7 sekuntia hiljaisuutta.` · ✘ `Pidä 0,7 sekuntia.` (pause)
 
@@ -147,14 +153,17 @@ Muut vanhemmat apusäännöt (kestot, kielen tunnistus, tuotanto-ohjeosio, `disc
 
 `RecognizedLine.reason` (syy) ja `hint` (ymmärretty muoto); `explainUnknownLine()` muodostaa viestin "Rivi N: “teksti”. Syy. Sovellus ymmärtää muodon: esimerkki." Jakson rakennuksen tarkistus (`lib/episode/recognize.ts`) näyttää syyn rivinumeron kanssa, ja marginaaliannotaatio saa saman tekstin kenttään `reason`.
 
-Syyt: ei sääntöä, tekijä ei yksiselitteinen (taipunut muoto / tuntematon sana / useampi hahmo / pronomini ilman edeltäjää), ei tekijää, useampi liike, moniselitteinen repliikki/ohje, ajatusviivarepliikki ilman puhujaa.
+Syyt: ei sääntöä, tekijä ei yksiselitteinen (taipunut muoto / tuntematon sana / useampi hahmo / pronomini ilman edeltäjää), ei tekijää, useampi liike, moniselitteinen repliikki/ohje, ajatusviivarepliikki ilman puhujaa, usean hahmon yhteinen puhujarivi ja sen alla oleva rivi, kesto rajojen ulkopuolella (negatiivinen, nolla tai yli 60 s).
 
-## Tulokset (korpus 34 tapausta, 215 riviä)
+## Tulokset (korpus 36 tapausta, 233 riviä)
 
 | | Oikein (tunnistettu) | Oikein (jätetty tunnistamatta) | Väärin | Tunnistamaton |
 |---|---|---|---|---|
 | Ennen (2026-10-08) | 158 | 15 | 34 | 8 |
-| Jälkeen | 184 | 30 | 0 | 1 |
+| Jälkeen (kierros 1, 34 tapausta / 215 riviä) | 184 | 30 | 0 | 1 |
+| Jälkeen (kierros 2, 36 tapausta / 233 riviä) | 192 | 40 | 0 | 1 |
+
+Kierros 2 lisäsi lopputarkastajan löytämät tapaukset 35 (ryhmäpuhuja "PIPSA JA VILLE") ja 36 (kesto -3 s, −2 s, 0 s, 99999 s, 2 s, 60 s). Ennen korjausta ensimmäinen teki hahmon "PIPSA JA VILLE" ja toinen tauon 3 s; molemmat ovat nyt tunnistamattomia syyn ja esimerkin kanssa.
 
 Raportit: `tests/fixtures/script-recognizer/lahtotaso-ennen.txt` ja `tulos-jalkeen.txt`.
 
@@ -179,4 +188,4 @@ Muiden käsikirjoitusten jokaisen rivin tulkinta ja esityksen tapahtumat ovat en
 - Tukemattomat toiminnot (herää, avaa oven, kääntyy ilman kohdetta) jäävät tunnistamatta.
 - "Kissa hyppää" rivin alussa voi tehdä Kissasta hahmon `discoverActors`-säännöllä (isolla alkava sana + tunnettu verbi, sana ei esiinny muualla pienellä). Hahmo näkyy roolituksessa, joten tämä ei ole hiljainen.
 - Tauon tekijä (`hold`) seuraa vanhaa sääntöä: ensimmäinen nimi missä tahansa sijassa tai edellinen hahmo.
-- Korpus kattaa 215 riviä; laajempaa kattavuutta ei ole mitattu.
+- Korpus kattaa 233 riviä; laajempaa kattavuutta ei ole mitattu.

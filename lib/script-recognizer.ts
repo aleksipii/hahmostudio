@@ -139,6 +139,22 @@ export function parseDuration(text: string): { seconds: number; approximate: boo
   return undefined;
 }
 
+/** Jakson enimmäispituus (AGENTS.md: max 60 s per jakso): pidempi kesto yhdelle lauseelle ei voi olla oikein. */
+export const MAX_CLAUSE_SECONDS = 60;
+/**
+ * Sääntö `kesto-rajat`: kesto on yli 0 ja enintään 60 s. Miinusmerkkinen ("-3 s"), nolla tai liian pitkä kesto
+ * palauttaa syyn; lausetta ei tulkita (miinusmerkkiä ei pudoteta hiljaa).
+ */
+export function durationProblem(text: string): string | undefined {
+  const t = lower(text).replace(/(\d),(\d)/g, '$1.$2');
+  const neg = t.match(new RegExp(String.raw`(?:^|[^\p{L}\d.])[-−]\s*(\d+(?:\.\d+)?)\s*(?:ms|` + secondUnit.replace(String.raw`\b(?:\s+ajan)?`, '') + String.raw`)(?![\p{L}])`, 'u'));
+  if (neg) return `Kesto “-${neg[1].replace('.', ',')} s” on negatiivinen. Kesto on oltava yli 0 ja enintään ${MAX_CLAUSE_SECONDS} s.`;
+  const d = parseDuration(text);
+  if (d && d.seconds <= 0) return `Kesto 0 s ei ole mahdollinen. Kesto on oltava yli 0 ja enintään ${MAX_CLAUSE_SECONDS} s.`;
+  if (d && d.seconds > MAX_CLAUSE_SECONDS) return `Kesto ${String(d.seconds).replace('.', ',')} s on pidempi kuin jakson enimmäispituus ${MAX_CLAUSE_SECONDS} s.`;
+  return undefined;
+}
+
 /* ───────────────────────── Kielen tunnistus ───────────────────────── */
 
 const fiMarkers = new Set(['ja', 'on', 'ei', 'että', 'hän', 'se', 'kun', 'mutta', 'tai', 'katsoo', 'sanoo', 'kohtaus', 'tauko', 'hetken', 'vähän', 'kameraa', 'puhelinta', 'kävelee', 'myös', 'nyt', 'vain', 'takaisin', 'pieni', 'noin', 'sitten', 'samalla', 'kuva', 'leikkaus', 'tausta', 'hahmo', 'ilme']);
@@ -288,6 +304,8 @@ const spokenDuration = String.raw`(?:\d+(?:[.,]\d+)?\s*(?:s|sek|sekuntia|sec|sec
 const saysRe = new RegExp(String.raw`^([\p{L}][\p{L} .'-]{0,35}?)\s+` + sayVerbs + String.raw`(?:\s+([\p{Lu}][\p{L}'-]*))?(?:\s*[:,])?\s*[` + OPEN_Q + String.raw`](.*?)[` + CLOSE_Q + String.raw`]?\s*` + spokenDuration + String.raw`?\.?$`, 'iu');
 /** "– Mitä teet? Pipsa kysyy." */
 const dashDialogueRe = new RegExp(String.raw`^[–—]\s*(.+?)\s+([\p{Lu}][\p{L}'-]*)\s+` + sayVerbs + String.raw`\.?$`, 'u');
+/** Isoilla kirjoitettu nimiyhdistelmä puhujan paikalla: "PIPSA JA VILLE", "MIRA & NIKO (V.O.):", "PIPSA, VILLE: …". */
+const groupCueRe = /^[\p{Lu}][\p{Lu}.'-]*(?:\s*,\s*[\p{Lu}][\p{Lu}.'-]*)*\s*(?:\s(?:JA|SEKÄ|AND)\s|&|,)\s*[\p{Lu}][\p{Lu}.'-]*\s*(?:\([^)]*\))?\s*(?::.*)?$/u;
 const trailingDuration = /\s+\d+(?:[.,]\d+)?\s*(?:s|sek|sec|secs|sekunti|sekuntia|second|seconds)$/i;
 
 /* ───────────────────────── Tekijäsäännöt ───────────────────────── */
@@ -323,6 +341,9 @@ export const UNKNOWN_REASONS = {
   ambiguousDialogue: { reason: 'Moniselitteinen: rivi voi olla repliikin jatko tai näyttämöohje.', hint: 'Erota ohje repliikistä tyhjällä rivillä tai kirjoita repliikki lainausmerkkeihin, esim. PIPSA: “Hei.”' },
   dashDialogue: { reason: 'Ajatusviivalla alkava repliikki ilman puhujaa: puhujaa ei arvata.', hint: 'Lisää puhuja loppuun, esim. “– Hei! Pipsa sanoo.” tai käytä muotoa PIPSA: “Hei!”' },
   orphanCue: { reason: 'Rivi näyttää puhujalta, mutta sen jälkeen ei tule heti repliikkiä.', hint: 'Kirjoita repliikki heti puhujarivin alle ilman tyhjää riviä.' },
+  groupCue: { reason: 'Usean hahmon yhteistä puhujariviä ei tueta: puhujaa ei keksitä nimiyhdistelmästä.', hint: 'Kirjoita kullekin hahmolle oma puhujarivi, esim. PIPSA: “Hei!” ja VILLE: “Hei!”' },
+  groupLine: { reason: 'Rivi kuuluu usean hahmon yhteiselle puhujariville, jota ei tueta: sitä ei tulkita repliikiksi eikä ohjeeksi eikä anneta kenellekään hahmolle.', hint: 'Kirjoita kullekin hahmolle oma puhujarivi, esim. PIPSA: “Hei!” ja VILLE: “Hei!”' },
+  duration: { reason: 'Kesto on sallitun välin ulkopuolella.', hint: 'Kirjoita kesto, joka on yli 0 ja enintään 60 s, esim. “Pipsa odottaa 2 s.”' },
 } as const;
 
 export class ScriptRecognizer {
@@ -336,6 +357,8 @@ export class ScriptRecognizer {
   private lastGaze: string | undefined;
   /** Puhuja "NIMI:" ja seuraava ei-tyhjä rivi on lainaus: tyhjä rivi välissä ei katkaise puhujaa. */
   private cueAwaitsQuote = false;
+  /** Edellinen rivi oli ryhmäpuhuja ilman kaksoispistettä: tämän rivin tunnistamattomuuden syy on ryhmärepliikki. */
+  private afterGroupCue = false;
 
   constructor(characters: string[] = []) { for (const c of characters) this.addCharacter(c); }
 
@@ -461,7 +484,7 @@ export class ScriptRecognizer {
     if (colon) {
       const name = colon[1].trim(), rest = colon[2].trim(), key = upper(name);
       if (nonCueWords.has(key) || metaKeys.some(([re]) => re.test(name)) || /^(Hahmo|Character|Tausta|Background|Kamera|Camera|Leikkaus|Cut|Samalla|Meanwhile|Kohtaus|Scene|Resurssi|Resource|Otsikkokortti|Title card|Lopetus|Ending|Sijainti|Position|Rekvisiitta|Prop|Puhelin|Phone|Huom|Note|Animaatio|Animation|Ääni|Voice|Luonne|Personality|Suhde|Relationship|Tunnus)$/i.test(name)) return undefined;
-      if (name.split(/\s+/).length > 3) return undefined;
+      if (name.split(/\s+/).length > 3 || /\s(?:ja|sekä|and)\s/i.test(' ' + name + ' ')) return undefined;
       if (/\s(sanoo|vastaa|kysyy|huutaa|kuiskaa|toteaa|says|replies|asks|shouts|whispers|adds)(\s|$)/i.test(name) || nonCueWords.has(upper(name.split(/\s+/)[0]))) return undefined;
       const namedCue = this.characters.has(key) || /^[\p{Lu}][\p{Lu} .'-]+$/u.test(name);
       if (!rest && (startsQuoted(next) || /^\(/.test(next.trim()))) return { name, extension: ext, awaitsQuote: !adj };
@@ -473,6 +496,7 @@ export class ScriptRecognizer {
     }
     if (/^[\p{Lu}][\p{Lu}\d .'-]{0,35}$/u.test(base) && /\p{Lu}/u.test(base) && base.split(/\s+/).length <= 3) {
       const key = upper(base);
+      if (/\s(?:JA|SEKÄ|AND)\s/.test(' ' + key + ' ')) return undefined;
       if (nonCueWords.has(upper(base.split(/\s+/)[0])) || /^(CUT|LEIKKAUS|FADE|HÄIVYTYS|INT|EXT|SISÄ|ULKO)\b/.test(base)) return undefined;
       if (nonCueWords.has(key) || shotWords.some(([re]) => re.test(base)) || transitionRe.test(base) || sceneHeadingRe.test(base)) return undefined;
       // Sääntö `puhuja-isot-kirjaimet` (Fountain): repliikki alkaa heti seuraavalta riviltä, ei tyhjän rivin jälkeen.
@@ -489,12 +513,20 @@ export class ScriptRecognizer {
     let text = raw.trim() === '#!kilsat' ? '#!kilsat' : cleanLine(raw);
     const language = text ? detectLanguage(text) : 'neutral';
     const out: RecognizedLine = { line: lineNumber, raw, text, kind: 'unknown', state: this.state, language, clauses: [] };
+    const afterGroup = this.afterGroupCue;
+    this.afterGroupCue = false;
     const finish = (kind: LineKind, state: RecognizerState) => {
       out.kind = kind; this.state = state; out.state = state;
+      // Ryhmäpuhujan jälkeinen rivi voi olla ryhmän repliikki tai ohje: ei arvata kumpaa, eikä mitään animoida.
+      if (afterGroup && (kind === 'unknown' || kind === 'direction' || kind === 'dialogue' || kind === 'parenthetical')) {
+        kind = 'unknown'; out.kind = kind; delete out.speaker; delete out.dialogue; delete out.extension;
+        out.reason = UNKNOWN_REASONS.groupLine.reason; out.hint = UNKNOWN_REASONS.groupLine.hint;
+        out.clauses = [{ type: 'unknown', text: out.text, reason: out.reason }];
+      }
       if (kind === 'unknown' && !out.reason) {
         const why = out.clauses.find((c): c is Extract<Clause, { type: 'unknown' }> => c.type === 'unknown' && !!c.reason)?.reason;
         out.reason = why ?? UNKNOWN_REASONS.noRule.reason;
-        out.hint = Object.values(UNKNOWN_REASONS).find(r => r.reason === out.reason)?.hint ?? (why?.startsWith('Pronominille') || why?.includes('tekijä') || why?.includes('ennen verbiä') ? UNKNOWN_REASONS.subject.hint : UNKNOWN_REASONS.noRule.hint);
+        out.hint = Object.values(UNKNOWN_REASONS).find(r => r.reason === out.reason)?.hint ?? (why?.startsWith('Kesto') ? UNKNOWN_REASONS.duration.hint : why?.startsWith('Pronominille') || why?.includes('tekijä') || why?.includes('ennen verbiä') ? UNKNOWN_REASONS.subject.hint : UNKNOWN_REASONS.noRule.hint);
       }
       return out;
     };
@@ -577,6 +609,8 @@ export class ScriptRecognizer {
       return finish('parenthetical', this.state === 'cue' || this.state === 'dialogue' ? 'cue' : 'body');
     }
 
+    // Sääntö `puhuja-yksi-hahmo`: usean hahmon yhteinen puhujarivi ("PIPSA JA VILLE", "PIPSA & VILLE:"), myös repliikin jälkeen, ei ole puhuja eikä uusi hahmo.
+    if (this.state !== 'cue' && groupCueRe.test(text) && (this.state !== 'dialogue' || !!adjacent.trim())) { this.sawContent = true; this.afterGroupCue = !text.includes(':') && !!adjacent.trim(); out.reason = UNKNOWN_REASONS.groupCue.reason; out.hint = UNKNOWN_REASONS.groupCue.hint; return finish('unknown', 'body'); }
     // Repliikki puhujan jälkeen (lainausmerkeillä tai ilman).
     const quoted = text.match(quotedRe);
     const closed = closedQuoteRe.test(text);
@@ -805,6 +839,8 @@ export class ScriptRecognizer {
     }
     if (subject.kind === 'named' && subject.actor !== ALL_ACTORS) this.lastActor = subject.actor;
     if (subject.kind === 'blocked') this.lastActor = '';
+    const badDuration = durationProblem(s);
+    if (badDuration) return { type: 'unknown', text: s, reason: badDuration };
     const savedGaze = this.lastGaze;
     const c = this.clauseFor(s, raw, ws, language, agent ?? '');
     if (!('actor' in c) || c.type === 'hold' || c.type === 'constraint') return c;
