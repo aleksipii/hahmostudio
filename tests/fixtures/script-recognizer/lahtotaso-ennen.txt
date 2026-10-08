@@ -1,0 +1,127 @@
+tapauksia 34 rivejä 215 {"oikein":173,"väärin":34,"tunnistamaton":8} oikein-tunnistettu 158 oikein-jätetty 15
+VÄÄRIN         02  4 "Istu alas!" 
+     odotus: dialogue @PIPSA «Istu alas!» 
+     saatiin: direction motion:sit@PIPSA?
+VÄÄRIN         02  7 "Juokse!" 
+     odotus: dialogue @VILLE «Juokse!» 
+     saatiin: direction motion:run-right@VILLE?
+VÄÄRIN         02  8 "Kävele hitaasti." 
+     odotus: dialogue @VILLE «Kävele hitaasti.» 
+     saatiin: direction motion:walk-right@VILLE?
+VÄÄRIN         03  4 "Pipsa juoksee aina karkuun." 
+     odotus: unknown 
+     saatiin: direction motion:run-right@PIPSA?
+VÄÄRIN         03  8 "Pipsa vilkuttaa." 
+     odotus: unknown 
+     saatiin: direction motion:wave@PIPSA?
+VÄÄRIN         04  3 "Pipsan kissa juoksee oikealle." 
+     odotus: unknown 
+     saatiin: direction motion:run-right@PIPSAN?
+VÄÄRIN         04  4 "Villen äiti kävelee vasemmalle." 
+     odotus: unknown 
+     saatiin: direction motion:walk-left@VILLE?
+VÄÄRIN         04  7 "Pipsan katse kääntyy Villeen." 
+     odotus: direction gaze@PIPSA>VILLE 
+     saatiin: direction gaze@PIPSAN>VILLE
+VÄÄRIN         05  3 "Sitten kissa hyppää." 
+     odotus: unknown 
+     saatiin: direction motion:jump@PIPSA?
+VÄÄRIN         05  4 "Hän juoksee oikealle." 
+     odotus: unknown 
+     saatiin: direction motion:run-right@PIPSA?
+VÄÄRIN         05  5 "Vanha ukko kävelee vasemmalle." 
+     odotus: unknown 
+     saatiin: direction motion:walk-left@UKKO?
+VÄÄRIN         06  3 "Pipsa ei enää ikinä juokse." 
+     odotus: unknown 
+     saatiin: direction motion:run-right@PIPSA?
+VÄÄRIN         07  2 "Pipsa juoksee, Ville kävelee." 
+     odotus: direction motion:run-right@PIPSA? motion:walk-right@VILLE? 
+     saatiin: direction motion:run-right@PIPSA?
+VÄÄRIN         07  6 "Ville Pipsa juoksee." 
+     odotus: unknown 
+     saatiin: direction motion:run-right@VILLE?
+VÄÄRIN         07  7 "Kun Pipsa juoksee, Ville kävelee." 
+     odotus: direction motion:run-right@PIPSA? motion:walk-right@VILLE? 
+     saatiin: direction motion:run-right@PIPSA?
+VÄÄRIN         07  9 "Pipsa ja hänen kissansa juoksevat." 
+     odotus: unknown 
+     saatiin: unknown motion:run-right@PIPSA?
+TUNNISTAMATON  08  4 "Pipsa sanoo: ”Suomalaiset.”" 
+     odotus: dialogue @PIPSA «Suomalaiset.» 
+     saatiin: unknown
+TUNNISTAMATON  08  5 "Pipsa sanoo: »Kulmat»." 
+     odotus: dialogue @PIPSA «Kulmat» 
+     saatiin: unknown
+VÄÄRIN         08  7 "VILLE: ”Moi.”" 
+     odotus: dialogue @VILLE «Moi.» 
+     saatiin: dialogue @VILLE «”Moi.”»
+VÄÄRIN         08  8 "VILLE:" 
+     odotus: cue @VILLE 
+     saatiin: direction note
+TUNNISTAMATON  08  9 "”Moi taas.”" 
+     odotus: dialogue @VILLE «Moi taas.» 
+     saatiin: unknown
+VÄÄRIN         08 10 "Pipsa sanoo Villelle: \"Tule tänne.\"" 
+     odotus: dialogue @PIPSA «Tule tänne.» 
+     saatiin: dialogue @PIPSA SANOO VILLELLE «Tule tänne.»
+TUNNISTAMATON  14  2 "– Mitä sinä teet? Pipsa kysyy." 
+     odotus: dialogue @PIPSA «Mitä sinä teet?» 
+     saatiin: unknown
+TUNNISTAMATON  14  5 "– Hei, Pipsa sanoo." 
+     odotus: dialogue @PIPSA «Hei» 
+     saatiin: unknown
+VÄÄRIN         17  2 "1. Pipsa hyppää." 
+     odotus: direction motion:jump@PIPSA? 
+     saatiin: unknown motion:jump@PIPSA?
+TUNNISTAMATON  17 10 "# Väliotsikko" 
+     odotus: comment 
+     saatiin: unknown
+VÄÄRIN         18  2 "MAANANTAI" 
+     odotus: unknown 
+     saatiin: cue @MAANANTAI
+VÄÄRIN         23  4 "Hän istuu." 
+     odotus: unknown 
+     saatiin: direction motion:sit@PIPSA?
+VÄÄRIN         24  3 "Sit down!" 
+     odotus: dialogue @MIRA «Sit down!» 
+     saatiin: direction motion:sit@MIRA?
+VÄÄRIN         24  5 "Mira's cat jumps." 
+     odotus: unknown 
+     saatiin: direction motion:jump@MIRA?
+VÄÄRIN         24  6 "The cat runs left." 
+     odotus: unknown 
+     saatiin: direction motion:run-left@MIRA?
+VÄÄRIN         24 10 "Kille says: \"Ready?\" 2 seconds" 
+     odotus: dialogue @KILLE «Ready?» 
+     saatiin: dialogue @KILLE «Ready?" 2 seconds»
+VÄÄRIN         24 11 "Background: kitchen 2 seconds" 
+     odotus: direction environment:kitchen 
+     saatiin: direction environment:kitchen 2 seconds
+VÄÄRIN         25  2 "Tracking shot: Niko walks forward." 
+     odotus: shot shot:tracking>NIKO motion:walk-front@NIKO? 
+     saatiin: shot shot:tracking>NIKO
+VÄÄRIN         25  3 "LÄHIKUVA: Niko hymyilee." 
+     odotus: shot shot:close>NIKO expression:happy@NIKO 
+     saatiin: shot shot:close>NIKO
+VÄÄRIN         26  5 "Pidä 0,7 sekuntia hiljaisuutta." 
+     odotus: direction hold:silence@PIPSA~0.7 
+     saatiin: direction hold:pause@PIPSA~0.7
+VÄÄRIN         28  4 "# Käyttö: tämä ei ole otsikko" 
+     odotus: metadata meta:info 
+     saatiin: metadata meta:title
+VÄÄRIN         28  5 "# toinen otsikkorivi ilman avainta" 
+     odotus: comment 
+     saatiin: metadata meta:title
+VÄÄRIN         30  4 "Pipsalle Ville sanoo: \"En tule.\"" 
+     odotus: unknown 
+     saatiin: dialogue @PIPSALLE VILLE «En tule.»
+VÄÄRIN         33  2 "VILLE:" 
+     odotus: cue @VILLE 
+     saatiin: direction note
+TUNNISTAMATON  33  3 "Moi. Mitä kuuluu?" 
+     odotus: dialogue @VILLE «Moi. Mitä kuuluu?» 
+     saatiin: unknown
+TUNNISTAMATON  33  6 "\"Hyvää.\"" 
+     odotus: dialogue @PIPSA «Hyvää.» 
+     saatiin: unknown
