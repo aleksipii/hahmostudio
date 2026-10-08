@@ -19,7 +19,7 @@ export function canonicalFromPresentation(p:Presentation,sup:CanonSupplement={})
  const locations:CanonicalState['locations']={},scenes:Record<string,CanonicalScene>={};
  const addLoc=(id:string)=>{if(!locations[id])locations[id]={id,name:sup.locations?.[id]?.name??id,attributes:sup.locations?.[id]?.attributes??{}};};
  const hasPhone=p.world.phone.enabled||p.events.some(e=>e.kind==='prop');
- const phoneCarrier=ids.get(p.world.phone.carrier),props:Record<string,CanonicalProp>={};
+ const phoneCarrier=hasPhone?ids.get(p.world.phone.carrier):undefined,props:Record<string,CanonicalProp>={};
  let prevLoc:string|undefined;const firstLoc=envAt(secs[0].start);
  for(const sec of secs){
   const loc=envAt(sec.start);addLoc(loc);
