@@ -6,6 +6,13 @@ import {backgrounds} from '../backgrounds.ts';
 /** Synonyymit → kirjaston tausta. Sanat tunnistetaan vartaloina (keittiö → keittiössä, keittiöön). Tarkemmat ensin. */
 const environmentSynonyms:[string[],string][]=[
  [['kotitoimisto','työhuone','home office','study room'],'home-office-scene-v1'],
+ [['keittiön vastakuva','keittiö vastakuva','kitchen reverse'],'kitchen-reverse-scene-v1'],[['toimiston vastakuva','toimisto vastakuva','office reverse'],'office-reverse-scene-v1'],
+ [['luokan vastakuva','luokkahuoneen vastakuva','classroom reverse'],'classroom-reverse-scene-v1'],[['kahvilan tiski','kahvila tiski','cafe counter'],'cafe-counter-scene-v1'],
+ [['yökatu','katu yöllä','street at night','night street'],'street-night-scene-v1'],
+ [['makuuhuone','bedroom'],'bedroom-scene-v1'],[['lastenhuone','kids room','nursery'],'kids-room-scene-v1'],[['kylpyhuone','vessa','bathroom','toilet'],'bathroom-scene-v1'],[['sauna','saunassa'],'sauna-scene-v1'],
+ [['porraskäytävä','rappukäytävä','porrashuone','stairwell','staircase'],'stairwell-scene-v1'],[['kuntosali','liikuntasali','jumppasali','gym'],'gym-scene-v1'],[['sairaala','terveyskeskus','hospital','clinic'],'hospital-scene-v1'],
+ [['juna','metro','raitiovaunu','ratikka','train','tram','subway'],'train-scene-v1'],[['linja auto','bussi','bus'],'bus-scene-v1'],
+ [['mökki','kesämökki','järvi','järve','cottage','lake','lakeside'],'cottage-scene-v1'],[['talvipiha','lumipiha','luminen piha','snowy yard','winter yard'],'winter-yard-scene-v1'],[['leikkipuisto','playground'],'playground-scene-v1'],[['kattoterassi','parveke','terassi','rooftop','balcony','terrace'],'rooftop-scene-v1'],
  [['neuvotteluhuone','kokoushuone','meeting room','conference room','palaverihuone'],'meeting-scene-v1'],
  [['bussipysäkki','pysäkki','bus stop','bus station'],'bus-stop-scene-v1'],
  [['parkkipaikka','parkkihalli','pysäköintipaikka','pysäköintialue','parking lot','parking garage','car park'],'parking-scene-v1'],
@@ -19,6 +26,7 @@ const environmentSynonyms:[string[],string][]=[
  [['eteinen','käytävä','hallway','hall','corridor','entrance','aula','lobby'],'hall-scene-v1'],
  [['kahvila','cafe','café','coffee shop','kahvio'],'cafe-scene-v1'],
  [['ravintola','restaurant','ruokala','diner','baari','bar'],'restaurant-scene-v1'],
+ [['ruokakauppa','kauppa','supermarketti','lähikauppa','grocery store','supermarket','store','shop'],'store-scene-v1'],
  [['luokkahuone','luokka','koulu','classroom','school'],'classroom-scene-v1'],
  [['kirjasto','library'],'library-scene-v1'],
  [['palvelupiste','vastaanotto','kassa','reception','service desk','front desk'],'service-scene-v1'],
