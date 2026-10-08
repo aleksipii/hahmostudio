@@ -166,6 +166,7 @@ export default function ScriptComposeEditor({
   onImportFile,
   onCommandAction,
   onTryExample,
+  onTryExampleEn,
   onBuildEpisode,
   buildProgress,
   onPickTemplate,
@@ -188,6 +189,8 @@ export default function ScriptComposeEditor({
   onImportFile?: (text: string) => Promise<void>;
   onCommandAction?: (id: ScriptCommandId) => void;
   onTryExample?: () => void;
+  /** Englanninkielinen esimerkki: Kokoro tuottaa vain englanninkielisten repliikkien äänen. */
+  onTryExampleEn?: () => void;
   /** Rakenna jakso: koko ketju yhdellä kumottavalla muutoksella. */
   onBuildEpisode?: () => void;
   buildProgress?: { stage: BuildStage; episode?: number; episodes?: number } | null;
@@ -401,6 +404,11 @@ export default function ScriptComposeEditor({
               {onTryExample && (
                 <button type="button" className="primary" disabled={scriptLocked} onClick={onTryExample}>
                   Kokeile esimerkkiä
+                </button>
+              )}
+              {onTryExampleEn && (
+                <button type="button" className="secondary" disabled={scriptLocked} onClick={onTryExampleEn} title="Englanninkieliset repliikit: äänen voi luoda paikallisesti Kokorolla (Mac-sovellus)">
+                  Try English example
                 </button>
               )}
               <button

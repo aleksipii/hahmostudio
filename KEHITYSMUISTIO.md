@@ -500,3 +500,7 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 **Löydös, ei korjattu (päätös käyttäjälle):** pelkkä Rakenna jakso → Vie tuottaa **äänettömän** videon, jos jaksossa ei ole repliikkiääniä: miksattu ääni syntyy vasta “Rakenna muokattava jakso projektiin” -painikkeella, ja vientitarkistus (`freezeRender`) varoittaa puuttuvasta äänestä vain, kun repliikkiääniä on. Ohjeteksti “Paina Rakenna jakso ja sitten Vie” on siksi harhaanjohtava; esim. varoitus tai automaattinen miksaus vientiä varten.
 
 **Edelleen todentamatta:** kamera ja mikrofoni, trackpad-veto, Kokoro oikealla mallilla, pakattu .app (testi ajaa kehitysbuildin Electronissa), uudet paneelit pakatussa sovelluksessa.
+
+### 2.21 — Englanninkielinen esimerkki Kokorolle (2026-10-08)
+
+Kokoro synnyttää vain englanninkielisten repliikkien äänen (`synthPossibility`), joten tyhjään tilaan lisättiin **Try English example** -painike: `public/library/Example-parking-ticket.md` (sama kohtaus kuin “Pysäköintisakko”, neljä englanninkielistä repliikkiä, musiikki, kävely, istuminen, lähikuva ja häivytys). Testi (`lib/english-example.test.ts`) varmistaa: ei tunnistamattomia rivejä, kaikki repliikit ovat Kokoro-kelpoisia ja odotetut liikkeet, katse ja siirtymä tunnistuvat. Selaimessa todennettu: painike lataa tekstin, Rakenna jakso → 2 hahmoa, 17 tapahtumaa, 15 s, 4 repliikkiä odottaa ääntä. Suomenkielistä tekstiä ei käännetä automaattisesti (ei konekäännöstä); Kokoro-ääni luodaan Mac-sovelluksessa erikseen, eikä sitä ole testattu oikealla mallilla.
