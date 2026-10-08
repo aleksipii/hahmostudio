@@ -646,4 +646,4 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 - ikkunan oikean yläkulman Näytä-valikkoon tuli "Tekoäly…";
 - toimintohakuun (⌘K) tuli "Tekoäly: tilat ja pilvirenderöinti…".
 
-Testi `server/ai-panel.test.mjs`. **Todennettu:** selaimessa (Vite, Chromium) Näytä → Tekoäly… avaa paneelin ja ⌘K-haku löytää sen. **Todentamatta:** pakattu Mac-sovellus.
+Lisäksi `lib/studio-feature-map.ts` sai kartalle rivin `ai` (toimintohaun komennoilla pitää olla koti kartassa). Testi `server/ai-panel.test.mjs`. **Todennettu:** selaimessa (Vite, Chromium) Näytä → Tekoäly… avaa paneelin ja ⌘K-haku löytää sen. **Todentamatta:** pakattu Mac-sovellus.
