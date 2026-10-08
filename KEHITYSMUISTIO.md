@@ -613,3 +613,21 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todennettu:** `npm test` 1246 (1245 läpi, 1 ohitettu), typecheck, `build:private`. Selaimessa (Vite dev, Chromium, valemikrofoni): repliikin äänitys → työpiste näyttää ohjeen "vaatii paikallisen puhemallin", koska mallia ei ole. **Todentamatta:** varsinainen litterointi oikealla whisper.cpp-mallilla (mallia ei ole tässä ympäristössä), Mac-sovellus.
 
 **Seuraava:** vaihe 6, vertailukuvat.
+
+## 2.29 Tekoäly · vaihe 6: vertailukuvat sidotaan hahmon grafiikkaan (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 6/7. **Tehty:**
+- `lib/character-sources.ts`: hahmon grafiikan tunniste on hahmopaketin tiedoston SHA-256. Tuodulla hahmolla tiiviste on jo tunnisteessa (`cast-sha256-…`); kirjastopaketti luetaan `BASE_URL/library/<nimi>.hahmo`. Lähdettä, jota ei voi lukea, ei arvata.
+- `REFERENCE_READY_PACKS` on tyhjä: sovellus ehdottaa paketin omaa kuvaa (`library/<nimi>.png`) vertailukuvaksi vain listan paketeille. Lista täytetään vasta, kun hahmon grafiikka on hyväksytty valmiiksi.
+- Ehdotus ei hyväksy itseään. Hyväksyntä on käyttäjän painallus "Hyväksy vertailukuvaksi". Käyttämätön ehdotus ei jätä jälkeä.
+- `lib/cloud-render`:
+  - `CanonicalCharacter.sourceSha256` ja `CharacterReference.sourceSha256` ovat valinnaisia, joten vanhat tilat ja kuvat pysyvät luettavina.
+  - Vertailukuvan lataus hylätään (409 `reference-stale`), jos tiiviste ei vastaa synkronoitua tilaa.
+  - Putki käyttää vain samalle grafiikalle hyväksyttyä kuvaa. Grafiikan muutoksen jälkeen pakollinen syöte estyy syyllä `reference-stale`, eikä taustaan oteta yhteyttä; valinnainen vanhentunut kuva jätetään pois.
+- `components/cloud-render-dialog.tsx`: synkronointi laskee tiivisteet. Vertailukuvaosio näyttää grafiikan tunnisteen ja ehdotuksen (vain valmiille paketeille), ja oma kuvatiedosto sidotaan samaan tiivisteeseen. Työpöydän IPC-reitti (`cloud-policy.mjs`) ja `cloud-desktop.ts` välittävät validoidun tiivisteen.
+- Testit: `lib/character-sources.test.ts` (3), `lib/cloud-render/references.test.ts` (4) ja reittitarkistus `desktop/cloud-controller.test.mjs`:ssä. Kaikissa on erillinen testidata (Testihahmo, alice), ei kirjaston hahmoja.
+- Raja: tiiviste kattaa hahmopaketin tiedoston, ei editorissa tehtyjä paketin muokkauksia ilman uutta tiedostoa.
+
+**Todennettu:** `npm test` 1253 (1252 läpi, 1 ohitettu), typecheck, `desktop:test:cloud` 24/24 (Electron, Linux). **Todentamatta:** dialogin ehdotusnäkymä selaimessa (vaatii pilvipalvelimen; lisäksi lista on tyhjä), oikea renderöinti vertailukuvalla, Mac.
+
+**Seuraava:** vaihe 7, dokumentaatio ja valmiusraportti.

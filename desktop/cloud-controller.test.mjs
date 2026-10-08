@@ -100,6 +100,9 @@ test('reitit: renderer ei voi valita reittiä, taustaa, parametreja eikä politi
  assert.throws(()=>cloudRoute('render',{projectId:'p',sceneId:'s',workflowId:'w'}),/valtuutus puuttuu/);
  assert.throws(()=>cloudRoute('sync',{canonical:{projectId:'p',pad:'x'.repeat(2*1024*1024)}}),/liian suuri/);
  assert.deepEqual(cloudRoute('direct',{projectId:'p',sceneId:'s'}),{method:'POST',path:'/api/ai/direct',body:{projectId:'p',sceneId:'s'}});
+ const img={projectId:'p',characterId:'alice',mime:'image/png',dataBase64:'iVBORw=='};
+ assert.equal(cloudRoute('reference',{...img,sourceSha256:'b'.repeat(64)}).body.sourceSha256,'b'.repeat(64));assert.equal(cloudRoute('reference',img).body.sourceSha256,undefined);
+ assert.throws(()=>cloudRoute('reference',{...img,sourceSha256:'../x'}),/tiiviste on virheellinen/);
  assert.equal(CLOUD_OPS.length,13);
 });
 

@@ -14,7 +14,7 @@ export function cloudOpFor(method:string,path:string,body?:unknown):{op:CloudOp;
  if(m==='GET'&&s[0]==='backends'&&s.length===1)return {op:'backends'};
  if(m==='PUT'&&s[0]==='projects'&&s.length===2)return {op:'sync',args:{canonical:body}};
  if(m==='POST'&&s[0]==='projects'&&s[2]==='scenes'&&s[4]==='lock'&&s.length===5)return {op:'lock',args:{projectId:s[1],sceneId:s[3]}};
- if(m==='POST'&&s[0]==='projects'&&s[2]==='characters'&&s[4]==='reference'&&s.length===5)return {op:'reference',args:{projectId:s[1],characterId:s[3],mime:b.mime,dataBase64:b.dataBase64,label:b.label}};
+ if(m==='POST'&&s[0]==='projects'&&s[2]==='characters'&&s[4]==='reference'&&s.length===5)return {op:'reference',args:{projectId:s[1],characterId:s[3],mime:b.mime,dataBase64:b.dataBase64,label:b.label,...(b.sourceSha256!==undefined?{sourceSha256:b.sourceSha256}:{})}};
  if(m==='POST'&&s[0]==='ai'&&s[1]==='direct'&&s.length===2)return {op:'direct',args:{projectId:b.projectId,sceneId:b.sceneId}};
  if(m==='POST'&&s[0]==='live-verification'&&s[1]==='smoke'&&s.length===2)return {op:'smoke'};
  if(s[0]==='render'){

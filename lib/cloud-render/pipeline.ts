@@ -203,7 +203,7 @@ export class RenderService{
    // inputs (storage only, no compute)
    const refChars=req.focus?[req.focus.actorId]:canon.scenes[req.sceneId].characterIds;
    await this.d.refs.load(req.projectId,refChars);
-   job.inputs=this.d.refs.resolve(req.projectId,refChars,wf.requiresCharacterReference||!!req.focus);
+   job.inputs=this.d.refs.resolve(req.projectId,refChars,wf.requiresCharacterReference||!!req.focus,Object.fromEntries(refChars.map(function(c){return [c,live.characters[c]?.sourceSha256];})));
    if(wf.requiresSourceImage&&!job.inputs.length)throw new Blocked('input-missing',`Workflow "${wf.id}" needs an approved reference image as source.`);
    const bytes=new Map<string,Uint8Array>();if(!dry)for(const i of job.inputs){const ref=JSON.parse(i.storageRef??'null') as AssetRef|null;if(!ref)throw new Blocked('input-missing','Input has no storage reference.');bytes.set(i.assetId,await this.d.storage.downloadAsset(ref));}
    if(job.outputFormat==='image'&&wf.kind==='video')job.outputFormat='video';

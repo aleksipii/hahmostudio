@@ -8,9 +8,10 @@ import type {Attr} from './types.ts';
  * authority; this adapter never writes back. Appearance attributes (hair, outfit, ...) are NOT in a Presentation, so they come from
  * an explicit supplement authored by a human; anything not supplied simply does not exist for validation (closed world).
  */
-export type CanonSupplement={projectId?:string;characters?:Record<string,{attributes?:Record<string,Attr>}>;locations?:Record<string,{name?:string;attributes?:Record<string,Attr>}>;visualStyles?:string[];forbiddenActions?:string[];revision?:number};
+export type CanonSupplement={projectId?:string;characters?:Record<string,{attributes?:Record<string,Attr>;sourceSha256?:string}>;locations?:Record<string,{name?:string;attributes?:Record<string,Attr>}>;visualStyles?:string[];forbiddenActions?:string[];revision?:number};
 const slug=(s:string)=>s.normalize('NFKD').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase().slice(0,60)||'x';
 export function canonicalFromPresentation(p:Presentation,sup:CanonSupplement={}):CanonicalState{
+ const sourceOf=(name:string,id:string):string|undefined=>sup.characters?.[name]?.sourceSha256??sup.characters?.[id]?.sourceSha256;
  const ids=new Map<string,string>(),used=new Set<string>();
  for(const name of p.characters){let id=slug(name),n=1;while(used.has(id))id=slug(name)+'_'+(++n);used.add(id);ids.set(name,id);}
  const defaultLoc=(p.world.design&&String(p.world.design))||'unspecified',envAt=(t:number)=>{const e=p.events.filter(x=>x.kind==='environment'&&(x.at??0)<=t).sort((a,b)=>(a.at??0)-(b.at??0)).at(-1);return (e&&environmentId(e.value))||defaultLoc;};
@@ -38,7 +39,7 @@ export function canonicalFromPresentation(p:Presentation,sup:CanonSupplement={})
  addLoc(firstLoc);
  if(hasPhone)props.phone={id:'phone',type:'phone',attributes:{},location:phoneCarrier?null:firstLoc,heldBy:phoneCarrier??null};
  const characters:CanonicalState['characters']={};
- for(const [name,id] of ids)characters[id]={id,name,attributes:sup.characters?.[name]?.attributes??sup.characters?.[id]?.attributes??{},location:firstLoc,holding:phoneCarrier===id?['phone']:[]};
+ for(const [name,id] of ids)characters[id]={id,name,attributes:sup.characters?.[name]?.attributes??sup.characters?.[id]?.attributes??{},location:firstLoc,holding:phoneCarrier===id?['phone']:[],...(sourceOf(name,id)?{sourceSha256:sourceOf(name,id)}:{})};
  const end=Math.max(1,p.seconds,...Object.values(scenes).map(s=>s.end));
  return validateCanonicalState({schemaVersion:1,projectId:safeId(sup.projectId)?sup.projectId:('p_'+slug(p.id)),revision:sup.revision??p.production?.studio?.revision??1,characters,locations,props,scenes,timeline:{currentTime:0,duration:end},allowedActions:[...actionRules.values()],forbiddenActions:sup.forbiddenActions??[],visualStyle:{allowed:sup.visualStyles??['anime','cartoon','stylized_2d','illustration'],constraints:[]}});
 }
