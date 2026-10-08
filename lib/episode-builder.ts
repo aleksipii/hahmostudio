@@ -60,8 +60,13 @@ export type EpisodeBuild={
 export function buildEpisode(scriptText:string,library:EpisodeLibrary,options:BuildOptions={},onStage?:(stage:BuildStage)=>void):EpisodeBuild{
  if(!scriptText.trim())return failedBuild(scriptText,options,'Käsikirjoitus on tyhjä. Kirjoita tai liitä käsikirjoitus, tai kokeile esimerkkiä.');
  if(scriptText.length>60000)return failedBuild(scriptText.slice(0,60000),options,'Käsikirjoitus on liian pitkä (enintään 60 000 merkkiä). Jaa se jaksoihin ---‑rivillä.');
- try{return buildEpisodeUnsafe(scriptText,library,options,onStage);}
- catch(error){return failedBuild(scriptText,options,'Jaksoa ei voitu rakentaa: '+(error instanceof Error?error.message:String(error)));}
+ let build:EpisodeBuild;
+ try{build=buildEpisodeUnsafe(scriptText,library,options,onStage);}
+ catch(error){build=failedBuild(scriptText,options,'Jaksoa ei voitu rakentaa: '+(error instanceof Error?error.message:String(error)));}
+ // Saman kohtauksen uudelleenrakennus säilyttää kohtauksen tunnisteen (kuten reconcileProduction), jotta
+ // "Päivitä kohtaus" korvaa projektissa olevan version eikä muokattu teksti lisää samaa kohtausta toista kertaa.
+ if(options.previous)build.presentation.id=options.previous.id;
+ return build;
 }
 /** Rakennus, joka ei onnistunut: tyhjä mutta kelvollinen esitys ja virhe tarkistuksessa. Teksti säilyy sellaisenaan. */
 function failedBuild(text:string,options:BuildOptions,message:string):EpisodeBuild{

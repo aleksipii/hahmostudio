@@ -504,3 +504,15 @@ Käyttötesti löysi: `Resurssi esine` ennen `Jakso 1:` -otsikkoa jakoi jakson k
 ### 2.21 — Englanninkielinen esimerkki Kokorolle (2026-10-08)
 
 Kokoro synnyttää vain englanninkielisten repliikkien äänen (`synthPossibility`), joten tyhjään tilaan lisättiin **Try English example** -painike: `public/library/Example-parking-ticket.md` (sama kohtaus kuin “Pysäköintisakko”, neljä englanninkielistä repliikkiä, musiikki, kävely, istuminen, lähikuva ja häivytys). Testi (`lib/english-example.test.ts`) varmistaa: ei tunnistamattomia rivejä, kaikki repliikit ovat Kokoro-kelpoisia ja odotetut liikkeet, katse ja siirtymä tunnistuvat. Selaimessa todennettu: painike lataa tekstin, Rakenna jakso → 2 hahmoa, 17 tapahtumaa, 15 s, 4 repliikkiä odottaa ääntä. Suomenkielistä tekstiä ei käännetä automaattisesti (ei konekäännöstä); Kokoro-ääni luodaan Mac-sovelluksessa erikseen, eikä sitä ole testattu oikealla mallilla.
+
+### 2.22 — Luotettavuus: muokattu jakso ei kahdennu, vienti kertoo lisäämättömästä jaksosta (2026-10-08)
+
+**Löydetty ja korjattu:**
+1. **Muokattu käsikirjoitus lisäsi kohtauksen toiseen kertaan.** Jakson tunniste laskettiin käsikirjoitustekstistä, joten tekstin muutoksen jälkeen Rakenna jakso antoi uuden tunnisteen. Painike näytti silloin “Rakenna muokattava jakso projektiin” eikä “Päivitä kohtaus”, ja vanha versio jäi projektiin uuden eteen (video sisälsi molemmat, ja 60 s raja täyttyi nopeasti). Nyt saman kohtauksen uudelleenrakennus (`buildEpisode`, `options.previous`) säilyttää kohtauksen tunnisteen, kuten vanha jäsennin (`reconcileProduction`). Testi: muokattu jakso korvaa projektissa olevan version (`lib/export-draft.test.ts`).
+2. **Pelkkä Rakenna jakso → Vie ei vienyt jaksoa.** Vienti käyttää vain projektiin lisättyjä kohtauksia. `lib/export-draft.ts` tunnistaa lisäämättömän uuden jakson (projektissa ei vielä kohtauksia) ja päivittämättömän muutoksen (sama kohtaus, eri teksti tai tapahtumat). Vientidialogi näyttää tarkan ohjeen ja estää jonoon lisäyksen, kunnes jakso on lisätty tai käyttäjä valitsee “Vie silti ilman sitä”; selainviennissä sama vahvistuskysymys. Uusi erillinen kohtaus aiempien rinnalla ei estä aiempien vientiä. Esimerkin ohjeteksti ja `docs/DESIGN-PALIKKAEDITORI.md` kertovat nyt välivaiheen.
+
+**Tarkistettu:** pilvirenderöinnin oppaan Wan-tiedostopolut ovat olemassa repossa `Comfy-Org/Wan_2.2_ComfyUI_Repackaged` (Hubin metatieto: 10,0 + 6,7 + 1,4 Gt, LFS). Oppaan ympäristömuuttujat vastaavat koodia.
+
+**Ei todennettu:** korjauksia ei ajettu selaimessa eikä Electronissa (vain koodin testit). `npm test` 1214 (1213 läpi, 1 ohitettu), typecheck, `build:private` ja `desktop:build` OK.
+
+**Edelleen auki (päätös tai laite käyttäjällä):** tyhjän projektin ensimmäisen käsikirjoitus-commitin kumoaminen työpöytäsovelluksessa (2.19); oikea Colab/ComfyUI/Drive-ajo; kamera, mikrofoni, trackpad ja Kokoro oikealla mallilla Macilla.
