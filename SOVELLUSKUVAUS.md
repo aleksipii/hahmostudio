@@ -118,7 +118,7 @@ Pään irtoaminen vartalosta voi johtua puuttuvasta liitoksesta tai aiemmin tall
 
 ### Hahmokirjasto ja esitystavat
 
-Kirjastossa ovat neljä paksureunaista leikkaushahmoa (Pipsa, Ville, Taru, Ukko) 2D- ja 3D-versioina sekä Hahmopohja. Valmis `.hahmo` voi sisältää kuvat, nivelet ja pikaanimoinnin roolisidokset. Monikulmainen 2D-hahmo käyttää erillisiä etu- ja profiilipiirroksia sekä kullekin kulmalle omia sidoksia.
+Kirjastossa ovat neljä viivatonta leikkaushahmoa (Pipsa, Ville, Taru, Ukko) 2D- ja 3D-versioina sekä Hahmopohja. Valmis `.hahmo` voi sisältää kuvat, nivelet ja pikaanimoinnin roolisidokset. Monikulmainen 2D-hahmo käyttää erillisiä etu- ja profiilipiirroksia sekä kullekin kulmalle omia sidoksia.
 
 Nykyiset kolme esitystapaa on erotettava:
 

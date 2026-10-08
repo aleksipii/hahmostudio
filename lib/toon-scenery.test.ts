@@ -43,3 +43,13 @@ test('toon3d-esitys piirtää lavasteen 3D-verkkona hahmojen kanssa ja vanhat 2D
  assert.ok(fills(withBed,1)>fills(plain,1)+10,'sänky tuo 3D-kolmioita');
  assert.equal(toonCamera(withBed,1).yaw,0);
 });
+
+test('toon3d-hahmot ovat viivattomia: profiilien outline on 0 eikä siluettiviivoja piirretä',async()=>{
+ const {toonProfiles}=await import('./toon3d.ts');
+ assert.ok(toonProfiles.length>=4&&toonProfiles.every(p=>p.outline===0));
+ const asset=await readProject(new Blob([readFileSync(new URL('../public/library/Pipsa.hahmo',import.meta.url))])),assets={'Pipsa':{doc:asset.doc,animation:asset.animation}};
+ const b=buildEpisode('Resurssi hahmo MIRA: Pipsa\nINT. STUDIO\nMira odottaa 2 s.',{packs:catalogFromNames(CHARACTER_PACK_OPTIONS),assets}),p=b.presentation;p.production!.representations={MIRA:'toon3d'};
+ let inkStrokes=0,fills=0;const ctx:any=new Proxy({canvas:{},globalAlpha:1,createLinearGradient:()=>({addColorStop:()=>{}})},{get:(target,key)=>String(key)==='stroke'?()=>{if(ctx.strokeStyle==='#222a30')inkStrokes++;}:String(key)==='fill'?()=>{fills++;}:String(key) in target?(target as any)[String(key)]:()=>{},set:(target,key,value)=>{(target as any)[String(key)]=value;return true;}});
+ renderToonCast(ctx,p,assets,1,1920,1080);
+ assert.ok(fills>50,'hahmo piirtyi');assert.equal(inkStrokes,0,'ei mustia siluettiviivoja');
+});

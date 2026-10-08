@@ -61,7 +61,7 @@ Säännöt ja rajat: [docs/KASIKIRJOITUS-TUNNISTIN.md](docs/KASIKIRJOITUS-TUNNIS
 
 ## Hahmot
 
-Kirjastossa ovat neljä paksureunaista leikkaushahmoa (Pipsa, Ville, Taru ja Ukko; 2D- ja 3D-versiot) sekä muokattava Hahmopohja. Vanhemmat hahmot (Roni, Salla, Aino, Otto, Leo, Mr.Kille, Mr.Handu, Kille-Oma, Handu-Oma) poistettiin 2026-10-08; ne löytyvät gitin historiasta. Hahmot:
+Kirjastossa ovat neljä viivatonta leikkaushahmoa (Pipsa, Ville, Taru ja Ukko; 2D- ja 3D-versiot) sekä muokattava Hahmopohja. Vanhemmat hahmot (Roni, Salla, Aino, Otto, Leo, Mr.Kille, Mr.Handu, Kille-Oma, Handu-Oma) poistettiin 2026-10-08; ne löytyvät gitin historiasta. Hahmot:
 
 | Hahmo | 2D | 3D (kolme kuvakulmaa) |
 |-------|----|------------------------|
