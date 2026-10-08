@@ -18,6 +18,7 @@ export type DesktopBridge={
  reportState:(state:{dirty:boolean;ready:boolean;name?:string})=>void;completeClose:(id:string,saved:boolean)=>void;nativeEdit:(action:'undo'|'redo')=>Promise<void>;
  audioDownload:()=>Promise<{model:boolean;binary:boolean;modelName:string}>;
  audioModel:()=>Promise<{backend:string;model:boolean;binary:boolean;modelName:string;offline:boolean}>;transcribe:(bytes:Uint8Array,language:string)=>Promise<unknown>;
+ cloudStatus:()=>Promise<CloudStatus>;cloudSecretPaste:(key:CloudSecretKey)=>Promise<{saved:CloudSecretKey[]}>;cloudSecretImport:()=>Promise<{saved:CloudSecretKey[];ignored:string[]}>;cloudSecretClear:(key:CloudSecretKey|'all')=>Promise<CloudStatus>;
  kokoroStatus:()=>Promise<KokoroStatus>;kokoroDownload:()=>Promise<KokoroStatus|{cancelled:true}>;kokoroRemove:()=>Promise<KokoroStatus>;kokoroSynthesize:(request:{text:string;voice:string;speed:number})=>Promise<{samples:Float32Array;sampleRate:number;modelVersion:string}>;kokoroCancel:()=>Promise<void>;onKokoroProgress:(callback:(p:{file:string;received:number;total:number|null})=>void)=>()=>void;
  speech:(bytes:Uint8Array,language:string)=>Promise<unknown>;cancelSpeech:()=>Promise<void>;onAction:(callback:(payload:DesktopAction)=>void)=>()=>void;
 };
@@ -40,4 +41,7 @@ export async function saveFile(blob:Blob,name:string,options:{kind?:'project'|'e
  const bridge=desktop();if(bridge)return (await bridge.saveFile({name,bytes:new Uint8Array(await blob.arrayBuffer()),kind:options.kind??'export',saveAs:options.saveAs??false})).saved;
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);return true;
 }
+export type CloudSecretKey='HAHMOSTUDIO_COLAB_COMFYUI_URL'|'HAHMOSTUDIO_COMFYUI_BEARER'|'GOOGLE_OAUTH_CLIENT_ID'|'GOOGLE_OAUTH_CLIENT_SECRET'|'GOOGLE_OAUTH_REFRESH_TOKEN';
+/** Työpöydän pilvitila rendererille: ei koskaan salaisuuksien arvoja. */
+export type CloudStatus={available:boolean;enabled:boolean;policy:{mode:'zero-cost';allowPaidCompute:false;maxCostEur:0;allowPaidFallback:false;allowUnknownCost:false;allowedBackendClasses:string[]};secrets:{encryption:boolean;keys:Record<CloudSecretKey,{label:string;set:boolean}>}};
 export type KokoroStatus={installed:boolean;modelVersion:string;license:string;bytes:number;error?:string};

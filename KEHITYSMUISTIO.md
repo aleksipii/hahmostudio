@@ -556,3 +556,16 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todentamatta:** paneelia ei ole avattu oikeassa Electron-ikkunassa (ei GUI:ta tässä ympäristössä); kameran luvan luku Electronissa (`navigator.permissions` palauttaa tarvittaessa "ei voitu lukea"). Simuloitu: kyllä · pakattu sovellus: ei · oikea Mac: ei · ComfyUI-GPU: ei koske.
 
 **Seuraava:** vaihe 2, salaisuusvarasto (safeStorage) ja pilvi-IPC:n validointi.
+
+### 2.25 — Pilviasetusten salaisuusvarasto ja kapea IPC, vaihe 2 (2026-10-08, tekoälyasiantuntija)
+
+**Valmis (koodi):**
+- `desktop/cloud-secrets.mjs`: `CloudSecretStore` salaa arvot `safeStorage`lla tiedostoon `userData/cloud-secrets.bin` (0600, atominen tmp+rename). Jos salaus ei ole käytettävissä, tallennus estetään; selväkielistä varaa ei ole. Viisi sallittua avainta (tunnelin https-osoite ilman käyttäjätietoja, bearer, Google OAuth -tunnukset) muototarkistuksin; virheviesti ei koskaan sisällä arvoa. `parseSecretFile` lukee KEY=VALUE-tiedoston ja ohittaa muut avaimet (myös maksullisen laskennan muuttujat) nimeltä. `redact` peittää tunnetut arvot ja kaikki http(s)-osoitteet.
+- `desktop/cloud-policy.mjs`: `DESKTOP_COMPUTE_POLICY` (sama kuin `ZERO_COST_POLICY`, jäädytetty), `cloudStatus` (vain onko avain asetettu), `guarded` (peittää virheet ennen rendereriä).
+- IPC (`desktop/main.mjs`, `preload.cjs`): `cloudStatus`, `cloudSecretPaste(avain)` (arvo luetaan pääprosessissa leikepöydältä, ei rendereristä), `cloudSecretImport()` (pääprosessin tiedostodialogi, ≤ 64 KiB), `cloudSecretClear(avain|'all')`. Tallennus vaatii natiivin vahvistuksen, joka näyttää tunnelin palvelimen nimen. Ei käyttöliittymää vielä (vaihe 3).
+- `desktop/test-fixtures/electron-stub.mjs`: lisätty `clipboard` ja `safeStorage`, koska `main.mjs` tuo ne (startup-testi vaati).
+- Testit `desktop/cloud-secrets.test.mjs` (8): salattu tiedosto ei sisällä merkkiarvoa, tila ei palauta arvoja, ei tallennusta ilman salausta, virheet ilman arvoa, tiedostotuonnin sallittulista, peittäminen, politiikka = zero-cost, IPC-pinta täsmälleen neljä kanavaa, desktop ei viittaa web-omistajan tunnuksiin tai maksullisen laskennan muuttujiin, testisalaisuus ei esiinny gitissä muualla. `npm test` 1219 (1218 läpi, 1 ohitettu), typecheck OK.
+
+**Todentamatta:** oikea macOS Keychain (`safeStorage`) ja natiivit dialogit; testit käyttävät vale-salausta. Simuloitu: kyllä · pakattu sovellus: ei · oikea Mac: ei.
+
+**Seuraava:** vaihe 3, pilvipalveluprosessi, opt-in, lupadialogi ennen lähetystä, checkpoint ennen dispatchia (ehto 1).

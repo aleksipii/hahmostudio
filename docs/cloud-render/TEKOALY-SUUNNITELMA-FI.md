@@ -87,6 +87,7 @@ window.hahmostudio.cloud*  → ipcMain.handle('studio:cloud-*')
 | Uhka | Torjunta |
 |---|---|
 | Renderer kaapataan (esim. haitallinen käsikirjoitusteksti → XSS) | Ei pääsyä salaisuuksiin (ei IPC:tä niiden lukuun); opt-in ja jokainen lähetys vaativat natiivin dialogin, jota renderer ei voi painaa; IPC-syötteet skeemavalidoitu |
+| Kaapattu renderer vaihtaa tunnelin osoitteen hyökkääjän palvelimeen (leikepöydän kautta) | Jokainen pilviasetuksen tallennus vaatii natiivin vahvistuksen, joka näyttää osoitteen palvelimen nimen (lisätty vaiheessa 2) |
 | Renderer yrittää muuttaa kustannuspolitiikkaa | Politiikka kovakoodattu pilviprosessin käynnistyksessä; ei kirjoitusreittiä |
 | Salaisuus vuotaa lokiin, virheeseen, projektiin | `redact()`, salaisuudet vain kahdessa prosessissa, vuototesti (kohta 6) |
 | Tunnelin osoite (ComfyUI ei tarkista bearer-otsaketta) vuotaa | Osoite käsitellään salaisuutena; ohjeistus Kaggle-reitistä (ei tunnelia) säilyy ensisijaisena |

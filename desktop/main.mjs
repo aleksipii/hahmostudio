@@ -6,15 +6,17 @@ import {RevisionStore} from './revisions.mjs';
 import {KokoroModelStore,KokoroService,MODEL_LICENSE as KOKORO_LICENSE} from './kokoro.mjs';
 import {createProcessEngineFactory} from './kokoro-engine.mjs';
 import {DesktopExports} from './export-service.mjs';
-import {app,BrowserWindow,Menu,dialog,ipcMain,session,systemPreferences,utilityProcess,nativeTheme,screen} from 'electron';
-import {join,dirname} from 'node:path';import {randomBytes,randomUUID} from 'node:crypto';import {readFile,mkdir,writeFile} from 'node:fs/promises';import {fileURLToPath} from 'node:url';
+import {app,BrowserWindow,Menu,dialog,ipcMain,session,systemPreferences,utilityProcess,nativeTheme,screen,clipboard,safeStorage} from 'electron';
+import {CloudSecretStore,SECRET_KEYS,parseSecretFile,secretKey} from './cloud-secrets.mjs';
+import {cloudStatus,clearTarget,guarded,noArgs} from './cloud-policy.mjs';
+import {join,dirname} from 'node:path';import {randomBytes,randomUUID} from 'node:crypto';import {readFile,mkdir,writeFile,stat} from 'node:fs/promises';import {fileURLToPath} from 'node:url';
 import {DesktopFiles} from './files.mjs';import {validSender,allowedMedia,allowedMediaCheck} from './policy.mjs';
 import {RecoveryStore} from './recovery.mjs';
 import {mayClose} from './close-workflow.mjs';
 const legacyData=app.getPath('userData');app.setName('KOETA');app.setPath('userData',legacyData);
 const root=dirname(dirname(fileURLToPath(import.meta.url))),layoutTesting=process.argv.includes('--layout-screenshots'),screenplayTesting=process.argv.includes('--screenplay-gui-test'),playbackRafTesting=process.argv.includes('--playback-raf-profile'),exportE2eTesting=process.argv.includes('--export-e2e-test'),testing=process.argv.includes('--self-test')||layoutTesting||screenplayTesting||playbackRafTesting||exportE2eTesting;
 if(testing||process.argv.includes('--diagnostic-workspace')){if(!process.env.HAHMOSTUDIO_TEST_DATA_DIR)throw new Error('Self-test requires isolated data directory');app.setPath('userData',process.env.HAHMOSTUDIO_TEST_DATA_DIR);}
-let window,service,files,origin,serviceOrigin,dirty=false,ready=false,closing=false,closeBusy=false,pendingClose,speech,exports,recovery,revisions,kokoro,kokoroDownload;
+let window,service,files,origin,serviceOrigin,dirty=false,ready=false,closing=false,closeBusy=false,pendingClose,speech,exports,recovery,revisions,kokoro,kokoroDownload,cloudSecrets;
 const token=randomBytes(32).toString('hex');
 if(!testing&&!app.requestSingleInstanceLock()){app.quit();}else{
  app.on('second-instance',()=>{window?.show();window?.focus();});
@@ -33,6 +35,7 @@ if(!testing&&!app.requestSingleInstanceLock()){app.quit();}else{
   const ses=session.fromPartition('persist:hahmostudio-desktop');
   await ses.cookies.set({url:origin,name:'hahmostudio_desktop',value:token,httpOnly:true,sameSite:'strict'});
   window=new BrowserWindow({width:1440,height:900,minWidth:1200,minHeight:700,show:false,title:'KOETA',backgroundColor:'#202328',webPreferences:{preload:join(root,'desktop/preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,session:ses}});
+  cloudSecrets=new CloudSecretStore({dir:app.getPath('userData'),safeStorage});
   recovery=new RecoveryStore(app.getPath('userData'));revisions=new RevisionStore(app.getPath('userData'));kokoro=new KokoroService({store:new KokoroModelStore(app.getPath('userData')),createEngine:createProcessEngineFactory({fork:(path,args,options)=>utilityProcess.fork(path,args,options),workerPath:join(root,'desktop','kokoro-worker.mjs'),runtimeDir:app.isPackaged?join(process.resourcesPath,'kokoro'):join(root,'.private-runtime','kokoro')})});
   files=new DesktopFiles({dialog,window:()=>window,dataDir:app.getPath('userData'),onProject:path=>{window?.setRepresentedFilename(path??'');},onTheme:theme=>{nativeTheme.themeSource=theme;}});
   const preferences=await files.initialize();nativeTheme.themeSource=preferences.theme;if(preferences.ui?.window){const saved=preferences.ui.window,area=screen.getDisplayMatching(saved).workArea,b={...saved,width:Math.min(saved.width,Math.max(1200,area.width)),height:Math.min(saved.height,Math.max(700,area.height))};b.x=Math.max(area.x,Math.min(b.x,area.x+area.width-b.width));b.y=Math.max(area.y,Math.min(b.y,area.y+area.height-b.height));window.setBounds(b);}let boundsTimer;const saveBounds=()=>{clearTimeout(boundsTimer);boundsTimer=setTimeout(()=>void files.setUi({window:window.getBounds()}).catch(()=>{}),300);};window.on('resize',saveBounds);window.on('move',saveBounds);
@@ -61,6 +64,11 @@ function registerIPC(){
  handle('studio:audio-download',async()=>{if(speech)throw Error('Edellinen puhetoiminto on kesken.');const c=new AbortController();speech=c;try{const r=await fetch(serviceOrigin+'/api/audio/model',{method:'POST',headers:{Origin:serviceOrigin,Cookie:'hahmostudio_desktop='+token},signal:c.signal});const d=await r.json();if(!r.ok)throw Error(d.error);return d;}finally{if(speech===c)speech=null;}});
  handle('studio:transcribe',async(bytes,language)=>{if(!(bytes instanceof Uint8Array)||bytes.length>1920044||!['fi','en'].includes(language))throw Error('Virheellinen puheaineisto.');if(speech)throw Error('Edellinen tunnistus on kesken.');const c=new AbortController();speech=c;try{const r=await fetch(serviceOrigin+'/api/audio/transcribe?language='+language,{method:'POST',headers:{Origin:serviceOrigin,'Content-Type':'audio/wav',Cookie:'hahmostudio_desktop='+token},body:bytes,signal:c.signal});const data=await r.json();if(!r.ok)throw Error(data.error);return data;}finally{if(speech===c)speech=null;}});
  handle('studio:cancel-speech',()=>speech?.abort());
+ // Pilviasetukset (vaihe 2): arvot kulkevat vain pääprosessiin (leikepöytä tai tiedostodialogi), ei koskaan rendereriin.
+ handle('studio:cloud-status',(...a)=>{noArgs(a);return cloudStatus(cloudSecrets);});
+ handle('studio:cloud-secret-paste',guarded(cloudSecrets,async key=>{secretKey(key);const value=clipboard.readText().trim();if(!await confirmSecrets([[key,value]]))return {saved:[]};await cloudSecrets.set(key,value);return {saved:[key]};}));
+ handle('studio:cloud-secret-import',guarded(cloudSecrets,async(...a)=>{noArgs(a);const r=await dialog.showOpenDialog(window,{title:'Tuo pilviasetukset',properties:['openFile','showHiddenFiles']});const path=r.filePaths?.[0];if(r.canceled||!path)return {saved:[],ignored:[]};if((await stat(path)).size>65536)throw Error('Asetustiedosto on liian suuri.');const {values,ignored}=parseSecretFile(await readFile(path,'utf8'));if(!Object.keys(values).length)return {saved:[],ignored};if(!await confirmSecrets(Object.entries(values)))return {saved:[],ignored};return {saved:await cloudSecrets.setMany(values),ignored};}));
+ handle('studio:cloud-secret-clear',guarded(cloudSecrets,async key=>{await cloudSecrets.clear(clearTarget(key));return cloudStatus(cloudSecrets);}));
  handle('studio:kokoro-status',()=>kokoro.status());
  handle('studio:kokoro-download',async()=>{if(kokoroDownload)throw Error('Mallin lataus on jo käynnissä.');const choice=await dialog.showMessageBox(window,{type:'question',buttons:['Lataa malli','Peruuta'],defaultId:1,cancelId:1,title:'Kokoro-puhemalli',message:'Ladataanko Kokoro-puhemalli tälle koneelle?',detail:'Lähde: huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX ('+KOKORO_LICENSE+'). Noin 100 Mt. Malli tallennetaan sovelluksen tietokansioon, ei projektiin eikä sovelluspakettiin. Tämä on ainoa verkkoyhteys; puhe tuotetaan paikallisesti.'});if(choice.response!==0)return {cancelled:true};const controller=new AbortController();kokoroDownload=controller;try{return await kokoro.store.download({signal:controller.signal,onProgress:p=>{if(window&&!window.isDestroyed())window.webContents.send('studio:kokoro-progress',p);}});}finally{kokoroDownload=null;}});
  handle('studio:kokoro-remove',async()=>{await kokoro.release();return kokoro.store.remove();});
@@ -69,6 +77,8 @@ function registerIPC(){
  ipcMain.on('studio:state',(event,state)=>{if(!validSender(event,window,origin))return;if(typeof state?.dirty!=='boolean'||typeof state?.ready!=='boolean')return;dirty=state.dirty;window?.setTitle((typeof state.name==='string'?state.name.slice(0,160):'KOETA')+(dirty?' ●':'')+' — KOETA');ready=state.ready;window.setDocumentEdited(dirty);});
  ipcMain.on('studio:close-result',(event,id,saved)=>{if(!validSender(event,window,origin))return;if(pendingClose&&pendingClose.id===id&&typeof saved==='boolean'){pendingClose.resolve(saved);pendingClose=null;}});
 }
+/** Natiivi vahvistus ennen pilviasetuksen tallennusta: renderer ei voi vaihtaa osoitetta huomaamatta. Näyttää vain osoitteen palvelimen nimen, ei salaisuuksia. */
+async function confirmSecrets(entries){const lines=entries.map(([k,v])=>{let host='';if(k==='HAHMOSTUDIO_COLAB_COMFYUI_URL'){try{host=' ('+new URL(v).host+')';}catch{}}return '• '+SECRET_KEYS[k].label+host;});const choice=await dialog.showMessageBox(window,{type:'question',buttons:['Tallenna','Peruuta'],defaultId:1,cancelId:1,title:'Pilviasetukset',message:'Tallennetaanko pilviasetukset tälle koneelle?',detail:lines.join('\n')+'\n\nArvot salataan järjestelmän avainnipulla. Niitä ei tallenneta projektiin eikä näytetä sovelluksen ikkunassa. Pilvirenderöinti pysyy pois päältä, kunnes otat sen erikseen käyttöön.'});return choice.response===0;}
 function action(name){if(window&&ready)window.webContents.send('studio:action',{action:name});}
 function makeMenu(){Menu.setApplicationMenu(Menu.buildFromTemplate([
  {label:'KOETA',submenu:[{role:'about',label:'Tietoja KOETA-sovelluksesta'},{label:'Asetukset…',accelerator:'CmdOrCtrl+,',click:()=>action('settings')},{type:'separator'},{role:'hide',label:'Kätke KOETA'},{role:'hideOthers',label:'Kätke muut'},{role:'unhide',label:'Näytä kaikki'},{type:'separator'},{role:'quit',label:'Lopeta KOETA'}]},
