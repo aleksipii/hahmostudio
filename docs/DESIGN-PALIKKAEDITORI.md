@@ -84,7 +84,7 @@ jotka pysyvät synkronissa tekstin kanssa.
 | 4 | Rakenna | Yksi ensisijainen toiminto **Rakenna jakso** (⌘↵) + viisivaiheinen edistyminen. Tulos on katsottava heti: tausta, roolitus, liikkeet, esineet, kuvat, ääniraita. |
 | 4–8 | Hienosäätö | Palikka-aikajana (vrt. Riven Animate-tila: aikajana alhaalla, inspector oikealla). Muutos näkyy < 100 ms; teksti päivittyy samalla. Tarkistus listaa vain todelliset puutteet (puuttuva ääni, tuntematon tausta). |
 | 8–9 | Äänet | Äänitä tai tuo repliikit; musiikki ja tehosteet ovat jo paikallaan ja duckaavat automaattisesti. |
-| 9–10 | Vie | *Vie* yläpalkista (MP4/Mac-vientijono). |
+| 9–10 | Vie | **Rakenna muokattava jakso projektiin** (tai *Päivitä kohtaus*), sitten *Vie* yläpalkista (MP4/Mac-vientijono). Vienti käyttää vain projektiin lisättyjä kohtauksia; jos käsikirjoitusnäkymässä on lisäämätön tai päivittämätön jakso, vientidialogi kertoo sen ennen vientiä. |
 
 Periaatteet: yksi ensisijainen toiminto kerrallaan; sama totuuslähde (teksti) kaikille näkymille; ei piilotettua
 automaattikorjausta (ristiriidat näkyvät); näppäimistö ensin; kaikki muutokset kumottavia yhteisessä historiassa.
