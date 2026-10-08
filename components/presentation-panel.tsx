@@ -21,6 +21,7 @@ import {buildEpisode,synthPossibility,splitEpisodes,packsNeeded,catalogFromNames
 import {CHARACTER_PACK_OPTIONS} from '../lib/speaker-pack-options';
 import {writeSeriesArchive} from '../lib/series-archive';
 import BlockTimeline,{type BlockCommand} from './block-timeline';
+import {shotSuggestions,lockedShotEvents} from '../lib/shot-suggestions';
 import {presentationBlocks,updateBlock,stretchBlock,placeBlock,moveBlocks,deleteBlocks,duplicateBlocks,deleteBlock,duplicateBlock,insertBlock,blockLibrary,lockedShotConflict,type TextEdit} from '../lib/blocks';
 import {affectedShots} from '../lib/studio/shot-impact';
 import {sfxNames,type SfxId} from '../lib/sound-library';
@@ -170,7 +171,7 @@ export default function PresentationPanel({doc,animation,scene,disabled,oldAudio
    setMessage(`Jakso rakennettu: ${first.presentation.characters.length} hahmoa, ${first.presentation.events.length} tapahtumaa, ${first.presentation.seconds.toFixed(1)} s.`+(episodes>1?` Sarjassa ${episodes} jaksoa.`:'')+(missing?` ${missing} repliikiltä puuttuu ääni.`:'')+(errors.length?` Tarkistuksessa ${errors.length} virhettä.`:' Valmis katsottavaksi.')+' Kumoa palauttaa edellisen tilan.');
   }finally{setBuildProgress(null);}
  };
- const reviewFixes=useMemo(()=>model?fixSuggestions(model,model.diagnostics,text,{canSynth:!!desktop()}):[],[model,text]);
+ const reviewFixes=useMemo(()=>model?[...fixSuggestions(model,model.diagnostics,text,{canSynth:!!desktop()}),...shotSuggestions(model,text,{locked:lockedShotEvents(model)})]:[],[model,text]);
  /** Tapahtumaeditorin sisältö renderöidään vasta avattuna: suljettu osio maksoi ~10 ms jokaisessa renderissä. */
  const [eventEditorOpen,setEventEditorOpen]=useState(false);
  const lastBuildTimings=useRef({build:0,persist:0}),[blockSelection,setBlockSelection]=useState<string|undefined>(),[kokoroRun,setKokoroRun]=useState(0);

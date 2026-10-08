@@ -585,3 +585,17 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todennettu:** `desktop:test:cloud` läpi Linuxissa (Electron 44.5.1, xvfb, `--no-sandbox` koska ajo oli root-käyttäjänä; heikko avainnippu sallittu vain tässä ajossa). **Todentamatta:** oikea Mac ja Keychain, pakattu .app, natiivit dialogit käsin, oikea Kaggle-, ComfyUI-, Drive- tai GPU-ajo.
 
 **Seuraava:** vaihe 4, kuvakohtaiset ehdotukset.
+
+## 2.27 Tekoäly · vaihe 4: kuvakohtaiset kuvaehdotukset (2026-10-08)
+
+**Vaihe:** tekoälyasiantuntijan vaihe 4/7. **Tehty:**
+- `lib/shot-suggestions.ts`: sääntöpohjaiset kuvaehdotukset Korjausehdotukset-listaan. Ehdotus syntyy vain, kun käsikirjoituksessa on jo omia kuvaohjeita ja tunnistettu hahmo reagoi tunteella (surullinen, peloissaan, vihainen, huolestunut, loukkaantunut, ilmeetön tuijotus) tai katsoo kameraan toisen kuvan aikana. Ehdotus lisää `LÄHIKUVA NIMI` -rivin ja palauttaa edellisen kuvan repliikkijatkon jälkeen.
+- Käytetään vain olemassa olevaa tunnistinsyntaksia (`blockSentence`), joten sanastoon ei tullut uutta. Jokainen ehdotus luetaan takaisin tunnistimella ennen näyttämistä; jos rivi ei lue täsmälleen samaksi kuvaksi, ehdotusta ei näytetä.
+- Ohitetaan: lukitut tai suojatut tapahtumat, tuotannossa lukitut kuvat (`lockedShotEvents`), `Samalla`-rivit ja tilanteet, joissa hahmo on jo lähikuvassa.
+- Ehdotus näytetään tarkkana rivimuutoksena. Se otetaan käyttöön vasta painikkeesta käsikirjoituksen tavallisella, kumottavalla rakennuspolulla (yksi kumottava muutos). Hylätty eli käyttämätön ehdotus ei jätä jälkeä.
+- `components/presentation-panel.tsx`: yksi kytkentärivi (`reviewFixes`), kirjattu TIIMI.md:n Pyyntöihin etukäteen.
+- Testit `lib/shot-suggestions.test.ts` (6): oikea ehdotus ja rivinumero, muun sisällön säilyminen ennallaan käytön jälkeen, `blockSentence`-pyöräytys, lukitun kuvan ohitus, ei ehdotuksia ilman omia kuvaohjeita, ei kaksoisehdotuksia.
+
+**Todennettu:** `npm test` 1240 (1239 läpi, 1 ohitettu), typecheck OK. Selaintarkistus (Vite dev, Chromium): esimerkin tuonti → Rakenna jakso → "Kuvaehdotus: lähikuva Niko (surullinen)" näkyy tarkkana muutoksena → Käytä ehdotusta lisää rivit `LÄHIKUVA NIKO` ja `LÄHIKUVA MIRA` → Kumoa poistaa ne ja ehdotus palaa. **Todentamatta:** Mac-sovellus.
+
+**Seuraava:** vaihe 5, puuttuvat repliikkiäänet.
