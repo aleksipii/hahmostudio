@@ -51,7 +51,7 @@ import {readSizes,defaultSizes,resizePanel,fitPanels,resizeForSpace} from '../li
 import MovementBar from './movement-bar';
 import {buildScreenplay,parseScreenplay} from '../lib/screenplay';
 import PhonePanel from './phone-panel';
-import ViewMenu from './view-menu';
+import {ViewMenuBody} from './view-menu';
 import {readLayout,defaultLayout} from '../lib/view-layout';
 import {selectCharacterView,currentView,viewAtFrame,characterViews,type CharacterView} from '../lib/character-view';
 import AssetLibrary from './asset-library';
@@ -594,6 +594,7 @@ export default function Editor() {
    {bridge&&recent.length>0&&<details className="s2-submenu" data-keep-open><summary>Viimeksi avatut</summary><div>{recent.map(p=><button key={p.id} className="secondary" disabled={openDisabled} onClick={()=>void pick('project',projectInput,p.id)}>{p.name}</button>)}</div></details>}
    <button className="secondary" disabled={saveDisabled} onClick={()=>void downloadProject()}><span>{projectBusy?'Odota…':'Tallenna projekti'}</span><kbd>⌘S</kbd></button>
    {bridge&&<button className="secondary" disabled={!doc||projectBusy||frameExport||quickBusy} onClick={()=>void downloadProject(true)}><span>Tallenna nimellä…</span><kbd>⇧⌘S</kbd></button>}
+   <button className="secondary" disabled={!doc||!animation||!rig} onClick={()=>window.dispatchEvent(new Event('studio-open-export'))}><span>Vie video…</span></button>
    <RevisionPanel projectId={scene.studioProjectId} disabled={!doc||!animation||!rig||busy||projectBusy||frameExport||quickBusy||speechBusy||cameraStatus.recording} capture={async()=>{if(!doc||!animation||!rig)throw Error('Avaa ensin projekti.');return{name:doc.name,bytes:new Uint8Array(await(await saveProject(doc,{...animation,rig},audioAsset,scene)).arrayBuffer())};}} restore={async(bytes,name)=>{if(!await mayReplace())return false;nativeImportId.current=null;return openProject(new File([new Uint8Array(bytes)],name+'.hahmo'));}}/>
    <hr/>
    <p className="s2-menu-head">Tuo</p>
@@ -601,6 +602,7 @@ export default function Editor() {
    <button className="secondary" disabled={audioDisabled} onClick={()=>void pick('audio',audioInput)}><span>Lisää ääni…</span></button>
    <details className="file-menu s2-submenu" data-keep-open><summary>Erilliset tiedostot</summary><div><button className="secondary" disabled={!doc || frameExport||cameraActive||quickBusy||speechBusy} onClick={()=>void pick('animation',animationInput)}>Avaa animaatio</button><button className="secondary" disabled={!animation || !rig || frameExport} onClick={()=>void saveAnimationJson()}>Tallenna animaatio</button><button className="secondary" disabled={!doc || frameExport||cameraActive||quickBusy||speechBusy} onClick={() => void pick('rig',rigInput)}>Avaa nivelet</button><button className="secondary" disabled={!rig || !doc || frameExport} onClick={()=>void saveRigJson()}>Tallenna nivelet</button></div></details>
    {previousProject&&<><button className="secondary" disabled={quickBusy||projectBusy||frameExport} onClick={()=>{save(previousProject,'Edellinen-tyo.hahmo');}}>Lataa edellinen työ turvaan</button><button className="secondary" disabled={quickBusy||projectBusy||frameExport||cameraActive} onClick={()=>void mayReplace().then(ok=>ok?openProject(new File([previousProject],'Edellinen-tyo.hahmo')):undefined)}>Palauta edellinen työ</button></>}
+   <details className="file-menu s2-submenu" data-keep-open><summary>Näkymä</summary><div><ViewMenuBody layout={{...layout,inspector:inspectorOn,timeline:timelineOpen}} update={next=>{if(next.inspector&&!inspectorOn)setInspectorAuto(null);setLayout(next);setTimelineOpen(next.timeline);}} extra={<><button className="secondary" onClick={focusStage}>Keskity näyttämöön</button><button className="secondary" onClick={()=>{setPanelSizes({...defaultSizes});setZoom(null);}}>Palauta paneelien koot</button><button className="secondary" disabled={!doc} onClick={()=>setZoom(null)}>Sovita koko näyttämö</button></>}/></div></details>
    <hr/>
    <button className="secondary" onClick={()=>setSettingsOpen(true)}><Settings size={14}/><span>Asetukset…</span></button>
    <button ref={helpButton} className="secondary" onClick={() => setHelp(true)}><Info size={14}/><span>Käyttöohje</span></button>
@@ -608,8 +610,6 @@ export default function Editor() {
    {privateServer&&<button className="secondary" onClick={()=>setCloudRender(true)}><span>Pilvirenderöinti…</span></button>}
    {privateServer&&<button className="secondary" disabled={quickBusy} onClick={()=>void logout()}>Kirjaudu ulos</button>}
   </AppMenu>}
-  viewMenu={<ViewMenu layout={{...layout,inspector:inspectorOn,timeline:timelineOpen}} update={next=>{if(next.inspector&&!inspectorOn)setInspectorAuto(null);setLayout(next);setTimelineOpen(next.timeline);}} extra={<><button className="secondary" onClick={focusStage}>Keskity näyttämöön</button><button className="secondary" onClick={()=>{setPanelSizes({...defaultSizes});setZoom(null);}}>Palauta paneelien koot</button><button className="secondary" disabled={!doc} onClick={()=>setZoom(null)}>Sovita koko näyttämö</button></>}/>}
-  saveButton={<button className="secondary s2-save" disabled={saveDisabled} onClick={()=>void downloadProject()} title="Tallenna projekti (⌘S)">{projectBusy?'Odota…':'Tallenna'}</button>}
   exportControl={<div className="s2-export"><ExportPanel episode={doc&&animation&&rig?{doc,animation:{...animation,rig},scene,audio:audioAsset}:null} legacy={()=>void downloadVideo()}/></div>}>
   {cloudRender&&<CloudRenderDialog presentation={activePresentation??null} onClose={()=>setCloudRender(false)}/>}
   <input ref={audioInput} type="file" accept=".mp3,.wav,.ogg,.m4a" hidden onChange={e=>{const f=e.target.files?.[0];if(f)loadAudio(f);e.target.value='';}}/>

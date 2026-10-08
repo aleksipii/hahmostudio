@@ -66,3 +66,19 @@
 .studio.s2 .studio-shot-board .board-more { margin: 4px 0 8px; }
 .studio.s2 .studio-shot-board .board-more > summary { cursor: pointer; color: var(--s2-muted); font-size: 12px; padding: 6px 0; }
 .studio.s2 .studio-shot-board .board-more > summary:hover { color: var(--s2-text); }
+
+/* ─── V4 Yläpalkki: Näkymä ja Tallenna ovat Projekti-valikossa; seuraava vaihe on korostettu ─── */
+.studio.s2 .s2-next {
+  display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px;
+  border-radius: 8px; border: 0; font-weight: 600; font-size: 13px; cursor: pointer;
+  background: var(--s2-accent, #e8542f); color: #fff;
+}
+.studio.s2 .s2-next:hover { filter: brightness(1.08); }
+/* Vienti on tehtävä vasta Leikkauksessa; ExportPanel pysyy silti ladattuna (⌘K ja Projekti → Vie video… avaavat sen). */
+.studio.s2:not(.phase-timeline) .s2-export { display: none; }
+.studio.s2.phase-timeline .s2-next { display: none; }
+
+/* Näkymä-alivalikko: valinnat omille riveilleen. */
+.studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] { display: flex; flex-direction: column; gap: 2px; padding: 4px 6px; }
+.studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] > label { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 4px; font-size: 13px; }
+.studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] > label input { flex: none; }

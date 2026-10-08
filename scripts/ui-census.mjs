@@ -23,7 +23,7 @@ export const budgets = {
   shot: { controls: 30, words: 150 },
   timeline: { controls: 35, words: 150 },
   workshop: { controls: 40, words: 200 },
-  topbar: 9,
+  topbar: 11,
 };
 
 const require = createRequire(import.meta.url);

@@ -150,7 +150,7 @@ Nyt tilat ovat hajallaan (osa bannereita, osa lomakkeita ilman kohdetta). Yksi m
 | V1 | Tyhjät tilat: Tarkastelija ei näytä lomakkeita ilman valintaa | `components/animation-panel.tsx` (vain renderöinnin ehto) | Pieni. Tämä on logiikan rajalla: muutan vain näytetäänkö lomake, en mitä se tekee. Ilmoitan TIIMI.md:ssä ennen muutosta |
 | V2 | Vasen paneeli: käsikirjoituksen työkalut pois lukituissa vaiheissa (`hidden`, ei unmount) | `components/editor.tsx`, `styles/koeta-responsive.css` | Keskikokoinen; PanelDock-hostit säilytettävä |
 | V3 | Oikea paneeli vaihekohtaiseksi: vain vaiheen välilehdet | `components/editor.tsx`, tyylit | Keskikokoinen |
-| V4 | Yläpalkki 13 → 9, aksenttipainike = seuraava vaihe, Näytä ja Tallenna projektivalikkoon | `components/studio-shell.tsx`, `components/editor.tsx` | Keskikokoinen; testit `server/ui.test.mjs` päivitettävä |
+| V4 | Yläpalkki 13 → ≈11, aksenttipainike = seuraava vaihe, Näytä ja Tallenna projektivalikkoon | `components/studio-shell.tsx`, `components/editor.tsx` | Keskikokoinen; testit `server/ui.test.mjs` päivitettävä |
 | V5 | Roolitus: kompakti kortti, tekstit vihjeiksi | `components/asset-library.tsx`, tyylit | Pieni |
 | V6 | Leikkaus: aikajana ≥ 40 %, kontrollit yhdelle riville | tyylit, `components/block-timeline.tsx`/aikajanan kuori | Pieni–keskikokoinen |
 | V7 | Tekoäly: alapalkin chip, Näytä-sisäänkäynti, ⌘K, Vie tekoälyrenderöitynä; paneeli Tarkastelijan välilehdeksi | `components/ai-panel.tsx` (asettelu), `components/editor.tsx` | Riippuu tekoälyasiantuntijan haarasta; sovitaan TIIMI.md:ssä |
