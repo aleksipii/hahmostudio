@@ -28,6 +28,17 @@ Tumma teema on oletus uudelle käyttäjälle; Järjestelmä/Vaalea/Tumma valitaa
 - Ohjauslähteet (kamera, mikrofoni, näppäimet, valmiit liikkeet) ovat oikeassa paneelissa Esitys-tilassa.
 - Storyboard: kuvataulu täyttää keskialueen. Kuva: kuvanauha näyttämön yläpuolella. Aikajana: kuvataulu suljetaan.
 - Asetukset-ikkuna: ulkoasu, saavutettavuus, työvaiheen rajaus, pikanäppäimet.
-- Pikanäppäimet: ⌘K haku, ⌥1–⌥5 työvaihe (ei kirjoituskentissä rajoitettu; QuickPanelin perusliikkeet ohittavat muokkausnäppäimet).
+- Pikanäppäimet: ⌘K haku, ⌥1–⌥5 työvaihe, ⌥6 Työpaja (ei kirjoituskentissä rajoitettu; QuickPanelin perusliikkeet ohittavat muokkausnäppäimet).
 
 Poistettu päällekkäisinä: valikkorivi (Tiedosto/Muokkaa/Näytä/Asetukset/Ohje), sivuraili, Lisätyökalut, Työtila-asetukset, toistuva Hahmo/Esitys-kytkin yläpalkissa. Niiden toiminnot ovat yllä luetelluissa paikoissa.
+
+## Tuotanto ja Työpaja (2026-10-08)
+
+Kaksi osastoa kuten studiossa. Mitään toimintoa ei poistettu.
+
+- Työvaiheet nimetty elokuvan vaiheiksi: **Tarina, Roolitus, Storyboard, Kuvaus, Leikkaus** (tunnisteet `script`…`timeline` ennallaan, joten tallennettu työvaiherajaus ja kierros toimivat).
+- **Työpaja** (yläpalkissa vaiheiden vieressä, ⌥6, ⌘K "Työpaja") = vanha Hahmo/Rakenna-työtila: tasot, piirto, nivelet, tuonnin tarkistus ja esikatselun tausta. PSD-tuonti ilman valmista ohjausta avautuu edelleen sinne.
+- Roolitus avaa suoraan Esitys-työtilan (kirjasto, puhujasidokset, live-ohjaus). Rakenna/Esitys-kytkin poistui näyttämön palkista; Hahmon osat -välilehti näkyy vain Työpajassa.
+- Esikatselun taustanapit näkyvät vain Työpajassa; kaikkialla ⌘K "Esikatselun tausta".
+- `lib/studio-feature-map.ts`: jokaisen toiminnon koti (osasto, vaihe, paljastuskerros, ⌘K-tunniste). Testi varmistaa, että jokaisella ⌘K-komennolla on koti, kartta ei viittaa puuttuvaan komentoon ja kunkin vaiheen päänäkymässä on enintään 7 toimintoa.
+- Hahmokirjaston laatutasot (`lib/character-catalog.ts`): **Studio** = vähintään 3 kuvakulmaa, 4 suumuotoa ja koko vartalo; **Omat** = käyttäjän PSD:stä, aina näkyvissä; **Luonnokset** = muut, avattavassa osiossa puuttuvien vaatimusten kanssa (avautuu itsestään, jos käytössä oleva hahmo on luonnos). Arvot mitataan testissä .hahmo-paketeista.

@@ -330,3 +330,29 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #09090b); }
 @media (prefers-reduced-motion: reduce) {
   .studio.s2 * { transition: none !important; animation-duration: 0.01ms !important; }
 }
+
+/* ─── Työpaja: hahmon rakentaminen tuotannon vaiheiden rinnalla ─── */
+.s2 .s2-phases { margin-right: 0; }
+.s2 .s2-workshop {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; flex: none;
+  min-height: 28px; margin: 0 auto 0 6px; padding: 3px 11px 3px 13px;
+  border: 0; border-left: 1px solid var(--s2-line); border-radius: 0;
+  background: none; color: var(--s2-muted); white-space: nowrap; font-size: 12px; font-weight: 500;
+  transition: color 120ms var(--s2-ease);
+}
+.s2 .s2-workshop:hover { color: var(--s2-text); }
+.s2 .s2-workshop[aria-current='page'] { color: var(--s2-text); }
+.s2 .s2-workshop[aria-current='page']::after {
+  content: ''; position: absolute; left: 13px; right: 11px; bottom: -8px; height: 1px;
+  border-radius: 1px; background: var(--s2-text); opacity: 0.7;
+}
+@media (max-width: 1060px) {
+  .s2 .s2-workshop span { display: none; }
+  .s2 .s2-workshop { padding: 3px 8px; }
+}
+
+/* ─── Hahmokirjaston laatutasot: Studio, Omat, Luonnokset ─── */
+.studio.s2 .asset-library .character-tier { display: block; margin: 18px 0 0; color: var(--s2-faint); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+.studio.s2 .asset-library .character-quality { margin: 2px 0 8px; font-size: 11px; color: var(--s2-faint); }
+.studio.s2 .asset-library .character-drafts { margin-top: 18px; }
+.studio.s2 .asset-library .character-drafts > summary { color: var(--s2-muted); font-size: 12px; }

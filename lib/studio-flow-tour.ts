@@ -12,8 +12,8 @@ export const flowTourSteps: { id: FlowTourStepId; title: string; body: string }[
   },
   {
     id: 'characters',
-    title: 'Tästä luot hahmon',
-    body: 'Avaa Hahmot ja liitä hahmopaketti puhujiin.',
+    title: 'Tästä roolitat hahmot',
+    body: 'Liitä hahmopaketti puhujiin ja valitse kuvausympäristö. Oman hahmon rakennat Työpajassa.',
   },
   {
     id: 'storyboard',
@@ -27,7 +27,7 @@ export const flowTourSteps: { id: FlowTourStepId; title: string; body: string }[
   },
   {
     id: 'timeline',
-    title: 'Tästä esikatselet ja viet',
+    title: 'Tästä leikkaat ja viet',
     body: 'Aikajana, ääni ja vienti — lopullinen tarkistus ennen MP4:ää.',
   },
 ];
