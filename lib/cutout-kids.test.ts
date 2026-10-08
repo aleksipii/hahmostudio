@@ -49,7 +49,7 @@ test('screenplay motions build on the new rigs and the whole project roundtrips'
 
 test('new characters are listed in the library and offered as script cast packs; provenance is original CC0 art',async()=>{
  for(const name of cast){
-  const library=readFileSync(new URL('../components/asset-library.tsx',import.meta.url),'utf8');assert.ok(library.includes(`{name:'${name}',`),name);assert.ok(library.includes(`{name:'${name}-3D',`),name+'-3D');
+  const library=readFileSync(new URL('./character-catalog.ts',import.meta.url),'utf8');assert.ok(library.includes(`{name:'${name}',`),name);assert.ok(library.includes(`{name:'${name}-3D',`),name+'-3D');
   assert.ok((CHARACTER_PACK_OPTIONS as readonly string[]).includes(name+'-3D'));
   const zip=await import('fflate');const files=zip.unzipSync(new Uint8Array(file(name+'-3D.hahmo')));const prov=JSON.parse(new TextDecoder().decode(files['provenance.json']));
   assert.equal(prov.license,'CC0-1.0');assert.deepEqual(prov.externalAssets,[]);assert.match(prov.graphics,/not derived from any TV series/);

@@ -64,6 +64,7 @@ export const studioFeatureMap: FeatureHome[] = [
 
   // 2 Roolitus
   { id: 'cast-library', label: 'Kirjasto: hahmot, ympäristöt ja esineet', department: 'tuotanto', step: 'characters', layer: 'paa', palette: 'char-library' },
+  { id: 'cast-drafts', label: 'Luonnoshahmot ja niiden puutteet', department: 'tuotanto', step: 'characters', layer: 'valikko' },
   { id: 'cast-binding', label: 'Puhujat → hahmot', department: 'tuotanto', step: 'characters', layer: 'paa' },
   { id: 'cast-angle', label: 'Hahmon kuvakulma', department: 'tuotanto', step: 'characters', layer: 'paa' },
   { id: 'cast-perform', label: 'Live-esitys: kamera, mikrofoni ja näppäimet', department: 'tuotanto', step: 'characters', layer: 'tarkastelija', palette: 'char-perform' },

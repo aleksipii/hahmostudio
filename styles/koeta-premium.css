@@ -350,3 +350,9 @@ html:has(.s2), body:has(.s2) { background: var(--s2-bg0, #09090b); }
   .s2 .s2-workshop span { display: none; }
   .s2 .s2-workshop { padding: 3px 8px; }
 }
+
+/* ─── Hahmokirjaston laatutasot: Studio, Omat, Luonnokset ─── */
+.studio.s2 .asset-library .character-tier { display: block; margin: 18px 0 0; color: var(--s2-faint); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+.studio.s2 .asset-library .character-quality { margin: 2px 0 8px; font-size: 11px; color: var(--s2-faint); }
+.studio.s2 .asset-library .character-drafts { margin-top: 18px; }
+.studio.s2 .asset-library .character-drafts > summary { color: var(--s2-muted); font-size: 12px; }

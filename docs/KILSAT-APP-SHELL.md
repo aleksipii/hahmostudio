@@ -41,3 +41,4 @@ Kaksi osastoa kuten studiossa. Mitään toimintoa ei poistettu.
 - Roolitus avaa suoraan Esitys-työtilan (kirjasto, puhujasidokset, live-ohjaus). Rakenna/Esitys-kytkin poistui näyttämön palkista; Hahmon osat -välilehti näkyy vain Työpajassa.
 - Esikatselun taustanapit näkyvät vain Työpajassa; kaikkialla ⌘K "Esikatselun tausta".
 - `lib/studio-feature-map.ts`: jokaisen toiminnon koti (osasto, vaihe, paljastuskerros, ⌘K-tunniste). Testi varmistaa, että jokaisella ⌘K-komennolla on koti, kartta ei viittaa puuttuvaan komentoon ja kunkin vaiheen päänäkymässä on enintään 7 toimintoa.
+- Hahmokirjaston laatutasot (`lib/character-catalog.ts`): **Studio** = vähintään 3 kuvakulmaa, 4 suumuotoa ja koko vartalo; **Omat** = käyttäjän PSD:stä, aina näkyvissä; **Luonnokset** = muut, avattavassa osiossa puuttuvien vaatimusten kanssa (avautuu itsestään, jos käytössä oleva hahmo on luonnos). Arvot mitataan testissä .hahmo-paketeista.
