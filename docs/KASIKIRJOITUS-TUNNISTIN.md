@@ -1,5 +1,7 @@
 # Käsikirjoituksen sääntöpohjainen tunnistin (fi/en)
 
+Säännöt, etusija ja rajoitukset nimettyinä: `docs/KASIKIRJOITUSSAANNOT.md`.
+
 `lib/script-recognizer.ts` luokittelee jokaisen käsikirjoitusrivin suljetulla sanastolla. Tunnistin ei arvaa: lause, jota sääntö ei kata, jää tilaan `unknown` ja näkyy marginaalissa varoituksena.
 
 ## Rivitilakone

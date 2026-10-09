@@ -59,7 +59,7 @@ export function recognizedPresentation(prepared:string,manifest:ReturnType<typeo
     case'editing':{diagnostics.push({code:'editing-info',severity:'warning',message:`Rivi ${ref.line}: leikkausrytmiä ei säädetä automaattisesti: “${c.text}”`});break;}
     case'unsupported':unknown++;warnUnknown(ref,c.text,c.reason);break;
     case'note':p.comments.push(ref);diagnostics.push({code:'note-line',severity:'warning',message:`Rivi ${ref.line+(options.firstLine??1)-1}: kirjattu huomioksi, ei animoida: “${c.text}”`});break;
-    case'unknown':unknown++;warnUnknown(ref,c.text);break;
+    case'unknown':unknown++;warnUnknown(ref,c.text,c.reason);break;
    }
   }
   return {events:ids,unknown};
@@ -102,7 +102,7 @@ export function recognizedPresentation(prepared:string,manifest:ReturnType<typeo
      if(!named||named==='*'){rest.push(c);continue;}lastActor=named;
      const e=add('prop',named,held.verb+':'+held.id,ref,held.hand?{text:held.hand}:{});heldEvents++;require('prop',ref,'implemented',[e.id]);}
     if(heldEvents&&!rest.length)break;
-    const r=clauseEvents(rest,ref,/^(samalla|meanwhile)\b/i.test(l.text)?p.events.filter(e=>e.kind==='dialogue').at(-1)?.id:undefined);if(!l.clauses.length){warnUnknown(ref,l.text);outcome='unrecognized';}else if(r.unknown&&!r.events.length)outcome='unrecognized';break;}
+    const r=clauseEvents(rest,ref,/^(samalla|meanwhile)\b/i.test(l.text)?p.events.filter(e=>e.kind==='dialogue').at(-1)?.id:undefined);if(!l.clauses.length){warnUnknown(ref,l.text,l.reason&&l.reason+(l.hint?' Esimerkki: '+l.hint:''));outcome='unrecognized';}else if(r.unknown&&!r.events.length)outcome='unrecognized';break;}
   }
   const created=p.events.slice(before).map(e=>e.id);
   lineOut.push({line:l.line,kind:l.kind,outcome:created.length?'event':outcome,events:created});

@@ -1,0 +1,692 @@
+# Käsikirjoitustunnistimen testikorpus (agentti 7, 2026-10-08)
+#
+# Jokaisen tapauksen odotukset on kirjattu käsin: mikä on rivin OIKEA tulkinta, ei mitä tunnistin tekee.
+# Muoto: ks. lib/script-recognizer-corpus.ts. Allekirjoitus:
+#   laji [@PUHUJA] [(laajennus)] [«repliikki»] [scene:nimi/paikka/aika] [transition:x] [meta:avain] [shot:koko+liike>KOHDE] [lauseet…]
+#   lause: motion:arvo@TEKIJÄ~sekunnit? (? = arvioitu suunta tai kesto), expression:arvo@TEKIJÄ, gaze@TEKIJÄ>KOHDE,
+#          phone:arvo@TEKIJÄ, hold:arvo@TEKIJÄ~s, constraint:arvo@TEKIJÄ, environment:arvo, title-card:arvo~s, editing:arvo, note
+# `unknown` yksinään = oikea tulos on jättää rivi tunnistamatta (moniselitteinen tai ei tuettu).
+# Tapaukset ajetaan kuten sovellus ajaa ne (recognizeScript … {discoverActors:true}); `hahmot:` = ennalta tunnetut hahmot.
+
+=== 01 perusmuoto: kohtaus, puhuja, sulkeohje, repliikki, ohjeet
+--- käsikirjoitus
+INT. KEITTIÖ - AAMU
+
+PIPSA
+Huomenta!
+
+VILLE
+(haukottelee)
+Huomenta.
+
+Pipsa kävelee vasemmalle 2 s.
+Ville katsoo Pipsaa.
+
+--- odotus
+1 scene-heading scene:KEITTIÖ/int/AAMU
+3 cue @PIPSA
+4 dialogue @PIPSA «Huomenta!»
+6 cue @VILLE
+7 parenthetical @VILLE note
+8 dialogue @VILLE «Huomenta.»
+10 direction motion:walk-left@PIPSA~2
+11 direction gaze@VILLE>PIPSA
+
+=== 02 käskymuoto puhujan jälkeen on repliikki, ei liike
+--- käsikirjoitus
+INT. PIHA
+
+PIPSA
+Istu alas!
+
+VILLE
+Juokse!
+Kävele hitaasti.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+3 cue @PIPSA
+4 dialogue @PIPSA «Istu alas!»
+6 cue @VILLE
+7 dialogue @VILLE «Juokse!»
+8 dialogue @VILLE «Kävele hitaasti.»
+
+=== 03 repliikki, joka näyttää ohjeelta, on moniselitteinen
+--- käsikirjoitus
+INT. PIHA
+
+VILLE
+Pipsa juoksee aina karkuun.
+
+PIPSA
+Hei.
+Pipsa vilkuttaa.
+
+Pipsa vilkuttaa.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+3 cue @VILLE
+4 unknown
+6 cue @PIPSA
+7 dialogue @PIPSA «Hei.»
+8 unknown
+10 direction motion:wave@PIPSA?
+
+=== 04 taipunut nimi ei ole lauseen tekijä
+hahmot: Pipsa, Ville
+--- käsikirjoitus
+INT. OLOHUONE
+Pipsa hymyilee.
+Pipsan kissa juoksee oikealle.
+Villen äiti kävelee vasemmalle.
+Villelle tulee nälkä.
+Pipsalla on puhelin kädessä.
+Pipsan katse kääntyy Villeen.
+Ville katsoo Pipsaa.
+Villeä Pipsa ei näe.
+Ville vilkuttaa Pipsalle.
+
+--- odotus
+1 scene-heading scene:OLOHUONE/int
+2 direction expression:happy@PIPSA
+3 unknown
+4 unknown
+5 unknown
+6 direction phone:phone_hold@PIPSA
+7 direction gaze@PIPSA>VILLE
+8 direction gaze@VILLE>PIPSA
+9 unknown
+10 direction motion:wave@VILLE?
+
+=== 05 tuntematon tekijä ei peri edellistä hahmoa
+hahmot: Pipsa, Ukko
+--- käsikirjoitus
+INT. PIHA
+PIPSA: "Katso!"
+Sitten kissa hyppää.
+Hän juoksee oikealle.
+Vanha ukko kävelee vasemmalle.
+Ukko kävelee vasemmalle.
+Hän nyökkää.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 dialogue @PIPSA «Katso!»
+3 unknown
+4 unknown
+5 unknown
+6 direction motion:walk-left@UKKO?
+7 direction motion:nod@UKKO?
+
+=== 06 kielto ulottuu lauseen loppuun tai sanaan vaan/mutta
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+Pipsa ei juokse.
+Pipsa ei enää ikinä juokse.
+Pipsa ei juokse vaan kävelee vasemmalle.
+Pipsa ei ole vihainen vaan huolestunut.
+Pipsa does not run.
+Pipsa never runs.
+Pipsa näyttää loukkaantuneelta, mutta ei vihaiselta.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 unknown
+3 unknown
+4 direction motion:walk-left@PIPSA?
+5 direction expression:worried@PIPSA
+6 unknown
+7 unknown
+8 direction expression:mildly_hurt@PIPSA
+
+=== 07 useampi toiminto samalla rivillä
+hahmot: Pipsa, Ville
+--- käsikirjoitus
+INT. PIHA
+Pipsa juoksee, Ville kävelee.
+Pipsa juoksee oikealle, sitten hyppää.
+Pipsa kävelee ja vilkuttaa.
+Pipsa ja Ville nyökkäävät.
+Ville Pipsa juoksee.
+Kun Pipsa juoksee, Ville kävelee.
+Pipsa katsoo Villeä ja Ville hymyilee.
+Pipsa ja hänen kissansa juoksevat.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction motion:run-right@PIPSA? motion:walk-right@VILLE?
+3 direction motion:run-right@PIPSA? motion:jump@PIPSA?
+4 direction motion:walk-right@PIPSA? motion:wave@PIPSA?
+5 direction motion:nod@PIPSA? motion:nod@VILLE?
+6 unknown
+7 direction motion:run-right@PIPSA? motion:walk-right@VILLE?
+8 direction gaze@PIPSA>VILLE expression:happy@VILLE
+9 unknown
+
+=== 08 lainausmerkkityylit
+hahmot: Pipsa, Ville
+--- käsikirjoitus
+INT. PIHA
+Pipsa sanoo: "Suorat."
+Pipsa sanoo: “Kaarevat.”
+Pipsa sanoo: ”Suomalaiset.”
+Pipsa sanoo: »Kulmat».
+Pipsa sanoo: «Ranskalaiset»
+VILLE: ”Moi.”
+VILLE:
+”Moi taas.”
+Pipsa sanoo Villelle: "Tule tänne."
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 dialogue @PIPSA «Suorat.»
+3 dialogue @PIPSA «Kaarevat.»
+4 dialogue @PIPSA «Suomalaiset.»
+5 dialogue @PIPSA «Kulmat»
+6 dialogue @PIPSA «Ranskalaiset»
+7 dialogue @VILLE «Moi.»
+8 cue @VILLE
+9 dialogue @VILLE «Moi taas.»
+10 dialogue @PIPSA «Tule tänne.»
+
+=== 09 kaksoispiste repliikin sisällä
+--- käsikirjoitus
+INT. PIHA
+PIPSA: Kello on 5: aika lähteä.
+VILLE: "Huom: tämä on repliikki."
+Huom: tämä on ohje.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 dialogue @PIPSA «Kello on 5: aika lähteä.»
+3 dialogue @VILLE «Huom: tämä on repliikki.»
+4 direction note
+
+=== 10 sulkeohjeet repliikin keskellä
+--- käsikirjoitus
+INT. PIHA
+PIPSA
+(hymyilee)
+Hei!
+(kävelee vasemmalle)
+Mennään.
+(rapsuttaa päätään)
+Okei.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 cue @PIPSA
+3 parenthetical @PIPSA expression:happy@PIPSA
+4 dialogue @PIPSA «Hei!»
+5 parenthetical @PIPSA motion:walk-left@PIPSA?
+6 dialogue @PIPSA «Mennään.»
+7 parenthetical @PIPSA note
+8 dialogue @PIPSA «Okei.»
+
+=== 11 kohtausotsikot
+--- käsikirjoitus
+INT. KEITTIÖ - AAMU
+EXT. PIHA – ILTA
+INT./EXT. AUTO - YÖ
+SISÄ. SAUNA
+ULKO. METSÄ - PÄIVÄ
+Kohtaus 2: Koulu
+Scene: Office
+0:00–0:05 — Alku
+1. INT. KOULU
+
+--- odotus
+1 scene-heading scene:KEITTIÖ/int/AAMU
+2 scene-heading scene:PIHA/ext/ILTA
+3 scene-heading scene:AUTO/int-ext/YÖ
+4 scene-heading scene:SAUNA/int
+5 scene-heading scene:METSÄ/ext/PÄIVÄ
+6 scene-heading scene:Koulu
+7 scene-heading scene:Office
+8 timecode scene:Alku
+9 scene-heading scene:KOULU/int
+
+=== 12 monirivinen repliikki
+--- käsikirjoitus
+INT. PIHA
+
+PIPSA
+Tämä on pitkä repliikki,
+joka jatkuu toiselle riville
+ja vielä kolmannelle.
+
+Pipsa istuu.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+3 cue @PIPSA
+4 dialogue @PIPSA «Tämä on pitkä repliikki,»
+5 dialogue @PIPSA «joka jatkuu toiselle riville»
+6 dialogue @PIPSA «ja vielä kolmannelle.»
+8 direction motion:sit@PIPSA?
+
+=== 13 tyhjät rivit, sarkaimet ja välilyönnit
+--- käsikirjoitus
+INT. PIHA
+		
+   PIPSA   
+	"Hei."	
+    Pipsa nyökkää.    
+ 
+--- odotus
+1 scene-heading scene:PIHA/int
+3 cue @PIPSA
+4 dialogue @PIPSA «Hei.»
+5 direction motion:nod@PIPSA?
+
+=== 14 ajatusviivat
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+– Mitä sinä teet? Pipsa kysyy.
+— Ei mitään.
+Pipsa kävelee — hitaasti — vasemmalle.
+– Hei, Pipsa sanoo.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 dialogue @PIPSA «Mitä sinä teet?»
+3 unknown
+4 direction motion:walk-left@PIPSA?
+5 dialogue @PIPSA «Hei»
+
+=== 15 emojit
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+Pipsa 😀 hymyilee.
+PIPSA: "Moi 👋"
+🎬 Pipsa vilkuttaa.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction expression:happy@PIPSA
+3 dialogue @PIPSA «Moi 👋»
+4 direction motion:wave@PIPSA?
+
+=== 16 hyvin pitkät rivit
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+PIPSA: "Tämä on hyvin pitkä repliikki, jossa ei ole yhtään ohjetta, mutta se jatkuu ja jatkuu, koska käsikirjoittaja halusi kertoa koko tarinan yhdellä rivillä: ensin mentiin kauppaan, sitten kotiin, sitten taas kauppaan, ja lopulta kaikki istuivat alas, joivat kahvia, nauroivat ja juttelivat pitkään siitä, miten hassu päivä oli ollut, eikä kukaan halunnut lähteä ennen kuin aurinko laski ja tähdet syttyivät taivaalle yksi kerrallaan, kunnes viimeinen bussi lähti ja kaikki juoksivat pysäkille."
+Aamu oli harmaa ja sumuinen, ikkunoista näkyi vain märkä piha, jonka nurmikolla lepäsi unohtunut polkupyörä, ja jossain kaukana haukkui koira, kun kaupungin kellot löivät seitsemän ja ensimmäiset bussit lähtivät liikkeelle kohti keskustaa ilman ainuttakaan matkustajaa, koska oli lauantai ja kaikki nukkuivat vielä.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 dialogue @PIPSA «Tämä on hyvin pitkä repliikki, jossa ei ole yhtään ohjetta, mutta se jatkuu ja jatkuu, koska käsikirjoittaja halusi kertoa koko tarinan yhdellä rivillä: ensin mentiin kauppaan, sitten kotiin, sitten taas kauppaan, ja lopulta kaikki istuivat alas, joivat kahvia, nauroivat ja juttelivat pitkään siitä, miten hassu päivä oli ollut, eikä kukaan halunnut lähteä ennen kuin aurinko laski ja tähdet syttyivät taivaalle yksi kerrallaan, kunnes viimeinen bussi lähti ja kaikki juoksivat pysäkille.»
+3 unknown
+
+=== 17 numerointi, luettelomerkit ja kommentit
+hahmot: Pipsa, Ville
+--- käsikirjoitus
+INT. PIHA
+1. Pipsa hyppää.
+2) Ville nyökkää.
+- Pipsa istuu.
+* Ville vilkuttaa.
+// Tämä on kommentti
+/* kommentti */
+[[ huomio ]]
+<!-- html-kommentti -->
+# Väliotsikko
+/* monirivinen
+Pipsa hyppää.
+*/
+Ville hyppää.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction motion:jump@PIPSA?
+3 direction motion:nod@VILLE?
+4 direction motion:sit@PIPSA?
+5 direction motion:wave@VILLE?
+6 comment
+7 comment
+8 comment
+9 comment
+10 comment
+11 comment
+12 comment
+13 comment
+14 direction motion:jump@VILLE?
+
+=== 18 nimeltä näyttävä rivi, joka ei ole puhuja
+--- käsikirjoitus
+INT. PIHA
+MAANANTAI
+
+Pipsa herää.
+LOPPU
+HUOM: tämä on muistiinpano.
+Huomenna: sataa.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 unknown
+4 unknown
+5 transition transition:fade-out
+6 direction note
+7 unknown
+
+=== 19 etusija: isoilla kirjoitettu rivi ja heti perään tekstiä on puhuja (Fountain)
+--- käsikirjoitus
+INT. PIHA
+MAANANTAI
+Ilta tulee.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 cue @MAANANTAI
+3 dialogue @MAANANTAI «Ilta tulee.»
+
+=== 20 isot ja pienet kirjaimet
+hahmot: Pipsa, Ville
+--- käsikirjoitus
+INT. PIHA
+PIPSA KATSOO VILLEÄ.
+pipsa katsoo villeä.
+Pipsa katsoo VILLEÄ.
+pipsa: hei
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction gaze@PIPSA>VILLE
+3 direction gaze@PIPSA>VILLE
+4 direction gaze@PIPSA>VILLE
+5 dialogue @PIPSA «hei»
+
+=== 21 nimet, joista toinen alkaa toisella
+hahmot: Aino, Ainomaija
+--- käsikirjoitus
+INT. PIHA
+Aino hymyilee.
+Ainomaija hymyilee.
+Aino katsoo Ainomaijaa.
+Ainomaija katsoo Ainoa.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction expression:happy@AINO
+3 direction expression:happy@AINOMAIJA
+4 direction gaze@AINO>AINOMAIJA
+5 direction gaze@AINOMAIJA>AINO
+
+=== 22 tuntematon puhuja ja pronominit
+--- käsikirjoitus
+INT. PIHA
+KALLE
+Kuka minä olen?
+
+Hän istuu.
+Hän sanoo: "Hei."
+She says: "Hello."
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 cue @KALLE
+3 dialogue @KALLE «Kuka minä olen?»
+5 direction motion:sit@KALLE?
+6 dialogue @KALLE «Hei.»
+7 dialogue @KALLE «Hello.»
+
+=== 23 pronomini ei viittaa edellisen kohtauksen hahmoon
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+Pipsa kävelee vasemmalle.
+INT. KEITTIÖ
+Hän istuu.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction motion:walk-left@PIPSA?
+3 scene-heading scene:KEITTIÖ/int
+4 unknown
+
+=== 24 englanti
+hahmot: Mira, Niko, Kille
+--- käsikirjoitus
+INT. KITCHEN - DAY
+MIRA
+Sit down!
+
+Mira's cat jumps.
+The cat runs left.
+Her phone rings.
+Mira and Niko nod.
+Niko walks in from the right, two seconds.
+Kille says: "Ready?" 2 seconds
+Background: kitchen 2 seconds
+
+--- odotus
+1 scene-heading scene:KITCHEN/int/DAY
+2 cue @MIRA
+3 dialogue @MIRA «Sit down!»
+5 unknown
+6 unknown
+7 unknown
+8 direction motion:nod@MIRA? motion:nod@NIKO?
+9 direction motion:walk-left@NIKO~2
+10 dialogue @KILLE «Ready?»
+11 direction environment:kitchen
+
+=== 25 kuvarivi ja toiminta samalla rivillä
+hahmot: Niko
+--- käsikirjoitus
+EXT. STREET
+Tracking shot: Niko walks forward.
+LÄHIKUVA: Niko hymyilee.
+CLOSE-UP on Niko. He smiles.
+
+--- odotus
+1 scene-heading scene:STREET/ext
+2 shot shot:tracking>NIKO motion:walk-front@NIKO?
+3 shot shot:close>NIKO expression:happy@NIKO
+4 shot shot:close>NIKO expression:happy@NIKO
+
+=== 26 kestot
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+Pipsa vilkuttaa 2 s.
+Pipsa vilkuttaa 0,5 sekuntia.
+Pipsa vilkuttaa kaksi sekuntia.
+Pidä 0,7 sekuntia hiljaisuutta.
+Hold 0.7 seconds of silence.
+Pipsa vilkuttaa kaksi kertaa.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction motion:wave@PIPSA~2
+3 direction motion:wave@PIPSA~0.5
+4 direction motion:wave@PIPSA~2
+5 direction hold:silence@PIPSA~0.7
+6 direction hold:silence@PIPSA~0.7
+7 direction motion:wave@PIPSA?
+
+=== 27 kuvat ja siirtymät
+hahmot: Pipsa, Ville
+--- käsikirjoitus
+INT. PIHA
+LAAJA KUVA
+LÄHIKUVA PIPSA
+CUT TO:
+LEIKKAUS VILLEEN
+Pipsa → Ville
+FADE OUT.
+HÄIVYTYS MUSTAAN
+Kamera: puolikuva Ville 1 s
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 shot shot:wide
+3 shot shot:close>PIPSA
+4 transition transition:cut
+5 shot shot:medium>VILLE
+6 shot shot:medium>PIPSA shot:medium>VILLE
+7 transition transition:fade-out
+8 transition transition:fade-out
+9 shot shot:medium>VILLE
+
+=== 28 metatiedot ja markdown-otsikot
+--- käsikirjoitus
+# Jakso 1: Testi
+Pituus: 30 s
+Tekijä: Aleksi
+# Käyttö: tämä ei ole otsikko
+# toinen otsikkorivi ilman avainta
+Hahmo: Pipsa
+INT. PIHA
+Pipsa nyökkää.
+
+--- odotus
+1 metadata meta:title
+2 metadata meta:duration
+3 metadata meta:author
+4 metadata meta:info
+5 comment
+6 character-decl @PIPSA
+7 scene-heading scene:PIHA/int
+8 direction motion:nod@PIPSA?
+
+=== 29 johdanto ennen ensimmäistä kohtausta
+--- käsikirjoitus
+Tämä on johdanto jaksoon.
+INT. PIHA
+Tämä on vapaata proosaa ilman tuettua verbiä.
+
+--- odotus
+1 comment
+2 scene-heading scene:PIHA/int
+3 unknown
+
+=== 30 puhuja sanoo -muoto ja taipunut puhuja
+--- käsikirjoitus
+Hahmo: Pipsa
+Hahmo: Ville
+INT. PIHA
+Pipsalle Ville sanoo: "En tule."
+Ville sanoo: "Tulen sittenkin."
+
+--- odotus
+1 character-decl @PIPSA
+2 character-decl @VILLE
+3 scene-heading scene:PIHA/int
+4 unknown
+5 dialogue @VILLE «Tulen sittenkin.»
+
+=== 31 tukemattomat toiminnot jäävät tunnistamatta
+hahmot: Pipsa, Ville
+--- käsikirjoitus
+INT. PIHA
+Pipsa herää.
+Ville avaa oven.
+Pipsa kääntyy vasemmalle.
+Pipsan puhelin soi.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 unknown
+3 unknown
+4 unknown
+5 unknown
+
+=== 32 puhelin
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+Pipsa ottaa puhelimen esiin.
+Pipsa katsoo puhelinta.
+Pipsa napauttaa puhelinta.
+Pipsa laittaa puhelimen taskuun.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 direction phone:phone-on@PIPSA
+3 direction gaze@PIPSA>phone
+4 direction phone:phone_tap@PIPSA
+5 direction phone:phone-off@PIPSA
+
+=== 33 puhuja kaksoispisteellä omalla rivillään
+--- käsikirjoitus
+INT. PIHA
+VILLE:
+Moi. Mitä kuuluu?
+PIPSA:
+
+"Hyvää."
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 cue @VILLE
+3 dialogue @VILLE «Moi. Mitä kuuluu?»
+4 cue @PIPSA
+6 dialogue @PIPSA «Hyvää.»
+
+=== 34 pienellä kirjoitettu tunnettu nimi puhujana
+hahmot: Ukko
+--- käsikirjoitus
+INT. PIHA
+ukko: moi
+Ukko: "Moi."
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 dialogue @UKKO «moi»
+3 dialogue @UKKO «Moi.»
+
+=== 35 ryhmäpuhuja ei ole hahmo
+# Ryhmärepliikkiä ei jaeta eikä siitä tehdä uutta hahmoa "PIPSA JA VILLE"; rivi ja sen repliikki jäävät tunnistamatta syyn kanssa.
+--- käsikirjoitus
+Hahmo: Pipsa
+Hahmo: Ville
+INT. PIHA
+PIPSA JA VILLE
+Hei!
+PIPSA & VILLE: "Moi."
+PIPSA, VILLE: Moi.
+PIPSA
+Hei.
+PIPSA JA VILLE
+Pipsa hyppää.
+
+--- odotus
+1 character-decl @PIPSA
+2 character-decl @VILLE
+3 scene-heading scene:PIHA/int
+4 unknown
+5 unknown
+6 unknown
+7 unknown
+8 cue @PIPSA
+9 dialogue @PIPSA «Hei.»
+10 unknown
+11 unknown
+
+=== 36 kesto rajojen ulkopuolella
+# Negatiivinen, nolla- ja yli 60 sekunnin kesto ei saa muuttua hiljaa toiseksi kestoksi.
+hahmot: Pipsa
+--- käsikirjoitus
+INT. PIHA
+Pipsa odottaa -3 s.
+Pipsa odottaa −2 s.
+Pipsa odottaa 0 s.
+Pipsa odottaa 99999 s.
+Pipsa odottaa 2 s.
+Pipsa odottaa 60 s.
+
+--- odotus
+1 scene-heading scene:PIHA/int
+2 unknown
+3 unknown
+4 unknown
+5 unknown
+6 direction hold:pause@PIPSA~2
+7 direction hold:pause@PIPSA~60
