@@ -2,7 +2,7 @@ import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type
 import ScriptGuide from './script-guide';
 import {buildStageNames, type BuildStage} from '../lib/episode-builder';
 import {episodeTemplates} from '../lib/episode-templates';
-import ScriptCommandPalette, {type ScriptCommandId} from './script-command-palette';
+import ScriptCommandPalette, {type ScriptCommandId, type ScriptCommandState} from './script-command-palette';
 import {
   scanScriptLineAnnotations,
   scriptSceneBoundaryLines,
@@ -170,6 +170,7 @@ export default function ScriptComposeEditor({
   onBuildEpisode,
   buildProgress,
   onPickTemplate,
+  commandState,
 }: {
   text: string;
   scriptLocked: boolean;
@@ -196,6 +197,8 @@ export default function ScriptComposeEditor({
   buildProgress?: { stage: BuildStage; episode?: number; episodes?: number } | null;
   /** Aloituspohja tyhjästä tilasta: asettaa tekstin, rakennus tehdään käyttäjän painalluksella. */
   onPickTemplate?: (id: string) => void;
+  /** "Työkalut /" -paletin tilannekohtaiset rivit (tallennus, tarkistus, palikkaeditori). */
+  commandState?: ScriptCommandState;
 }) {
   const empty = !text.trim();
   const uxHero = variant === 'hero';
@@ -206,6 +209,7 @@ export default function ScriptComposeEditor({
 
   const [annotations, setAnnotations] = useState<ScriptLineAnnotation[]>([]);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [dividerLine, setDividerLine] = useState(1);
   const [draggingDivider, setDraggingDivider] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
@@ -295,6 +299,7 @@ export default function ScriptComposeEditor({
   const handleCommand = (id: ScriptCommandId) => {
     setPaletteOpen(false);
     if (id === 'import') fileRef.current?.click();
+    else if (id === 'syntax' && uxHero) setGuideOpen(true);
     else onCommandAction?.(id);
   };
 
@@ -380,7 +385,15 @@ export default function ScriptComposeEditor({
           importTextFile(f);
         }}
       />
-      <ScriptCommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onPick={handleCommand} />
+      <ScriptCommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onPick={handleCommand} state={commandState} />
+      {uxHero && guideOpen && (
+        <div className="script-guide-sheet" role="region" aria-label="Syntaksiohje">
+          <ScriptGuide empty={empty} disabled={scriptLocked} insert={onInsertGuide} defaultOpen />
+          <button type="button" className="ghost-btn script-guide-sheet__close" onClick={() => setGuideOpen(false)}>
+            Sulje ohje
+          </button>
+        </div>
+      )}
       {empty && uxHero && !startedBlank ? (
         <div className="script-empty-hero" role="status">
           <div
@@ -406,11 +419,6 @@ export default function ScriptComposeEditor({
                   Kokeile esimerkkiä
                 </button>
               )}
-              {onTryExampleEn && (
-                <button type="button" className="secondary" disabled={scriptLocked} onClick={onTryExampleEn} title="Englanninkieliset repliikit: äänen voi luoda paikallisesti Kokorolla (Mac-sovellus)">
-                  Try English example
-                </button>
-              )}
               <button
                 type="button"
                 className="ghost-btn"
@@ -431,15 +439,22 @@ export default function ScriptComposeEditor({
                 Aloita tyhjästä
               </button>
             </div>
-            {onPickTemplate && (
-              <div className="script-templates" role="group" aria-label="Aloituspohjat">
-                <span className="script-templates__title">Aloituspohjat</span>
-                {episodeTemplates.map(t => (
-                  <button key={t.id} type="button" className="ghost-btn script-template" disabled={scriptLocked} title={`${t.description} Esimerkkirepliikit korvataan omilla. Kesto ilman ääniä noin ${t.approxSeconds[0]}–${t.approxSeconds[1]} s.`} onClick={() => onPickTemplate(t.id)}>
-                    {t.name}
-                  </button>
-                ))}
-              </div>
+            {(onPickTemplate || onTryExampleEn) && (
+              <details className="script-templates-more">
+                <summary>Aloituspohjat</summary>
+                <div className="script-templates" role="group" aria-label="Aloituspohjat">
+                  {onTryExampleEn && (
+                    <button type="button" className="ghost-btn script-template" disabled={scriptLocked} onClick={onTryExampleEn} title="Englanninkieliset repliikit: äänen voi luoda paikallisesti Kokorolla (Mac-sovellus)">
+                      Try English example
+                    </button>
+                  )}
+                  {onPickTemplate && episodeTemplates.map(t => (
+                    <button key={t.id} type="button" className="ghost-btn script-template" disabled={scriptLocked} title={`${t.description} Esimerkkirepliikit korvataan omilla. Kesto ilman ääniä noin ${t.approxSeconds[0]}–${t.approxSeconds[1]} s.`} onClick={() => onPickTemplate(t.id)}>
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </details>
             )}
             <p className="script-empty-hint">
               Tai kirjoita alusta: paina <kbd>/</kbd> työkaluille
