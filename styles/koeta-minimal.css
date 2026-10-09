@@ -82,3 +82,14 @@
 .studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] { display: flex; flex-direction: column; gap: 2px; padding: 4px 6px; }
 .studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] > label { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 4px; font-size: 13px; }
 .studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] > label input { flex: none; }
+
+/* ─── V6 Leikkaus: aikajana on päätyökalu, joten se saa vähintään ~40 % ruudun korkeudesta ─── */
+.studio.s2.phase-timeline .timeline-container { height: max(var(--timeline-size), 38dvh); min-height: 220px; max-height: 50dvh; }
+@media (max-width: 600px) {
+  .studio.s2.phase-timeline .timeline-container { height: auto; min-height: 180px; max-height: 40dvh; }
+}
+
+/* ─── V5 Roolitus: pitkä ohjeteksti on taitettu "Ohje"-linkin taakse ─── */
+.studio.s2 details.s2-hint { margin: 2px 0 8px; padding: 0; border: 0; background: none; }
+.studio.s2 details.s2-hint > summary { display: inline-flex; min-height: 24px; padding: 2px 0; background: none; border: 0; color: var(--s2-muted); font-size: 12px; cursor: pointer; }
+.studio.s2 details.s2-hint > p { margin: 4px 0 0; }
