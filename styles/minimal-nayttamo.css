@@ -1,0 +1,11 @@
+/* Minimalismi: Näyttämö-välilehti (docs/UI-MINIMALISMI-SUUNNITELMA.md kohta 4).
+   X/Y/Koko ja Sovita keskelle toistavat näyttämön alapalkin painikkeita (Pienennä/Suurenna hahmoa,
+   Keskitä hahmo), joten ne ovat suljetun "Tarkka sijainti" -osion takana. Kentät pysyvät mounted. */
+.studio .stage-precise[open] { padding-bottom: 8px; }
+.studio .stage-precise > .panel-note { margin: 0 0 8px; font-size: 11px; }
+/* Osion oma reunus riittää: sisempi fieldset ilman toista kehystä. */
+.studio.s2 .stage-precise .stage-block { border: 0; padding: 0; }
+.studio.s2 .stage-precise .stage-block > legend {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.studio .stage-precise > summary:focus-visible { outline: var(--focus-ring, 2px solid currentColor); outline-offset: 2px; border-radius: 4px; }
