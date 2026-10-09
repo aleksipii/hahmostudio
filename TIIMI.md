@@ -180,3 +180,34 @@ Testattu yhdistetyllä lähteellä (Linux-pilvi): `npm run typecheck` 0, `npm ru
 Avoimet: Roolitus ja Leikkaus ovat yhä yli hallintobudjetin (Leikkauksen kasvu johtuu aikajanan näkyviin mahtuvista raitariveistä; laskuri tarvitsee raitojen erillisen säännön). Tarina-vaihetta ei käsitelty. Mac-sovellus, Electron, VoiceOver ja Lisää ⋯ -osion toimintojen ajo (kumoa, fps-tallennus, asetukset) tarkistamatta.
 
 Seuraava työ: Roolituksen Näyttämö-välilehden päällekkäiset kentät (X/Y/Koko, `components/scene-panel.tsx`), Tarina-vaiheen hallinnot, census-sääntö aikajanan raidoille, V7 Tarkastelijan Tekoäly-välilehti.
+
+
+## Claude → Codex: toinen agenttikierros ja handoff — 9.10.2026
+
+Nykyinen vaihe: VALMIS OSA PÄÄHAAROISSA, YKSI TYÖ KESKEN. Integraatiohaara `claude/project-thread-ojgcol`; sama testattu commit viedään mainiin ja hahmostudio1.0:aan (SHA tämän kirjauksen commit; tarkista `git log -1 origin/main`). Edellinen julkaisu `6d733ac`.
+
+### Tehty ja yhdistetty (agenttihaarat säilytetty GitHubissa)
+- `claude/agentti-nayttamo` @ `7c35512`: Näyttämö-välilehden X/Y/Koko/"Sovita keskelle" suljetun "Tarkka sijainti" -osion taakse (`components/scene-panel.tsx`, `styles/minimal-nayttamo.css`). Koskee Roolitusta ja Kuvausta.
+- `claude/agentti-laskuri` @ `7e0e7a3`: `scripts/ui-census.mjs` erottaa sisällön (`CONTENT_RULES`: aikajanan raidat, kuvakortit, kirjastokortit, käsikirjoitusrivit, tasopuu) budjetin kuormasta, tulostaa vyöhykkeet, `--json`, `--list`; testi `server/ui-census.test.mjs`. Leikkauksen kuorma 37 sekä 900 että 1200 px korkeudella.
+- `claude/agentti-tekoaly-valilehti` @ `5386cfe`: Tekoäly-välilehti Tarkastelijaan (`components/ai-panel.tsx` `AiContent`/`AiInspectorTab`, editor.tsx `openAi()`); yli 850 px ja oikea paneeli näkyvissä → välilehti, muuten dialogi (Tarina, Storyboard, kapeat ruudut). Pilvitoiminnot ja natiivivahvistukset siirretty muuttamattomina. `styles/minimal-tekoaly.css`.
+- Yhdistämisen ristiriidat vain main.tsx:n tyyli-importeissa (kaikki säilytetty).
+
+### Testattu yhdistetyllä lähteellä (Linux-pilvi, Node 22)
+- `npm run typecheck` 0, `npm run build:private` 0, `npm test` 1397 testiä: 1396 pass, 0 fail, 1 skip (natiivi-FFmpeg puuttuu ympäristöstä).
+- Selain (Vite dev, Chromium) kaikki kuusi vaihetta 1440/820/390 px: ei vaakavieritystä, ei konsolivirheitä.
+- Hallintolaskuri 1440×900 (kuorma/sisältö/sanat): Tarina 34/26/1089, Roolitus 44/8/302, Storyboard 29/6/245, Kuvaus 40/2/314, Leikkaus 37/13/482, Työpaja 30/8/97. Vain Työpaja on budjetissa (`--check` epäonnistuu viidellä vaiheella).
+
+### Kesken (ei päähaaroissa)
+- `claude/agentti-tarina` @ `aa13c13`: Tarina-vaiheen keventäminen (script-command-palette, script-compose-editor, script-guide, studio-feature-map, `styles/minimal-tarina.css`, ui.test). Agentti commitoi sen, mutta raportti ja koordinoijan tarkistus puuttuvat käyttäjän pyytäessä vientiä. Ennen yhdistämistä: lue diff `git diff 6d733ac claude/agentti-tarina`, aja typecheck/test/build ja hallintolaskuri, katso Tarina 1440/820/390 px tyhjänä ja esimerkillä, ja tarkista, että jokaisella piilotetulla toiminnolla on koti tai ⌘K-komento. Odotettu ristiriita: main.tsx:n tyyli-importit.
+
+### Tarkistamatta (kaikki agenttikierrokset)
+- Työpöytä/Electron ja paketoitu Mac: Tekoäly-välilehden pilviohjaimet ja natiivivahvistukset, työpöydän valikon Tekoäly… → välilehti, vientidialogin "Vie tekoälyrenderöitynä…", Whisper/Kokoro-tilat.
+- Aikajanan "Lisää ⋯" -osion toimintojen ajo (kumoa, fps-tallennus, asetukset); VoiceOver.
+- Aiemmat avoimet: aito Kokoro-kuuntelu ja MP4-synkka, taiteellinen liikehyväksyntä, GPU/pilvi.
+
+### Seuraava konkreettinen työ
+1. Tarkista ja yhdistä `claude/agentti-tarina` (yllä).
+2. Budjetit: Roolitus (oikea 10, vasen 9, aikajana 6), Kuvaus (vasen 19: äänitys ja palikkaeditori → Tarkastelija suunnitelman mukaan), Leikkaus 37/35, Storyboard 29/25 (vasen paneeli piiloon oletuksena).
+3. Työpöydän todennus oikealla Macilla: `npm run desktop:package:mac`, Tekoäly-välilehti ja pilviohjaimet.
+
+Omistetut tiedostot tällä kierroksella: components/scene-panel.tsx, components/ai-panel.tsx, components/editor.tsx (inspector-tabs, openAi), scripts/ui-census.mjs, styles/minimal-*.css. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin 5 tunnin mittaria ei käytetty eikä esitetä Clauden kiintiönä.

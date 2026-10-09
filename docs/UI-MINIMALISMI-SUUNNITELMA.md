@@ -160,11 +160,13 @@ Nyt tilat ovat hajallaan (osa bannereita, osa lomakkeita ilman kohdetta). Yksi m
 Jokaisen vaiheen jälkeen: kuvakaappaukset 1440/820/390, laskuri, `npm run typecheck`, `npm test`, kirjaus TIIMI.md:hen.
 
 ### Toteutustilanne 9.10.2026 (Claude)
-- V7 osittain: alapalkin Tekoäly-painike (`aiChipLabel`, pilvi mainitaan vain luetusta tilasta), ⌘K "Vie tekoälyrenderöitynä…" (yksityinen palvelin ja työpöytä) ja sama painike työpöydän vientidialogissa. Näkymä-valikon Tekoäly… ja ⌘K-tilakomento olivat jo integraatiossa. Paneeli Tarkastelijan välilehdeksi on tekemättä.
+- V7 osittain: alapalkin Tekoäly-painike (`aiChipLabel`, pilvi mainitaan vain luetusta tilasta), ⌘K "Vie tekoälyrenderöitynä…" (yksityinen palvelin ja työpöytä) ja sama painike työpöydän vientidialogissa. Näkymä-valikon Tekoäly… ja ⌘K-tilakomento olivat jo integraatiossa. Toisella agenttikierroksella Tarkastelijaan tuli Tekoäly-välilehti (ks. alla).
 - V8: Asetukset → Asiantuntijatila (oletus pois). Pois ollessa `expert-detail`-luokan tiedot (versioiden SHA-256, viennin render-revisio, resurssiviitteet, tuotantokomentojen loki) piilotetaan CSS:llä; komponentit pysyvät mounted.
 - V5: hahmokortti = kuva, nimi, Valitse ja Tiedot (kuvaus, laatu ja lataukset Tiedot-osiossa). Hahmokirjaston sanat 107 → 39 (1440 px).
 - Agenttikierros (3 rinnakkaista agenttia, yhdistetty): V2 lukittujen vaiheiden vasen paneeli = yksi rivi "Muokkaa Tarinassa"; V5 Roolitus avautuu Näyttämö-välilehdelle ja laitekortit ovat Esitys-välilehdellä, Työpajan vasen paneeli 33 → 12; V6 aikajanan kontrollit yhdelle riville ja harvinaiset "Lisää ⋯" -osioon.
 - Hallintolaskuri yhdistetyssä versiossa (1440×900, hallintoja/sanoja): Tarina 42/1089, Roolitus 54/306, Storyboard 35/245, Kuvaus 42/313, Leikkaus 50/481, Työpaja 37/96 (budjetissa). Lähtötaso samana päivänä: 42/1089, 53/775, 41/936, 48/1004, 45/1177, 58/327.
+- Toinen agenttikierros (yhdistetty, main): Roolituksen/Kuvauksen Näyttämö-välilehden X/Y/Koko/Sovita keskelle suljetun "Tarkka sijainti" -osion taakse; V7 Tekoäly-välilehti Tarkastelijaan (yli 850 px ja oikea paneeli näkyvissä → välilehti, muuten dialogi; yhteinen `AiContent`); hallintolaskuri erottaa sisällön (raidat, kuvakortit, kirjastokortit, käsikirjoitusrivit, tasopuu) budjetista. Uusi lukema 1440×900 (kuorma/sisältö): Tarina 34/26, Roolitus 44/8, Storyboard 29/6, Kuvaus 40/2, Leikkaus 37/13, Työpaja 30/8 (vain Työpaja budjetissa).
+- Kesken: Tarina-vaiheen keventäminen haarassa `claude/agentti-tarina` (`aa13c13`), ei yhdistetty eikä koordinoijan tarkistama.
 - Jäljellä (vanha lista): vasemman paneelin siivous, V7 Tarkastelijan välilehti, hallintalaskurin budjetit.
 
 ### Yhteistyö ja ristiriitariski
