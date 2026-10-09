@@ -1,0 +1,167 @@
+
+> hahmostudio@0.36.0 desktop:test:cloud
+> node scripts/desktop-cloud-test.mjs
+
+Error occurred in handler for 'studio:cloud-call': Error: Pilvirenderöinti ei ole käytössä. Ota se käyttöön Tekoäly-paneelista.
+    at file:///private/tmp/hahmostudio-publication-20261009/desktop/cloud-policy.mjs:87:170
+    at async Session.<anonymous> (node:electron/js2c/browser_init:1:118948)
+Error occurred in handler for 'studio:cloud-call': Error: preflight: tuntematon kenttä.
+    at file:///private/tmp/hahmostudio-publication-20261009/desktop/cloud-policy.mjs:87:170
+    at async Session.<anonymous> (node:electron/js2c/browser_init:1:118948)
+[13240:1009/172656.112465:ERROR:base/process/process_mac.cc:53] task_policy_set TASK_CATEGORY_POLICY: (os/kern) invalid argument (4)
+[13240:1009/172656.112521:ERROR:base/process/process_mac.cc:98] task_policy_set TASK_SUPPRESSION_POLICY: (os/kern) invalid argument (4)
+cloud-test: {
+  "ok": true,
+  "steps": [
+    {
+      "name": "oletuksena pois",
+      "ok": true,
+      "detail": {
+        "enabled": false,
+        "running": false
+      }
+    },
+    {
+      "name": "kutsu estetty ennen opt-iniä",
+      "ok": true,
+      "detail": "Error invoking remote method 'studio:cloud-call': Error: Pilvirenderöinti ei ole käytössä. Ota se käyttöön Tekoäly-paneelista."
+    },
+    {
+      "name": "pilviprosessia ei ole ennen opt-iniä",
+      "ok": true
+    },
+    {
+      "name": "tunnelin osoite leikepöydältä pääprosessiin",
+      "ok": true
+    },
+    {
+      "name": "tallennuksen vahvistus näyttää vain palvelimen nimen",
+      "ok": true
+    },
+    {
+      "name": "opt-in",
+      "ok": true
+    },
+    {
+      "name": "Kaggle vahvistettu ilmaiseksi",
+      "ok": true
+    },
+    {
+      "name": "pilviprosessi käynnistyy ja vastaa (utilityProcess)",
+      "ok": true,
+      "detail": {
+        "storage": "local-dev",
+        "modelMode": "PRODUCTION_SAFE"
+      }
+    },
+    {
+      "name": "tila: käynnissä, paikallinen tallennus",
+      "ok": true
+    },
+    {
+      "name": "vain ilmaiset taustat käytössä",
+      "ok": true,
+      "detail": [
+        [
+          "colab-free",
+          "free",
+          false
+        ],
+        [
+          "kaggle-notebook",
+          "free",
+          true
+        ],
+        [
+          "runpod",
+          "paid",
+          false
+        ],
+        [
+          "modal",
+          "paid",
+          false
+        ]
+      ]
+    },
+    {
+      "name": "kanoninen tila synkronoitu",
+      "ok": true
+    },
+    {
+      "name": "kohtaus lukittu",
+      "ok": true
+    },
+    {
+      "name": "ehdotus validoitu (sääntöpohjainen)",
+      "ok": true
+    },
+    {
+      "name": "ilman lukittua mallia estetty oikealla syyllä",
+      "ok": true,
+      "detail": [
+        "No registered model is acceptable for workflow \"text_to_image\" in PRODUCTION_SAFE mode."
+      ]
+    },
+    {
+      "name": "politiikkakenttä hylätään",
+      "ok": true
+    },
+    {
+      "name": "lupa kysyttiin ennen lähetystä",
+      "ok": true,
+      "detail": "Kohtaus scene_001, työnkulku text_to_image. Lähtee: kohtauksen kuvaus ja hyväksytyt vertailukuvat. Kohde: kaggle-notebook; tulos tallennetaan tälle koneelle. Kustannus €0,00 (maksullinen laskenta on estetty). Ei ääniä, ei PSD-tiedostoja."
+    },
+    {
+      "name": "checkpoint levyllä",
+      "ok": true,
+      "detail": "QUEUED"
+    },
+    {
+      "name": "väärennetty valtuutus estyy",
+      "ok": true,
+      "detail": "RENDER BLOCKED"
+    },
+    {
+      "name": "Tekoäly-paneeli näyttää pilven tilan",
+      "ok": true,
+      "detail": "PilvirenderöintiMissäPilviLupaOtettu käyttöön. Jokainen lähetys kysyy erikseen luvan.Mitä dataa lähtee ja minneVain luvallasi: lukittu kohtaus ja hyväksytyt vertailukuvat ilmaiseen ajoympäristöön; tul"
+    },
+    {
+      "name": "Tekoäly-välilehden pilviohjaimet työpöydällä",
+      "ok": true
+    },
+    {
+      "name": "salaisuus ei näy rendererissä",
+      "ok": true
+    },
+    {
+      "name": "salaisuus ei kulje IPC-vastauksissa",
+      "ok": true
+    },
+    {
+      "name": "salaisuus ei ole selväkielisenä missään datakansion tiedostossa",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "poisto käytöstä pysäyttää prosessin",
+      "ok": true
+    },
+    {
+      "name": "asetukset poistettu",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "asked": [
+    "Tallennetaanko pilviasetukset tälle koneelle?",
+    "Otetaanko pilvirenderöinti käyttöön?",
+    "Vahvistatko, että Kaggle-muistikirjan ajoympäristö on sinulle ilmainen?",
+    "Lähetetäänkö lukittu kohtaus renderöitäväksi?"
+  ],
+  "platform": "darwin",
+  "electron": "44.5.1",
+  "safeStorageBackend": "weak backend allowed only in this isolated test",
+  "note": "Simuloitu: oikea Electron, IPC ja utilityProcess, ei verkkoa eikä oikeaa ComfyUI/Kaggle-ajoa."
+}

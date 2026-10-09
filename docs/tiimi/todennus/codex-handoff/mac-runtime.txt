@@ -1,0 +1,51 @@
+
+> hahmostudio@0.36.0 desktop:test:package
+> node scripts/desktop-package-test.mjs
+
+{
+  "packagedDeltaJournal": true,
+  "packagedAtomicImport": true,
+  "packagedRecovery": true,
+  "packagedProjectHistory": true,
+  "packagedChunks": true,
+  "packagedRevisions": true,
+  "packagedQueueRecovery": true,
+  "ok": true,
+  "electron": "44.5.1",
+  "node": "24.21.0",
+  "arch": "arm64",
+  "resources": [
+    "/library/Pipsa.hahmo",
+    "/library/Ville.hahmo",
+    "/library/Pipsa.psd",
+    "/library/Ville.psd",
+    "/library/Taru-3D.hahmo",
+    "/library/Ukko-3D.psd",
+    "/library/cutout-studio-v1.svg",
+    "/library/cutout-street-v1.png",
+    "/library/cutout-car-v1.svg",
+    "/schemas/cutout-animation-package.schema.json",
+    "/",
+    "/library/KILSAT-S01E01.md",
+    "/library/Aamu-autossa.md",
+    "/library/Studio.png",
+    "/library/Taru.hahmo",
+    "/library/Pipsa-3D.hahmo",
+    "/library/Ville-3D.psd",
+    "/library/Ukko.hahmo",
+    "/library/Hahmopohja.hahmo",
+    "/library/Suupaketti-Pehmea.psd",
+    "/library/car-passenger-v1.svg",
+    "/vision/face_landmarker.task",
+    "/vision/vision_wasm_internal.wasm",
+    "/microphone-recorder.worklet.js",
+    "/library/office-scene-v1.svg",
+    "/library/book-prop-v1.svg"
+  ],
+  "rhubarbSilentWav": [
+    "fi",
+    "en"
+  ],
+  "gui": false,
+  "deviceTests": false
+}

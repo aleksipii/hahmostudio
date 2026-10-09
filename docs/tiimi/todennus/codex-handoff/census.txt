@@ -1,0 +1,27 @@
+Hallintolaskuri 1440×900  isolated Electron
+vaihe        kuorma sisältö  UI-sanoja | ylä vasen näytt oikea aikaj muu | budjetti(h/s)  tulos
+script           20      18     110 |  11     3     5     0     0   1 |        25/150  ok
+characters       30       8      93 |  11     9     4     5     0   1 |        30/200  ok
+storyboard       23       6      97 |  11     0    11     0     0   1 |        25/150  ok
+shot             24       2     116 |  11     1     1    10     0   1 |        30/150  ok
+timeline         33      13     144 |  11     3     2     8     8   1 |        35/150  ok
+workshop         27       8      81 |  11     4     9     2     0   1 |        40/200  ok
+sisältö (ei budjetissa): script: kasikirjoitus 18 · characters: kirjastokortit 8 · storyboard: aikajana-raidat 2, kuvakortit 4 · shot: aikajana-raidat 2 · timeline: aikajana-raidat 13 · workshop: tasopuu 8
+Hallintolaskuri 820×900  isolated Electron
+vaihe        kuorma sisältö  UI-sanoja | ylä vasen näytt oikea aikaj muu | budjetti(h/s)  tulos
+script           18      17      86 |  11     3     3     0     0   1 |        25/150  ok
+characters       29       8      85 |  11     8     4     5     0   1 |        30/200  ok
+storyboard       23       4      93 |  11     0    11     0     0   1 |        25/150  ok
+shot             20       2      93 |  11     1     1     6     0   1 |        30/150  ok
+timeline         31      13     120 |  11     3     2     6     8   1 |        35/150  ok
+workshop         27       8      77 |  11     4     9     2     0   1 |        40/200  ok
+sisältö (ei budjetissa): script: kasikirjoitus 17 · characters: kirjastokortit 8 · storyboard: aikajana-raidat 2, kuvakortit 2 · shot: aikajana-raidat 2 · timeline: aikajana-raidat 13 · workshop: tasopuu 8
+Hallintolaskuri 390×900  isolated Electron
+vaihe        kuorma sisältö  UI-sanoja | ylä vasen näytt oikea aikaj muu | budjetti(h/s)  tulos
+script           18      15      76 |  11     3     3     0     0   1 |        25/150  ok
+characters       24       4      75 |  11     8     4     0     0   1 |        30/200  ok
+storyboard       22       3      91 |  11     0    10     0     0   1 |        25/150  ok
+shot             20       2      93 |  11     1     1     6     0   1 |        30/150  ok
+timeline         30       8     115 |  11     3     2     5     8   1 |        35/150  ok
+workshop         27       8      60 |  11     4     9     2     0   1 |        40/200  ok
+sisältö (ei budjetissa): script: kasikirjoitus 15 · characters: kirjastokortit 4 · storyboard: aikajana-raidat 2, kuvakortit 1 · shot: aikajana-raidat 2 · timeline: aikajana-raidat 8 · workshop: tasopuu 8

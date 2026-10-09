@@ -240,3 +240,5 @@ Avoimet hyväksynnät: VoiceOver, paketoidun sovelluksen käyttöliittymä ja oi
 Seuraava työ: testaa yllä oleva äänityksen vaiheenvaihto ja Mac GUI erillisellä testidatalla, tee VoiceOver-kuunteluhyväksyntä, sitten Kokoron oikea englanninkielinen ajo olemassa olevan luvallisen mallin kanssa. Älä lisää uusia pilvilupia tai korvaa käyttäjän asennettua sovellusta.
 
 Kiintiön viimeinen vahvistettu havainto ennen julkaisuvaihetta: ensisijainen 300 minuutin ikkuna **16 % jäljellä**, viikko 71 %. Kynnys 10 % koskee ensimmäistä; uusi tarkistus tarvitaan seuraavan työvaiheen alussa.
+
+Viimeinen kiintiötarkistus ennen GitHub-pushia: **11 % jäljellä / 300 min**, viikko 70 %. Tekstitodennukset tallennettu .txt-muodossa, koska .log kuuluu projektin ignore-sääntöihin.
