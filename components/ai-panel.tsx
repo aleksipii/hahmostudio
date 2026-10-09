@@ -42,8 +42,26 @@ async function cameraPermission():Promise<AiStatusInput['camera']>{
 
 export default function AiPanel({onClose,onOpenCloud}:{onClose:()=>void;onOpenCloud?:()=>void}){
  const [input,setInput]=useState<AiStatusInput>({}),[loading,setLoading]=useState(true),[tick,setTick]=useState(0),[cloud,setCloud]=useState<CloudStatus|null|undefined>(undefined),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
- const box=useRef<HTMLDivElement>(null);
- useEffect(()=>{box.current?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape')onClose();};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[]);
+ const box=useRef<HTMLDivElement>(null),close=useRef(onClose);close.current=onClose;
+ useEffect(()=>{
+  const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  box.current?.focus();
+  const key=(e:KeyboardEvent)=>{
+   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close.current();return;}
+   const dialog=box.current;if(e.key!=='Tab'||!dialog)return;
+   const items=[...dialog.querySelectorAll<HTMLElement>('button,a[href],input,select,textarea,[tabindex]')].filter(el=>el.tabIndex>=0&&!el.matches(':disabled')&&el.getClientRects().length>0);
+   const current=document.activeElement,first=items[0],last=items.at(-1);
+   if(!first){e.preventDefault();dialog.focus();return;}
+   if(!items.includes(current as HTMLElement)||e.shiftKey&&current===first||!e.shiftKey&&current===last){e.preventDefault();(e.shiftKey?last:first)?.focus();}
+  };
+  document.addEventListener('keydown',key,true);
+  return()=>{
+   document.removeEventListener('keydown',key,true);
+   if(previous?.isConnected&&previous.getClientRects().length){previous.focus();return;}
+   let menu=previous?.closest('details');
+   while(menu){const summary=menu.querySelector('summary');if(summary?.getClientRects().length){summary.focus();break;}menu=menu.parentElement?.closest('details');}
+  };
+ },[]);
  useEffect(()=>onAiActivity(()=>setTick(n=>n+1)),[]);
  useEffect(()=>{let live=true;const bridge=desktop();void(async()=>{
   const [audioModel,kokoro,camera,cloudState]=await Promise.all([bridge?bridge.audioModel().catch(()=>null):Promise.resolve(undefined),bridge?bridge.kokoroStatus().catch(e=>({installed:false,error:e instanceof Error?e.message:'Tila ei luettavissa'})):Promise.resolve(undefined),cameraPermission(),bridge?bridge.cloudStatus().catch(()=>null):Promise.resolve(null)]);

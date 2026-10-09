@@ -28,10 +28,33 @@
       "width": 600,
       "scrollWidth": 600,
       "canvases": 20
+    },
+    {
+      "name": "actual editor AI menu and keyboard focus boundaries",
+      "ok": true,
+      "initial": true,
+      "forward": true,
+      "reverse": true
+    },
+    {
+      "name": "Escape closes AI dialog and restores opener focus",
+      "ok": true
+    },
+    {
+      "name": "actual editor 1440px",
+      "ok": true,
+      "width": 1440,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "actual editor 600px",
+      "ok": true,
+      "width": 600,
+      "scrollWidth": 600
     }
   ],
   "errors": [],
   "electron": "44.5.1",
   "platform": "darwin",
-  "scope": "isolated real Electron component and Canvas, not packaged application, not cloud/GPU"
+  "scope": "real Electron: isolated Canvas samples plus complete web editor; no packaged application, devices or cloud/GPU"
 }

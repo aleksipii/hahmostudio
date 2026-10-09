@@ -111,3 +111,23 @@ Käyttäjä pyysi kaikkien valmistuneiden töiden vientiä GitHubiin. Julkaisuha
 ## GitHub-vienti valmis 9.10.2026
 
 Kaikki valmistunut toteutus, testit, kymmenen promptia, raportit, vertailukuvat ja täydelliset lopulliset todennuslokit julkaistu GitHub-haarassa `codex/asiantuntijat-2026-10-09`. Koodi ei ole yhdistetty main-haaraan eikä asennettua KOETA-sovellusta korvattu. GitHub-haaran sisältö varmennetaan pushin jälkeen.
+
+
+## Yhteinen Codex/Claude-integraatio 9.10.2026 — TYÖSSÄ
+
+Käyttäjä valtuutti sovelluksen kehityksen jatkamisen sekä valmiiden haarojen yhdistämisen molempiin päähaaroihin. Työhaara `codex/yhteinen-jatko-2026-10-09`. Yhdistettyjen lähtöhaarojen SHA:t: asiantuntijat3b5aeb1,ClaudeAI746d21d,käsikirjoitus a2087dc,hahmografiikka23e2edf ja UI9ece0d5. Dokumentaatiohistoriat säilytetty. UI:n Näkymä-valikko siirtyi Projekti-valikkoon; tekoälypaneeli ja toimintohaku säilytettiin. 3D-lavasteet yhdistetty, mutta legacy-profiilien cel-ulkoasua ei muutettu hiljaisesti. Flat-pinnat ja helmakorjaus säilyvät.
+
+Tyypintarkistus läpäisi ensimmäisen integraation. Koko testisarjan1383testistä1381läpäisi; epäonnistumiset olivat cold-startin5sraja ja20krivin kuormitusaikaraja. Uusinta rajatulla konkurenssilla ja erillisellä suorituskykymittauksella ennen johtopäätöksiä; testirajoja ei löysätä.
+
+Jatkokehitys: AI-dialogin Tab/Shift+Tab-fokusrajaus ja fokuksen palautus toteutettu; oikean koko editorin GUI-testi valmisteilla. CLAUDE.md luotu ja yhteinen handoff-sääntö AGENTS.md:hen, jotta kumpikin työkalu jatkaa samaa työtä Gitin kautta.
+
+
+## Codex → Claude: valmis yhdistetty lähde 9.10.2026
+
+Nykyinen vaihe: VALMIS PÄÄHAAROIHIN. Integraatiohaara codex/yhteinen-jatko-2026-10-09. Koodi yhdistää Codexin asiantuntijatyön ja säilytettyjen neljän Claude-haaran tarkastetut lähtöpäät (AI746d21d,script a2087dc,gfx23e2edf,UI9ece0d5); historia säilyy. Ristiriidat ratkaistu säilyttäen kaikki kehitysmuistiot, uusi kiintiösääntö ja vanhojen projektien ulkoasu. Uusi fokuksen rajaus/eristys ja palautus on katsottu todellisessa GUI:ssa.
+
+Lopullinen npm test1383/1383pass,ei skippejä/TODOja,exit0. Typecheck ja private-build exit0. Electron9/9checks,600/1440px sekä koko editorissa että3D-fixturessa; ei konsolivirheitä. Npm-testin concurrency2hallinta ei muuta testejä tai aikarajoja. Täydet lokit ja kuvat: docs/tiimi/todennus/INTEGRAATIO-2026-10-09.md.
+
+Käyttäjä on valtuuttanut valmiin työn yhdistämisen mainiin ja hahmostudio1.0-haaraan; sama testattu commit päivitetään atomisesti molempiin. Koneeseen asennettua KOETA.appia ei korvata Git-pushilla. Kiintiön viimeinen vaihehavainto13%jäljellä; valmista lähdettä tallennetaan ennakoivasti ennen10%rajaa.
+
+Seuraava työ Claudelle tai Codexille: fetch/HEAD-tarkistus → kokoro-en-pohja hyväksytyllä olemassa olevalla paikallisella mallilla erillisessä pilottiprojektissa → kaksi kuunneltua repliikkiä → tallennus/uudelleenavaus → MP4:n katsottu synkka. Älä aloita uudelleen jo yhdistettyjä sääntö/UI/3D-korjauksia. Paketoitu Mac,taiteellinen liikehyväksyntä,VoiceOver jaGPU ovat edelleen avoimia. AGENTS.md ja CLAUDE.md sisältävät yhteiset säännöt.

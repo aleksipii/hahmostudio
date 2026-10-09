@@ -1,0 +1,28 @@
+
+> hahmostudio@0.36.0 team:test:preview
+> node scripts/team-preview-run.mjs
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 2115 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-team-preview/docs/tiimi/preview.html                   0.40 kB │ gzip:   0.26 kB
+dist-team-preview/docs/tiimi/editor-preview.html            0.48 kB │ gzip:   0.28 kB
+dist-team-preview/assets/production-worker-YPMkxI_L.js     94.74 kB
+dist-team-preview/assets/psd.worker-DMcB6Qqg.js           286.93 kB
+dist-team-preview/assets/style-COWfrXh_.css                66.82 kB │ gzip:  13.32 kB
+dist-team-preview/assets/editor-jm0P_4iy.css              173.44 kB │ gzip:  29.87 kB
+dist-team-preview/assets/presentation-images-CYJtnNwC.js    0.30 kB │ gzip:   0.25 kB
+dist-team-preview/assets/samples-ca9m6Zpl.js                3.14 kB │ gzip:   1.54 kB
+dist-team-preview/assets/export-worker-CRQSBxBs.js          4.61 kB │ gzip:   2.13 kB
+dist-team-preview/assets/style-CF-tQLbE.js                621.80 kB │ gzip: 211.21 kB
+dist-team-preview/assets/editor-B9PDYbvK.js               728.48 kB │ gzip: 218.62 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.54s
+{"ok":true,"checks":[{"name":"real React style selection updates profile","ok":true,"before":"cel","after":"flat"},{"name":"disabled cast fieldset locks representation, style and colors","ok":true},{"name":"cloud status stays blocked without model pins","ok":true},{"name":"preview 1440px","ok":true,"width":1440,"scrollWidth":1440,"canvases":20},{"name":"preview 600px","ok":true,"width":600,"scrollWidth":600,"canvases":20},{"name":"actual editor AI menu and keyboard focus boundaries","ok":true,"initial":true,"forward":true,"reverse":true},{"name":"Escape closes AI dialog and restores opener focus","ok":true},{"name":"actual editor 1440px","ok":true,"width":1440,"scrollWidth":1440},{"name":"actual editor 600px","ok":true,"width":600,"scrollWidth":600}],"errors":[],"electron":"44.5.1","platform":"darwin","scope":"real Electron: isolated Canvas samples plus complete web editor; no packaged application, devices or cloud/GPU"}

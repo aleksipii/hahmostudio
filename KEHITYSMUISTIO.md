@@ -652,3 +652,8 @@ Erillisessä paikallisessa työkopiossa tehty ensimmäinen rajattu muutos. Kymme
 - toimintohakuun (⌘K) tuli "Tekoäly: tilat ja pilvirenderöinti…".
 
 Lisäksi `lib/studio-feature-map.ts` sai kartalle rivin `ai` (toimintohaun komennoilla pitää olla koti kartassa). Testi `server/ai-panel.test.mjs`. **Todennettu:** selaimessa (Vite, Chromium) Näytä → Tekoäly… avaa paneelin ja ⌘K-haku löytää sen. **Todentamatta:** pakattu Mac-sovellus.
+
+
+## 9.10.2026 — yhteinen Codex/Claude-integraatio
+
+Neljä säilytettyä Claude-työhaaraa ja Codexin asiantuntijatyö sovitettu samaan lähteeseen. Tunnistimen korpus/virhesyyt, selkeämpi käyttöliittymä, AI-valikko ja30kolmiulotteista lavastetta säilyttäen legacy-cel/flat-tyylit. AI-dialogin fokusrajaus,Escape-eristys ja palautus lisätty. npm test1383/1383,typecheck,private-build ja todellinen Electron9checkiä läpäisivät. Npm-testin kuormitus hallitaan concurrency2:lla,rajoja ei löysätty. Toimitus- ja aidon Kokoron hyväksynnät avoimia. Jatkokohta: TIIMI.md ja docs/tiimi/JATKO-CODEX-CLAUDE.md.
