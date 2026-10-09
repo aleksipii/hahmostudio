@@ -40,4 +40,4 @@ Kaikki kymmenen vastuualueetta työskentelivät käyttäjän pyynnöstä 8.–9.
 - [09-ideat](raportit/09-ideat.md)
 - [10-lopputarkastus](raportit/10-lopputarkastus.md)
 
-GitHubissa ovat promptit ja englanninkielinen esimerkkiteksti haarassa `codex/asiantuntijapromptit-2026-10-08`. Toteutuksen yhteinen diff on paikallisessa haarassa `codex/asiantuntijat-2026-10-09`. Yhteiset lopputulokset kirjataan TIIMI.md:hen vasta tarkistusten valmistuttua.
+GitHubissa ovat promptit ja englanninkielinen esimerkkiteksti haarassa `codex/asiantuntijapromptit-2026-10-08`. Valmistunut toteutus, testit, promptit, raportit, vertailukuvat ja todennuslokit on julkaistu GitHub-haarassa `codex/asiantuntijat-2026-10-09`. Lopullinen koko testisarja läpäisi 1286/1286 testiä hash-varmennetussa kopiossa; typecheck, private-build ja Electron-tarkistukset läpäisivät. [Koottu todennus ja avoimet hyväksynnät](todennus/VARMENNUS-2026-10-09.md).

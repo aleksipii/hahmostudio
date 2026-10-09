@@ -106,3 +106,8 @@ Sama lähdekoodi materiaalistettu `/private/tmp/hahmostudio-20261009-verificatio
 QA:n normaali npm test varmennetussa tmp-kopiossa: **1286/1286 läpäisi, exit0**, ei skippejä eikä TODO-testejä. Typecheck,tmp-typecheck,private-build ja Electron-fixture exit0. Kaikki kymmenen vastuualueetta ovat tehneet työnsä ja raporttinsa. Riippumaton katselmointi ei löytänyt uutta kriittistä/korkeaa regressiota, mutta katselmoijan päätöstekstin päivitys jäi agentin käyttörajaan; sitä ei esitetä uutena riippumattomana hyväksyntänä.
 
 Käyttäjä pyysi kaikkien valmistuneiden töiden vientiä GitHubiin. Julkaisuhaara codex/asiantuntijat-2026-10-09. Koottu todennus ja avoimet hyväksynnät: docs/tiimi/todennus/VARMENNUS-2026-10-09.md. Aidon Kokoron kuuntelu, taiteellinen liikehyväksyntä, paketoitu toimituskoe ja GPU/pilvi pysyvät avoimina.
+
+
+## GitHub-vienti valmis 9.10.2026
+
+Kaikki valmistunut toteutus, testit, kymmenen promptia, raportit, vertailukuvat ja täydelliset lopulliset todennuslokit julkaistu GitHub-haarassa `codex/asiantuntijat-2026-10-09`. Koodi ei ole yhdistetty main-haaraan eikä asennettua KOETA-sovellusta korvattu. GitHub-haaran sisältö varmennetaan pushin jälkeen.
