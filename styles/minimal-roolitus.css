@@ -1,0 +1,29 @@
+/* Minimalismi V5 loppu ja Työpaja (docs/UI-MINIMALISMI-SUUNNITELMA.md kohdat 4 ja 9).
+   Vain näkyvyys ja asettelu: kaikki komponentit pysyvät mounted, laitteet eivät pysähdy. */
+
+/* Työpaja: tasopuun näkyvyyssilmä näkyy riviä osoitettaessa, näppäimistöfokuksessa,
+   valitulla rivillä ja aina, kun taso on piilotettu. Kosketuslaitteilla aina näkyvissä.
+   visibility (ei display) pitää painikkeen paikallaan; :focus-within tuo sen sarkainjärjestykseen
+   heti, kun rivin nimi on fokuksessa. */
+@media (hover: hover) and (pointer: fine) {
+  .studio .layer-tree .layer-row .visibility[aria-pressed="true"] { visibility: hidden; }
+  .studio .layer-tree .layer-row:hover .visibility,
+  .studio .layer-tree .layer-row:focus-within .visibility,
+  .studio .layer-tree .layer-row.selected .visibility { visibility: visible; }
+}
+
+/* Työpaja: harvinaiset (tasomäärä, Lataa kaikki tasot) yhden Lisää-osion takana. */
+.studio .layers-bottom.workshop-more { display: block; }
+.studio .layers-bottom.workshop-more > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  color: var(--s2-muted, inherit);
+  font-size: 12px;
+}
+.studio .layers-bottom.workshop-more > summary::-webkit-details-marker { display: none; }
+.studio .layers-bottom.workshop-more[open] { display: grid; gap: 8px; }
+.studio .layers-bottom.workshop-more > summary:focus-visible { outline: var(--focus-ring, 2px solid currentColor); outline-offset: 2px; border-radius: 4px; }
