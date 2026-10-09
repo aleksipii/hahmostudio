@@ -57,11 +57,16 @@ export const studioFeatureMap: FeatureHome[] = [
   { id: 'save-anim', label: 'Tallenna animaatio JSON', department: 'yleinen', layer: 'valikko', palette: 'save-anim' },
 
   // 1 Tarina
-  { id: 'script-editor', label: 'Käsikirjoitus ja palikkaeditori', department: 'tuotanto', step: 'script', layer: 'paa' },
+  { id: 'script-editor', label: 'Käsikirjoitus, merkintäreunat ja Rakenna jakso', department: 'tuotanto', step: 'script', layer: 'paa' },
   { id: 'script-focus', label: 'Keskittymistila', department: 'tuotanto', step: 'script', layer: 'paa', palette: 'script-focus' },
   { id: 'script-example', label: 'Esimerkkianimaatio', department: 'tuotanto', step: 'script', layer: 'paa', palette: 'script-example' },
   { id: 'script-motion', label: 'Yhden hahmon liikekäsikirjoitus', department: 'tuotanto', step: 'script', layer: 'paa', palette: 'script-motion' },
   { id: 'script-check', label: 'Tunnistuksen tarkistus ja korjausehdotukset', department: 'tuotanto', step: 'script', layer: 'tarkastelija' },
+  // Tarinan "Työkalut /" -paletti (components/script-command-palette.tsx, scriptCommandItems) ja vasemman
+  // paneelin "Tarkistus ja ohjaus" -painike: näkyvät pyynnöstä, eivät päänäkymässä.
+  { id: 'script-tools', label: 'Työkalut /: tuo tiedosto, esimerkit, syntaksiohje, uusi kohtaus, tallenna käsikirjoitusteksti', department: 'tuotanto', step: 'script', layer: 'valikko' },
+  { id: 'script-review', label: 'Tarkistus ja ohjaus: tapahtumat, ohjaussuunnitelma, hahmot, äänet, resurssit', department: 'tuotanto', step: 'script', layer: 'valikko' },
+  { id: 'script-blocks', label: 'Palikkaeditori (Työkalut / Tarinassa, vasen paneeli Kuvauksessa)', department: 'tuotanto', step: 'script', layer: 'valikko' },
 
   // 2 Roolitus
   { id: 'cast-library', label: 'Kirjasto: hahmot, ympäristöt ja esineet', department: 'tuotanto', step: 'characters', layer: 'paa', palette: 'char-library' },

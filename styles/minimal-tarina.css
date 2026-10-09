@@ -1,0 +1,97 @@
+/*
+ * KOETA – Tarina-vaihe (⌥1) minimiksi (docs/UI-MINIMALISMI-SUUNNITELMA.md, kohta 4 "1 Tarina").
+ * Ladataan viimeisenä. Vain piilotetaan: PresentationPanel, BlockTimeline ja muut osat pysyvät
+ * mounted-tilassa (AGENTS.md). Jokaisella piilotetulla osalla on koti:
+ *  - "Tarkistus ja ohjaus" -painike vasemmassa paneelissa ja "Työkalut /" → Näytä tarkistus ja ohjaus
+ *    (tapahtumalista, korjausehdotukset, ohjaussuunnitelma, hahmot, äänet, resurssit, kumoa ohjausmuutos);
+ *    repliikkiäänet, ääniraita ja puhesynteesi näkyvät lisäksi Kuvauksessa/Leikkauksessa kuten ennen.
+ *  - "Työkalut /" → Näytä palikkaeditori (palikkaeditori näkyy myös Kuvauksen vasemmassa paneelissa).
+ *  - Hahmon kuvakulma: Roolitus ja Kuvaus (näyttämö ei näy Tarinassa).
+ */
+
+/* Painike näkyy vain Tarinassa, jossa se oikeasti avaa ja sulkee osiot. */
+.tarina-review-row { display: none; }
+.studio.s2.phase-script .presentation-panel:not(.presentation-panel--locked) > .tarina-review-row {
+  display: flex; margin: 8px 12px 4px;
+}
+.studio.s2.phase-script .tarina-review-toggle {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; min-height: 32px; padding: 0 10px;
+  border: 1px solid var(--s2-line); border-radius: 8px; background: transparent;
+  color: var(--s2-muted); font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;
+}
+.studio.s2.phase-script .tarina-review-toggle:hover,
+.studio.s2.phase-script .tarina-review-toggle[aria-expanded='true'] { color: var(--s2-text); border-color: var(--s2-line2); }
+.studio.s2.phase-script .tarina-review-toggle:focus-visible { outline: 2px solid var(--s2-accent); outline-offset: 2px; }
+.studio.s2.phase-script .tarina-review-toggle__count {
+  flex: none; padding: 1px 7px; border-radius: 999px;
+  background: var(--s2-bg3); color: var(--s2-warn); font-size: 11px; font-weight: 600;
+}
+
+/* Tarina, tarkistus kiinni: vasemmassa paneelissa vain Dialogi/Yhden hahmon -kytkin ja yllä oleva painike. */
+.studio.s2.phase-script .presentation-panel:not(.presentation-panel--locked):not(.presentation-panel--review-open) > :is(
+  .production-events-dock,
+  .voices-missing,
+  .review-suggestions,
+  .soundtrack-summary,
+  .performance-panel,
+  .studio-validation,
+  .production-undo,
+  .presentation-steps
+) { display: none; }
+
+/* Palikkaeditori Tarinassa vain pyynnöstä (Työkalut / → Näytä palikkaeditori). */
+.studio.s2.phase-script .block-editor-dock:not(.block-editor-dock--open) { display: none; }
+
+/* Näyttämön kuvakulma ei auta kirjoittamaan; valinta säilyy ja näkyy Roolituksessa ja Kuvauksessa. */
+.studio.s2.phase-script .s2-stagebar .angle-choice { display: none; }
+
+/* Tyhjä tila: yksi lause, pääpainike ja kaksi hiljaista; pohjat yhden avattavan rivin takana. */
+.studio.s2 .script-templates-more { margin-top: 12px; text-align: center; }
+.studio.s2 .script-templates-more > summary {
+  display: inline-block; cursor: pointer; padding: 6px 10px; border-radius: 6px;
+  color: var(--s2-muted); font-size: 12px; list-style: none;
+}
+.studio.s2 .script-templates-more > summary::-webkit-details-marker { display: none; }
+.studio.s2 .script-templates-more > summary::after { content: ' ▾'; }
+.studio.s2 .script-templates-more[open] > summary::after { content: ' ▴'; }
+.studio.s2 .script-templates-more > summary:hover { color: var(--s2-text); }
+.studio.s2 .script-templates-more > summary:focus-visible { outline: 2px solid var(--s2-accent); outline-offset: 2px; }
+.studio.s2 .script-templates-more .script-templates { margin-top: 8px; }
+
+/* Syntaksiohje "Työkalut /" -paletista: kirjoitusalueen yläpuolelle, suljettavissa. */
+.studio .script-guide-sheet {
+  position: relative; margin: 8px auto 12px; padding: 10px 12px;
+  max-width: var(--script-measure-wide, 1100px); max-height: 46vh; overflow: auto; box-sizing: border-box;
+  border: 1px solid var(--s2-line, #8884); border-radius: 8px; background: var(--s2-bg1, transparent);
+}
+.studio .script-guide-sheet .script-guide > summary { padding-right: 96px; }
+.studio .script-guide-sheet__close { position: absolute; top: 6px; right: 8px; min-height: 28px; }
+.studio .script-guide-sheet pre { max-width: 100%; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .studio.s2.phase-script .tarina-review-toggle,
+  .studio .script-guide-sheet__close,
+  .studio.s2 .script-templates-more > summary { min-height: 36px; }
+}
+
+/* "Työkalut /": nimi vasemmalla, vihje hiljaisena oikealla. */
+.studio .script-command-palette li button { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; text-align: left; }
+.studio .script-command-palette li button small { flex: none; color: var(--s2-faint, var(--text-dim)); font-size: 11px; }
+
+/* Tarkistus auki: korjausehdotukset ensin, koska ne koskevat kirjoitettua tekstiä. */
+.studio.s2.phase-script .presentation-panel--review-open:not(.presentation-panel--locked) { display: flex; flex-direction: column; }
+.studio.s2.phase-script .presentation-panel--review-open:not(.presentation-panel--locked) > .tarina-review-row { order: -2; }
+.studio.s2.phase-script .presentation-panel--review-open:not(.presentation-panel--locked) > .review-suggestions { order: -1; }
+
+/* Rivieditori: pitkä rivi rivittyy näkyviin eikä katkea (lähde on yhä yksi rivi). */
+.studio.s2 .script-line-sheet .script-line-field { field-sizing: content; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .studio.s2 .script-line-sheet { padding-left: 12px; padding-right: 12px; }
+  .studio.s2 .script-line-sheet .script-line-row,
+  .studio.s2 .script-line-sheet .script-line-split { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
+  .studio.s2 .script-line-sheet .script-line-gutter { text-align: left; padding-top: 6px; }
+  .studio.s2 .script-line-sheet .script-line-gutter:empty,
+  .studio.s2 .script-line-sheet .script-line-meta:empty { display: none; }
+  .studio.s2 .script-line-sheet .script-line-field { font-size: 16px; }
+  .studio.s2 .script-line-sheet .script-line-meta { padding-top: 0; }
+}
