@@ -1,0 +1,46 @@
+/*
+ * KOETA – vasen paneeli lukituissa vaiheissa (docs/UI-MINIMALISMI-SUUNNITELMA.md, V2).
+ * Ladataan viimeisenä. Vain piilotetaan: PresentationPanel ja sen osat pysyvät mounted-tilassa
+ * (AGENTS.md). Kaikki piilotettu on täsmälleen samana Tarina-vaiheessa, johon rivin
+ * "Muokkaa Tarinassa" -painike vie (sama vaiheenvaihto kuin yläpalkissa ja ⌥1).
+ * Säännöt koskevat vain lukittua paneelia (.presentation-panel--locked), jossa painike on olemassa;
+ * jos vaiheiden lukitus on pois, kaikki näkyy kuten ennen.
+ */
+
+/* Yksi rivi: mikä käsikirjoitus on käytössä ja yksi painike sen muokkaamiseen. */
+.studio.s2 .presentation-panel--locked > .locked-script-row {
+  display: flex; align-items: center; gap: 8px;
+  margin: 8px; padding: 6px 6px 6px 10px;
+  border: 1px solid var(--s2-line); border-radius: 8px; background: var(--s2-bg1);
+}
+.studio.s2 .locked-script-row__title {
+  flex: 1 1 0; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--s2-text); font-size: 13px; font-weight: 600;
+}
+.studio.s2 .presentation-panel--locked .locked-script-row__edit {
+  flex: none; min-height: 28px; padding: 0 10px; white-space: nowrap;
+  border: 1px solid var(--s2-line2); border-radius: 6px; background: var(--s2-bg2);
+  color: var(--s2-text); font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.studio.s2 .presentation-panel--locked .locked-script-row__edit:hover { border-color: var(--s2-accent); }
+@media (max-width: 600px) {
+  .studio.s2 .presentation-panel--locked .locked-script-row__edit { min-height: 36px; }
+}
+
+/* Lukituissa vaiheissa pois: selittävät bannerit ja otsikot, vaihenavigaatio,
+ * käsikirjoituksen tapahtumakopio ja käsikirjoituksen valmistelutyökalut (hahmojen kytkentä,
+ * ohjaussuunnitelman tarkistus, tapahtumaeditori, valmistelun tallennus ja jakson rakennus). */
+.studio.s2:is(.phase-storyboard, .phase-shot, .phase-timeline) .presentation-panel--locked:has(> .locked-script-row) > :is(
+  h2,
+  h2 + p,
+  .flow-script-lock,
+  .script-docked-hint,
+  .screenplay-step-nav,
+  .production-events-dock,
+  .presentation-steps
+) { display: none; }
+
+/* Storyboardin Ohjauspöydän "Käsikirjoitus"-näkymä näyttää tapahtumalistan tässä paneelissa
+ * (PanelDock), joten lista palaa näkyviin, kun se näkymä on valittuna. */
+.studio.s2.phase-storyboard:has(.production-board-nav > button:first-child[aria-pressed='true']) .presentation-panel--locked:has(> .locked-script-row) > .production-events-dock { display: block; }
