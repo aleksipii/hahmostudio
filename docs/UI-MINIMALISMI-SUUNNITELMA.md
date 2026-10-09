@@ -162,7 +162,9 @@ Jokaisen vaiheen jälkeen: kuvakaappaukset 1440/820/390, laskuri, `npm run typec
 - V7 osittain: alapalkin Tekoäly-painike (`aiChipLabel`, pilvi mainitaan vain luetusta tilasta), ⌘K "Vie tekoälyrenderöitynä…" (yksityinen palvelin ja työpöytä) ja sama painike työpöydän vientidialogissa. Näkymä-valikon Tekoäly… ja ⌘K-tilakomento olivat jo integraatiossa. Paneeli Tarkastelijan välilehdeksi on tekemättä.
 - V8: Asetukset → Asiantuntijatila (oletus pois). Pois ollessa `expert-detail`-luokan tiedot (versioiden SHA-256, viennin render-revisio, resurssiviitteet, tuotantokomentojen loki) piilotetaan CSS:llä; komponentit pysyvät mounted.
 - V5: hahmokortti = kuva, nimi, Valitse ja Tiedot (kuvaus, laatu ja lataukset Tiedot-osiossa). Hahmokirjaston sanat 107 → 39 (1440 px).
-- Jäljellä: V5 Esitys-korttien siirto, vasemman paneelin siivous, V7 Tarkastelijan välilehti, hallintalaskurin budjetit.
+- Agenttikierros (3 rinnakkaista agenttia, yhdistetty): V2 lukittujen vaiheiden vasen paneeli = yksi rivi "Muokkaa Tarinassa"; V5 Roolitus avautuu Näyttämö-välilehdelle ja laitekortit ovat Esitys-välilehdellä, Työpajan vasen paneeli 33 → 12; V6 aikajanan kontrollit yhdelle riville ja harvinaiset "Lisää ⋯" -osioon.
+- Hallintolaskuri yhdistetyssä versiossa (1440×900, hallintoja/sanoja): Tarina 42/1089, Roolitus 54/306, Storyboard 35/245, Kuvaus 42/313, Leikkaus 50/481, Työpaja 37/96 (budjetissa). Lähtötaso samana päivänä: 42/1089, 53/775, 41/936, 48/1004, 45/1177, 58/327.
+- Jäljellä (vanha lista): vasemman paneelin siivous, V7 Tarkastelijan välilehti, hallintalaskurin budjetit.
 
 ### Yhteistyö ja ristiriitariski
 `components/editor.tsx` on yhteinen tiedosto: tekoälyasiantuntija lisää siihen tilaa ja ⌘K-komennon omassa haarassaan. V2, V3, V4 ja V7 koskevat samoja rivejä. Ehdotus: V7 tehdään vasta, kun tekoälyasiantuntijan haara on yhdistetty hahmostudio1.0:aan (yhdistämisestä päättää käyttäjä), tai tehdään se heidän haarassaan heidän kanssaan. Muut vaiheet voivat edetä omassa haarassani, mutta yhdistämisessä editor.tsx-konflikteja on odotettavissa.

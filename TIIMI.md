@@ -164,3 +164,19 @@ Avoimet hyväksynnät: vientidialogin "Vie tekoälyrenderöitynä…" ja pilviti
 V5 jatko (toinen commit samassa haarassa): Roolituksen hahmokortissa näkyy kuva, nimi, "Valitse" ja "Tiedot". Kuvaus, laatuteksti ja PSD/hahmopaketin lataus ovat Tiedot-osion sisällä, kuvaus myös kortin vihjeenä; luonnoksilla puuttuvat ominaisuudet näkyvät edelleen. Painikkeen saavutettava nimi on yhä "Valitse <hahmo>" (ui-census toimii). Mitattu web-versiossa (Chromium, 1440 px): hahmokirjaston näkyvät sanat 107 → 39, koko sivun 288 → 220; ei vaakavieritystä 390/1440 px. Kuvat `roolitus-ennen/jalkeen-*.png`. Typecheck, build:private ja npm test (1387 pass, 1 skip FFmpeg) ajettu uudelleen tämän jälkeen.
 
 Seuraava konkreettinen työ: V5:n Esitys-korttien siirto, vasemman paneelin siivous lukituissa vaiheissa (`components/editor.tsx`, `styles/koeta-minimal.css`), sitten V7:n Tarkastelijan Tekoäly-välilehti. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin mittaria ei käytetty.
+
+
+## Claude: agenttikierros UI-minimalismi V2/V5/V6 — 9.10.2026
+
+Käyttäjä hyväksyi edellisen työn viennin ("Vie nyt"): main ja hahmostudio1.0 → `c7c22bd` atomisesti ilman force-pushia. Sen jälkeen käyttäjän pyynnöstä kolme rinnakkaista agenttia omissa worktreissään; koordinoija yhdisti haarat haaraan `claude/project-thread-ojgcol` merge-commiteilla (historia säilyy).
+
+- `claude/agentti-vasen-paneeli` @ `379624e` (V2): Storyboard/Kuvaus/Leikkaus-vaiheiden vasen paneeli näyttää yhden rivin "Muokkaa Tarinassa" (`goFlowStep('script')`); lukittu banneri, tapahtumakopio ja valmistelulomake piilotetaan CSS:llä (`styles/minimal-vasen.css`, `presentation-panel--locked`). Tarina ennallaan, lukituksen ollessa pois ei piiloteta mitään.
+- `claude/agentti-roolitus-tyopaja` @ `bc1911f` (V5 loppu + Työpaja): Roolitus avautuu Näyttämö-välilehdelle (`lib/workspace.ts`), laitekortit Esitys-välilehdellä; kameran käynnistys ja paluu kameran ollessa päällä vievät Esitykseen. Valekameralla todennettu, että kamera ja mikrofoni eivät pysähdy välilehden tai vaiheen vaihdossa. Työpajan tasopuun ryhmät alkavat suljettuina, valittu taso avautuu; harvinaiset "Lisää"-osioon (`styles/minimal-roolitus.css`).
+- `claude/agentti-aikajana` @ `51ba52d` (V6): aikajanan kontrollit yhdelle riville, Mittaus/toinen kumoa/asetukset "Lisää ⋯" -osioon (`components/animation-panel.tsx` barTarget/moreTarget, `styles/minimal-aikajana.css`); alapalkin Sulje kamera/mikrofoni mahtuvat 26 px palkkiin.
+- Yhdistämisen ristiriidat: editor.tsx (lisätty `onEditScript`-prop roolitushaaran versioon) ja main.tsx (kaikki kolme tyyli-importtia). V2:n testi vaati minimal-vasen.css:n olevan viimeinen import; muutettu vaatimaan, että se ladataan koeta-minimal.css:n jälkeen.
+
+Testattu yhdistetyllä lähteellä (Linux-pilvi): `npm run typecheck` 0, `npm run build:private` 0, `npm test` 1389 testiä, 1388 pass, 0 fail, 1 skip (natiivi-FFmpeg puuttuu ympäristöstä). Selain (Vite dev, Chromium) kaikki kuusi vaihetta 1440/820/390 px: ei vaakavieritystä eikä konsolivirheitä; "Muokkaa Tarinassa" täsmälleen lukituissa vaiheissa. Hallintolaskuri (1440×900) ennen → jälkeen: Tarina 42 → 42, Roolitus 53 → 54, Storyboard 41 → 35, Kuvaus 48 → 42, Leikkaus 45 → 50, Työpaja 58 → 37 (budjetissa). Sanat laskivat kaikissa paitsi Tarinassa. Kuvat `docs/tiimi/todennus/ui-agentit/`.
+
+Avoimet: Roolitus ja Leikkaus ovat yhä yli hallintobudjetin (Leikkauksen kasvu johtuu aikajanan näkyviin mahtuvista raitariveistä; laskuri tarvitsee raitojen erillisen säännön). Tarina-vaihetta ei käsitelty. Mac-sovellus, Electron, VoiceOver ja Lisää ⋯ -osion toimintojen ajo (kumoa, fps-tallennus, asetukset) tarkistamatta.
+
+Seuraava työ: Roolituksen Näyttämö-välilehden päällekkäiset kentät (X/Y/Koko, `components/scene-panel.tsx`), Tarina-vaiheen hallinnot, census-sääntö aikajanan raidoille, V7 Tarkastelijan Tekoäly-välilehti.
