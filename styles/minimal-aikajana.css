@@ -1,0 +1,121 @@
+/* ─── V6 aikajanan kontrollit yhdelle riville (docs/UI-MINIMALISMI-SUUNNITELMA.md kohdat 4 ja 9) ───
+ * Rivi: [Piilota aikajana] [tila] [▶ ■ ↺] [Ruutu · s] [Kohtaus ▾] … [Zoom] [Lisää ⋯] [meta].
+ * Lisää ⋯ sisältää Mittauksen, aikajanan kumoa/tee uudelleen (sama kuin yläpalkissa) ja aikajanan asetukset
+ * (kuvaa/s, ruudut, PNG-kuvasarja). Mitään ei pureta: osat ovat samaa DOMia, vain asettelu muuttuu. */
+
+.studio.s2 .timeline-dock {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'toggle bar meta' 'body body body';
+  /* Rivit sisällön kokoisiksi: kapealla telakalla on max-height ja pystyvieritys, eikä palkki saa litistyä. */
+  grid-template-rows: max-content max-content;
+  align-items: center;
+  /* Lisää ⋯ avautuu ylöspäin näyttämön ja paneelien päälle. */
+  position: relative;
+  z-index: 30;
+}
+.studio.s2 .timeline-dock > .timeline-toggle { display: contents; }
+.studio.s2 .timeline-dock .timeline-collapse { grid-area: toggle; margin-left: 6px; white-space: nowrap; }
+.studio.s2 .timeline-dock .timeline-meta { grid-area: meta; padding: 0 10px 0 4px; white-space: nowrap; }
+.studio.s2 .timeline-dock > .transport-controls {
+  grid-area: bar;
+  min-width: 0;
+  min-height: 36px;
+  padding: 3px 8px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  border: 0;
+}
+.studio.s2 .timeline-dock > .timeline-container { grid-area: body; border-top: 1px solid var(--s2-line); }
+.studio.s2 .timeline-dock > .transport-controls > * { flex: 0 0 auto; }
+.studio.s2 .timeline-dock .transport-status { min-width: 0; order: 1; }
+.studio.s2 .timeline-dock .transport-cluster { order: 2; }
+.studio.s2 .timeline-dock .timeline-bar-slot { display: contents; }
+.studio.s2 .timeline-dock .timeline-frame { order: 3; font: 11px var(--s2-mono); color: var(--s2-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.studio.s2 .timeline-dock .transport-scene { order: 4; white-space: nowrap; }
+.studio.s2 .timeline-dock .transport-scene select { max-width: 150px; }
+.studio.s2 .timeline-dock .timeline-zoom { order: 5; margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--s2-muted); }
+.studio.s2 .timeline-dock .timeline-zoom input { width: 90px; }
+/* Zoom koskee vain auki olevaa aikajanaa. */
+.studio.s2 .timeline-dock:has(> #editor-timeline[hidden]) .timeline-zoom { display: none; }
+
+/* Lisää ⋯ */
+.studio.s2 .timeline-dock .timeline-more { order: 6; position: relative; margin-left: 0; }
+.studio.s2 .timeline-dock:has(> #editor-timeline[hidden]) .timeline-more,
+.studio.s2 .timeline-dock:not(:has(.timeline-zoom)) .timeline-more { margin-left: auto; }
+.studio.s2 .timeline-more > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--s2-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.studio.s2 .timeline-more > summary::-webkit-details-marker { display: none; }
+.studio.s2 .timeline-more > summary:hover,
+.studio.s2 .timeline-more[open] > summary { color: var(--s2-text); background: var(--s2-bg2); }
+.studio.s2 .timeline-more-body {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 40;
+  display: grid;
+  gap: 12px;
+  width: max-content;
+  min-width: 240px;
+  max-width: min(360px, calc(100vw - 24px));
+  padding: 10px 12px;
+  background: var(--s2-bg2);
+  color: var(--s2-text);
+  border: 1px solid var(--s2-line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+  font-size: 12px;
+}
+.studio.s2 .timeline-more-title { flex-basis: 100%; font-size: 11px; color: var(--s2-faint); }
+.studio.s2 .timeline-more .transport-metrics { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.studio.s2 .timeline-more-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.studio.s2 .timeline-more-group > button { display: inline-flex; align-items: center; gap: 6px; }
+.studio.s2 .timeline-more-body button { border: 1px solid var(--s2-line); }
+.studio.s2 .timeline-more-settings { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.studio.s2 .timeline-more-settings label { display: flex; align-items: center; gap: 6px; }
+.studio.s2 .timeline-more-settings input {
+  width: 64px;
+  background: var(--timeline-field-bg, var(--s2-bg1));
+  color: var(--s2-text);
+  border: 1px solid var(--timeline-field-border, var(--s2-line));
+  border-radius: 4px;
+}
+
+/* Keskileveä: meta-tieto (raidat, ruudut) väistyy; aika näkyy ajanilmaisimessa ja ruudut asetuksissa. */
+@media (max-width: 1100px) {
+  .studio.s2 .timeline-dock .timeline-meta { display: none; }
+}
+
+/* Kapea: palkki saa rivittyä ja Lisää ⋯ avautuu palkin sisään, koska telakka vierii pystysuunnassa. */
+@media (max-width: 600px) {
+  .studio.s2 .timeline-dock { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: 'toggle bar' 'body body'; }
+  .studio.s2 .timeline-dock > .transport-controls { flex-wrap: wrap; row-gap: 4px; column-gap: 6px; padding: 3px 6px; }
+  .studio.s2 .timeline-dock .transport-status { display: none; }
+  .studio.s2 .timeline-dock .timeline-collapse { align-self: start; margin-top: 3px; }
+  /* Zoom-sana väistyy; liukusäätimen nimi on aria-labelissa. */
+  .studio.s2 .timeline-dock .timeline-zoom { font-size: 0; gap: 0; }
+  .studio.s2 .timeline-dock .timeline-zoom input { width: 64px; }
+  .studio.s2 .timeline-dock .transport-scene select { max-width: 120px; }
+  .studio.s2 .timeline-more > summary,
+  .studio.s2 .timeline-dock .transport-cluster .transport-icon,
+  .studio.s2 .timeline-dock .timeline-collapse { min-height: 36px; }
+  .studio.s2 .timeline-dock .transport-scene select { height: 36px; }
+  .studio.s2 .timeline-more[open] { flex-basis: 100%; }
+  .studio.s2 .timeline-more-body { position: static; width: auto; max-width: none; box-shadow: none; margin-top: 4px; }
+}
+
+/* ─── Alapalkki: Sulje kamera / Sulje mikrofoni mahtuvat 26 px:n palkkiin (vrt. .ai-chip, koeta-minimal.css) ─── */
+.studio.s2 .statusbar .device-status button { min-height: 20px !important; height: 20px; padding: 0 4px; line-height: 1; }
+@media (max-width: 600px) {
+  .studio.s2 .statusbar .device-status button { min-height: 28px !important; height: 28px; }
+}

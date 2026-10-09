@@ -14,4 +14,5 @@ import './styles/koeta-responsive.css';
 import './styles/koeta-minimal.css';
 import './styles/minimal-roolitus.css';
 import './styles/minimal-vasen.css';
+import './styles/minimal-aikajana.css';
 if(location.pathname==='/export-worker')void import('./export-worker').then(m=>m.startExportWorker());else createRoot(document.getElementById('root')!).render(<Editor/>);
