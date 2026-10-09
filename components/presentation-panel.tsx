@@ -145,6 +145,8 @@ export default function PresentationPanel({recordingTarget,doc,animation,scene,d
  const scriptLocked=working||disabled||recordingVoice||scriptSourceLocked;
  // Tarina: tarkistus/ohjaus ja palikkaeditori ovat piilossa, kunnes käyttäjä avaa ne (komponentit pysyvät mounted).
  const [tarinaReviewOpen,setTarinaReviewOpen]=useState(false),[tarinaBlocksOpen,setTarinaBlocksOpen]=useState(false);
+ // Palikkaeditori avautuu käsikirjoituksen alle, usein näkymän ulkopuolelle: tuodaan se näkyviin avattaessa.
+ useEffect(()=>{if(!tarinaBlocksOpen)return;const frame=requestAnimationFrame(()=>document.querySelector('.block-editor-dock--open')?.scrollIntoView({block:'start',behavior:'auto'}));return()=>cancelAnimationFrame(frame);},[tarinaBlocksOpen]);
  const [buildProgress,setBuildProgress]=useState<{stage:BuildStage;episode?:number;episodes?:number}|null>(null),[seriesBuilds,setSeriesBuilds]=useState<(EpisodeBuild&{source:EpisodeSource})[]>([]);
  const nextFrame=()=>new Promise<void>(r=>requestAnimationFrame(()=>r()));
  /** Rakenna jakso: tunnistus → roolitus → liikkeet → ääni yhdellä kumottavalla, journaloidulla muutoksella. */

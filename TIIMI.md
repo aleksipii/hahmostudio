@@ -242,3 +242,23 @@ Seuraava työ: testaa yllä oleva äänityksen vaiheenvaihto ja Mac GUI erillise
 Kiintiön viimeinen vahvistettu havainto ennen julkaisuvaihetta: ensisijainen 300 minuutin ikkuna **16 % jäljellä**, viikko 71 %. Kynnys 10 % koskee ensimmäistä; uusi tarkistus tarvitaan seuraavan työvaiheen alussa.
 
 Viimeinen kiintiötarkistus ennen GitHub-pushia: **11 % jäljellä / 300 min**, viikko 70 %. Tekstitodennukset tallennettu .txt-muodossa, koska .log kuuluu projektin ignore-sääntöihin.
+
+
+## Claude: 390 px vaiherivi ja Tarinan tarkistus-/palikkarivien selaintesti — 9.10.2026
+
+Lähtö: main = hahmostudio1.0 = `305d5c0` (Codexin Tarina-viimeistely ja todennusaineisto). Codexin haaroissa (`codex/*`) ei ollut yhdistämätöntä työtä. Työhaara `claude/project-thread-62aw80`; sama testattu commit viedään main- ja hahmostudio1.0-haaroihin (tarkista `git log -1 origin/main`).
+
+Tehty:
+- 390 px:n vaiherivi (testaajan kierros 9, kosmeettinen): ≤ 480 px:ssä vaiheiden sivutäyte 7 → 6 px ja Työpaja pelkkä kuvake; nimi säilyy `aria-label="Työpaja"` (`components/studio-shell.tsx`, `styles/koeta-responsive.css`). Kaikki viisi vaihetta mahtuvat 390 px:iin ilman vieritystä. Vielä kapeammalla (320 px) rivi vierii, ja valittu vaihe vieritetään nyt näkyviin.
+- Samassa mediakyselyssä Näyttämön otsikkorivin "Hahmon kuvakulma" -teksti piilotetaan (select säilyttää aria-labelin), koska valinta leikkautui oikeasta reunasta.
+- Löydös selaintestissä ja korjaus: "Näytä palikkaeditori" (Työkalut /) avasi editorin käsikirjoituksen alle näkymän ulkopuolelle (1440 px: y = 1001), joten mitään ei näyttänyt tapahtuvan. Avattaessa editori vieritetään nyt näkyviin (`components/presentation-panel.tsx`).
+- Korjausehdotusten otsikko ei enää ala reunasta tarkistuksen ollessa auki (`styles/minimal-tarina.css`).
+
+Testattu (Linux-pilvi, Node 22):
+- `npm run typecheck` 0; `npm test` 1402 testiä, 1401 pass, 0 fail, 1 skip (natiivi-FFmpeg puuttuu ympäristöstä); `npm run build:private` 0. Uusi testi `server/ui.test.mjs` (puhelinleveys…).
+- Selain (Vite dev, Playwright-Chromium, `docs/tiimi/editor-preview.html`), rakennettu esimerkkijakso, 1440/820/390 px: Tarkistus ja ohjaus -rivi näkyy (2 ehdotusta), avaa ja sulkee tarkistuksen (`aria-expanded`); Työkalut / sisältää "Näytä tarkistus ja ohjaus" ja "Näytä palikkaeditori"; palikkaeditori aukeaa (16 painiketta) näkyviin ja sulkeutuu "Piilota palikkaeditori"; Kuvaus-vaiheessa palikkaeditori on Tarkastelijan suljettu ryhmä. Ei vaakavieritystä, ei konsolivirheitä. Skripti ja kuvat: `docs/tiimi/todennus/claude-390-palikat/`.
+- `scripts/ui-census.mjs --check` 1440×900 ja 390×900: kaikki kuusi vaihetta budjetissa (1440: Tarina 20, Roolitus 30, Storyboard 23, Kuvaus 24, Leikkaus 33, Työpaja 27).
+
+Avoimet hyväksynnät ennallaan: VoiceOver, paketoitu Mac-sovellus ja oikeat laitteet, äänityksen aikainen vaiheenvaihto, aito Kokoro-inferenssi ja huulisynkka, taiteellinen hyväksyntä, GPU/pilvi. Palikoiden muokkausta (raahaus, Samalla-pudotus) ei ajettu selaimessa.
+
+Seuraava konkreettinen työ: palikkaeditorin muokkaustoimintojen selaintesti (valinta, raahaus, Alt-pudotus repliikille, kumoa), sitten Codexin listaama äänityksen vaiheenvaihto ja Mac GUI. Omistetut tiedostot: components/studio-shell.tsx, styles/koeta-responsive.css (480 px -lohko), presentation-panel.tsx:n palikkaeditorin vieritys. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin mittaria ei käytetty.

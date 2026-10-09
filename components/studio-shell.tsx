@@ -1,4 +1,4 @@
-import type { CSSProperties, DragEventHandler, ReactNode } from 'react';
+import { useEffect, useRef, type CSSProperties, type DragEventHandler, type ReactNode } from 'react';
 import { ArrowRight, Hammer, Redo2, Search, Undo2 } from 'lucide-react';
 import { studioFlowSteps, studioWorkshop } from '../lib/studio-flow-steps';
 import type { StudioFlowStep } from '../lib/studio-flow-scope';
@@ -46,6 +46,18 @@ export default function StudioShell({
   const nextIndex = workshop ? 1 : activeIndex + 1;
   const next = studioFlowSteps[nextIndex];
   const nextLabel = workshop ? 'Roolitukseen' : next?.label;
+  const phasesRef = useRef<HTMLElement>(null);
+  // Kapealla ruudulla vaiherivi vierii: valittu vaihe pidetään näkyvissä.
+  useEffect(() => {
+    const nav = phasesRef.current;
+    if (!nav || nav.scrollWidth <= nav.clientWidth) return;
+    const current = nav.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!current) return;
+    const left = current.getBoundingClientRect().left - nav.getBoundingClientRect().left + nav.scrollLeft;
+    if (left < nav.scrollLeft || left + current.offsetWidth > nav.scrollLeft + nav.clientWidth) {
+      nav.scrollLeft = Math.max(0, left + current.offsetWidth - nav.clientWidth);
+    }
+  }, [active, workshop]);
   return (
     <main
       className={['kilsat-frame', 's2', workshop ? 'phase-workshop' : `phase-${active}`, className].filter(Boolean).join(' ')}
@@ -60,7 +72,7 @@ export default function StudioShell({
           <span>KOETA</span>
         </div>
         {projectMenu}
-        <nav className="studio-flow-tabs s2-phases" aria-label="Tuotantovaiheet">
+        <nav ref={phasesRef} className="studio-flow-tabs s2-phases" aria-label="Tuotantovaiheet">
           {studioFlowSteps.map(({ id, label, hint }, index) => (
             <button
               key={id}
@@ -82,6 +94,7 @@ export default function StudioShell({
           className="s2-workshop"
           aria-current={workshop ? 'page' : undefined}
           aria-pressed={workshop}
+          aria-label={studioWorkshop.label}
           title={studioWorkshop.hint}
           onClick={onWorkshop}
         >

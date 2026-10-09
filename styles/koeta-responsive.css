@@ -56,6 +56,16 @@
   .s2 .s2-brand { display: none; }
   .s2 .s2-project-menu > summary { max-width: 120px; }
   .s2 .s2-tools .s2-icon { width: 30px; padding: 0; }
+  /* Puhelinleveys: kaikki viisi vaihetta mahtuvat riville ilman vieritystä.
+   * Työpaja näkyy pelkkänä kuvakkeena; nimi säilyy aria-labelissa. */
+  .s2 .s2-phase { padding: 3px 6px; }
+  .s2 .s2-phase[aria-current='page']::after { left: 6px; right: 6px; }
+  .s2 .s2-workshop span { display: none; }
+  .s2 .s2-workshop { padding: 3px 8px; }
+  .s2 .s2-workshop[aria-current='page']::after { left: 8px; right: 8px; }
+  /* Näyttämön otsikkorivi: kuvakulman valinta näkyy kokonaan; nimi säilyy aria-labelissa. */
+  .studio.s2 .s2-stagebar .angle-choice { font-size: 0; gap: 0; }
+  .studio.s2 .s2-stagebar .angle-choice select { font-size: 12px; max-width: 110px; }
 }
 
 /* ─── Työtila kapealla ruudulla ───

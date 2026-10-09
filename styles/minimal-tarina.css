@@ -82,6 +82,7 @@
 .studio.s2.phase-script .presentation-panel--review-open:not(.presentation-panel--locked) { display: flex; flex-direction: column; }
 .studio.s2.phase-script .presentation-panel--review-open:not(.presentation-panel--locked) > .tarina-review-row { order: -2; }
 .studio.s2.phase-script .presentation-panel--review-open:not(.presentation-panel--locked) > .review-suggestions { order: -1; }
+.studio.s2.phase-script .presentation-panel--review-open > .review-suggestions { padding: 0 8px; }
 
 /* Rivieditori: pitkä rivi rivittyy näkyviin eikä katkea (lähde on yhä yksi rivi). */
 .studio.s2 .script-line-sheet .script-line-field { field-sizing: content; overflow-wrap: anywhere; }

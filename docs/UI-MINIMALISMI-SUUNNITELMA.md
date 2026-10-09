@@ -167,6 +167,7 @@ Jokaisen vaiheen jälkeen: kuvakaappaukset 1440/820/390, laskuri, `npm run typec
 - Hallintolaskuri yhdistetyssä versiossa (1440×900, hallintoja/sanoja): Tarina 42/1089, Roolitus 54/306, Storyboard 35/245, Kuvaus 42/313, Leikkaus 50/481, Työpaja 37/96 (budjetissa). Lähtötaso samana päivänä: 42/1089, 53/775, 41/936, 48/1004, 45/1177, 58/327.
 - Toinen agenttikierros (yhdistetty, main): Roolituksen/Kuvauksen Näyttämö-välilehden X/Y/Koko/Sovita keskelle suljetun "Tarkka sijainti" -osion taakse; V7 Tekoäly-välilehti Tarkastelijaan (yli 850 px ja oikea paneeli näkyvissä → välilehti, muuten dialogi; yhteinen `AiContent`); hallintolaskuri erottaa sisällön (raidat, kuvakortit, kirjastokortit, käsikirjoitusrivit, tasopuu) budjetista. Uusi lukema 1440×900 (kuorma/sisältö): Tarina 34/26, Roolitus 44/8, Storyboard 29/6, Kuvaus 40/2, Leikkaus 37/13, Työpaja 30/8 (vain Työpaja budjetissa).
 - Kesken: Tarina-vaiheen keventäminen haarassa `claude/agentti-tarina` (`aa13c13`), ei yhdistetty eikä koordinoijan tarkistama.
+- 9.10. Claude: kaikki kuusi vaihetta budjetissa 1440×900 ja 390×900 (Codexin vaihebudjettityö + tarkistus). 390 px:n vaiherivi mahtuu (Työpaja kuvakkeena), ja Tarinan palikkaeditori vieritetään näkyviin avattaessa.
 - Jäljellä (vanha lista): vasemman paneelin siivous, V7 Tarkastelijan välilehti, hallintalaskurin budjetit.
 
 ### Yhteistyö ja ristiriitariski
