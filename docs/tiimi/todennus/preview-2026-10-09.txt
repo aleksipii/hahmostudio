@@ -1,0 +1,21 @@
+
+> hahmostudio@0.36.0 team:test:preview
+> node scripts/team-preview-run.mjs
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 130 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-team-preview/docs/tiimi/preview.html                   0.34 kB │ gzip:   0.25 kB
+dist-team-preview/assets/preview-COWfrXh_.css              66.82 kB │ gzip:  13.32 kB
+dist-team-preview/assets/presentation-images-CYJtnNwC.js    0.30 kB │ gzip:   0.25 kB
+dist-team-preview/assets/preview-T1p7AkI9.js              531.30 kB │ gzip: 177.55 kB
+
+✓ built in 13.13s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+{"ok":true,"checks":[{"name":"real React style selection updates profile","ok":true,"before":"cel","after":"flat"},{"name":"disabled cast fieldset locks representation, style and colors","ok":true},{"name":"cloud status stays blocked without model pins","ok":true},{"name":"preview 1440px","ok":true,"width":1440,"scrollWidth":1440,"canvases":20},{"name":"preview 600px","ok":true,"width":600,"scrollWidth":600,"canvases":20}],"errors":[],"electron":"44.5.1","platform":"darwin","scope":"isolated real Electron component and Canvas, not packaged application, not cloud/GPU"}
