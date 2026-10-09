@@ -31,3 +31,18 @@ Tarkastettu 9GitHub-haaraa ja alkuperäisen paikallisen repon 7haaraa. Main ja h
 Varmista juuri ennen poistoa remote-haaran SHA sekä paikallisen haaran SHA ja worktree-käyttö. Etäpoisto käyttää tarkkaa expected-SHA-leasea eikä ylikirjoita muuttunutta haaraa. Paikallinen poisto vain git branch -d, ei -D. Säilytä main, hahmostudio1.0, kaikki yhdistämätön työ ja aktiivinen asiantuntijahaara. Tarkastetun neljän Claude-työhaaran nykyiset päät eroavat aiemmin yhdistettyjen PR:ien päistä. Niillä on uutta työtä.
 
 Tämä kartoitus ei yhdistä näiden säilytettyjen haarojen koodia päähaaroihin. Päivitä toteutunut poistotulos ja jäljelle jääneet haarat toimenpiteiden jälkeen.
+
+
+## Toteutunut siivous
+
+Poistettu GitHubista atomisesti ja alkuperäiset SHAt tarkistavilla leaseilla:
+- claude/tiimi-testaaja-88wrwc: d356ad6e7d1ae043d68cb74a3c1bf0143f91d667, sama main-revisio.
+- codex/asiantuntijapromptit-2026-10-08: 4f83c44a9bbbb602480a9b47934e726a1bba030a; 10 promptia ja English-esimerkki identtisinä aktiivisessa toteutushaarassa, vanhan indeksin blob ab851fa88cc9bc51fef4f857c8aa10edf1514892 arkistoitu tavuilleen mainiin.
+
+Poistettu alkuperäisen repon paikalliset täysin yhdistetyt haarat git branch -d: englanninkielinen-esimerkki, mac-tarkistus, uudet-hahmot ja vienti-e2e. Worktree-tarkistus osoitti, ettei niissä ollut aktiivista työpuuta. Ei force-deletea eikä käyttäjän tiedostojen poistoa.
+
+Jäljelle GitHubiin 7haaraa: main,hahmostudio1.0,claude/tiimi-hahmografiikka-4r5gbm,claude/tiimi-kasikirjoitussaannot,claude/tiimi-tekoaly-q1331b,claude/tiimi-ui-ux-nr3q0j ja codex/asiantuntijat-2026-10-09. Alkuperäiseen paikalliseen repoon jäivät main,hahmostudio1.0 ja toon-tyyli-luonnos.
+
+Kiintiöohje ja lukija julkaistiin samaan 7f82b90-commitiin mainissa ja hahmostudio1.0-haarassa; alkuperäinen main-työpuu päivitettiin fast-forwardilla ja sen hahmostudio1.0-viite samalla säilyttävällä päivityksellä. Sääntö yhdistettiin myös aktiiviseen asiantuntijahaaraan. Lopputulosraportin myöhempi dokumentaatiocommit päivitetään molempiin päähaaroihin atomisesti.
+
+Kiintiölukijan 4/4 testiä läpäisi. Oikean app-server-lukijan tulos oli 66 % jäljellä 5 tunnin ikkunassa ja 95 % viikossa; käyttäjä vahvisti 5 tunnin valinnan. Raja ei ollut lauennut eikä yhdistämättömiä sovellusmuutoksia siirretty päähaaroihin.
