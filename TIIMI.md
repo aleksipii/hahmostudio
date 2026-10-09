@@ -211,3 +211,32 @@ Nykyinen vaihe: VALMIS OSA PÄÄHAAROISSA, YKSI TYÖ KESKEN. Integraatiohaara `c
 3. Työpöydän todennus oikealla Macilla: `npm run desktop:package:mac`, Tekoäly-välilehti ja pilviohjaimet.
 
 Omistetut tiedostot tällä kierroksella: components/scene-panel.tsx, components/ai-panel.tsx, components/editor.tsx (inspector-tabs, openAi), scripts/ui-census.mjs, styles/minimal-*.css. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin 5 tunnin mittaria ei käytetty eikä esitetä Clauden kiintiönä.
+
+
+## Codex → Claude: Tarina ja vaihebudjetit — 9.10.2026
+
+Lähtö: molemmat GitHub-päähaarat `0dc572e52f710454b34613e33c7545628ea0bdf5`.
+Tarina-haara `aa13c1365470a8552df60701bd39a6969c097606` yhdistettiin työhaaraan (merge `898f591`); molempien käyttöliittymäkerrosten tyylit ja testit säilytettiin.
+
+Koodista todettu ja toteutettu:
+- Roolituksen tarkat näyttämöasetukset ja näkymävalinnat avautuvat erikseen. Aikajana ei vie tilaa suljettuna.
+- Kuvakäsikirjoitus avautuu ilman kirjastosivupalkkia; käyttäjä voi palauttaa sen Näkymä-valikosta.
+- Lukituissa tuotantovaiheissa lohko- ja äänityökalut ovat Tarkastelijan avattavissa ryhmissä. Äänityksen käynnissä oleva ohjaus siirtyy pysyvään isäntään, jotta pysäytys ei katoa vaihetta vaihdettaessa. Tämän tallennuspolun oikea mikrofonitesti jää avoimeksi.
+- Valitsemattoman osan muunnos ja avainruudun easing eivät vie oletusnäkymän tilaa.
+- Laskuri käyttää näkyviä tekstialueita: suljetut details-sisällöt ja valitsemattomat select-vaihtoehdot eivät kuulu näkyvään UI-sanakuormaan. Käyttäjän sisältösanat raportoidaan erikseen `contentWords`-kentässä; budjettirajat eivät muuttuneet.
+
+Todennus:
+- `npm test`: **1401/1401 läpi**, ei ohituksia (Mac, Node 24).
+- `npm run typecheck`: läpi.
+- `VITE_BASE_PATH=/ VITE_PRIVATE_SERVER=true npm run build -- --configLoader runner`: läpi (npm run build:private ei välitä Viten runner-argumenttia oikein; käytä tätä komentoa).
+- `node_modules/.bin/electron scripts/census-fixture.mjs`: oikean Chromiumin suljettu/avattu details ja select-valinta läpi.
+- `node_modules/.bin/electron scripts/team-census.mjs`: sama laskentalogiikka kuin ui-census, eristetty sisäänrakennettu esimerkki, 1440/820/390 × 900. Kaikki kuusi vaihetta budjetissa. 1440 px hallinnat/UI-sanat: Tarina 20/110, Roolitus 30/93, Kuvakäsikirjoitus 23/97, Kuva 24/116, Aikajana 33/144, Työpaja 27/81. JSON, kuvat ja toimintatestien raportit: `docs/tiimi/todennus/codex-handoff/`.
+- Lisää ⋯: 120 ruutua/24 fps → 5,0 s, 30 fps → 4,0 s; Kumoa → 5,0 s ja Tee uudelleen → 4,0 s. Testi odottaa muutosten ryhmittelyikkunan loppumista. Aloituspohjat → Try English example lataa englanninkielisen lähteen; oikeaa Kokoro-inferenssiä ei tehty.
+- `npm run desktop:test:cloud`: läpi; oikea Electron/IPC/utilityProcess ja työpöydän Tekoäly-välilehden pilviohjaimet, synteettinen eristetty suostumus. Mallilukituksen puuttuessa kustannustila on oikein **estetty**. Ei oikeaa palvelupyyntöä eikä käyttäjän pilvilupaa.
+- Mac-koepaketti: `electron_config_cache=/Users/Aleksi/Library/Caches/electron node scripts/package-mac.mjs` sekä `npm run desktop:test:package` läpi. Natiivit ajokomponentit testattu paketista; ei asennetun sovelluksen korvaamista eikä laite-/GUI-hyväksyntää. Pakkaaja varoitti puuttuvasta .icon-muodosta; .app ja ZIP valmistuivat.
+
+Avoimet hyväksynnät: VoiceOver, paketoidun sovelluksen käyttöliittymä ja oikeat kamera/mikrofoni, käynnissä olevan äänityksen vaiheenvaihto, oikea Kokoro-inferenssi/huulisynkka, taiteellinen hahmojen hyväksyntä sekä GPU-/palvelinajo. Selainmittaus tai simuloitu testisuostumus ei sulje näitä.
+
+Seuraava työ: testaa yllä oleva äänityksen vaiheenvaihto ja Mac GUI erillisellä testidatalla, tee VoiceOver-kuunteluhyväksyntä, sitten Kokoron oikea englanninkielinen ajo olemassa olevan luvallisen mallin kanssa. Älä lisää uusia pilvilupia tai korvaa käyttäjän asennettua sovellusta.
+
+Kiintiön viimeinen vahvistettu havainto ennen julkaisuvaihetta: ensisijainen 300 minuutin ikkuna **16 % jäljellä**, viikko 71 %. Kynnys 10 % koskee ensimmäistä; uusi tarkistus tarvitaan seuraavan työvaiheen alussa.

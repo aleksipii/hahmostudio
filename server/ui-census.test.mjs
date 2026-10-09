@@ -58,3 +58,8 @@ test('taulukossa on vyöhykkeet ja sisältösarake', () => {
   assert.match(lines[2], /^timeline\s+1\s+1\s+7 \|/);
   assert.match(lines.at(-1), /aikajana-raidat 1/);
 });
+
+test('UI-sanat ja näkyvä käyttäjäsisältö tallentuvat erikseen, sisältö ei muuta UI-budjettia',()=>{
+ const items=[{zone:'nayttamo',content:'kuvakortit'}],a=tally(items,149,10),b=tally(items,149,5000);
+ assert.equal(a.words,b.words);assert.equal(a.visibleWords,159);assert.equal(b.visibleWords,5149);assert.equal(b.contentWords,5000);assert.equal(evaluate({storyboard:b})[0].ok,true);
+});

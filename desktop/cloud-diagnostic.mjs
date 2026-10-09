@@ -52,7 +52,11 @@ export async function cloudDiagnostic(window,{cloud,asked,clipboard,dataDir,repo
 
  openAi();
  const panel=await waitFor(()=>js("(()=>{const t=document.querySelector('[data-ai-feature=\"cloud-render\"]')?.textContent??'';return /Otettu käyttöön/.test(t)?t:'';})()")).catch(()=>js("document.querySelector('[data-ai-feature=\"cloud-render\"]')?.textContent??''"));
- step('Tekoäly-paneeli näyttää pilven tilan',/Pilvirenderöinti/.test(panel)&&/Otettu käyttöön/.test(panel)&&/€0,00/.test(panel),panel.slice(0,200));
+ step('Tekoäly-paneeli näyttää pilven tilan',/Pilvirenderöinti/.test(panel)&&/Otettu käyttöön/.test(panel)&&/estetty/.test(panel),panel.slice(0,200));
+ window.setContentSize(1440,900);
+ await js("document.querySelector('.s2-phase[data-studio-flow-step=\"shot\"]').click()");await sleep(250);openAi();
+ await waitFor(()=>js("!!document.querySelector('.ai-inspector-dock:not([hidden]) .ai-cloud-controls')"));
+ step('Tekoäly-välilehden pilviohjaimet työpöydällä',await js("!!document.querySelector('.ai-inspector-dock:not([hidden]) .ai-cloud-controls button')"));
  const html=await js('document.documentElement.outerHTML');
  step('salaisuus ei näy rendererissä',!html.includes(MARK)&&!(await js('JSON.stringify(Object.keys(window.hahmostudio))')).includes('values'));
  step('salaisuus ei kulje IPC-vastauksissa',!JSON.stringify(responses).includes(MARK));

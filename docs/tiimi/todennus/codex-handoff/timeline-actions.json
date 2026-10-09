@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "scope": "actual Electron input events and independent timeline ruler",
+  "duration120At24": "5.0 s",
+  "fps30": "4.0 s",
+  "undo": "5.0 s",
+  "redo": "4.0 s"
+}

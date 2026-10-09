@@ -19,4 +19,5 @@ import './styles/minimal-nayttamo.css';
 import './styles/minimal-tekoaly.css';
 
 import './styles/minimal-tarina.css';
+import './styles/minimal-budjetit.css';
 if(location.pathname==='/export-worker')void import('./export-worker').then(m=>m.startExportWorker());else createRoot(document.getElementById('root')!).render(<Editor/>);

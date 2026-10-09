@@ -74,7 +74,7 @@ test('V7: Tekoäly on Tarkastelijan välilehti, kun oikea paneeli on näyttämö
  assert.equal([...panel.matchAll(/bridge\.cloudEnable\(\)/g)].length,1);
  assert.match(panel,/role="dialog" aria-modal="true" aria-labelledby="ai-title"/);
  assert.match(panel,/if\(e\.key==='Escape'\)/);
- assert.match(readFileSync(new URL('main.tsx',root),'utf8'),/import '\.\/styles\/minimal-tekoaly\.css';\nif\(location/);
+ assert.match(readFileSync(new URL('main.tsx',root),'utf8'),/import '\.\/styles\/minimal-tekoaly\.css';/);
 });
 test('V7: Tekoäly-välilehden sisältö renderöityy ilman siltaa (web): tilat lataamassa, ei pilvipainikkeita',async()=>{
  const {AiInspectorTab}=await import('../components/ai-panel.tsx');

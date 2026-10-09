@@ -1,0 +1,3520 @@
+{
+  "scope": "actual Mac Electron, web editor, built-in sample only; no devices, packaged app or provider requests",
+  "all": [
+    {
+      "width": 1440,
+      "height": 900,
+      "rows": [
+        {
+          "id": "script",
+          "controls": 20,
+          "content": 18,
+          "contentByKind": {
+            "kasikirjoitus": 18
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 3,
+            "nayttamo": 5,
+            "oikea": 0,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 110,
+          "contentWords": 0,
+          "visibleWords": 110,
+          "visibleText": "KOETA\nPipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nHae toimintoa…\n⌘K\nRoolitus\nDialogi\nleikkaukset\nYhden hahmon\nliikkeet\nTarkistus ja ohjaus\n2 ehdotusta\nKäsikirjoitus\nPipsa-3D.psd · 1080 × 1920 ●\nKuvakortit\nKeskittymistila\nKäsikirjoitus\nTyökalut /\nTieto\nKommentti\nKohtaus\npuhelin\nMIRA\n1 sanaa\nRepliikki\nkävely → 2 s\npysähdys · katse → MIRA\nKuva: lähikuva MIRA\npuhelin\nistuminen · ilme: surullinen\nilme: iloinen · katse → ka…\nSiirtymä\n\nJakso rakennettu: 2 hahmoa, 14 tapahtumaa, 7.2 s. 1 repliikiltä puuttuu ääni. Tarkistuksessa 1 virhettä. Kumoa palauttaa edellisen tilan.\n\nRakenna jakso\nJaa kohtauksiin\n18 riviä\n·\n361 merkkiä\n/ työkalut\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 25,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "characters",
+          "controls": 30,
+          "content": 8,
+          "contentByKind": {
+            "kirjastokortit": 8
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 9,
+            "nayttamo": 4,
+            "oikea": 5,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 93,
+          "contentWords": 20,
+          "visibleWords": 113,
+          "visibleText": "KOETA\nPipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nHae toimintoa…\n⌘K\nStoryboard\nHahmot\nKuvausympäristöt\nEsineet\nPuhujan sidonta · @tunnus · .hahmo\nPuhuja\t@tunnus\t.hahmo\nMIRA\t—\t\nValitse .hahmo\nPipsa-3D\nVille-3D\nTaru-3D\nUkko-3D\nPipsa\nVille\nTaru\nUkko\nTuo\n\nNIKO\t—\t\nValitse .hahmo\nPipsa-3D\nVille-3D\nTaru-3D\nUkko-3D\nPipsa\nVille\nTaru\nUkko\nTuo\n1 · VALITSE HAHMO\nValmiina animoitavaksi\nOhje\nSTUDIO\nPipsa · 3D\nKäytössä\nTiedot\nVille · 3D\nValitse\nTiedot\nTaru · 3D\nValitse\nTiedot\nUkko · 3D\nValitse\nTiedot\nLuonnokset (5)\n3 · Kirjoita käsikirjoitus\nLataa aineistot ja muokkaa itse\nRoolitus\nPipsa-3D.psd · 1080 × 1920 ●\nPienennä hahmoa\nSuurenna hahmoa\nNäkymä\nKeskitä hahmo\nNäyttämö\nEsitys\nTekoäly\nNÄYTTÄMÖ JA SOMMITTELU\nKuvausympäristö\nTasainen väri\nKILSAT · kartonkistudio\nKILSAT · kauppakatu\nKILSAT · auton sisällä\nValkoinen studio\nTumma studio\nVäristudio\nToimisto\nNeuvotteluhuone\nKotitoimisto\nKeittiö\nEteinen\nKahvila\nRavintola\nLuokkahuone\nKirjasto\nPalvelupiste\nKatu\nKaupunkiaukio\nBussipysäkki\nPuisto\nMetsäpolku\nRanta\nParkkipaikka\nAutotalli\nEsittelytila\nMakuuhuone\nLastenhuone\nKylpyhuone\nSauna\nPorraskäytävä\nRuokakauppa\nLiikuntasali\nSairaala\nJuna\nBussi\nMökki ja järvi\nTalvipiha\nLeikkipuisto\nKattoterassi\nKeittiö · vastakuva\nToimisto · vastakuva\nLuokkahuone · opettajan puolelta\nKahvila · tiski\nKatu · yö\nStudio · valoisa\nOlohuone\nKaupunki · ilta\nAuto · moderni sisätila\nStudio\nPuhelin · edestä\nPuhelin · sivuviisto\nAuto · kuljettaja\nAuto · matkustaja\nAuto · takapenkiltä\nNäyttämön asetukset\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 30,
+            "words": 200
+          },
+          "ok": true
+        },
+        {
+          "id": "storyboard",
+          "controls": 23,
+          "content": 6,
+          "contentByKind": {
+            "aikajana-raidat": 2,
+            "kuvakortit": 4
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 0,
+            "nayttamo": 11,
+            "oikea": 0,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 97,
+          "contentWords": 64,
+          "visibleWords": 161,
+          "visibleText": "KOETA\nPipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nHae toimintoa…\n⌘K\nKuvaus\nStoryboard\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\nKäsikirjoitus\nKuvakortit\nReaktiot\nHahmot · 2D / 3D\nMiljööt ja esineet\nSarjan ohjaus\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nPysäköintisakko · revisio 1\nKuvakortit\nKuvaluettelo\nTuotantotilanne\nSuodata ja lajittele\n\n1 kohtausta · 2 kuvaa · 7.17 s\n\nNäytetään 2 / 2 kuvaa.\n\nLuonnos\nKuva 001\nKEITTIÖ\n0.00 s · kesto 3.87 s\nMIRA, NIKO\nEi vastuuhenkilöä · Ei määräaikaa · 0 avointa kommenttia · Luonnos · Repliikkiääni puuttuu · 2 virhettä\nHyväksy kuva\nLuonnos\nKuva 002\nKEITTIÖ\n3.87 s · kesto 3.30 s\nNIKO, MIRA\nEi vastuuhenkilöä · Ei määräaikaa · 0 avointa kommenttia · Luonnos · Ei repliikkejä · 0 virhettä\nHyväksy kuva\nEdellinen sivu\n1 / 1\nSeuraava sivu\nTarkistuskommentit · 0 avointa\nTuotannon tarkistus · 2 virhettä · 3 huomiota\nKuvien järjestys ja siirtäminen\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 25,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "shot",
+          "controls": 24,
+          "content": 2,
+          "contentByKind": {
+            "aikajana-raidat": 2
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 1,
+            "nayttamo": 1,
+            "oikea": 10,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 116,
+          "contentWords": 2,
+          "visibleWords": 118,
+          "visibleText": "KOETA\nPipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nHae toimintoa…\n⌘K\nLeikkaus\nPysäköintisakko\nMuokkaa Tarinassa\nKuva\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nValinta\nNäyttämö\nLiikkeet\nTekoäly\nPalikkaeditori\nÄäni ja tuotanto\n· 1 puuttuva ääni\nÄäni · aaltomuoto ja puheen teksti\nÄänitä repliikki omalla äänellä\n\nPaikallinen litterointipalvelu ei ole käynnissä.\n\nÄäni ja videovienti\nANIMAATION TYÖKALUT\nMuunnos · liike ja avainruudut\nSiirtymäkäyrä · valittu avainruutu\nLiikelogiikka · tilakone\nKävelyanimaatio · askellus ja käsien heilahdus\nAutomaattinen niveltaivutus · kädet ja jalat\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 30,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "timeline",
+          "controls": 33,
+          "content": 13,
+          "contentByKind": {
+            "aikajana-raidat": 13
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 3,
+            "nayttamo": 2,
+            "oikea": 8,
+            "aikajana": 8,
+            "muu": 1
+          },
+          "words": 144,
+          "contentWords": 22,
+          "visibleWords": 166,
+          "visibleText": "KOETA\nPipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nHae toimintoa…\n⌘K\nVie…\nKäsikirjoitus\nJaksot\nPysäköintisakko\nMuokkaa Tarinassa\nNäyttämö\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\nKuvakortit\nValinta\nNäyttämö\nLiikkeet\nTekoäly\nPalikkaeditori\nÄäni ja tuotanto\n· 1 puuttuva ääni\nÄäni ja videovienti\nANIMAATION TYÖKALUT\nMuunnos · liike ja avainruudut\nSiirtymäkäyrä · valittu avainruutu\nLiikelogiikka · tilakone\nKävelyanimaatio · askellus ja käsien heilahdus\nAutomaattinen niveltaivutus · kädet ja jalat\nPiilota aikajana\n0.00 s · 28 raitaa · 2 ruutua\nValmis\nToista\nPysäytä\nUudelleen alusta\nRuutu 0 · 0.00 s\nZoom\nKohtaus\nValitse…\nLisää ⋯\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nAIKA / SEKUNTIA\n0.0 s\n0.0 s\n0.0 s\n0.0 s\n0.0 s\n0.0 s\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nVartalo\n◆\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVartalo\n◆\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVartalo\n◆\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nVartalo\n◆\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 35,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "workshop",
+          "controls": 27,
+          "content": 8,
+          "contentByKind": {
+            "tasopuu": 8
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 4,
+            "nayttamo": 9,
+            "oikea": 2,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 81,
+          "contentWords": 6,
+          "visibleWords": 87,
+          "visibleText": "KOETA\nPipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nHae toimintoa…\n⌘K\nRoolitukseen\nKirjasto\nHahmon osat\nTASOT\n112\nHae hahmon osaa\nTakaa\nVasen profiili\nOikea profiili\nEdestä\nLisää\nTyöpaja · hahmon osat\nPipsa-3D.psd · 600 × 900 ●\nTarkista tuonti\nPiirtäminen\nTasot\nNivelmääritys\nAlkuperäinen PSD\nNäkymä\nValinta\nTekoäly\nVALITUN TASON TIEDOT\n\nValitse taso.\n\nNäet kuvan, sijainnin ja koon. Voit myös ladata tason PNG:nä.\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 40,
+            "words": 200
+          },
+          "ok": true
+        }
+      ],
+      "listings": {
+        "script": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Roolitus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Dialogileikkaukset\" < asset-tabs < script-shell-sidebar < script-shell < script-container"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Yhden hahmonliikkeet\" < asset-tabs < script-shell-sidebar < script-shell < script-container"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Tarkistus ja ohjaus2 ehdotusta\" < tarina-review-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Kuvakortit\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Keskittymistila\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.ghost-btn \"Työkalut /\" < script-compose-bar < script-compose-scroll < script-compose < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 1\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 2\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 3\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 4\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 5\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 6\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 7\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 8\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 9\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 10\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 11\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 12\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 13\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 14\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 15\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 16\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 17\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 18\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.primary \"Rakenna jakso\" < script-sticky-bar < script-compose-scroll < script-compose < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Jaa kohtauksiin\" < script-sticky-bar < script-compose-scroll < script-compose < panel-dock"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "characters": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Storyboard\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Hahmot\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Kuvausympäristöt\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Esineet\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "select \"MIRA · hahmopaketti\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Tuo\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "select \"NIKO · hahmopaketti\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Tuo\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "summary \"Ohje\" < s2-hint < asset-library < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Käytössä\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Pipsa-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Valitse Ville-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Ville-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Valitse Taru-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Taru-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Valitse Ukko-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Ukko-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "summary \"Luonnokset (5)\" < character-drafts < asset-library < quick-library < layers-panel"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Pienennä hahmoa\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Suurenna hahmoa\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Näkymä\" < preview-view-options < zoom-controls < preview-footer < preview-panel"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Keskitä hahmo\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.active \"Näyttämö\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button \"Esitys\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button \"Tekoäly\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "select \"Kuvausympäristö\" < stage-field < stage-inspector < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Näyttämön asetukset\" < stage-options < stage-inspector < inspector-section < details-panel"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "storyboard": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Kuvaus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Käsikirjoitus\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvakortit\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Reaktiot\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Hahmot · 2D / 3D\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Miljööt ja esineet\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Sarjan ohjaus\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvakortit\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvaluettelo\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Tuotantotilanne\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Suodata ja lajittele\" < board-more < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kuvakortit",
+            "desc": "button \"Kuva 001KEITTIÖ0.00 s · kesto 3.87 sMIRA\" < resolve-shot-card < studio-shots < studio-shot-board < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kuvakortit",
+            "desc": "button \"Hyväksy kuva\" < resolve-shot-card < studio-shots < studio-shot-board < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kuvakortit",
+            "desc": "button \"Kuva 002KEITTIÖ3.87 s · kesto 3.30 sNIKO\" < resolve-shot-card < studio-shots < studio-shot-board < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kuvakortit",
+            "desc": "button \"Hyväksy kuva\" < resolve-shot-card < studio-shots < studio-shot-board < production-board"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "shot": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Leikkaus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Muokkaa Tarinassa\" < locked-script-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < s2-filmstrip"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < s2-filmstrip"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Palikkaeditori\" < block-tools-disclosure < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja tuotanto · 1 puuttuva ääni\" < production-audio-tools < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni · aaltomuoto ja puheen teksti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.primary \"Äänitä repliikki omalla äänellä\" < dialogue-recorder < camera-controls < performance-panel < inspector-section"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja videovienti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Muunnos · liike ja avainruudut\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Siirtymäkäyrä · valittu avainruutu\" < motion-panel < motion-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Liikelogiikka · tilakone\" < motion-panel < motion-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Kävelyanimaatio · askellus ja käsien hei\" < performance-panel < performance-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Automaattinen niveltaivutus · kädet ja j\" < performance-panel < performance-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "timeline": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.primary \"Vie…\" < s2-export < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.active \"Käsikirjoitus\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button \"Jaksot\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Muokkaa Tarinassa\" < locked-script-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Kuvakortit\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Palikkaeditori\" < block-tools-disclosure < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja tuotanto · 1 puuttuva ääni\" < production-audio-tools < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja videovienti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Muunnos · liike ja avainruudut\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Siirtymäkäyrä · valittu avainruutu\" < motion-panel < motion-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Liikelogiikka · tilakone\" < motion-panel < motion-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Kävelyanimaatio · askellus ja käsien hei\" < performance-panel < performance-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Automaattinen niveltaivutus · kädet ja j\" < performance-panel < performance-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Piilota aikajana\" < timeline-toggle < timeline-dock < kilsat-main < kilsat-body"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Toista\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Pysäytä\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Uudelleen alusta\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "input \"Aikajanan zoom\" < timeline-zoom < timeline-bar-slot < transport-controls < timeline-dock"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "select \"Valitse…\" < transport-scene < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "summary \"Lisää ⋯\" < timeline-more < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < timeline-container"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < timeline-container"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "input.time-slider \"Aikajanan ruutu\" < timeline < timeline-container < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea reisi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea sääri\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea kenkä\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen reisi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen sääri\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen kenkä\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vartalo\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.current-key \"Vartalo: avainruutu 0\" < track-keys < animation-track < animation-tracks < timeline-body"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea olkavarsi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea kyynärvarsi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea kämmen\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "workshop": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Roolitukseen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button \"Kirjasto\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.active \"Hahmon osat\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "input \"Hae hahmon osaa\" < layer-search < layer-container < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Takaa\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Takaa\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Vasen profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Vasen profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Oikea profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Oikea profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Edestä\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Edestä\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "summary \"Lisää\" < layers-bottom < layer-container < layers-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Tarkista tuonti\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Läpinäkyvyysruudukko\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Tumma tausta\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Valkoinen tausta\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Piirtäminen\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Tasot\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Nivelmääritys\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Alkuperäinen PSD\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Näkymä\" < preview-view-options < zoom-controls < preview-footer < preview-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.active \"Valinta\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button \"Tekoäly\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ]
+      }
+    },
+    {
+      "width": 820,
+      "height": 900,
+      "rows": [
+        {
+          "id": "script",
+          "controls": 18,
+          "content": 17,
+          "contentByKind": {
+            "kasikirjoitus": 17
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 3,
+            "nayttamo": 3,
+            "oikea": 0,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 86,
+          "contentWords": 0,
+          "visibleWords": 86,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nRoolitus\nDialogi\nleikkaukset\nYhden hahmon\nliikkeet\nTarkistus ja ohjaus\n2 ehdotusta\nKäsikirjoitus\nPipsa-3D.psd · 1080 × 1920 ●\nKuvakortit\nKeskittymistila\nKäsikirjoitus\nTyökalut /\nTieto\nKommentti\nKohtaus\npuhelin\nMIRA\n1 sanaa\nRepliikki\nkävely → 2 s\npysähdys · katse → MIRA\nKuva: lähikuva MIRA\npuhelin\nistuminen · ilme: surullinen\nilme: iloinen · katse → ka…\nSiirtymä\n\nJakso rakennettu: 2 hahmoa, 14 tapahtumaa, 7.2 s. 1 repliikiltä puuttuu ääni. Tarkistuksessa 1 virhettä. Kumoa palauttaa edellisen tilan.\n\nRakenna jakso\nJaa kohtauksiin\n18 riviä\n·\n361 merkkiä\n/ työkalut\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 25,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "characters",
+          "controls": 29,
+          "content": 8,
+          "contentByKind": {
+            "kirjastokortit": 8
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 8,
+            "nayttamo": 4,
+            "oikea": 5,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 85,
+          "contentWords": 20,
+          "visibleWords": 105,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nStoryboard\nHahmot\nKuvausympäristöt\nEsineet\nPuhujan sidonta · @tunnus · .hahmo\nPuhuja\t@tunnus\t.hahmo\nMIRA\t—\t\nValitse .hahmo\nPipsa-3D\nVille-3D\nTaru-3D\nUkko-3D\nPipsa\nVille\nTaru\nUkko\nTuo\n\nNIKO\t—\t\nValitse .hahmo\nPipsa-3D\nVille-3D\nTaru-3D\nUkko-3D\nPipsa\nVille\nTaru\nUkko\nTuo\n1 · VALITSE HAHMO\nValmiina animoitavaksi\nOhje\nSTUDIO\nPipsa · 3D\nKäytössä\nTiedot\nVille · 3D\nValitse\nTiedot\nTaru · 3D\nValitse\nTiedot\nUkko · 3D\nValitse\nTiedot\nLuonnokset (5)\n3 · Kirjoita käsikirjoitus\nLataa aineistot ja muokkaa itse\nRoolitus\nPipsa-3D.psd · 1080 × 1920 ●\nPienennä hahmoa\nSuurenna hahmoa\nNäkymä\nKeskitä hahmo\nNäyttämö\nEsitys\nTekoäly\nNÄYTTÄMÖ JA SOMMITTELU\nKuvausympäristö\nTasainen väri\nKILSAT · kartonkistudio\nKILSAT · kauppakatu\nKILSAT · auton sisällä\nValkoinen studio\nTumma studio\nVäristudio\nToimisto\nNeuvotteluhuone\nKotitoimisto\nKeittiö\nEteinen\nKahvila\nRavintola\nLuokkahuone\nKirjasto\nPalvelupiste\nKatu\nKaupunkiaukio\nBussipysäkki\nPuisto\nMetsäpolku\nRanta\nParkkipaikka\nAutotalli\nEsittelytila\nMakuuhuone\nLastenhuone\nKylpyhuone\nSauna\nPorraskäytävä\nRuokakauppa\nLiikuntasali\nSairaala\nJuna\nBussi\nMökki ja järvi\nTalvipiha\nLeikkipuisto\nKattoterassi\nKeittiö · vastakuva\nToimisto · vastakuva\nLuokkahuone · opettajan puolelta\nKahvila · tiski\nKatu · yö\nStudio · valoisa\nOlohuone\nKaupunki · ilta\nAuto · moderni sisätila\nStudio\nPuhelin · edestä\nPuhelin · sivuviisto\nAuto · kuljettaja\nAuto · matkustaja\nAuto · takapenkiltä\nNäyttämön asetukset\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 30,
+            "words": 200
+          },
+          "ok": true
+        },
+        {
+          "id": "storyboard",
+          "controls": 23,
+          "content": 4,
+          "contentByKind": {
+            "aikajana-raidat": 2,
+            "kuvakortit": 2
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 0,
+            "nayttamo": 11,
+            "oikea": 0,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 93,
+          "contentWords": 26,
+          "visibleWords": 119,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nKuvaus\nStoryboard\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\nKäsikirjoitus\nKuvakortit\nReaktiot\nHahmot · 2D / 3D\nMiljööt ja esineet\nSarjan ohjaus\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nPysäköintisakko · revisio 1\nKuvakortit\nKuvaluettelo\nTuotantotilanne\nSuodata ja lajittele\n\n1 kohtausta · 2 kuvaa · 7.17 s\n\nNäytetään 2 / 2 kuvaa.\n\nLuonnos\nKuva 001\nKEITTIÖ\n0.00 s · kesto 3.87 s\nMIRA, NIKO\nEi vastuuhenkilöä · Ei määräaikaa · 0 avointa kommenttia · Luonnos · Repliikkiääni puuttuu · 2 virhettä\nHyväksy kuva\nLuonnos\nKuva 002\nKEITTIÖ\n3.87 s · kesto 3.30 s\nNIKO, MIRA\nEi vastuuhenkilöä · Ei määräaikaa · 0 avointa kommenttia · Luonnos · Ei repliikkejä · 0 virhettä\nHyväksy kuva\nEdellinen sivu\n1 / 1\nSeuraava sivu\nTarkistuskommentit · 0 avointa\nTuotannon tarkistus · 2 virhettä · 3 huomiota\nKuvien järjestys ja siirtäminen\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 25,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "shot",
+          "controls": 20,
+          "content": 2,
+          "contentByKind": {
+            "aikajana-raidat": 2
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 1,
+            "nayttamo": 1,
+            "oikea": 6,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 93,
+          "contentWords": 2,
+          "visibleWords": 95,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nLeikkaus\nPysäköintisakko\nMuokkaa Tarinassa\nKuva\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nValinta\nNäyttämö\nLiikkeet\nTekoäly\nPalikkaeditori\nÄäni ja tuotanto\n· 1 puuttuva ääni\nÄäni · aaltomuoto ja puheen teksti\nÄänitä repliikki omalla äänellä\n\nPaikallinen litterointipalvelu ei ole käynnissä.\n\nÄäni ja videovienti\nANIMAATION TYÖKALUT\nMuunnos · liike ja avainruudut\nSiirtymäkäyrä · valittu avainruutu\nLiikelogiikka · tilakone\nKävelyanimaatio · askellus ja käsien heilahdus\nAutomaattinen niveltaivutus · kädet ja jalat\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 30,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "timeline",
+          "controls": 31,
+          "content": 13,
+          "contentByKind": {
+            "aikajana-raidat": 13
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 3,
+            "nayttamo": 2,
+            "oikea": 6,
+            "aikajana": 8,
+            "muu": 1
+          },
+          "words": 120,
+          "contentWords": 22,
+          "visibleWords": 142,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nVie…\nKäsikirjoitus\nJaksot\nPysäköintisakko\nMuokkaa Tarinassa\nNäyttämö\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\nKuvakortit\nValinta\nNäyttämö\nLiikkeet\nTekoäly\nPalikkaeditori\nÄäni ja tuotanto\n· 1 puuttuva ääni\nÄäni ja videovienti\nANIMAATION TYÖKALUT\nMuunnos · liike ja avainruudut\nSiirtymäkäyrä · valittu avainruutu\nLiikelogiikka · tilakone\nKävelyanimaatio · askellus ja käsien heilahdus\nAutomaattinen niveltaivutus · kädet ja jalat\nPiilota aikajana\nValmis\nToista\nPysäytä\nUudelleen alusta\nRuutu 0 · 0.00 s\nZoom\nKohtaus\nValitse…\nLisää ⋯\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nAIKA / SEKUNTIA\n0.0 s\n0.0 s\n0.0 s\n0.0 s\n0.0 s\n0.0 s\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nVartalo\n◆\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVartalo\n◆\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVartalo\n◆\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nVartalo\n◆\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 35,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "workshop",
+          "controls": 27,
+          "content": 8,
+          "contentByKind": {
+            "tasopuu": 8
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 4,
+            "nayttamo": 9,
+            "oikea": 2,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 77,
+          "contentWords": 6,
+          "visibleWords": 83,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nRoolitukseen\nKirjasto\nHahmon osat\nTASOT\n112\nHae hahmon osaa\nTakaa\nVasen profiili\nOikea profiili\nEdestä\nLisää\nTyöpaja · hahmon osat\nPipsa-3D.psd · 600 × 900 ●\nTarkista tuonti\nPiirtäminen\nTasot\nNivelmääritys\nAlkuperäinen PSD\nNäkymä\nValinta\nTekoäly\nVALITUN TASON TIEDOT\n\nValitse taso.\n\nNäet kuvan, sijainnin ja koon. Voit myös ladata tason PNG:nä.\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 40,
+            "words": 200
+          },
+          "ok": true
+        }
+      ],
+      "listings": {
+        "script": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Roolitus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Dialogileikkaukset\" < asset-tabs < script-shell-sidebar < script-shell < script-container"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Yhden hahmonliikkeet\" < asset-tabs < script-shell-sidebar < script-shell < script-container"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Tarkistus ja ohjaus2 ehdotusta\" < tarina-review-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Kuvakortit\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Keskittymistila\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.ghost-btn \"Työkalut /\" < script-compose-bar < script-compose-scroll < script-compose < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 1\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 2\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 3\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 4\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 5\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 6\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 7\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 8\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 9\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 10\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 11\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 12\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 13\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 14\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 15\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 16\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 17\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "characters": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Storyboard\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Hahmot\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Kuvausympäristöt\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Esineet\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "select \"MIRA · hahmopaketti\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Tuo\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "select \"NIKO · hahmopaketti\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Tuo\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "summary \"Ohje\" < s2-hint < asset-library < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Käytössä\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Pipsa-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Valitse Ville-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Ville-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Valitse Taru-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Taru-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Valitse Ukko-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Ukko-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Pienennä hahmoa\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Suurenna hahmoa\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Näkymä\" < preview-view-options < zoom-controls < preview-footer < preview-panel"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Keskitä hahmo\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.active \"Näyttämö\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button \"Esitys\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button \"Tekoäly\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "select \"Kuvausympäristö\" < stage-field < stage-inspector < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Näyttämön asetukset\" < stage-options < stage-inspector < inspector-section < details-panel"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "storyboard": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Kuvaus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Käsikirjoitus\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvakortit\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Reaktiot\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Hahmot · 2D / 3D\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Miljööt ja esineet\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Sarjan ohjaus\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvakortit\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvaluettelo\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Tuotantotilanne\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Suodata ja lajittele\" < board-more < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kuvakortit",
+            "desc": "button \"Kuva 001KEITTIÖ0.00 s · kesto 3.87 sMIRA\" < resolve-shot-card < studio-shots < studio-shot-board < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kuvakortit",
+            "desc": "button \"Kuva 002KEITTIÖ3.87 s · kesto 3.30 sNIKO\" < resolve-shot-card < studio-shots < studio-shot-board < production-board"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "shot": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Leikkaus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Muokkaa Tarinassa\" < locked-script-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < s2-filmstrip"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < s2-filmstrip"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Palikkaeditori\" < block-tools-disclosure < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja tuotanto · 1 puuttuva ääni\" < production-audio-tools < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni · aaltomuoto ja puheen teksti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.primary \"Äänitä repliikki omalla äänellä\" < dialogue-recorder < camera-controls < performance-panel < inspector-section"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja videovienti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Muunnos · liike ja avainruudut\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "timeline": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.primary \"Vie…\" < s2-export < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.active \"Käsikirjoitus\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button \"Jaksot\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Muokkaa Tarinassa\" < locked-script-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Kuvakortit\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Palikkaeditori\" < block-tools-disclosure < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja tuotanto · 1 puuttuva ääni\" < production-audio-tools < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja videovienti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Muunnos · liike ja avainruudut\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Siirtymäkäyrä · valittu avainruutu\" < motion-panel < motion-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Liikelogiikka · tilakone\" < motion-panel < motion-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Piilota aikajana\" < timeline-toggle < timeline-dock < kilsat-main < kilsat-body"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Toista\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Pysäytä\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Uudelleen alusta\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "input \"Aikajanan zoom\" < timeline-zoom < timeline-bar-slot < transport-controls < timeline-dock"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "select \"Valitse…\" < transport-scene < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "summary \"Lisää ⋯\" < timeline-more < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < timeline-container"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < timeline-container"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "input.time-slider \"Aikajanan ruutu\" < timeline < timeline-container < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea reisi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea sääri\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea kenkä\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen reisi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen sääri\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen kenkä\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vartalo\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.current-key \"Vartalo: avainruutu 0\" < track-keys < animation-track < animation-tracks < timeline-body"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea olkavarsi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea kyynärvarsi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea kämmen\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "workshop": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Roolitukseen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button \"Kirjasto\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.active \"Hahmon osat\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "input \"Hae hahmon osaa\" < layer-search < layer-container < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Takaa\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Takaa\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Vasen profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Vasen profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Oikea profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Oikea profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Edestä\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Edestä\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "summary \"Lisää\" < layers-bottom < layer-container < layers-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Tarkista tuonti\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Läpinäkyvyysruudukko\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Tumma tausta\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Valkoinen tausta\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Piirtäminen\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Tasot\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Nivelmääritys\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Alkuperäinen PSD\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Näkymä\" < preview-view-options < zoom-controls < preview-footer < preview-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.active \"Valinta\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button \"Tekoäly\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "height": 900,
+      "rows": [
+        {
+          "id": "script",
+          "controls": 18,
+          "content": 15,
+          "contentByKind": {
+            "kasikirjoitus": 15
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 3,
+            "nayttamo": 3,
+            "oikea": 0,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 76,
+          "contentWords": 0,
+          "visibleWords": 76,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nRoolitus\nDialogi\nleikkaukset\nYhden hahmon\nliikkeet\nTarkistus ja ohjaus\n2 ehdotusta\nKäsikirjoitus\nPipsa-3D.psd · 1080 × 1920 ●\nKuvakortit\nKeskittymistila\nKäsikirjoitus\nTyökalut /\nTieto\nKommentti\nKohtaus\npuhelin\nMIRA\n1 sanaa\nRepliikki\nkävely → 2 s\npysähdys · katse → MIRA\nKuva: lähikuva MIRA\npuhelin\nistuminen · ilme: surullinen\nilme: iloinen · katse → ka…\nSiirtymä\n\nJakso rakennettu: 2 hahmoa, 14 tapahtumaa, 7.2 s. 1 repliikiltä puuttuu ääni. Tarkistuksessa 1 virhettä. Kumoa palauttaa edellisen tilan.\n\nRakenna jakso\nJaa kohtauksiin\n18 riviä\n·\n361 merkkiä\n/ työkalut\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 25,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "characters",
+          "controls": 24,
+          "content": 4,
+          "contentByKind": {
+            "kirjastokortit": 4
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 8,
+            "nayttamo": 4,
+            "oikea": 0,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 75,
+          "contentWords": 10,
+          "visibleWords": 85,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nStoryboard\nHahmot\nKuvausympäristöt\nEsineet\nPuhujan sidonta · @tunnus · .hahmo\nPuhuja\t@tunnus\t.hahmo\nMIRA\t—\t\nValitse .hahmo\nPipsa-3D\nVille-3D\nTaru-3D\nUkko-3D\nPipsa\nVille\nTaru\nUkko\nTuo\n\nNIKO\t—\t\nValitse .hahmo\nPipsa-3D\nVille-3D\nTaru-3D\nUkko-3D\nPipsa\nVille\nTaru\nUkko\nTuo\n1 · VALITSE HAHMO\nValmiina animoitavaksi\nOhje\nSTUDIO\nPipsa · 3D\nKäytössä\nTiedot\nVille · 3D\nValitse\nTiedot\nTaru · 3D\nValitse\nTiedot\nUkko · 3D\nValitse\nTiedot\nLuonnokset (5)\n3 · Kirjoita käsikirjoitus\nLataa aineistot ja muokkaa itse\nRoolitus\nPipsa-3D.psd · 1080 × 1920 ●\nPienennä hahmoa\nSuurenna hahmoa\nNäkymä\nKeskitä hahmo\nNäyttämö\nEsitys\nTekoäly\nNÄYTTÄMÖ JA SOMMITTELU\nKuvausympäristö\nTasainen väri\nKILSAT · kartonkistudio\nKILSAT · kauppakatu\nKILSAT · auton sisällä\nValkoinen studio\nTumma studio\nVäristudio\nToimisto\nNeuvotteluhuone\nKotitoimisto\nKeittiö\nEteinen\nKahvila\nRavintola\nLuokkahuone\nKirjasto\nPalvelupiste\nKatu\nKaupunkiaukio\nBussipysäkki\nPuisto\nMetsäpolku\nRanta\nParkkipaikka\nAutotalli\nEsittelytila\nMakuuhuone\nLastenhuone\nKylpyhuone\nSauna\nPorraskäytävä\nRuokakauppa\nLiikuntasali\nSairaala\nJuna\nBussi\nMökki ja järvi\nTalvipiha\nLeikkipuisto\nKattoterassi\nKeittiö · vastakuva\nToimisto · vastakuva\nLuokkahuone · opettajan puolelta\nKahvila · tiski\nKatu · yö\nStudio · valoisa\nOlohuone\nKaupunki · ilta\nAuto · moderni sisätila\nStudio\nPuhelin · edestä\nPuhelin · sivuviisto\nAuto · kuljettaja\nAuto · matkustaja\nAuto · takapenkiltä\nNäyttämön asetukset\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 30,
+            "words": 200
+          },
+          "ok": true
+        },
+        {
+          "id": "storyboard",
+          "controls": 22,
+          "content": 3,
+          "contentByKind": {
+            "aikajana-raidat": 2,
+            "kuvakortit": 1
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 0,
+            "nayttamo": 10,
+            "oikea": 0,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 91,
+          "contentWords": 3,
+          "visibleWords": 94,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nKuvaus\nStoryboard\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\nKäsikirjoitus\nKuvakortit\nReaktiot\nHahmot · 2D / 3D\nMiljööt ja esineet\nSarjan ohjaus\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nPysäköintisakko · revisio 1\nKuvakortit\nKuvaluettelo\nTuotantotilanne\nSuodata ja lajittele\n\n1 kohtausta · 2 kuvaa · 7.17 s\n\nNäytetään 2 / 2 kuvaa.\n\nLuonnos\nKuva 001\nKEITTIÖ\n0.00 s · kesto 3.87 s\nMIRA, NIKO\nEi vastuuhenkilöä · Ei määräaikaa · 0 avointa kommenttia · Luonnos · Repliikkiääni puuttuu · 2 virhettä\nHyväksy kuva\nLuonnos\nKuva 002\nKEITTIÖ\n3.87 s · kesto 3.30 s\nNIKO, MIRA\nEi vastuuhenkilöä · Ei määräaikaa · 0 avointa kommenttia · Luonnos · Ei repliikkejä · 0 virhettä\nHyväksy kuva\nEdellinen sivu\n1 / 1\nSeuraava sivu\nTarkistuskommentit · 0 avointa\nTuotannon tarkistus · 2 virhettä · 3 huomiota\nKuvien järjestys ja siirtäminen\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 25,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "shot",
+          "controls": 20,
+          "content": 2,
+          "contentByKind": {
+            "aikajana-raidat": 2
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 1,
+            "nayttamo": 1,
+            "oikea": 6,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 93,
+          "contentWords": 2,
+          "visibleWords": 95,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nLeikkaus\nPysäköintisakko\nMuokkaa Tarinassa\nKuva\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nValinta\nNäyttämö\nLiikkeet\nTekoäly\nPalikkaeditori\nÄäni ja tuotanto\n· 1 puuttuva ääni\nÄäni · aaltomuoto ja puheen teksti\nÄänitä repliikki omalla äänellä\n\nPaikallinen litterointipalvelu ei ole käynnissä.\n\nÄäni ja videovienti\nANIMAATION TYÖKALUT\nMuunnos · liike ja avainruudut\nSiirtymäkäyrä · valittu avainruutu\nLiikelogiikka · tilakone\nKävelyanimaatio · askellus ja käsien heilahdus\nAutomaattinen niveltaivutus · kädet ja jalat\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 30,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "timeline",
+          "controls": 30,
+          "content": 8,
+          "contentByKind": {
+            "aikajana-raidat": 8
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 3,
+            "nayttamo": 2,
+            "oikea": 5,
+            "aikajana": 8,
+            "muu": 1
+          },
+          "words": 115,
+          "contentWords": 14,
+          "visibleWords": 129,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nVie…\nKäsikirjoitus\nJaksot\nPysäköintisakko\nMuokkaa Tarinassa\nNäyttämö\nPipsa-3D.psd · 1080 × 1920 ●\nHahmon kuvakulma\nEdestä\nOikea profiili\nVasen profiili\nTakaa\nKuvakortit\nValinta\nNäyttämö\nLiikkeet\nTekoäly\nPalikkaeditori\nÄäni ja tuotanto\n· 1 puuttuva ääni\nÄäni ja videovienti\nANIMAATION TYÖKALUT\nMuunnos · liike ja avainruudut\nSiirtymäkäyrä · valittu avainruutu\nLiikelogiikka · tilakone\nKävelyanimaatio · askellus ja käsien heilahdus\nAutomaattinen niveltaivutus · kädet ja jalat\nPiilota aikajana\nToista\nPysäytä\nUudelleen alusta\nRuutu 0 · 0.00 s\nZoom\nKohtaus\nValitse…\nLisää ⋯\n001\n002\n\nKuvat · 2 kpl · keston mukainen kisko · yhteinen toistopää 0.00 s.\n\nAIKA / SEKUNTIA\n0.0 s\n0.0 s\n0.0 s\n0.0 s\n0.0 s\n0.0 s\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nVartalo\n◆\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVartalo\n◆\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVartalo\n◆\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nOikea reisi\nOikea sääri\nOikea kenkä\nVasen reisi\nVasen sääri\nVasen kenkä\nVartalo\n◆\nOikea olkavarsi\nOikea kyynärvarsi\nOikea kämmen\nVasen olkavarsi\nVasen kyynärvarsi\nVasen kämmen\nPää\nOikea silmä\nOikea pupilli\nOikea kulmakarva\nOikea räpäytys\n◆\nVasen silmä\nVasen pupilli\nVasen kulmakarva\nVasen räpäytys\n◆\nSilmälasit\nSuu lepo\nSuu auki\n◆\nSuu pyöreä\n◆\nSuu hymy\n◆\nSuu suru\n◆\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 35,
+            "words": 150
+          },
+          "ok": true
+        },
+        {
+          "id": "workshop",
+          "controls": 27,
+          "content": 8,
+          "contentByKind": {
+            "tasopuu": 8
+          },
+          "zones": {
+            "ylapalkki": 11,
+            "vasen": 4,
+            "nayttamo": 9,
+            "oikea": 2,
+            "aikajana": 0,
+            "muu": 1
+          },
+          "words": 60,
+          "contentWords": 6,
+          "visibleWords": 66,
+          "visibleText": "Pipsa-3D\n1\nTarina\n2\nRoolitus\n3\nStoryboard\n4\nKuvaus\n5\nLeikkaus\nTyöpaja\nRoolitukseen\nKirjasto\nHahmon osat\nTASOT\n112\nHae hahmon osaa\nTakaa\nVasen profiili\nOikea profiili\nEdestä\nLisää\nTyöpaja · hahmon osat\nPipsa-3D.psd · 600 × 900 ●\nTarkista tuonti\nPiirtäminen\nTasot\nNivelmääritys\nAlkuperäinen PSD\nNäkymä\nValinta\nTekoäly\nVALITUN TASON TIEDOT\n\nValitse taso.\n\nNäet kuvan, sijainnin ja koon. Voit myös ladata tason PNG:nä.\nKamera: pois\nMikrofoni: pois\nNäppäimet: käytössä\nTekoäly: paikallinen\nTallennus pysäytetty\nPSD avattu\nProjekti avattu: kuvat, nivelet, animaatio ja ääni palautettu.",
+          "horizontalOverflow": false,
+          "topbar": 11,
+          "budget": {
+            "controls": 40,
+            "words": 200
+          },
+          "ok": true
+        }
+      ],
+      "listings": {
+        "script": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Roolitus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Dialogileikkaukset\" < asset-tabs < script-shell-sidebar < script-shell < script-container"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Yhden hahmonliikkeet\" < asset-tabs < script-shell-sidebar < script-shell < script-container"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.ghost-btn \"Tarkistus ja ohjaus2 ehdotusta\" < tarina-review-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Kuvakortit\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Keskittymistila\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.ghost-btn \"Työkalut /\" < script-compose-bar < script-compose-scroll < script-compose < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 1\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 2\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 3\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 4\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 5\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 6\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 7\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 8\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 9\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 10\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 11\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 12\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 13\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 14\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kasikirjoitus",
+            "desc": "textarea.script-line-field \"Rivi 15\" < script-line-row < script-line-sheet < script-compose-scroll < script-compose"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "characters": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Storyboard\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Hahmot\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Kuvausympäristöt\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Esineet\" < asset-tabs < quick-library < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "select \"MIRA · hahmopaketti\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Tuo\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "select \"NIKO · hahmopaketti\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Tuo\" < speaker-binding-pack-cell < speaker-binding-table < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "summary \"Ohje\" < s2-hint < asset-library < quick-library < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Käytössä\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Pipsa-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "button.primary \"Valitse Ville-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "vasen",
+            "content": "kirjastokortit",
+            "desc": "summary \"Tiedot ja lataus: Ville-3D\" < character-card < character-cards < asset-library < quick-library"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Pienennä hahmoa\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Suurenna hahmoa\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Näkymä\" < preview-view-options < zoom-controls < preview-footer < preview-panel"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.fit-button \"Keskitä hahmo\" < zoom-controls < preview-footer < preview-panel < workspace"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "storyboard": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Kuvaus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Käsikirjoitus\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvakortit\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Reaktiot\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Hahmot · 2D / 3D\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Miljööt ja esineet\" < resolve-segmented < production-board < panel-dock < production-center-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < production-board"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvakortit\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Kuvaluettelo\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Tuotantotilanne\" < resolve-segmented < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Suodata ja lajittele\" < board-more < studio-shot-board < production-board < panel-dock"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "kuvakortit",
+            "desc": "button \"Kuva 001KEITTIÖ0.00 s · kesto 3.87 sMIRA\" < resolve-shot-card < studio-shots < studio-shot-board < production-board"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "shot": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Leikkaus\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Muokkaa Tarinassa\" < locked-script-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < s2-filmstrip"
+          },
+          {
+            "zone": "nayttamo",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < s2-filmstrip"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Palikkaeditori\" < block-tools-disclosure < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja tuotanto · 1 puuttuva ääni\" < production-audio-tools < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni · aaltomuoto ja puheen teksti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.primary \"Äänitä repliikki omalla äänellä\" < dialogue-recorder < camera-controls < performance-panel < inspector-section"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja videovienti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Muunnos · liike ja avainruudut\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "timeline": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.primary \"Vie…\" < s2-export < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.active \"Käsikirjoitus\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button \"Jaksot\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.secondary \"Muokkaa Tarinassa\" < locked-script-row < script-panel < script-shell-main < script-shell"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "select \"Hahmon kuvakulma\" < angle-choice < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Kuvakortit\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Palikkaeditori\" < block-tools-disclosure < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja tuotanto · 1 puuttuva ääni\" < production-audio-tools < panel-dock < production-inspector-dock < details-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Ääni ja videovienti\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Muunnos · liike ja avainruudut\" < performance-panel < inspector-section < details-panel < workspace"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "summary \"Siirtymäkäyrä · valittu avainruutu\" < motion-panel < motion-tools < inspector-section < details-panel"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Piilota aikajana\" < timeline-toggle < timeline-dock < kilsat-main < kilsat-body"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Toista\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Pysäytä\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "button.secondary \"Uudelleen alusta\" < transport-cluster < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "input \"Aikajanan zoom\" < timeline-zoom < timeline-bar-slot < transport-controls < timeline-dock"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "select \"Valitse…\" < transport-scene < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "summary \"Lisää ⋯\" < timeline-more < transport-controls < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button \"001\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < timeline-container"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button \"002\" < shot-timeline-track < shot-timeline-scroll < shot-timeline-strip < timeline-container"
+          },
+          {
+            "zone": "aikajana",
+            "content": null,
+            "desc": "input.time-slider \"Aikajanan ruutu\" < timeline < timeline-container < timeline-dock < kilsat-main"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea reisi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea sääri\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Oikea kenkä\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen reisi\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen sääri\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "aikajana",
+            "content": "aikajana-raidat",
+            "desc": "button.track-name \"Vasen kenkä\" < animation-track < animation-tracks < timeline-body < timeline-scroll"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ],
+        "workshop": [
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "summary \"Projekti\" < app-menu < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"1Tarina\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"2Roolitus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"3Storyboard\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"4Kuvaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.studio-flow-tab \"5Leikkaus\" < studio-flow-tabs < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-workshop \"Työpaja\" < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-search \"Hae toimintoa (⌘K)\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Kumoa\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-icon \"Tee uudelleen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "ylapalkki",
+            "content": null,
+            "desc": "button.s2-next \"Roolitukseen\" < s2-tools < kilsat-top < kilsat-frame"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button \"Kirjasto\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "button.active \"Hahmon osat\" < library-tabs < layers-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "input \"Hae hahmon osaa\" < layer-search < layer-container < layers-panel < workspace"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Takaa\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Takaa\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Vasen profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Vasen profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Oikea profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Oikea profiili\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.tiny \"Avaa ryhmä Edestä\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": "tasopuu",
+            "desc": "button.layer-select \"Edestä\" < layer-row < layer-tree < layer-container < layers-panel"
+          },
+          {
+            "zone": "vasen",
+            "content": null,
+            "desc": "summary \"Lisää\" < layers-bottom < layer-container < layers-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.secondary \"Tarkista tuonti\" < stage-title < preview-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Läpinäkyvyysruudukko\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Tumma tausta\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button.swatch \"Valkoinen tausta\" < background-options < stage-title < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Piirtäminen\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Tasot\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Nivelmääritys\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "button \"Alkuperäinen PSD\" < character-tools < stage < preview-panel < workspace"
+          },
+          {
+            "zone": "nayttamo",
+            "content": null,
+            "desc": "summary \"Näkymä\" < preview-view-options < zoom-controls < preview-footer < preview-panel"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button.active \"Valinta\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "oikea",
+            "content": null,
+            "desc": "button \"Tekoäly\" < inspector-tabs < details-panel < workspace < kilsat-main"
+          },
+          {
+            "zone": "muu",
+            "content": null,
+            "desc": "button.text-button \"Tekoäly: paikallinen\" < device-status < statusbar < kilsat-main < kilsat-body"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": []
+}

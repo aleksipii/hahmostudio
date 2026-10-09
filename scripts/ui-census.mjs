@@ -83,7 +83,7 @@ export function classify(closest, zoneRules = ZONE_RULES, contentRules = CONTENT
 }
 
 /** Kokoaa luokitellut hallinnat vaiheen tulokseksi. */
-export function tally(items, words) {
+export function tally(items, words, contentWords = 0) {
   const zones = Object.fromEntries(ZONE_ORDER.map((z) => [z, 0]));
   const contentByKind = {};
   let content = 0;
@@ -95,7 +95,7 @@ export function tally(items, words) {
       zones[zone] = (zones[zone] || 0) + 1;
     }
   }
-  return { controls: items.length - content, content, contentByKind, zones, words };
+  return { controls: items.length - content, content, contentByKind, zones, words, contentWords, visibleWords: words + contentWords };
 }
 
 /** Vertaa budjettiin. Sisältö ei kuulu budjettiin. */
@@ -111,7 +111,7 @@ export function evaluate(results, b = budgets) {
 /** Muotoilee taulukon (merkkijonorivit). */
 export function formatTable(rows, { width, height, url }) {
   const out = [`Hallintolaskuri ${width}×${height}  ${url}`];
-  out.push('vaihe        kuorma sisältö  sanoja | ylä vasen näytt oikea aikaj muu | budjetti(h/s)  tulos');
+  out.push('vaihe        kuorma sisältö  UI-sanoja | ylä vasen näytt oikea aikaj muu | budjetti(h/s)  tulos');
   for (const r of rows) {
     const z = ZONE_ORDER.map((k, i) => String(r.zones[k] || 0).padStart([3, 5, 5, 5, 5, 3][i])).join(' ');
     const b = r.budget ? `${r.budget.controls}/${r.budget.words}` : '-';
@@ -125,7 +125,7 @@ export function formatTable(rows, { width, height, url }) {
 }
 
 /** Ajetaan selaimessa (page.evaluate); ei saa viitata moduulin muuttujiin. */
-const countInPage = ({ controlSelector, zoneRules, contentRules, list }) => {
+export const countInPage = ({ controlSelector, zoneRules, contentRules, list }) => {
   const visible = (e) => {
     const r = e.getBoundingClientRect();
     const cs = getComputedStyle(e);
@@ -149,7 +149,19 @@ const countInPage = ({ controlSelector, zoneRules, contentRules, list }) => {
     }
     return item;
   });
-  return { items, words: document.body.innerText.split(/\s+/).filter(Boolean).length };
+  // innerText includes closed details and every native select option in Chromium.
+  // Measure words with the same viewport/visibility contract as the controls.
+  const text=[],contentText=[],walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+    const node=walker.currentNode,parent=node.parentElement;
+    if(!parent||parent.closest('script,style,select,textarea,[hidden],details:not([open]) > :not(summary)'))continue;
+    const css=getComputedStyle(parent);if(css.display==='none'||css.visibility==='hidden')continue;
+    const range=document.createRange();range.selectNodeContents(node);
+    if([...range.getClientRects()].some(r=>r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth))(contentRules.some(([,selector])=>parent.closest(selector))?contentText:text).push(node.textContent);
+  }
+  for(const select of document.querySelectorAll('select'))if(visible(select))(contentRules.some(([,selector])=>select.closest(selector))?contentText:text).push([...select.selectedOptions].map(o=>o.textContent).join(' '));
+  const words=text.join(' ').split(/\s+/).filter(Boolean).length,contentWords=contentText.join(' ').split(/\s+/).filter(Boolean).length;
+  return {items,words,contentWords,visibleWords:words+contentWords};
 };
 
 function loadPlaywright() {
@@ -194,8 +206,8 @@ async function main(args) {
   const results = {};
   const listings = {};
   const measure = async (id) => {
-    const { items, words } = await page.evaluate(countInPage, arg);
-    results[id] = tally(items, words);
+    const { items, words, contentWords } = await page.evaluate(countInPage, arg);
+    results[id] = tally(items, words, contentWords);
     if (list) listings[id] = items;
   };
   for (const id of ['script', 'characters', 'storyboard', 'shot', 'timeline']) {

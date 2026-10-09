@@ -1,0 +1,28 @@
+/* Rare controls stay mounted and retain their existing commands and state. */
+.stage-options:not(.is-compact) { display: contents; }
+.stage-options:not(.is-compact) > summary { display: none; }
+.stage-options.is-compact > summary { cursor: pointer; padding: 8px 0; }
+.studio.s2.phase-characters .timeline-dock:has(> #editor-timeline[hidden]) { display: none; }
+.preview-view-options:not(.is-compact),
+.preview-view-options:not(.is-compact) > .preview-view-buttons { display: contents; }
+.preview-view-options:not(.is-compact) > summary { display: none; }
+.preview-view-options.is-compact { position: relative; }
+.preview-view-options.is-compact > summary { cursor: pointer; padding: 4px 8px; }
+.preview-view-options.is-compact > .preview-view-buttons {
+  position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 40;
+  display: flex; flex-wrap: wrap; gap: 8px; min-width: 240px; padding: 10px;
+  background: var(--s2-bg2); border: 1px solid var(--s2-line); border-radius: 8px;
+}
+.block-tools-disclosure[data-compact='false'],
+.production-audio-tools[data-compact='false'] { display: contents; }
+.block-tools-disclosure[data-compact='false'] > summary,
+.production-audio-tools[data-compact='false'] > summary { display: none; }
+.block-tools-disclosure[data-compact='true'] > summary,
+.production-audio-tools[data-compact='true'] > summary { cursor: pointer; padding: 8px; }
+.production-audio-tools .missing-voice-count { color: var(--s2-warn); }
+.studio.s2.phase-script .presentation-panel:not(.presentation-panel--review-open) .production-audio-dock:not(.is-recording) { display: none; }
+
+.production-audio-dock.is-recording { position: fixed; right: 12px; bottom: 44px; z-index: 70; width: min(340px,calc(100vw - 24px)); max-height: 70vh; overflow: auto; padding: 10px; background: var(--s2-bg2); border: 1px solid var(--s2-line); border-radius: 8px; }
+
+.recording-tools-overlay-host { position: fixed; inset: 0; z-index: 70; pointer-events: none; }
+.recording-tools-overlay-host .production-audio-dock.is-recording { pointer-events: auto; }
