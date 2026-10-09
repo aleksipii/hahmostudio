@@ -40,8 +40,44 @@ async function cameraPermission():Promise<AiStatusInput['camera']>{
  try{const s=await navigator.permissions.query({name:'camera' as PermissionName});return s.state;}catch{return 'unknown';}
 }
 
-export default function AiPanel({onClose,onOpenCloud}:{onClose:()=>void;onOpenCloud?:()=>void}){
+type CloudAction=Parameters<typeof CloudControls>[0]['act'] extends (n:infer N)=>void?N:never;
+
+/** Tekoälyn yhteinen sisältö (tilat, kamera, pilvi, toiminnot) dialogille ja Tarkastelijan välilehdelle.
+ * Tilat luetaan, kun komponentti mountataan, eli vain kun näkymä on auki. Pilven toiminnot kulkevat natiivivahvistusten kautta täsmälleen kuten ennen. */
+export function AiContent({onOpenCloud}:{onOpenCloud?:()=>void}){
  const [input,setInput]=useState<AiStatusInput>({}),[loading,setLoading]=useState(true),[tick,setTick]=useState(0),[cloud,setCloud]=useState<CloudStatus|null|undefined>(undefined),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ useEffect(()=>onAiActivity(()=>setTick(n=>n+1)),[]);
+ useEffect(()=>{let live=true;const bridge=desktop();void(async()=>{
+  const [audioModel,kokoro,camera,cloudState]=await Promise.all([bridge?bridge.audioModel().catch(()=>null):Promise.resolve(undefined),bridge?bridge.kokoroStatus().catch(e=>({installed:false,error:e instanceof Error?e.message:'Tila ei luettavissa'})):Promise.resolve(undefined),cameraPermission(),bridge?bridge.cloudStatus().catch(()=>null):Promise.resolve(null)]);
+  if(live){setInput({audioModel,kokoro,camera});setCloud(cloudState);setLoading(false);}
+ })();return()=>{live=false;};},[]);
+ const act=async(name:CloudAction)=>{const bridge=desktop();if(!bridge)return;setBusy(true);setMessage('');try{
+  const key:Record<string,CloudSecretKey>={'paste-url':'HAHMOSTUDIO_COLAB_COMFYUI_URL','paste-bearer':'HAHMOSTUDIO_COMFYUI_BEARER'};
+  if(name==='enable')setCloud(await bridge.cloudEnable());else if(name==='disable')setCloud(await bridge.cloudDisable());
+  else if(name in key){const r=await bridge.cloudSecretPaste(key[name]);setMessage(r.saved.length?'Tallennettu.':'Ei tallennettu.');setCloud(await bridge.cloudStatus());}
+  else if(name==='import'){const r=await bridge.cloudSecretImport();setMessage(r.saved.length?`Tallennettu ${r.saved.length} asetusta.`+(r.ignored.length?` Ohitettu: ${r.ignored.join(', ')}.`:''):'Ei tallennettu.');setCloud(await bridge.cloudStatus());}
+  else if(name==='clear')setCloud(await bridge.cloudSecretClear('all'));
+  else if(name==='pins-import')setCloud(await bridge.cloudPinsImport());else if(name==='pins-clear')setCloud(await bridge.cloudPinsClear());
+  else{const [, kind]=name.split('-') as [string,'colab'|'notebook'];setCloud(await bridge.cloudDeclareFree(kind,!name.startsWith('unfree')));}
+ }catch(e){setMessage(e instanceof Error?e.message:'Toiminto epäonnistui.');}finally{setBusy(false);}};
+ // Pilvirivi näytetään vasta, kun tila on luettu; jos luku epäonnistui, rivi kertoo ettei pilvi ole saatavilla.
+ const rows=aiStatusRows({...input,cloud:cloud===undefined?undefined:cloud??{available:false},activity:aiActivity()});void tick;
+ return <>
+  <AiPanelView rows={rows} loading={loading}/>
+  {cloud&&<CloudControls status={cloud} busy={busy} act={n=>void act(n)} onOpenCloud={onOpenCloud}/>}
+  {message&&<p role="status">{message}</p>}
+ </>;
+}
+
+/** Tarkastelijan Tekoäly-välilehden sisältö. Mountataan vain, kun välilehti on näkyvissä; fokus siirtyy tänne sisäänkäynnistä. */
+export function AiInspectorTab({onOpenCloud,focusKey}:{onOpenCloud?:()=>void;focusKey:number}){
+ const box=useRef<HTMLElement>(null);
+ useEffect(()=>{if(!focusKey)return;const el=box.current;if(!el)return;el.focus({preventScroll:true});el.scrollIntoView({block:'nearest'});},[focusKey]);
+ return <section ref={box} tabIndex={-1} className="ai-inspector" aria-labelledby="ai-inspector-title"><h2 id="ai-inspector-title">Tekoäly</h2><AiContent onOpenCloud={onOpenCloud}/></section>;
+}
+
+/** Tekoäly modaalidialogina (kapea ruutu ja tilat, joissa Tarkastelijan välilehdet eivät näy). Tab-rajaus, Esc ja fokuksen palautus. */
+export default function AiPanel({onClose,onOpenCloud}:{onClose:()=>void;onOpenCloud?:()=>void}){
  const box=useRef<HTMLDivElement>(null),close=useRef(onClose);close.current=onClose;
  useEffect(()=>{
   const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;
@@ -62,26 +98,8 @@ export default function AiPanel({onClose,onOpenCloud}:{onClose:()=>void;onOpenCl
    while(menu){const summary=menu.querySelector('summary');if(summary?.getClientRects().length){summary.focus();break;}menu=menu.parentElement?.closest('details');}
   };
  },[]);
- useEffect(()=>onAiActivity(()=>setTick(n=>n+1)),[]);
- useEffect(()=>{let live=true;const bridge=desktop();void(async()=>{
-  const [audioModel,kokoro,camera,cloudState]=await Promise.all([bridge?bridge.audioModel().catch(()=>null):Promise.resolve(undefined),bridge?bridge.kokoroStatus().catch(e=>({installed:false,error:e instanceof Error?e.message:'Tila ei luettavissa'})):Promise.resolve(undefined),cameraPermission(),bridge?bridge.cloudStatus().catch(()=>null):Promise.resolve(null)]);
-  if(live){setInput({audioModel,kokoro,camera});setCloud(cloudState);setLoading(false);}
- })();return()=>{live=false;};},[]);
- const act=async(name:Parameters<typeof CloudControls>[0]['act'] extends (n:infer N)=>void?N:never)=>{const bridge=desktop();if(!bridge)return;setBusy(true);setMessage('');try{
-  const key:Record<string,CloudSecretKey>={'paste-url':'HAHMOSTUDIO_COLAB_COMFYUI_URL','paste-bearer':'HAHMOSTUDIO_COMFYUI_BEARER'};
-  if(name==='enable')setCloud(await bridge.cloudEnable());else if(name==='disable')setCloud(await bridge.cloudDisable());
-  else if(name in key){const r=await bridge.cloudSecretPaste(key[name]);setMessage(r.saved.length?'Tallennettu.':'Ei tallennettu.');setCloud(await bridge.cloudStatus());}
-  else if(name==='import'){const r=await bridge.cloudSecretImport();setMessage(r.saved.length?`Tallennettu ${r.saved.length} asetusta.`+(r.ignored.length?` Ohitettu: ${r.ignored.join(', ')}.`:''):'Ei tallennettu.');setCloud(await bridge.cloudStatus());}
-  else if(name==='clear')setCloud(await bridge.cloudSecretClear('all'));
-  else if(name==='pins-import')setCloud(await bridge.cloudPinsImport());else if(name==='pins-clear')setCloud(await bridge.cloudPinsClear());
-  else{const [, kind]=name.split('-') as [string,'colab'|'notebook'];setCloud(await bridge.cloudDeclareFree(kind,!name.startsWith('unfree')));}
- }catch(e){setMessage(e instanceof Error?e.message:'Toiminto epäonnistui.');}finally{setBusy(false);}};
- // Pilvirivi näytetään vasta, kun tila on luettu; jos luku epäonnistui, rivi kertoo ettei pilvi ole saatavilla.
- const rows=aiStatusRows({...input,cloud:cloud===undefined?undefined:cloud??{available:false},activity:aiActivity()});void tick;
  return createPortal(<div className="export-backdrop studio-export"><div role="dialog" aria-modal="true" aria-labelledby="ai-title" className="export-dialog" ref={box} tabIndex={-1}>
   <header><h2 id="ai-title">Tekoäly</h2><button className="secondary" onClick={onClose}>Sulje</button></header>
-  <AiPanelView rows={rows} loading={loading}/>
-  {cloud&&<CloudControls status={cloud} busy={busy} act={n=>void act(n)} onOpenCloud={onOpenCloud}/>}
-  {message&&<p role="status">{message}</p>}
+  <AiContent onOpenCloud={onOpenCloud}/>
  </div></div>,document.body);
 }

@@ -16,4 +16,5 @@ import './styles/minimal-roolitus.css';
 import './styles/minimal-vasen.css';
 import './styles/minimal-aikajana.css';
 import './styles/minimal-nayttamo.css';
+import './styles/minimal-tekoaly.css';
 if(location.pathname==='/export-worker')void import('./export-worker').then(m=>m.startExportWorker());else createRoot(document.getElementById('root')!).render(<Editor/>);
