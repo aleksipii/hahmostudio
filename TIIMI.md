@@ -126,8 +126,19 @@ Jatkokehitys: AI-dialogin Tab/Shift+Tab-fokusrajaus ja fokuksen palautus toteute
 
 Nykyinen vaihe: VALMIS PÄÄHAAROIHIN. Integraatiohaara codex/yhteinen-jatko-2026-10-09. Koodi yhdistää Codexin asiantuntijatyön ja säilytettyjen neljän Claude-haaran tarkastetut lähtöpäät (AI746d21d,script a2087dc,gfx23e2edf,UI9ece0d5); historia säilyy. Ristiriidat ratkaistu säilyttäen kaikki kehitysmuistiot, uusi kiintiösääntö ja vanhojen projektien ulkoasu. Uusi fokuksen rajaus/eristys ja palautus on katsottu todellisessa GUI:ssa.
 
-Lopullinen npm test1383/1383pass,ei skippejä/TODOja,exit0. Typecheck ja private-build exit0. Electron9/9checks,600/1440px sekä koko editorissa että3D-fixturessa; ei konsolivirheitä. Npm-testin concurrency2hallinta ei muuta testejä tai aikarajoja. Täydet lokit ja kuvat: docs/tiimi/todennus/INTEGRAATIO-2026-10-09.md.
+Lopullinen npm test 1383/1383pass,ei skippejä/TODOja,exit0. Typecheck ja private-build exit0. Electron9/9checks,600/1440px sekä koko editorissa että3D-fixturessa; ei konsolivirheitä. Npm-testin concurrency2hallinta ei muuta testejä tai aikarajoja. Täydet lokit ja kuvat: docs/tiimi/todennus/INTEGRAATIO-2026-10-09.md.
 
 Käyttäjä on valtuuttanut valmiin työn yhdistämisen mainiin ja hahmostudio1.0-haaraan; sama testattu commit päivitetään atomisesti molempiin. Koneeseen asennettua KOETA.appia ei korvata Git-pushilla. Kiintiön viimeinen vaihehavainto13%jäljellä; valmista lähdettä tallennetaan ennakoivasti ennen10%rajaa.
 
 Seuraava työ Claudelle tai Codexille: fetch/HEAD-tarkistus → kokoro-en-pohja hyväksytyllä olemassa olevalla paikallisella mallilla erillisessä pilottiprojektissa → kaksi kuunneltua repliikkiä → tallennus/uudelleenavaus → MP4:n katsottu synkka. Älä aloita uudelleen jo yhdistettyjä sääntö/UI/3D-korjauksia. Paketoitu Mac,taiteellinen liikehyväksyntä,VoiceOver jaGPU ovat edelleen avoimia. AGENTS.md ja CLAUDE.md sisältävät yhteiset säännöt.
+
+
+## Checkpoint: Codex → Claude 9.10.2026 — JULKAISTU
+
+Varmistettu sovelluslähde `0c3236a5633e65600746fb4a8bb0997fad4ce782` julkaistu atomisesti sekä mainiin että hahmostudio1.0-haaraan. Tämä sisältää kaikki tämän integraation tarkastetut Claude-haarat ja Codexin korjaukset; merge-historia säilyy. Lopullinen npm test 1383/1383,typecheck,private-build ja 9 Electron-checkiä läpäisivät; ei testien ohituksia tai aikarajojen löysäämistä. Lokit: docs/tiimi/todennus/INTEGRAATIO-2026-10-09.md.
+
+Kiintiön varmennettu seuraava havainto: 5 tunnin ikkunasta 8 % jäljellä (92 % käytetty),checkpointRecommended=true. 10 %:n sääntö on lauennut. Sovelluskoodi oli juuri tallennettu molempiin päähaaroihin; tämä dokumentaatiocheckpoint julkaistaan samaan tapaan. Ei uusia suuria toteutusvaiheita ennen jatkajaa.
+
+Jatkaja (Claude tai Codex): fetch main/hahmostudio1.0 ja tarkista paikallinen työ; lue AGENTS.md,CLAUDE.md ja docs/tiimi/JATKO-CODEX-CLAUDE.md. Seuraava konkreettinen tehtävä on oikea englanninkielinen Kokoro-kuuntelu ja MP4:n katsottu synkka erillisessä pilottiprojektissa käyttäjän jo hyväksytyllä mallilla. Älä aloita uudelleen yhdistettyjä korjauksia. VoiceOver,paketoitu toimituskoe,taiteellinen liikehyväksyntä jaGPU/pilvi ovat edelleen avoimia; testimoottorin ääntä ei esitetä aidon Kokoron hyväksyntänä.
+
+Asennettua KOETA.app-bundlea ei korvattu lähdekoodin Git-yhdistämisellä. Käyttäjän omat projektit,äänet,mallit ja paikalliset keskeneräiset muutokset säilyvät.
