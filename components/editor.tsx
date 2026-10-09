@@ -24,6 +24,8 @@ import {initProduction} from '../lib/production-model';
 import PanelDock from './panel-dock';
 import ImportReview from './import-review';
 import AccessibilitySettings from './accessibility-settings';
+import ExpertSettings from './expert-settings';
+import {applyExpertMode,readExpertMode} from '../lib/expert-mode';
 import ExportPanel from './export-panel';
 import CloudRenderDialog from './cloud-render-dialog';
 import AiPanel from './ai-panel';
@@ -57,7 +59,8 @@ import {readLayout,defaultLayout} from '../lib/view-layout';
 import {selectCharacterView,currentView,viewAtFrame,characterViews,type CharacterView} from '../lib/character-view';
 import AssetLibrary from './asset-library';
 import ScriptPanel from './script-panel';
-import {desktop,nativeFile,saveFile,type FileKind,type DesktopAction} from '../lib/platform';
+import {desktop,nativeFile,saveFile,type FileKind,type DesktopAction,type CloudStatus} from '../lib/platform';
+import {aiChipLabel} from '../lib/ai-status';
 import {importPng} from '../lib/png-import';
 import {createAudioContext} from '../lib/browser-audio';
 'use client';
@@ -539,7 +542,10 @@ export default function Editor() {
  const focusStage=()=>{setLayout({...layout,library:false,inspector:false});setTimelineOpen(false);setZoom(null);};
  const showTour=()=>{setHelp(false);setFlowTourStep(0);setFlowTourOpen(true);setLayout(l=>(l.library?l:{...l,library:true}));};
  const privateServer=import.meta.env.VITE_PRIVATE_SERVER==='true';
- const [cloudRender,setCloudRender]=useState(false);const [aiOpen,setAiOpen]=useState(false);
+ const [cloudRender,setCloudRender]=useState(false);const [aiOpen,setAiOpen]=useState(false);const [aiCloud,setAiCloud]=useState<CloudStatus|null|undefined>(undefined);
+ useEffect(()=>applyExpertMode(readExpertMode()),[]);
+ // Alapalkin Tekoäly-painike: pilven tila luetaan pääprosessista käynnistyksessä ja aina paneelin sulkeuduttua (ei salaisuuksia).
+ useEffect(()=>{if(!bridge||aiOpen)return;let live=true;void bridge.cloudStatus().then(s=>{if(live)setAiCloud(s);},()=>{if(live)setAiCloud(null);});return()=>{live=false;};},[aiOpen]);
  const paletteCommands:PaletteCommand[]=[
   ...studioFlowSteps.map((s,i)=>({id:'phase-'+s.id,group:'Työvaihe',label:`${i+1} · ${s.label}`,shortcut:`⌥${i+1}`,keywords:s.hint,run:()=>goFlowStep(s.id)})),
   {id:'save',group:'Projekti',label:'Tallenna projekti',shortcut:'⌘S',disabled:saveDisabled,run:()=>void downloadProject()},
@@ -576,6 +582,7 @@ export default function Editor() {
   {id:'inspector',group:'Näkymä',label:inspectorOn?'Piilota oikea paneeli':'Näytä oikea paneeli',run:()=>{if(!inspectorOn)setInspectorAuto(null);setLayout(l=>({...l,inspector:!inspectorOn}))}},
   {id:'focus-stage',group:'Näkymä',label:'Keskity näyttämöön',run:focusStage},
   {id:'ai',group:'Näkymä',label:'Tekoäly: tilat ja pilvirenderöinti…',keywords:'ai tekoäly kokoro whisper rhubarb pilvi',run:()=>setAiOpen(true)},
+  ...(privateServer||bridge?[{id:'cloud-export',group:'Vienti',label:'Vie tekoälyrenderöitynä…',keywords:'ai tekoäly pilvi pilvirenderöinti comfyui',run:()=>setCloudRender(true)}]:[]),
   {id:'reset-panels',group:'Näkymä',label:'Palauta paneelien koot',run:()=>{setPanelSizes({...defaultSizes});setZoom(null);}},
   ...(['checker','dark','white'] as const).map(b=>({id:'preview-bg-'+b,group:'Näkymä',label:`Esikatselun tausta: ${b==='checker'?'läpinäkyvyysruudukko':b==='dark'?'tumma':'valkoinen'}`,keywords:'tausta ruudukko työpaja',run:()=>setBackground(b)})),
   {id:'fit',group:'Näkymä',label:'Sovita koko näyttämö',disabled:!doc,run:()=>setZoom(null)},
@@ -612,7 +619,7 @@ export default function Editor() {
    {privateServer&&<button className="secondary" onClick={()=>setCloudRender(true)}><span>Pilvirenderöinti…</span></button>}
    {privateServer&&<button className="secondary" disabled={quickBusy} onClick={()=>void logout()}>Kirjaudu ulos</button>}
   </AppMenu>}
-  exportControl={<div className="s2-export"><ExportPanel episode={doc&&animation&&rig?{doc,animation:{...animation,rig},scene,audio:audioAsset}:null} legacy={()=>void downloadVideo()}/></div>}>
+  exportControl={<div className="s2-export"><ExportPanel episode={doc&&animation&&rig?{doc,animation:{...animation,rig},scene,audio:audioAsset}:null} legacy={()=>void downloadVideo()} cloud={bridge?()=>setCloudRender(true):undefined}/></div>}>
   {cloudRender&&<CloudRenderDialog presentation={activePresentation??null} onClose={()=>setCloudRender(false)}/>}
   {aiOpen&&<AiPanel onClose={()=>setAiOpen(false)} onOpenCloud={()=>{setAiOpen(false);setCloudRender(true);}}/>}
   <input ref={audioInput} type="file" accept=".mp3,.wav,.ogg,.m4a" hidden onChange={e=>{const f=e.target.files?.[0];if(f)loadAudio(f);e.target.value='';}}/>
@@ -668,7 +675,7 @@ export default function Editor() {
     onClearCorrupt={()=>void clearRecovery().then(()=>{recoverySaved.current=[];setRecoveryError('');setRecoveryEpoch(v=>v+1);setAutosaveStatus('Vioittunut palautushakemisto poistettu. Uusi palautuspiste luodaan nykyisestä projektista.');}).catch(e=>setError(e.message))}
   />
   {rigSuggestOpen&&doc&&rig&&animation&&<RigSuggestDialog doc={doc} rig={rig} busy={busy||projectBusy||frameExport} onClose={()=>setRigSuggestOpen(false)} onApply={next=>void commitEdit(doc,next,animation).then(ok=>{if(ok){setRigSuggestOpen(false);changeWorkspace('character');setRigMode(true);setMode('layers');setRigTool('select');setRigMessage('Nivelet ehdotettu tasojen nimistä. Tarkista pivotit ja liitokset ennen animointia.');}})}/>}
-  {settingsOpen&&<div className="modal-backdrop" onClick={()=>setSettingsOpen(false)}><section className="help-modal s2-settings" role="dialog" aria-modal="true" aria-labelledby="s2-settings-title" onClick={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();setSettingsOpen(false);}}}><div className="modal-heading"><h2 id="s2-settings-title">Asetukset</h2><button autoFocus className="secondary" onClick={()=>setSettingsOpen(false)}><X size={16}/>Sulje</button></div><fieldset className="s2-theme"><legend>Ulkoasu</legend><div className="s2-seg" role="radiogroup" aria-label="Ulkoasu">{([['system','Järjestelmä'],['dark','Tumma'],['light','Vaalea']] as const).map(([v,l])=><button key={v} type="button" role="radio" aria-checked={theme===v} aria-pressed={theme===v} onClick={()=>setTheme(v)}>{l}</button>)}</div></fieldset><AccessibilitySettings/><FlowPinSettings/><fieldset className="s2-shortcuts"><legend>Pikanäppäimet</legend><dl><div><dt>⌘K</dt><dd>Hae toimintoa</dd></div><div><dt>⌥1–⌥5</dt><dd>Työvaihe</dd></div><div><dt>⌘S</dt><dd>Tallenna projekti</dd></div><div><dt>⌘Z / ⇧⌘Z</dt><dd>Kumoa / tee uudelleen</dd></div><div><dt>Välilyönti</dt><dd>Toista / tauko</dd></div><div><dt>Esc</dt><dd>Sulje keskittymistila tai ikkuna</dd></div></dl></fieldset></section></div>}<footer className="statusbar"><div className="device-status" aria-label="Ohjauslähteet"><span>Kamera: {cameraStatus.loading?'käynnistyy':cameraStatus.running?'käytössä':'pois'}</span>{cameraActive&&<button className="text-button" onClick={()=>setCameraStop(n=>n+1)}>Sulje kamera</button>}<span>Mikrofoni: {deviceStatus.loading?'odottaa lupaa':deviceStatus.microphone?'käytössä':'pois'}</span>{(deviceStatus.microphone||deviceStatus.loading)&&<button className="text-button" onClick={()=>setMicStop(n=>n+1)}>{deviceStatus.loading?'Peruuta mikrofoni':'Sulje mikrofoni'}</button>}<span>Näppäimet: {doc?.quick&&deviceStatus.keyboard?'käytössä':'pois'}</span><strong role="status">{quickBusy||cameraStatus.recording?'● Esitystä tallennetaan':'Tallennus pysäytetty'}</strong></div>{fpsReport&&<span data-testid="playback-fps" title={'p95 '+fpsReport.p95Ms.toFixed(1)+' ms'}>{fpsReport.fps.toFixed(1)} fps</span>}<span><span className="status-dot"/>{doc ? 'PSD avattu' : 'Odottaa tiedostoa'}</span><span>{rigMessage || 'Tallenna työ .hahmo-projektina. Vie valmis jakso MP4-videoksi.'}</span><span role="status">{autosaveStatus}</span></footer>
+  {settingsOpen&&<div className="modal-backdrop" onClick={()=>setSettingsOpen(false)}><section className="help-modal s2-settings" role="dialog" aria-modal="true" aria-labelledby="s2-settings-title" onClick={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();setSettingsOpen(false);}}}><div className="modal-heading"><h2 id="s2-settings-title">Asetukset</h2><button autoFocus className="secondary" onClick={()=>setSettingsOpen(false)}><X size={16}/>Sulje</button></div><fieldset className="s2-theme"><legend>Ulkoasu</legend><div className="s2-seg" role="radiogroup" aria-label="Ulkoasu">{([['system','Järjestelmä'],['dark','Tumma'],['light','Vaalea']] as const).map(([v,l])=><button key={v} type="button" role="radio" aria-checked={theme===v} aria-pressed={theme===v} onClick={()=>setTheme(v)}>{l}</button>)}</div></fieldset><AccessibilitySettings/><FlowPinSettings/><ExpertSettings/><fieldset className="s2-shortcuts"><legend>Pikanäppäimet</legend><dl><div><dt>⌘K</dt><dd>Hae toimintoa</dd></div><div><dt>⌥1–⌥5</dt><dd>Työvaihe</dd></div><div><dt>⌘S</dt><dd>Tallenna projekti</dd></div><div><dt>⌘Z / ⇧⌘Z</dt><dd>Kumoa / tee uudelleen</dd></div><div><dt>Välilyönti</dt><dd>Toista / tauko</dd></div><div><dt>Esc</dt><dd>Sulje keskittymistila tai ikkuna</dd></div></dl></fieldset></section></div>}<footer className="statusbar"><div className="device-status" aria-label="Ohjauslähteet"><span>Kamera: {cameraStatus.loading?'käynnistyy':cameraStatus.running?'käytössä':'pois'}</span>{cameraActive&&<button className="text-button" onClick={()=>setCameraStop(n=>n+1)}>Sulje kamera</button>}<span>Mikrofoni: {deviceStatus.loading?'odottaa lupaa':deviceStatus.microphone?'käytössä':'pois'}</span>{(deviceStatus.microphone||deviceStatus.loading)&&<button className="text-button" onClick={()=>setMicStop(n=>n+1)}>{deviceStatus.loading?'Peruuta mikrofoni':'Sulje mikrofoni'}</button>}<span>Näppäimet: {doc?.quick&&deviceStatus.keyboard?'käytössä':'pois'}</span><button type="button" className="text-button ai-chip" aria-haspopup="dialog" onClick={()=>setAiOpen(true)}>{aiChipLabel(aiCloud)}</button><strong role="status">{quickBusy||cameraStatus.recording?'● Esitystä tallennetaan':'Tallennus pysäytetty'}</strong></div>{fpsReport&&<span data-testid="playback-fps" title={'p95 '+fpsReport.p95Ms.toFixed(1)+' ms'}>{fpsReport.fps.toFixed(1)} fps</span>}<span><span className="status-dot"/>{doc ? 'PSD avattu' : 'Odottaa tiedostoa'}</span><span>{rigMessage || 'Tallenna työ .hahmo-projektina. Vie valmis jakso MP4-videoksi.'}</span><span role="status">{autosaveStatus}</span></footer>
   {help && <div className="modal-backdrop" onClick={() => setHelp(false)}><section ref={helpDialog} className="help-modal user-guide" role="dialog" aria-modal="true" aria-labelledby="help-title" onClick={e=>e.stopPropagation()}><div className="modal-heading"><h2 id="help-title">KILSAT Studion käyttöohje</h2><button autoFocus className="secondary" aria-label="Sulje käyttöohje" onClick={()=>setHelp(false)}><X size={18}/>Takaisin studioon</button></div><UserGuide/></section></div>}
   <CommandPalette open={paletteOpen} commands={paletteCommands} onClose={()=>setPaletteOpen(false)}/>
   <StudioFlowTour open={flowTourOpen&&!help&&!scriptPage} stepIndex={flowTourStep} onStepIndex={setFlowTourStep} onDone={finishFlowTour} onOpenStep={id=>goFlowStep(id)}/>

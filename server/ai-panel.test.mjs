@@ -47,3 +47,10 @@ test('Tekoäly-paneeli löytyy sovelluksen omasta Näytä-valikosta ja toimintoh
  assert.match(editor,/extra=\{<><button className="secondary" onClick=\{\(\)=>setAiOpen\(true\)\}>Tekoäly…<\/button>/);
  assert.match(editor,/\{id:'ai',group:'Näkymä',label:'Tekoäly: tilat ja pilvirenderöinti…'[^}]*run:\(\)=>setAiOpen\(true\)\}/);
 });
+test('V7: alapalkin Tekoäly-painike ja Vie tekoälyrenderöitynä avaavat olemassa olevat ikkunat',()=>{
+ const editor=readFileSync(new URL('components/editor.tsx',root),'utf8'),exporter=readFileSync(new URL('components/export-panel.tsx',root),'utf8');
+ assert.match(editor,/className="text-button ai-chip"[^>]*onClick=\{\(\)=>setAiOpen\(true\)\}>\{aiChipLabel\(aiCloud\)\}/);
+ assert.match(editor,/id:'cloud-export',group:'Vienti',label:'Vie tekoälyrenderöitynä…'[^}]*run:\(\)=>setCloudRender\(true\)/);
+ assert.match(editor,/cloud=\{bridge\?\(\)=>setCloudRender\(true\):undefined\}/);
+ assert.match(exporter,/\{cloud&&<p className="export-cloud"><button[^>]*onClick=\{\(\)=>\{setOpen\(false\);cloud\(\);\}\}>Vie tekoälyrenderöitynä…<\/button>/);
+});

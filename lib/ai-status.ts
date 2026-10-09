@@ -63,3 +63,12 @@ export function onAiActivity(listener:()=>void):()=>void{listeners.add(listener)
 export function trackAi<T>(id:AiFeatureId,promise:Promise<T>,describe:(value:T)=>string):Promise<T>{
  return promise.then(function(value){recordAiActivity(id,true,describe(value));return value;},function(error:unknown){recordAiActivity(id,false,error instanceof Error?error.message:'Epäonnistui.');throw error;});
 }
+
+/**
+ * Alapalkin Tekoäly-painikkeen teksti. Kertoo vain luetun tilan: paikalliset ominaisuudet ovat aina tällä koneella,
+ * pilvi mainitaan vain, kun sen tila on oikeasti luettu (undefined = ei vielä luettu, null = luku epäonnistui).
+ */
+export function aiChipLabel(cloud:{available:false}|AiCloudState|null|undefined):string{
+ if(!cloud||!cloud.available)return 'Tekoäly: paikallinen';
+ return cloud.enabled?'Tekoäly: paikallinen · pilvi päällä':'Tekoäly: paikallinen · pilvi pois';
+}

@@ -142,3 +142,23 @@ Kiintiön varmennettu seuraava havainto: 5 tunnin ikkunasta 8 % jäljellä (92 %
 Jatkaja (Claude tai Codex): fetch main/hahmostudio1.0 ja tarkista paikallinen työ; lue AGENTS.md,CLAUDE.md ja docs/tiimi/JATKO-CODEX-CLAUDE.md. Seuraava konkreettinen tehtävä on oikea englanninkielinen Kokoro-kuuntelu ja MP4:n katsottu synkka erillisessä pilottiprojektissa käyttäjän jo hyväksytyllä mallilla. Älä aloita uudelleen yhdistettyjä korjauksia. VoiceOver,paketoitu toimituskoe,taiteellinen liikehyväksyntä jaGPU/pilvi ovat edelleen avoimia; testimoottorin ääntä ei esitetä aidon Kokoron hyväksyntänä.
 
 Asennettua KOETA.app-bundlea ei korvattu lähdekoodin Git-yhdistämisellä. Käyttäjän omat projektit,äänet,mallit ja paikalliset keskeneräiset muutokset säilyvät.
+
+
+## Claude: UI-minimalismi V7 ja V8 — 9.10.2026, TYÖHAARASSA
+
+Työhaara `claude/project-thread-ojgcol`, pohjana main = hahmostudio1.0 = `0219edd`. Ei yhdistetty päähaaroihin tällä kierroksella.
+
+Tehty:
+- V7: alapalkissa Tekoäly-painike (`components/editor.tsx`, `lib/ai-status.ts` `aiChipLabel`). Teksti on "Tekoäly: paikallinen", ja työpöydällä lisäksi "pilvi pois/päällä" vain pääprosessista luetusta tilasta; tila luetaan uudelleen paneelin sulkeuduttua. Painike avaa saman Tekoäly-paneelin kuin Projekti → Näkymä → Tekoäly… ja ⌘K.
+- V7: "Vie tekoälyrenderöitynä…" ⌘K-komentona (yksityinen palvelin ja työpöytä) sekä työpöydän vientidialogissa (`components/export-panel.tsx`, prop `cloud`). Avaa olemassa olevan pilvirenderöintidialogin; uutta pilvitoimintoa ei lisätty. Ominaisuuskartassa koti `cloud-export`.
+- V8: Asetukset → Asiantuntijatila (`components/expert-settings.tsx`, `lib/expert-mode.ts`), oletus pois, näkymäasetus localStoragessa (ei projektidataa). Pois ollessa `expert-detail`-tiedot piilotetaan CSS:llä: versioiden SHA-256, viennin render-revisio, tuotannon resurssiviitteet ja tuotantokomentojen loki. Mitään ei pureta eikä poisteta.
+- Kapea ruutu (≤ 600 px): alapalkki rivittyy, joten Tekoäly-painike ei leikkaudu.
+
+Testattu (Linux-pilvi, Node 22):
+- `npm run typecheck` exit 0; `npm run build:private` exit 0 (vanhat chunk/dynamic-import-varoitukset).
+- `npm test`: 1388 testiä, 1387 pass, 0 fail, 1 skip (todellinen FFmpeg-testi: natiivi FFmpeg puuttuu pilviympäristöstä; ei koodiohitus). Uudet testit: `lib/expert-mode.test.ts`, `aiChipLabel` `lib/ai-status.test.ts`:ssä, V7-kytkennät `server/ai-panel.test.mjs`:ssä.
+- Selain (Vite dev, Chromium, web-tila ilman bridgeä) 390/600/820/1440 px: painike näkyy alapalkin sisällä, avaa paneelin, fokus menee dialogiin ja Esc palauttaa sen painikkeeseen; asiantuntijatila asettaa `data-expert=on` ja tallentuu; ei vaakavieritystä eikä konsolivirheitä. Kuvat: `docs/tiimi/todennus/ui-v7-v8/`.
+
+Avoimet hyväksynnät: vientidialogin "Vie tekoälyrenderöitynä…" ja pilvitilan teksti oikeassa Electron/Mac-sovelluksessa (ei ajettu; stub-bridge-kokeilu ei käynnistänyt editoria, eikä sitä esitetä todennuksena). VoiceOver, paketoitu Mac ja aiemmat avoimet hyväksynnät (Kokoro-kuuntelu, MP4-synkka, taiteellinen liike, GPU/pilvi) ennallaan.
+
+Seuraava konkreettinen työ: V5 hahmokorttien tiivistys (`components/asset-library.tsx`), vasemman paneelin siivous lukituissa vaiheissa (`components/editor.tsx`, `styles/koeta-minimal.css`), sitten V7:n Tarkastelijan Tekoäly-välilehti. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin mittaria ei käytetty.

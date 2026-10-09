@@ -93,3 +93,15 @@
 .studio.s2 details.s2-hint { margin: 2px 0 8px; padding: 0; border: 0; background: none; }
 .studio.s2 details.s2-hint > summary { display: inline-flex; min-height: 24px; padding: 2px 0; background: none; border: 0; color: var(--s2-muted); font-size: 12px; cursor: pointer; }
 .studio.s2 details.s2-hint > p { margin: 4px 0 0; }
+
+/* V8 asiantuntijatila: tekniset yksityiskohdat näkyvät vain, kun asetus on päällä (lib/expert-mode.ts). */
+:root:not([data-expert="on"]) .expert-detail { display: none !important; }
+
+/* V7 Tekoäly-painike alapalkissa: mahtuu 26 px:n palkkiin; kapealla ruudulla kosketusalue saa kasvaa. */
+.studio.s2 .statusbar .ai-chip { min-height: 20px !important; height: 20px; padding: 0 4px; }
+
+/* Kapea ruutu: alapalkki rivittyy, jotta laitteiden tila ja Tekoäly-painike näkyvät eivätkä leikkaudu oikeasta reunasta. */
+@media (max-width: 600px) {
+  .studio.s2 .statusbar { flex-wrap: wrap; row-gap: 2px; padding-block: 3px; height: auto; }
+  .studio.s2 .statusbar .ai-chip { min-height: 28px !important; height: 28px; }
+}

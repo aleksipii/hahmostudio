@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {aiStatusRows,recordAiActivity,aiActivity,trackAi,onAiActivity} from './ai-status.ts';
+import {aiChipLabel,aiStatusRows,recordAiActivity,aiActivity,trackAi,onAiActivity} from './ai-status.ts';
 
 test('tekoälypaneeli näyttää vain ominaisuudet, joiden tila on luettu; kustannus on aina €0,00 tai estetty',()=>{
  assert.deepEqual(aiStatusRows({}).map(r=>r.id),['rhubarb']);
@@ -59,4 +59,12 @@ test('vahvistettu ilmainen tausta ei poista mallilukituksen estoa; tuotu lukitus
  const imported=aiStatusRows({cloud:{...state,modelPins:true}}).find(r=>r.id==='cloud-render')!;
  assert.equal(imported.cost,'€0,00');assert.match(imported.note!,/validointi, hyväksytyt vertailukuvat.*live-todennus tarkistetaan erikseen/);
  assert.equal(aiStatusRows({cloud:{...state,modelPins:true,enabled:false}}).find(r=>r.id==='cloud-render')!.cost,'estetty');
+});
+
+test('alapalkin Tekoäly-painike mainitsee pilven vain luetusta tilasta',()=>{
+ assert.equal(aiChipLabel(undefined),'Tekoäly: paikallinen');
+ assert.equal(aiChipLabel(null),'Tekoäly: paikallinen');
+ assert.equal(aiChipLabel({available:false}),'Tekoäly: paikallinen');
+ assert.equal(aiChipLabel(cloudState()),'Tekoäly: paikallinen · pilvi pois');
+ assert.equal(aiChipLabel(cloudState({enabled:true})),'Tekoäly: paikallinen · pilvi päällä');
 });

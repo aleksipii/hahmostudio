@@ -84,6 +84,7 @@ export const studioFeatureMap: FeatureHome[] = [
   // 5 Leikkaus
   { id: 'timeline-panel', label: 'Aikajana', department: 'tuotanto', step: 'timeline', layer: 'paa' },
   { id: 'play', label: 'Toista / tauko', department: 'tuotanto', step: 'timeline', layer: 'paa', palette: 'play' },
+  { id: 'cloud-export', label: 'Vie tekoälyrenderöitynä', department: 'tuotanto', step: 'timeline', layer: 'haku', palette: 'cloud-export' },
   { id: 'export-phase', label: 'Vienti ja sarja', department: 'tuotanto', step: 'timeline', layer: 'paa', palette: 'export-phase' },
   { id: 'video', label: 'Vie MP4', department: 'tuotanto', step: 'timeline', layer: 'paa', palette: 'video' },
   { id: 'png', label: 'Vie PNG-kuvasarja', department: 'tuotanto', step: 'timeline', layer: 'valikko', palette: 'png' },
