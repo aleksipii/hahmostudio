@@ -8,7 +8,7 @@ export type AiLocation='local'|'cloud'|'off';
 export type AiPermission='granted'|'missing'|'denied'|'not-needed'|'unknown';
 export type AiActivity={at:string;ok:boolean;text:string};
 export type AiStatusRow={id:AiFeatureId;name:string;location:AiLocation;permission:AiPermission;permissionText:string;data:string;cost:'€0,00'|'estetty';last?:AiActivity;note?:string;available:boolean};
-export type AiCloudState={available:true;enabled:boolean;storage:string|null;settings:{colabClassifiedFree:boolean;notebookClassifiedFree:boolean};secrets:{encryption:boolean;keys:Record<string,{label:string;set:boolean}>};jobs:{state:string}[]};
+export type AiCloudState={available:true;enabled:boolean;modelPins:boolean;storage:string|null;settings:{colabClassifiedFree:boolean;notebookClassifiedFree:boolean};secrets:{encryption:boolean;keys:Record<string,{label:string;set:boolean}>};jobs:{state:string}[]};
 export type AiStatusInput={
  audioModel?:{model:boolean;binary:boolean}|null;
  kokoro?:{installed:boolean;error?:string}|null;
@@ -45,8 +45,8 @@ export function aiStatusRows(input:AiStatusInput):AiStatusRow[]{
   rows.push({id:'cloud-render',name:'Pilvirenderöinti',location:cloud.enabled?'cloud':'off',permission:cloud.enabled?'granted':'missing',
    permissionText:cloud.enabled?'Otettu käyttöön. Jokainen lähetys kysyy erikseen luvan.':'Ei otettu käyttöön (oletus).',
    data:cloud.enabled?`Vain luvallasi: lukittu kohtaus ja hyväksytyt vertailukuvat ilmaiseen ajoympäristöön; tulos tallennetaan ${where}. Äänet, PSD-tiedostot ja käsikirjoitus eivät lähde.`:'Ei mitään.',
-   cost:cloud.enabled&&backend?'€0,00':'estetty',last:last('cloud-render'),
-   note:[cloud.enabled&&!backend?'Renderöinti on estetty, kunnes ilmainen ajoympäristö on määritetty ja vahvistettu.':'',cloud.secrets.encryption?'':'Järjestelmän avainnippu ei ole käytettävissä: pilviasetuksia ei voi tallentaa.',interrupted?`${interrupted} renderöinti keskeytyi sovelluksen sulkeutuessa. Yritä uudelleen pilvirenderöinnistä; mitään ei lähetetä automaattisesti.`:''].filter(Boolean).join(' ')||undefined,
+   cost:cloud.enabled&&backend&&cloud.modelPins?'€0,00':'estetty',last:last('cloud-render'),
+   note:[cloud.enabled&&!backend?'Renderöinti on estetty, kunnes ilmainen ajoympäristö on määritetty ja vahvistettu.':'',cloud.enabled&&!cloud.modelPins?'Renderöinti on estetty, kunnes mallien lukitus on tuotu.':'',cloud.enabled&&cloud.modelPins?'Mallien lukitus on tuotu. Mallin validointi, hyväksytyt vertailukuvat ja työnkulun vaatima live-todennus tarkistetaan erikseen ennen renderöintiä.':'',cloud.secrets.encryption?'':'Järjestelmän avainnippu ei ole käytettävissä: pilviasetuksia ei voi tallentaa.',interrupted?`${interrupted} renderöinti keskeytyi sovelluksen sulkeutuessa. Yritä uudelleen pilvirenderöinnistä; mitään ei lähetetä automaattisesti.`:''].filter(Boolean).join(' ')||undefined,
    available:cloud.enabled});
  }
  return rows;

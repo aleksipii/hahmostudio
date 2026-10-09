@@ -26,7 +26,7 @@ export function readStructure(buffer: ArrayBuffer) {
     pixels += w * h;
    }
    if (pixels > 48_000_000) throw new Error('Tasojen yhteiskoko on liian suuri. Pienennä kuvaa tai yhdistä turhia tasoja Photoshopissa.');
-   check(l.children ?? [], depth + 1);
+   if (l.children) check(l.children, depth + 1);
   }
  };
  check(psd.children ?? []); return psd;

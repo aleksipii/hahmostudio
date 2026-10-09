@@ -52,9 +52,7 @@ test('readStructure group nesting limit: 19 groups around a layer pass, deeper n
  assert.throws(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(21)]})),/sisäkkäin/);
 });
 
-// Tunnettu bugi (TIIMI.md, testaaja): check() tarkistaa myös tason tyhjän lapsilistan syvyydellä 21,
-// joten 20 ryhmää + taso hylätään, vaikka viesti lupaa "enintään 20". todo ei kaada ajoa; korjauksen jälkeen poista todo.
-test('readStructure accepts a layer inside exactly 20 nested groups',{todo:'tunnettu off-by-one lib/psd-import.ts check()'},()=>{
+test('readStructure accepts a layer inside exactly 20 nested groups',()=>{
  const nest=(depth:number):Layer=>depth?{name:'g'+depth,children:[nest(depth-1)]}:{name:'lehti'};
  assert.doesNotThrow(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(20)]})));
 });
@@ -72,4 +70,11 @@ test('layerWarnings reports every unsupported feature and stays empty for a plai
  const all=layerWarnings({name:'x',effects:{},clipping:true,adjustment:{type:'brightness/contrast'},vectorMask:{paths:[]},realMask:{},mask:{userMaskFeather:2},children:[],blendMode:'not-a-mode' as Layer['blendMode']} as Layer);
  for(const re of [/Tasotehosteita/,/Leikkausmaskia/,/Säätötason/,/Vektorimaskia/,/Ryhmän maskia/,/Yhdistettyä/,/pehmennystä/,/not-a-mode/])
   assert.ok(all.some(w=>re.test(w)),String(re));
+});
+
+// Empty groups still count toward the hierarchy limit; leaf nodes do not add an empty level.
+test('readStructure rejects 21 nested empty groups but accepts exactly 20',()=>{
+ const nest=(depth:number):Layer=>({name:'g'+depth,children:depth>1?[nest(depth-1)]:[]});
+ assert.doesNotThrow(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(20)]})));
+ assert.throws(()=>readStructure(psdBuffer({width:10,height:10,children:[nest(21)]})),/sisäkkäin/);
 });

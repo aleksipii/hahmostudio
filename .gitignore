@@ -26,3 +26,7 @@ release/
 .paper-character-studio-build/
 
 .cutout-kids-build/
+
+# Team verification output and dependency symlink
+dist-team-preview/
+node_modules

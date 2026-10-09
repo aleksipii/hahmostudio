@@ -4,9 +4,9 @@ import {aiActivity,aiStatusRows,LOCATION_FI,onAiActivity,type AiStatusInput,type
 
 /** Tekoäly-paneelin sisältö: vain todelliset tilat. Ei toimintopainikkeita; ulkoasu ja sijainti viimeistellään UI/UX:ssä. */
 export function AiPanelView({rows,loading}:{rows:AiStatusRow[];loading:boolean}){
- return <div className="ai-status">
+ return <div className="ai-status" aria-busy={loading}>
   <p className="panel-note">Tekoäly ehdottaa ja avustaa. Säännöt ja sinun hyväksyntäsi ratkaisevat, mitä projektiin tulee. Paikalliset ominaisuudet toimivat tällä koneella. Pilveen ei lähetetä mitään ilman käyttöönottoa ja erillistä lupaa jokaiselle lähetykselle.</p>
-  {loading&&<p className="panel-note">Luetaan tiloja…</p>}
+  {loading&&<p className="panel-note" role="status">Luetaan tiloja…</p>}
   {rows.map(r=><section key={r.id} aria-label={r.name} data-ai-feature={r.id}><h3>{r.name}</h3><dl>
    <dt>Missä</dt><dd>{LOCATION_FI[r.location]}{r.available?'':' · ei käytössä'}</dd>
    <dt>Lupa</dt><dd>{r.permissionText}</dd>

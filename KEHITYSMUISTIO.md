@@ -639,3 +639,8 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 **Todennettu:** ks. 2.24–2.29. **Todentamatta (ei väitetä):** pakattu .app, oikea Mac (Keychain, natiivit dialogit), whisper-litterointi oikealla mallilla, oikea Kaggle-, ComfyUI-, Drive- tai GPU-ajo.
 
 **Seuraava:** testaajan ja lopputarkastajan palaute. Vertailukuvaehdotukset otetaan käyttöön hahmo kerrallaan, kun hahmon grafiikka on hyväksytty.
+
+
+## Tiimityö 8.10.2026: 3D-tyyli ja PSD-tuonnin rajakorjaus
+
+Erillisessä paikallisessa työkopiossa tehty ensimmäinen rajattu muutos. Kymmenen vastuualueen promptit: docs/tiimi/promptit/. Työloki: TIIMI.md. Toteutus ja todennuksen rajat: docs/tiimi/KEHITYS.md. Flat/cel-tyylivalinta säilyttää kentättömien vanhojen profiilien cel-esityksen; PSD-tuonti hyväksyy nyt täsmälleen 20 sisäkkäistä ryhmää. Oikean pilvi/GPU-ajon, äänen kuuntelun ja paketoidun sovelluksen hyväksyntää ei ole tehty.

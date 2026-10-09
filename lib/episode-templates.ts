@@ -8,6 +8,27 @@
 export type EpisodeTemplate={id:string;name:string;description:string;language:'fi'|'en';approxSeconds:[number,number];source:string};
 
 export const episodeTemplates:EpisodeTemplate[]=[
+ {id:'kokoro-en',name:'Kokoro: englanninkielinen studiokoe',description:'Pipsa ja Ville studiossa. Englanninkieliset repliikit paikalliselle Kokorolle; tuota ja tarkista ääni ennen vientiä.',language:'en',approxSeconds:[4,9],source:`Resource character MIRA: Pipsa
+Resource character NIKO: Ville
+
+Episode 1: Studio check
+Music: calm
+
+INT. STUDIO
+Mira looks at Niko.
+
+MIRA:
+“Hello, Ville. Are you ready?”
+
+Niko nods.
+
+NIKO:
+“Yes, Pipsa. Let us begin.”
+
+Mira smiles.
+Niko looks at camera.
+FADE OUT
+`},
  {id:'dialogi',name:'Dialogi kahdelle',description:'Kaksi hahmoa kahvilassa: repliikit, katseet ja reaktiot.',language:'fi',approxSeconds:[4,8],source:`Jakso 1: Kahvilassa
 Musiikki: rauhallinen
 

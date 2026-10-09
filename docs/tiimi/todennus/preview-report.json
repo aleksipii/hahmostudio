@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "real React style selection updates profile",
+      "ok": true,
+      "before": "cel",
+      "after": "flat"
+    },
+    {
+      "name": "disabled cast fieldset locks representation, style and colors",
+      "ok": true
+    },
+    {
+      "name": "cloud status stays blocked without model pins",
+      "ok": true
+    },
+    {
+      "name": "preview 1440px",
+      "ok": true,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "canvases": 20
+    },
+    {
+      "name": "preview 600px",
+      "ok": true,
+      "width": 600,
+      "scrollWidth": 600,
+      "canvases": 20
+    }
+  ],
+  "errors": [],
+  "electron": "44.5.1",
+  "platform": "darwin",
+  "scope": "isolated real Electron component and Canvas, not packaged application, not cloud/GPU"
+}
