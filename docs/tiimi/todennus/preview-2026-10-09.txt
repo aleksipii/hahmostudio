@@ -13,7 +13,7 @@ dist-team-preview/assets/presentation-images-CYJtnNwC.js    0.30 kB │ gzip:   
 dist-team-preview/assets/preview-T1p7AkI9.js              531.30 kB │ gzip: 177.55 kB
 
 ✓ built in 13.13s
-[plugin builtin:vite-reporter] 
+[plugin builtin:vite-reporter]
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
