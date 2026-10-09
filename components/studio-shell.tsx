@@ -1,5 +1,5 @@
 import type { CSSProperties, DragEventHandler, ReactNode } from 'react';
-import { Hammer, Redo2, Search, Undo2 } from 'lucide-react';
+import { ArrowRight, Hammer, Redo2, Search, Undo2 } from 'lucide-react';
 import { studioFlowSteps, studioWorkshop } from '../lib/studio-flow-steps';
 import type { StudioFlowStep } from '../lib/studio-flow-scope';
 
@@ -10,13 +10,11 @@ export default function StudioShell({
   workshop,
   onWorkshop,
   projectMenu,
-  viewMenu,
   onSearch,
   onUndo,
   onRedo,
   canUndo,
   canRedo,
-  saveButton,
   exportControl,
   className,
   style,
@@ -31,13 +29,11 @@ export default function StudioShell({
   workshop: boolean;
   onWorkshop: () => void;
   projectMenu: ReactNode;
-  viewMenu: ReactNode;
   onSearch: () => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  saveButton: ReactNode;
   exportControl: ReactNode;
   className?: string;
   style?: CSSProperties;
@@ -46,6 +42,10 @@ export default function StudioShell({
   onDrop?: DragEventHandler;
   children: ReactNode;
 }) {
+  const activeIndex = studioFlowSteps.findIndex((step) => step.id === active);
+  const nextIndex = workshop ? 1 : activeIndex + 1;
+  const next = studioFlowSteps[nextIndex];
+  const nextLabel = workshop ? 'Roolitukseen' : next?.label;
   return (
     <main
       className={['kilsat-frame', 's2', workshop ? 'phase-workshop' : `phase-${active}`, className].filter(Boolean).join(' ')}
@@ -100,8 +100,12 @@ export default function StudioShell({
           <button type="button" className="s2-icon" onClick={onRedo} disabled={!canRedo} title="Tee uudelleen (⇧⌘Z)" aria-label="Tee uudelleen">
             <Redo2 size={16} aria-hidden />
           </button>
-          {viewMenu}
-          {saveButton}
+          {next && (
+            <button type="button" className="s2-next" onClick={() => onSelectPhase(next.id)} title={`${next.hint} · ⌥${nextIndex + 1}`}>
+              <span>{nextLabel}</span>
+              <ArrowRight size={14} aria-hidden />
+            </button>
+          )}
           {exportControl}
         </div>
       </header>

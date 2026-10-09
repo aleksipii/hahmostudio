@@ -1,0 +1,95 @@
+/*
+ * KOETA – minimalistinen näkymä (docs/UI-MINIMALISMI-SUUNNITELMA.md, V1–V3).
+ * Ladataan viimeisenä. Vain piilotetaan: komponentit pysyvät mounted-tilassa (AGENTS.md),
+ * ja jokainen piilotettu toiminto on edelleen omassa kodissaan (Tarina, ⌘K, Näytä-valikko).
+ */
+
+/* Selittävät bannerit pois: yläpalkin työvaihe kertoo missä ollaan, eikä banneri auta tekemään mitään. */
+.studio.s2 .flow-step-banner { display: none; }
+
+/* Välilehtirivi, jossa on vain yksi näkyvä välilehti, ei kerro mitään. */
+.studio.s2 .layers-panel > .library-tabs:not(:has(> button:not([hidden]) ~ button:not([hidden]))) { display: none !important; }
+
+/* Lukituissa vaiheissa (Storyboard, Kuvaus, Leikkaus) käsikirjoituksen lähdetyökalut ovat
+ * pois käytöstä, joten niitä ei näytetä. Muokkaus on Tarinassa, ⌘K ja "Työkalut /". */
+.studio.s2.phase-storyboard .script-shell-sidebar,
+.studio.s2.phase-shot .script-shell-sidebar,
+.studio.s2.phase-timeline .script-shell-sidebar,
+.studio.s2.phase-storyboard .script-docked-hint,
+.studio.s2.phase-shot .script-docked-hint,
+.studio.s2.phase-timeline .script-docked-hint,
+.studio.s2.phase-storyboard .script-guide,
+.studio.s2.phase-shot .script-guide,
+.studio.s2.phase-timeline .script-guide { display: none; }
+
+/* Leikkauksessa äänitys ei ole päätehtävä; "Ääni ja videovienti" pysyy tarkastelijassa,
+ * ja äänitys on Kuvauksessa ja ⌘K:ssa. */
+.studio.s2.phase-timeline .audio-analysis { display: none; }
+
+/* Lukituissa vaiheissa kirjoitusalueen rakennus- ja jakopainikkeet kuuluvat Tarinaan. */
+.studio.s2.phase-storyboard .script-sticky-bar,
+.studio.s2.phase-shot .script-sticky-bar,
+.studio.s2.phase-timeline .script-sticky-bar,
+.studio.s2.phase-storyboard .script-compose-meta,
+.studio.s2.phase-shot .script-compose-meta,
+.studio.s2.phase-timeline .script-compose-meta { display: none; }
+
+/* Tyhjä tila: yksi lause, yksi painike. */
+.studio.s2 .phase-empty {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 24px; text-align: center; color: var(--s2-muted);
+}
+.studio.s2 .phase-empty p { margin: 0; color: var(--s2-text); font-size: 15px; font-weight: 600; }
+.studio.s2 .phase-empty .phase-empty-hint { color: var(--s2-muted); font-size: 13px; font-weight: 400; }
+.studio.s2 .phase-empty button { margin-top: 8px; }
+
+/* ─── Vasen paneeli rakennetussa jaksossa: vain vaiheen oma sisältö ───
+ * Jokainen osio pysyy mountattuna ja on omassa kodissaan:
+ * käsikirjoituskopio ja korjausehdotukset Tarinassa, palikkaeditori ja repliikkiäänet Kuvauksessa,
+ * ääniraita ja puhesynteesi Leikkauksessa. */
+.studio.s2.phase-storyboard .layers-panel .script-compose,
+.studio.s2.phase-shot .layers-panel .script-compose,
+.studio.s2.phase-timeline .layers-panel .script-compose,
+.studio.s2.phase-storyboard .layers-panel .review-suggestions,
+.studio.s2.phase-shot .layers-panel .review-suggestions,
+.studio.s2.phase-timeline .layers-panel .review-suggestions,
+.studio.s2.phase-storyboard .layers-panel .kokoro-panel,
+.studio.s2.phase-shot .layers-panel .kokoro-panel,
+.studio.s2.phase-storyboard .layers-panel .block-editor-dock,
+.studio.s2.phase-timeline .layers-panel .block-editor-dock,
+.studio.s2.phase-storyboard .layers-panel .voices-missing,
+.studio.s2.phase-timeline .layers-panel .voices-missing,
+.studio.s2.phase-storyboard .layers-panel .soundtrack-summary,
+.studio.s2.phase-shot .layers-panel .soundtrack-summary { display: none; }
+
+/* Kuvataulun suodattimet ja lajittelu ovat yhden avattavan osion takana; kortit näkyvät ensin. */
+.studio.s2 .studio-shot-board .board-more { margin: 4px 0 8px; }
+.studio.s2 .studio-shot-board .board-more > summary { cursor: pointer; color: var(--s2-muted); font-size: 12px; padding: 6px 0; }
+.studio.s2 .studio-shot-board .board-more > summary:hover { color: var(--s2-text); }
+
+/* ─── V4 Yläpalkki: Näkymä ja Tallenna ovat Projekti-valikossa; seuraava vaihe on korostettu ─── */
+.studio.s2 .s2-next {
+  display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px;
+  border-radius: 8px; border: 0; font-weight: 600; font-size: 13px; cursor: pointer;
+  background: var(--s2-accent, #e8542f); color: #fff;
+}
+.studio.s2 .s2-next:hover { filter: brightness(1.08); }
+/* Vienti on tehtävä vasta Leikkauksessa; ExportPanel pysyy silti ladattuna (⌘K ja Projekti → Vie video… avaavat sen). */
+.studio.s2:not(.phase-timeline) .s2-export { display: none; }
+.studio.s2.phase-timeline .s2-next { display: none; }
+
+/* Näkymä-alivalikko: valinnat omille riveilleen. */
+.studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] { display: flex; flex-direction: column; gap: 2px; padding: 4px 6px; }
+.studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] > label { display: flex; align-items: center; gap: 8px; width: 100%; padding: 5px 4px; font-size: 13px; }
+.studio.s2 .s2-submenu [role='group'][aria-label='Näkyvät paneelit'] > label input { flex: none; }
+
+/* ─── V6 Leikkaus: aikajana on päätyökalu, joten se saa vähintään ~40 % ruudun korkeudesta ─── */
+.studio.s2.phase-timeline .timeline-container { height: max(var(--timeline-size), 38dvh); min-height: 220px; max-height: 50dvh; }
+@media (max-width: 600px) {
+  .studio.s2.phase-timeline .timeline-container { height: auto; min-height: 180px; max-height: 40dvh; }
+}
+
+/* ─── V5 Roolitus: pitkä ohjeteksti on taitettu "Ohje"-linkin taakse ─── */
+.studio.s2 details.s2-hint { margin: 2px 0 8px; padding: 0; border: 0; background: none; }
+.studio.s2 details.s2-hint > summary { display: inline-flex; min-height: 24px; padding: 2px 0; background: none; border: 0; color: var(--s2-muted); font-size: 12px; cursor: pointer; }
+.studio.s2 details.s2-hint > p { margin: 4px 0 0; }
