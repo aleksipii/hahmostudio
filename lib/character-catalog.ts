@@ -16,13 +16,13 @@ export const STUDIO_MIN_VIEWS = 3;
 export const STUDIO_MIN_MOUTHS = 4;
 
 export const characters: CharacterEntry[] = [
- {name:'Pipsa',description:'Paksureunainen leikkaushahmo · keltainen sadetakki, huppu ja silmälasit · 2D',alt:'Pipsa, keltainen sadetakki ja huppu, punaiset silmälasit ja lapaset',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Pipsa',description:'Viivaton leikkaushahmo · keltainen sadetakki, huppu ja silmälasit · 2D',alt:'Pipsa, keltainen sadetakki ja huppu, punaiset silmälasit ja lapaset',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Pipsa-3D',description:'Pipsa · neljä kuvakulmaa · 3D-paperitasot',alt:'Pipsa neljästä kuvakulmasta',quality:{views:4,mouths:5,fullBody:true,origin:'studio'}},
- {name:'Ville',description:'Paksureunainen leikkaushahmo · kiharat ja pisamat · 2D',alt:'Ville, kihara kuparinen tukka, pisamat ja ruskea neule',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Ville',description:'Viivaton leikkaushahmo · kiharat ja pisamat · 2D',alt:'Ville, kihara kuparinen tukka, pisamat ja ruskea neule',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Ville-3D',description:'Ville · neljä kuvakulmaa · 3D-paperitasot',alt:'Ville neljästä kuvakulmasta',quality:{views:4,mouths:5,fullBody:true,origin:'studio'}},
- {name:'Taru',description:'Paksureunainen leikkaushahmo · nutturat ja kuulokkeet · 2D',alt:'Taru, hiusnutturat, violetit kuulokkeet ja oranssi huppari',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Taru',description:'Viivaton leikkaushahmo · nutturat ja kuulokkeet · 2D',alt:'Taru, hiusnutturat, violetit kuulokkeet ja oranssi huppari',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Taru-3D',description:'Taru · neljä kuvakulmaa · 3D-paperitasot',alt:'Taru neljästä kuvakulmasta',quality:{views:4,mouths:5,fullBody:true,origin:'studio'}},
- {name:'Ukko',description:'Paksureunainen leikkaushahmo · kalju, viikset ja villatakki · 2D',alt:'Ukko, kalju, valkoiset viikset ja vihreä villatakki',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
+ {name:'Ukko',description:'Viivaton leikkaushahmo · kalju, viikset ja villatakki · 2D',alt:'Ukko, kalju, valkoiset viikset ja vihreä villatakki',quality:{views:1,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Ukko-3D',description:'Ukko · neljä kuvakulmaa · 3D-paperitasot',alt:'Ukko neljästä kuvakulmasta',quality:{views:4,mouths:5,fullBody:true,origin:'studio'}},
  {name:'Hahmopohja',description:'Muokattava PSD-pohja',alt:'Vaalea hahmopohja erillisine osineen',quality:{views:1,mouths:3,fullBody:true,origin:'studio'}}
 ];
