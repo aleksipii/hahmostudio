@@ -644,3 +644,11 @@ Omistajan pyynnöstä **kaikki vanhat hahmot poistettiin** ja tilalle tehtiin **
 ## Tiimityö 8.10.2026: 3D-tyyli ja PSD-tuonnin rajakorjaus
 
 Erillisessä paikallisessa työkopiossa tehty ensimmäinen rajattu muutos. Kymmenen vastuualueen promptit: docs/tiimi/promptit/. Työloki: TIIMI.md. Toteutus ja todennuksen rajat: docs/tiimi/KEHITYS.md. Flat/cel-tyylivalinta säilyttää kentättömien vanhojen profiilien cel-esityksen; PSD-tuonti hyväksyy nyt täsmälleen 20 sisäkkäistä ryhmää. Oikean pilvi/GPU-ajon, äänen kuuntelun ja paketoidun sovelluksen hyväksyntää ei ole tehty.
+
+## 2.31 Tekoäly-paneeli löytyy sovelluksen omasta Näytä-valikosta (2026-10-08)
+
+**Käyttäjän palaute:** "Sovelluksessa ei näy tekoäly". **Syy:** Tekoäly… oli vain macOS:n valikkorivillä (Näytä → Tekoäly…). Sitä ei ollut sovelluksen ikkunan omassa Näytä-valikossa eikä Hae toimintoa -haussa. **Korjaus:** `components/editor.tsx` (kytkentä, kirjattu TIIMI.md:n Pyyntöihin):
+- ikkunan oikean yläkulman Näytä-valikkoon tuli "Tekoäly…";
+- toimintohakuun (⌘K) tuli "Tekoäly: tilat ja pilvirenderöinti…".
+
+Lisäksi `lib/studio-feature-map.ts` sai kartalle rivin `ai` (toimintohaun komennoilla pitää olla koti kartassa). Testi `server/ai-panel.test.mjs`. **Todennettu:** selaimessa (Vite, Chromium) Näytä → Tekoäly… avaa paneelin ja ⌘K-haku löytää sen. **Todentamatta:** pakattu Mac-sovellus.

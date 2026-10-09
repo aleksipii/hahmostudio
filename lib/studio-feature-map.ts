@@ -41,6 +41,7 @@ export const studioFeatureMap: FeatureHome[] = [
   { id: 'view-library', label: 'Näytä/piilota vasen paneeli', department: 'yleinen', layer: 'valikko', palette: 'library' },
   { id: 'view-inspector', label: 'Näytä/piilota oikea paneeli', department: 'yleinen', layer: 'valikko', palette: 'inspector' },
   { id: 'focus-stage', label: 'Keskity näyttämöön', department: 'yleinen', layer: 'valikko', palette: 'focus-stage' },
+  { id: 'ai', label: 'Tekoäly: tilat ja pilvirenderöinti', department: 'yleinen', layer: 'valikko', palette: 'ai' },
   { id: 'reset-panels', label: 'Palauta paneelien koot', department: 'yleinen', layer: 'valikko', palette: 'reset-panels' },
   { id: 'fit', label: 'Sovita näyttämö', department: 'yleinen', layer: 'valikko', palette: 'fit' },
   { id: 'theme-system', label: 'Ulkoasu: järjestelmä', department: 'yleinen', layer: 'valikko', palette: 'theme-system' },
