@@ -1,0 +1,15 @@
+odotettu   CRC32 $F58AB69E
+hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead.
+/dev/disk10         	GUID_partition_scheme
+/dev/disk10s1       	Apple_HFS                      	/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/koeta-dmg-check-PG0Zmk/mount
+{
+  "ok": true,
+  "dmg": "KOETA-0.36.0-arm64-49dc85ff.dmg",
+  "appAsarSha256": "49dc85ff07e91eb0f88b67898a170ab32ff6a95f3c2ae1e4728453ee0035e29b",
+  "applicationLink": true,
+  "signatureVerified": true,
+  "notarized": false,
+  "installed": false
+}
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+"disk10" ejected.

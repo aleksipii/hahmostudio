@@ -290,3 +290,23 @@ Todennusaineisto ja täsmälliset komennot: `docs/tiimi/todennus/mac-workflow-20
 Seuraava konkreettinen työ: testaa tallenteen **käyttäminen** repliikkina eristetyllä generoidulla syötteellä ja projektin palautus/undo (ei käyttäjän omaa ääntä); sen jälkeen Kokoron aito englanninkielinen ajo olemassa olevalla luvallisella mallilla ja runtimeilla. Palikkaeditorin raahaus/Alt-pudotus sekä VoiceOver-kuunteluhyväksyntä ovat vielä avoimia.
 
 Omistetut tiedostot: components/editor.tsx, components/presentation-panel.tsx (recordingActivity), styles/minimal-budjetit.css (vain aktiivinen tallennus), desktop/main.mjs (eristetty testitila), desktop/workflow-diagnostic.mjs, scripts/desktop-workflow-test.mjs, package.json (testikomento). Kiintiö ennen julkaisua: viiden tunnin ikkunassa **58 % jäljellä**, viikko 63 %. 10 % checkpoint ei lauennut.
+
+
+## Codex → Claude: DMG-toimitus ja Mac-kehitysohje — 10.10.2026
+
+Lähtö `69e759bebcaa45ebe70389c8195d1f9fd3aaeb74`, työhaara `codex/mac-dmg-2026-10-10`. Sovelluksen runtime-koodia ei muutettu. DMG sisältää edellisen kirjauksen testatun KOETA.app-paketin (0.36.0, arm64), jonka app.asar SHA-256 on `49dc85ff07e91eb0f88b67898a170ab32ff6a95f3c2ae1e4728453ee0035e29b`.
+
+Tehty:
+- `scripts/package-dmg.mjs`: tarkistaa lähde-.app:n allekirjoituksen ja version, tekee pakatun vain luku -DMG:n, Applications-linkin ja suomenkielisen asennusohjeen. Filename sisältää version, arkkitehtuurin ja todellisen app.asar-tarkistussumman alun. .sha256 ja .json ovat toimituksen vieressä. Uusia riippuvuuksia ei lisätty.
+- `npm run desktop:package:dmg` rakentaa ja paketoi koko sovelluksen; `npm run desktop:dmg` käärii jo testatun .app:n.
+- `npm run desktop:test:dmg -- <tiedosto>` liittää levyn vain luku -tilassa, varmistaa tarkistussummat, Applications-linkin ja .app:n syvän allekirjoituksen ja irrottaa levyn. Sovellusta ei asenneta.
+- desktop-build ja desktop-dev käyttävät Viten configLoader runneria; desktop:build-komento testattiin kokonaisena, sisältää typecheckin. Tämä välttää config-väliaikaistiedoston kirjoittamisen symlinkatun node_modules-kansion kautta toiseen projektiin.
+- docs/MAC_DESKTOP.md päivitettiin nykyiseen KOETA/DMG-kehitys- ja päivitystapaan; vanhat hahmot, 0.7-ohje ja väite Mac GUI:n estymisestä korvattiin nykytilalla. README:n aktiivinen pakettipolku korjattiin.
+
+Todennus: `npm run desktop:build` läpi; DMG:n luonti ja hdiutil verify läpi; DMG:n liittäminen/Applications-linkki/app.asar-hash/codesign --verify --deep --strict/irrotus läpi. Lokit docs/tiimi/todennus/dmg-20261010/. Hostin hdiutil ilmoitti deprecation-varoituksen, komennot toimivat; Mac-yhteensopivaa API-siirtymää voi käsitellä myöhemmin erikseen. Sovelluskoodin aiemmat 1402 testiä ja paketoitu Mac GUI säilyvät samalle muuttumattomalle sovelluspaketille; koko sarjaa ei toistettu pelkkää toimituskäärettä varten.
+
+Toimitus: `KOETA-0.36.0-arm64-49dc85ff.dmg`, noin 463 MiB, kopio käyttäjän Codex-työkansiossa `/Users/Aleksi/Documents/Codex/2026-10-08/`. DMG ja sidecarit ovat release/build-tuotoksia Gitin ulkopuolella. Lähdekoodi ja jatko-ohje julkaistaan samoihin main/hahmostudio1.0-päihin. Asennettua KOETA.app:a ja käyttäjän omaa Päivitä KOETA.command -tiedostoa ei muutettu.
+
+Kehitys jatkuu Git-projektissa /Users/Aleksi/hahmostudio. Lähdekoodin päivitys ja uusi DMG eivät päivitä asennettua sovellusta: tallenna työ, ⌘Q, vedä uusi KOETA.app Ohjelmat-kansioon ja korvaa vanha. Projektit, asetukset ja luvallinen Kokoro-malli pysyvät paketin ulkopuolella. Ei automaattipäivityksiä, Developer ID -allekirjoitusta tai notarisaatiota; näitä ei myönnetä DMG:n ominaisuudeksi. Notarisaatio ja automaattipäivityspalvelu tarvitsevat erillisen toteutuksen.
+
+Avoimet hyväksynnät ja seuraava konkreettinen sovellustyö säilyvät edellisestä kirjauksesta: tallenteen käyttäminen repliikkina + palautus/undo, oikea Kokoro-ajo ja vientisynkka, fyysiset laitteet, VoiceOver sekä palikkaeditorin raahaus/Alt-pudotus. Kiintiön viimeinen havainto ennen DMG-työtä: 51 % / 300 min, viikko 62 %; 10 % kynnys ei ollut saavutettu.

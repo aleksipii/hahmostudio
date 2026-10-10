@@ -298,7 +298,7 @@ npm run desktop:build
 npm run desktop:package:mac
 ```
 
-Paketti: `release/Hahmostudio-darwin-arm64/Hahmostudio.app` ja `release/Hahmostudio-Mac-arm64.zip` tällä Apple Silicon -Macilla. Ohjeet: [Mac-asennus ja jatkokehitys](docs/MAC_DESKTOP.md), [arkkitehtuuri](docs/ARCHITECTURE.md), [todellinen tila ja seuraavat vaiheet](docs/ROADMAP.md). Lähdekoodimuutos tarvitsee uuden paketoinnin ennen kuin asennettu sovellus päivittyy. Fyysinen laite- ja Safari-varmennus eivät seuraa kooditestien läpäisystä.
+Mac-paketti: `release/KOETA-darwin-arm64/KOETA.app`, `release/Hahmostudio-Mac-arm64.zip` ja `npm run desktop:package:dmg` -komennolla `release/KOETA-<versio>-arm64-<build-tunniste>.dmg` tällä Apple Silicon -Macilla. Ohjeet: [Mac-asennus ja jatkokehitys](docs/MAC_DESKTOP.md), [arkkitehtuuri](docs/ARCHITECTURE.md), [todellinen tila ja seuraavat vaiheet](docs/ROADMAP.md). Lähdekoodimuutos tarvitsee uuden paketoinnin ennen kuin asennettu sovellus päivittyy. Fyysinen laite- ja Safari-varmennus eivät seuraa kooditestien läpäisystä.
 
 ### Käynnistyskorjaus 0.2.1
 

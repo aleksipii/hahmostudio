@@ -1,83 +1,66 @@
-# Hahmostudio Macille · 0.7.0
+# KOETA Macille: DMG, kehitys ja päivitykset
 
-## Käyttöönotto
+DMG on asennuslevy, jonka sisällä on KOETA.app. Lähdekoodiprojekti ja asennettu sovellus ovat eri asioita. DMG ei muuta kehitystapaa eikä sisällä automaattista päivityspalvelua.
 
-Avaa toimitettu `Hahmostudio-Mac-arm64.zip`. Siirrä sen Hahmostudio.app esimerkiksi Ohjelmat-kansioon ja avaa sovellus. Tämä paketti on Apple Siliconille (arm64), joka selvitettiin käytettävältä Macilta. Electron-paketin vähimmäisjärjestelmä on macOS 13. Tavallinen käyttö ei tarvitse Nodea, terminaalia tai erillistä palvelinta. Sovellus sisältää Electronin, käyttöliittymän, Oton, taustat, kasvomallin ja Rhubarbin. Intel-Mac tarvitsee oman x64-paketin ja x64-Rhubarbin.
+## Asennus ja päivitys
 
-Paketti allekirjoitetaan paikallisesti ad hoc -allekirjoituksella. Se ei ole Developer ID -allekirjoitettu eikä notarisoitu. Jos macOS estää avaamisen, käytä macOSin omaa sovelluskohtaista avaamismenettelyä; älä poista Gatekeeperia tai muuta koko koneen suojausasetuksia. Sovellusta ei julkaista ulkoiseen palveluun.
+1. Tallenna avoimet .hahmo-projektit ja .sarja-tiedostot ja sulje KOETA kokonaan (⌘Q).
+2. Avaa uusi KOETA-…-arm64.dmg. Tämä paketti on Apple Siliconille (M-sarja). Intel-Mac tarvitsee x64-paketin ja sen arkkitehtuurin natiivit ajokomponentit.
+3. Vedä KOETA.app asennuslevyn Applications-linkin päälle. Finder voi pyytää lupaa korvata vanha KOETA.app.
+4. Käynnistä KOETA Ohjelmat-kansiosta ja poista asennuslevy käytöstä Finderissa.
 
-Työpöytäversio käyttää Macin käyttäjätiliä: se avautuu suoraan studioon. Se ei käytä, poista tai vaihda verkkoversion omistajatunnusta. Macin käyttäjätilille pääsy antaa myös pääsyn sovellukseen; lukitse Mac tarvittaessa.
+Tavallinen käyttö ei tarvitse Nodea tai kehityspalvelinta. DMG-tiedostoa ei vedetä Ohjelmat-kansioon; sen sisältämä sovellus vedetään.
 
-## Projektit ja tallennus
+Omat .hahmo- ja .sarja-tiedostot ovat valitsemissasi sijainneissa. Sovelluksen asetukset, palautustiedot ja luvallisesti ladatut Kokoro-mallit ovat käyttäjäkohtaisessa tietokansiossa sovelluspaketin ulkopuolella. Korvaa vain KOETA.app. Säilytä tietokansio ja omat projektit; tee tärkeistä projekteista varmuuskopiot.
 
-- Avaa projekti: .hahmo, tai Tuo kuva / PSD: .psd / .png. PNG tuodaan yhtenä kuvatasona, ilman automaattista pilkkomista.
-- Tallenna projekti / ⌘S: valitse sijainti ensimmäisellä kerralla. Sen jälkeen tallennus päivittää saman tiedoston.
-- Tallenna nimellä / ⇧⌘S: tee uusi tiedosto ja jatka siihen tallentamista. Vanha tiedosto säilyy.
-- Viimeksi avatut projektit löytyvät aloitusnäkymästä. Vientiin valitaan oma kohde järjestelmän tallennusikkunassa.
-- Tallentamattomasta työstä kysytään suljettaessa. Peruutettu tai epäonnistunut tallennus ei sulje työtä. Tallenna muuttunut .sarja Jaksot / sarja -paneelista ennen sulkemista; projektin ⌘S ei tallenna sarjaa.
+Paketti on paikallisesti ad hoc -allekirjoitettu. Se ei ole Apple Developer ID -allekirjoitettu eikä notarisoitu. Jos macOS estää avaamisen, noudata [Applen sovelluskohtaista avaamisohjetta](https://support.apple.com/102445). Koko koneen suojausasetuksia ei muuteta. DMG-muoto ei itsessään lisää Developer ID -allekirjoitusta tai notarisaatiota. Laajemman jakelun notarisaatio on erillinen työ: [Apple Developer](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution).
 
-Selaimessa aiemmin tehty työ siirtyy tallentamalla .hahmo- tai .sarja-tiedosto ja avaamalla se työpöytäversiossa. Selainistunto, kirjautuminen ja asetukset eivät siirry automaattisesti. Vanhat v1-projektit avautuvat edelleen, v2 avautuu myös; dialogikohtaukset käyttävät uutta v3-muotoa.
+## Jatka kehitystä lähdekoodista
 
-Projektit ovat valitsemissasi paikoissa. Teema ja viimeksi avattujen tiedostojen viitteet ovat Electronin käyttäjäkohtaisessa `userData`-kansiossa, tavallisesti `~/Library/Application Support/hahmostudio/`. Sovelluspakettiin ei tallenneta projektidataa. Paketin korvaaminen ei poista asetuksia tai projekteja. Poistettua tai siirrettyä viimeksi avattua tiedostoa ei voi avata ennen kuin valitset sen uudelleen.
+Avaa Codexille tai Claudelle `/Users/Aleksi/hahmostudio`. Lue ensin AGENTS.md ja TIIMI.md:n viimeinen kirjaus. Sopikaa sama työhaara tai erilliset työhaarat; älä anna molempien muuttaa samoja tiedostoja yhtä aikaa. DMG:tä tai Ohjelmat-kansion KOETA.app-pakettia ei muokata lähdekoodina.
 
-## Kamera ja mikrofoni
-
-Käynnistä kamera tai mikrofoni Esitys-työtilan ohjaimista. Lupa pyydetään vasta toiminnon käynnistyessä. Käyttökuvaukset sisältyvät Mac-pakettiin. Sulje kamera kameran pysäytyspainikkeella ja mikrofoni mikrofonin pysäytyspainikkeella. Näppäinohjaus, mikrofoni ja kamera pysyvät erillisinä lähteinä; työtilan vaihto ei sammuta niitä.
-
-Jos lupa puuttuu, tarkista Järjestelmäasetukset → Tietosuoja ja suojaus → Kamera / Mikrofoni. Sovellus ei voi myöntää lupaa puolestasi. Sulkeminen tuhoaa käyttöliittymän ja sulkee paikallisen puhepalvelun; keskeneräinen tunnistus keskeytetään.
-
-Äänen äännetunnistus tehdään paikallisella Rhubarbilla: suomi käyttää phonetic-tunnistinta, englanti pocketSphinx-tunnistinta. Se ei ole puheen tekstiksi litterointi. Live-mikrofonin suun avaus perustuu äänen voimakkuuteen. Kamera- ja ääniaineistoa ei lähetetä pilveen.
-
-## Kehityskomennot
-
-Avaa projektin lähdekoodikansio Codexille. Kehittäjä tarvitsee Node >=22.13 ja npm:n:
+Sulje asennettu KOETA ennen kehitysversion avaamista. Tarkista työhaara ja paikalliset muutokset ennen Git-päivitystä. Jos työ on puhtaassa main-haarassa:
 
 ```sh
-npm ci
-npm test
-npm run typecheck
+cd /Users/Aleksi/hahmostudio
+git status
+git pull --ff-only origin main
 npm run desktop:dev
-npm run desktop:build
-npm run desktop:package:mac
-npm run desktop:test:package
 ```
 
-`desktop:dev` avaa Electronin ja paikallisen Vite-kehitystilan portissa 5179; sulkeminen lopettaa molemmat. `desktop:build` tekee erillisen dist-desktop-kansion. `desktop:package:mac` rakentaa ensin ja paketoi `release/Hahmostudio-darwin-arm64/Hahmostudio.app` sekä `release/Hahmostudio-Mac-arm64.zip` (arkkitehtuuri vaihtuu koneen mukaan). Paketointi tarvitsee paikallisen arkkitehtuurin Rhubarbin `.private-runtime/rhubarb/`-kansiossa ja sen res-/lisenssitiedostot. Electron ladataan ensimmäisen buildin aikana; valmis sovellus toimii offline. Kasvomalli on mukana lähdekoodissa ja tarkistetaan SHA-256:lla; vain puuttuva malli ladataan buildissa.
+Node >=22.13 ja npm tarvitaan vain kehitykseen. Asenna riippuvuudet `npm ci` -komennolla ensimmäisellä kerralla tai riippuvuuksien muuttuessa. Native-runtime- ja Rhubarb-tiedostot tarvitaan paikalliseen paketointiin; ne ovat .private-runtime-kansiossa, eivät Gitissä. Kokoron valinnainen runtime valmistellaan erikseen `npm run kokoro:prepare` -komennolla; mallien lataus vaatii sovelluksessa käyttäjän luvan.
 
-Verkkokomennot säilyvät: `npm run dev`, `npm run build:private`, `npm run start:private`. Työpöytäbuild ei korvaa webin dist-kansiota. Kehitys ja paketointi voivat tarvita internetiä riippuvuuksien lataamiseen, tavallinen käyttö ei.
+React-käyttöliittymän muutokset päivittyvät Viten kehitystilassa. Electronin pääprosessin, preloadin tai paikallisen palvelun muutosten jälkeen sulje kehitysversio ja käynnistä desktop:dev uudelleen. Kehitystila ei päivitä Ohjelmat-kansion sovellusta.
 
-## Päivittäminen ja Codex
+## Tee uusi DMG muutosten jälkeen
 
-Lähdekoodin muuttaminen ei päivitä asennettua .app-sovellusta. Testaa lähdekoodi, paketoi uudelleen, sulje vanha sovellus ja korvaa vain .app. Säilytä projektit ja käyttäjäkohtainen asetuskansio. Automaattista päivityspalvelua ei ole.
+Testaa ja tallenna muutokset Gitiin. Main- ja hahmostudio1.0-haaroihin yhdistetään sama testattu versio. Nosta package.json:n versionumeroa, kun nimeät uuden julkaisuversion. DMG:n nimessä on lisäksi sovellusarkiston tarkistussumman alku, jotta saman versionumeron eri buildit erottuvat.
 
-Paikallinen Codex: avaa sama lähdekoodikansio, pyydä muutos, aja kooditestit ja desktop:dev, ja paketoi uusi versio Macilla. Laitetestit tehdään erikseen omalla Macilla.
+```sh
+npm run typecheck
+npm test
+npm run desktop:package:dmg
+npm run desktop:test:package
+# Tarkista myös DMG: npm run desktop:test:dmg -- release/KOETA-….dmg
+npm run desktop:test:workflow -- --packaged
+```
 
-Codex Cloud: käytä halutessasi yksityistä Git-repositoriota, tee muutokset ja tarkista/yhdistä ne, päivitä lähdekoodi Macille ja paketoi paikallisesti. Cloud ei varmista Macin fyysisiä laitteita eikä Mac-paketointia. Tämä työ ei luo repositoriota eikä julkaise sitä.
+`desktop:package:dmg` rakentaa käyttöliittymän, paketoi KOETA.app:n ja tekee DMG:n. Tulos on `release/KOETA-<versio>-<arkkitehtuuri>-<build-tunniste>.dmg`. Samassa kansiossa ovat .sha256 ja .json tarkistussummineen sekä .app ja ZIP. Jos testattu .app on jo valmis, pelkkä `npm run desktop:dmg` tekee siitä DMG:n rakentamatta sovellusta uudelleen.
 
-## Varmennuksen rajat
+Mac-paketointi voi ladata Electronin ensimmäisellä kerralla. Jo olemassa olevaa Electron-välimuistia voi käyttää näin:
 
-Kooditestit kattavat vanhat projektimuodot, tasot, nivelet, animaation, äänen, ohjauslähteiden yhdistämisen, mikrofonin simuloidun elinkaaren, IPC:n rajauksen, tiedostojen atomisen tallennuksen ja sulkemispäätökset. Paketista tehdään lisäksi piilotettu käynnistystesti erillisellä testiasetuskansiolla, jos suoritusympäristö sallii GUI-käynnistyksen. Tässä ympäristössä se estyi macOSin sovellusrekisteröinnissä. `npm run desktop:test:package` tarkistaa paketin mukana tulevalla runtimella resurssit ja Rhubarbin ilman GUI:ta tai laitteita. Katso toteutunut testitulos toimituksen TEST_RESULTS.md-tiedostosta.
+```sh
+electron_config_cache="$HOME/Library/Caches/electron" npm run desktop:package:dmg
+```
 
-Fyysistä kameraa ja mikrofonia, aitoa puhetta, Macin lupadialogeja, oikeaa Safaria, ulkoasua pienellä näytöllä tai kaikkia natiiveja tiedostoikkunoita ei ole tämän toimituksen yhteydessä käsin testattu käyttäjän kooditestausrajauksen vuoksi. Simulaatio ei todista niiden toimivuutta.
+DMG ja muut release-tiedostot ovat Gitin ulkopuolisia build-tuotoksia. Niitä ei viedä lähdekoodin mukana GitHubiin. Säilytä tarvitsemasi julkaisut erillisessä toimituskansiossa.
 
-### Jos vanha 0.2.0 ei vastaa
-Sulje vanha Hahmostudio tarvittaessa Apple-valikon Pakota lopettamaan -toiminnolla. Käytä korjattua versiota 0.2.1. Käynnistyksen vaihe näkyy asetuskansion startup-status.json-tiedostossa. Korjaus ei muuta projektimuotoa tai poista käyttäjän asetuksia.
+Kun uusi DMG on valmis, päivitä asennettu KOETA yllä olevilla Finder-ohjeilla. Päivitys ei tapahdu Git-pullilla, Codexin koodimuutoksella tai DMG:n rakentamisella; uusi KOETA.app täytyy vielä kopioida paikalleen sovelluksen ollessa suljettuna.
 
+## Nykyinen todennus ja avoimet työt
 
-0.3.0 lisää alkuperäisen kirjaston ja käsikirjoituksen. Tallenna projekti ja sarja, sulje vanha sovellus ⌘Q ja avaa ZIP:stä purettu uusi sovellus. Käynnissä oleva .app ei päivity lähdekoodia muuttamalla. Projektien tiedostoja ja selaimen omistajatunnusta ei muuteta.
+Paketoidun Mac-sovelluksen työvaiheet, repliikkitallentimen säilyminen vaiheenvaihdossa ja peruutus on testattu oikealla Electronilla ja generoidulla äänivirralla. Natiivit ajokomponentit on testattu paketista. Katso docs/tiimi/todennus/mac-workflow-20261010/ ja TIIMI.md.
 
+Vielä tarvitaan fyysisen kameran ja mikrofonin kokeilu, tallenteen liittäminen repliikkiin ja palautus/kumoa, oikea Kokoro-ajo sekä huulisynkan ja MP4:n kuuntelu, VoiceOver, palikkaeditorin raahaus ja Alt-pudotus sekä hahmojen taiteellinen hyväksyntä. Oikea GPU/pilviajo on erillinen hyväksyntä. DMG ei poista näitä sovelluksen hyväksyntätarpeita.
 
-0.4.0: valitse yläreunasta Hahmot ja esineet → Hahmot → Aino tai Otto · eri kuvakulmat. Liike-riviltä valitaan kävely tai juoksu ja suunta. Esineet-välilehdeltä valitaan puhelimen kuvakulma ja kiinnitys. Kuvausympäristöt-välilehdeltä löytyvät autotaustat ja studio. Näkymä-valikko näyttää ja piilottaa paneeleja; paneelin piilottaminen ei sammuta kameraa tai mikrofonia. Kolme piirrettyä hahmon kuvakulmaa ovat edestä, vasen profiili ja oikea profiili; kyse on 2D-animaatiosta.
-
-
-0.5.0: Tiedosto/Muokkaa/Näytä/Ohje löytyvät sekä sovelluksen että Macin valikkoriviltä. Näytä → Keskity näyttämöön, Sovita koko näyttämö ja Palauta paneelien koot selkeyttävät työtilaa. Vedä sivupaneelien sisäreunoja ja aikajanan yläreunaa; Tab + nuolinäppäimet ovat vaihtoehto. Hahmot ja esineet → Hahmot → Roni/Salla tuo uuden oman paperileikkaushahmon kolmesta kuvakulmasta. Sulje vanha .app ja korvaa 0.5.0-paketilla.
-
-## Päivittäminen 0.6.0:aan
-
-Tallenna työ .hahmo-tiedostoksi ja sulje vanha Hahmostudio kokonaan (⌘Q). Pura Hahmostudio-Mac-0.6.0-arm64.zip. Korvaa aiemmin Lataukset- tai Ohjelmat-kansioon siirtämäsi Hahmostudio.app uudella ja avaa se. Lähdekoodin päivitys ei päivitä asennettua .app-tiedostoa automaattisesti. Omat projektit ja käyttäjäasetukset säilyvät. Ohje → Tietoja näyttää version.
-
-Uusi dialogityökalu löytyy Käsikirjoitus → Dialogi ja leikkaukset. Valitse esimerkki, tarkista Roni/Salla ja lisää omat repliikkiäänet. Katso DIALOGUE.md ja sovelluksen käyttöohje.
-
-## 0.7.0
-
-Yleinen jaksotyökalu löytyy Käsikirjoitus → Dialogi ja leikkaukset. Ohjaussuunnitelma näyttää vaatimukset ja arviot. Valitse itse puhujien hahmot, tuo äänet ja tarkista tulkinta. KILSAT ja Aamu autossa ovat esimerkkejä. Päivitä sulkemalla sovellus (⌘Q), purkamalla Hahmostudio-Mac-0.7.0-arm64.zip ja korvaamalla vanha .app. Omat projektit säilyvät; asennettu sovellus ei päivity automaattisesti.
+Automaattisia päivityksiä ei ole lisätty. Manuaalinen DMG-päivitys on nykyinen toimintatapa; päivityspalvelu, allekirjoitus ja notarisaatio voidaan suunnitella erikseen, jos sovellusta myöhemmin jaetaan laajemmin.
