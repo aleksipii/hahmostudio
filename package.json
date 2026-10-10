@@ -18,6 +18,7 @@
     "desktop:build": "node scripts/desktop-build.mjs",
     "desktop:package:mac": "npm run desktop:build && node scripts/package-mac.mjs",
     "desktop:test": "node --test desktop/*.test.mjs",
+    "desktop:test:workflow": "node scripts/desktop-workflow-test.mjs",
     "desktop:test:package": "node scripts/desktop-package-test.mjs",
     "desktop:test:screenplay-gui": "node scripts/desktop-screenplay-gui.mjs",
     "desktop:test:playback-raf": "node scripts/desktop-playback-raf.mjs",

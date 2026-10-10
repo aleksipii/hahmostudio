@@ -1,0 +1,252 @@
+{
+  "ok": true,
+  "packaged": false,
+  "gui": true,
+  "physicalDevices": false,
+  "voiceOver": false,
+  "audio": "generated oscillator stream through real AudioWorklet; cancellation only; no microphone permission",
+  "checks": [
+    {
+      "name": "script 1200: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "characters 1200: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "storyboard 1200: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "shot 1200: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "timeline 1200: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "workshop 1200: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "script 1440: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "characters 1440: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "storyboard 1440: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "shot 1440: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "timeline 1440: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "workshop 1440: no horizontal overflow",
+      "ok": true
+    },
+    {
+      "name": "recording survives shot",
+      "ok": true,
+      "detail": {
+        "sameRecorder": true,
+        "sameDock": true,
+        "overlay": true,
+        "live": true,
+        "calls": 1,
+        "status": true,
+        "enabled": true,
+        "hit": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "recording survives storyboard",
+      "ok": true,
+      "detail": {
+        "sameRecorder": true,
+        "sameDock": true,
+        "overlay": true,
+        "live": true,
+        "calls": 1,
+        "status": true,
+        "enabled": true,
+        "hit": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "recording survives characters",
+      "ok": true,
+      "detail": {
+        "sameRecorder": true,
+        "sameDock": true,
+        "overlay": true,
+        "live": true,
+        "calls": 1,
+        "status": true,
+        "enabled": true,
+        "hit": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "recording survives timeline",
+      "ok": true,
+      "detail": {
+        "sameRecorder": true,
+        "sameDock": true,
+        "overlay": true,
+        "live": true,
+        "calls": 1,
+        "status": true,
+        "enabled": true,
+        "hit": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "recording survives workshop",
+      "ok": true,
+      "detail": {
+        "sameRecorder": true,
+        "sameDock": true,
+        "overlay": true,
+        "live": true,
+        "calls": 1,
+        "status": true,
+        "enabled": true,
+        "hit": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "recording survives script",
+      "ok": true,
+      "detail": {
+        "sameRecorder": true,
+        "sameDock": true,
+        "overlay": true,
+        "live": true,
+        "calls": 1,
+        "status": true,
+        "enabled": true,
+        "hit": true,
+        "visible": true
+      }
+    },
+    {
+      "name": "cancel restores microphone status",
+      "ok": true
+    },
+    {
+      "name": "cancel releases audio track",
+      "ok": true
+    },
+    {
+      "name": "cancel preserves recorder and reports cancellation",
+      "ok": true
+    },
+    {
+      "name": "no renderer errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "geometry": [
+    {
+      "phase": "script",
+      "width": 1200,
+      "height": 720,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "characters",
+      "width": 1200,
+      "height": 720,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "storyboard",
+      "width": 1200,
+      "height": 720,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "shot",
+      "width": 1200,
+      "height": 720,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "timeline",
+      "width": 1200,
+      "height": 720,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "workshop",
+      "width": 1200,
+      "height": 720,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "script",
+      "width": 1440,
+      "height": 747,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "characters",
+      "width": 1440,
+      "height": 747,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "storyboard",
+      "width": 1440,
+      "height": 747,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "shot",
+      "width": 1440,
+      "height": 747,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "timeline",
+      "width": 1440,
+      "height": 747,
+      "overflow": false,
+      "canvas": true
+    },
+    {
+      "phase": "workshop",
+      "width": 1440,
+      "height": 747,
+      "overflow": false,
+      "canvas": true
+    }
+  ],
+  "errors": []
+}

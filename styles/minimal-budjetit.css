@@ -26,3 +26,12 @@
 
 .recording-tools-overlay-host { position: fixed; inset: 0; z-index: 70; pointer-events: none; }
 .recording-tools-overlay-host .production-audio-dock.is-recording { pointer-events: auto; }
+
+/* A live recording keeps only its own controls visible; other tools stay mounted. */
+.studio.s2 .production-audio-dock.is-recording .production-audio-tools > :not(.performance-panel:has(.dialogue-recorder)) { display: none; }
+.studio.s2 .production-audio-dock.is-recording .performance-panel { min-width: 0; padding: 8px; }
+.studio.s2 .production-audio-dock.is-recording h3 { margin: 0 0 8px; font-size: 14px; }
+.studio.s2 .production-audio-dock.is-recording p { font-size: 12px; line-height: 1.5; }
+.studio.s2 .production-audio-dock.is-recording label { display: grid; gap: 5px; margin: 9px 0; font-size: 12px; }
+.studio.s2 .production-audio-dock.is-recording select { width: 100%; min-width: 0; padding: 6px; border: 1px solid var(--s2-line); border-radius: 5px; background: var(--s2-bg2); color: var(--s2-text); }
+.studio.s2 .production-audio-dock.is-recording button { margin: 4px 0; font-size: 12px; white-space: normal; }

@@ -262,3 +262,31 @@ Testattu (Linux-pilvi, Node 22):
 Avoimet hyväksynnät ennallaan: VoiceOver, paketoitu Mac-sovellus ja oikeat laitteet, äänityksen aikainen vaiheenvaihto, aito Kokoro-inferenssi ja huulisynkka, taiteellinen hyväksyntä, GPU/pilvi. Palikoiden muokkausta (raahaus, Samalla-pudotus) ei ajettu selaimessa.
 
 Seuraava konkreettinen työ: palikkaeditorin muokkaustoimintojen selaintesti (valinta, raahaus, Alt-pudotus repliikille, kumoa), sitten Codexin listaama äänityksen vaiheenvaihto ja Mac GUI. Omistetut tiedostot: components/studio-shell.tsx, styles/koeta-responsive.css (480 px -lohko), presentation-panel.tsx:n palikkaeditorin vieritys. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin mittaria ei käytetty.
+
+
+## Codex → Claude: Mac GUI ja repliikkitallennuksen vaiheenvaihto — 10.10.2026
+
+Lähtö `d54d93ba4eb89d22c7d2d24824bd5d020049dcb2`; Clauden 390 px:n korjaukset säilytetty. Työhaara `codex/mac-recording-2026-10-10`. Julkaistun kirjauksen commit on molempien päähaarojen sama pää; tarkista `git log -1 origin/main`.
+
+Koodista todettu ja korjattu:
+- Pysyvä recording-tools-overlay-host ja PresentationPanelin recordingTarget-prop olivat olemassa, mutta editori ei välittänyt viitettä. Nyt recordingTarget={recordingToolsTarget} kytkee tallentimen pysyvään isäntään. Testi löysi alkuperäisen puuttuvan kytkennän.
+- Äänityksen aikana kelluvassa paneelissa näkyvät vain Ääninäyttelijän työpiste ja sen ohjaimet; muut äänityökalut säilyvät mounted ja palaavat tallennuksen päättyessä. Repliikin valinta säilyy, pysäytys ja hylkäys pysyvät käytettävissä.
+- Alapalkin Mikrofoni ei enää ilmoita “pois” repliikkitallennuksen aikana, vaan “repliikin tallennus”. Tämä kattaa myös tallennuksen käynnistämisen; se ei väitä fyysisen laitteen lupaa saaduksi ennen käynnistystä.
+- Uusi `npm run desktop:test:workflow` ja `-- --packaged`: uusi eristetty datakansio joka ajolle, vanha raportti poistetaan, oikean appin --workflow-gui-test-tila. Käynnistysvirheet kirjoittavat uuden epäonnistuneen raportin. Paketista ajettu tulos vaatii packaged=true.
+
+Testattu lopullisella lähteellä (Mac arm64, Node 24 / Electron 44.5.1):
+- `npm test`: **1402/1402 läpi**, ei ohituksia, 33,6 s.
+- `node --experimental-strip-types --test server/ui.test.mjs server/ai-panel.test.mjs`: 53/53 läpi. Käynnistys ja permission-policy: 5/5 läpi.
+- `VITE_BASE_PATH=/ VITE_PRIVATE_SERVER=false npm run build -- --outDir dist-desktop --configLoader runner`: läpi, sisältää tsc --noEmit.
+- `npm run desktop:test:workflow`: läpi. Kuusi vaihetta kahdella leveydellä, ei vaakaylivuotoa. Raportissa todellinen koko (macOS rajoittaa korkeuden työalueeseen).
+- `electron_config_cache=/Users/Aleksi/Library/Caches/electron node scripts/package-mac.mjs`: erillinen koepaketti valmistui. app.asar:n main.mjs, workflow-diagnostic.mjs ja buildin index.html vastasivat nykyistä lähdettä tavuittain.
+- `npm run desktop:test:workflow -- --packaged`: läpi **oikeasta .app-paketista**. Kuvaus → Storyboard → Roolitus → Leikkaus → Työpaja → Tarina äänityksen aikana: sama tallennin ja portaali, sama elävä äänivirta (yksi hankinta), pysyvä isäntä, käytettävissä ja näkyvä pysäytys sekä elementFromPoint-osumatesti. Tilateksti säilyy; Hylkää sulkee ääniraidan ja palauttaa tilan.
+- `npm run desktop:test:package`: paketin natiivit ajokomponentit läpi.
+
+Rajaus: äänisyöte oli testissä generoitu 220 Hz virta oikean AudioWorkletin läpi. Ei mikrofonin lupaa, fyysistä mikrofonia tai käyttäjän ääntä. Tallenne hylättiin; Lopeta ja käytä repliikki -toiminnon äänen liittäminen ja alkuperäisen äänen säilyminen, Rhubarb ja vientisynkka eivät saaneet uutta hyväksyntää. VoiceOver, kamera/mikrofoni oikeilla laitteilla, aito Kokoro-inferenssi, taiteellinen hyväksyntä ja GPU/pilvi jäävät avoimiksi. Asennettua sovellusta ei korvattu.
+
+Todennusaineisto ja täsmälliset komennot: `docs/tiimi/todennus/mac-workflow-20261010/README.md`, erilliset source/ ja packaged/ JSON-raportit ja kuvat sekä .txt-lokit. Koneen kuormituksessa yksi kehitysvaiheen ajo ylitti paikallisen palvelun 15 s käynnistysrajan; rajoja ei väljennetty. Testin alkuperäiset DOM-kohdistukset korjattiin tuotantoportaalin tallentimeen, koska AudioAnalysis käyttää samaa DialogueRecorder-komponenttia ja portaali muuttaa elementtien järjestystä. Pakkaajan .icon-varoitus säilyy (sama kuin aiemmin), paketti ja testit valmistuvat.
+
+Seuraava konkreettinen työ: testaa tallenteen **käyttäminen** repliikkina eristetyllä generoidulla syötteellä ja projektin palautus/undo (ei käyttäjän omaa ääntä); sen jälkeen Kokoron aito englanninkielinen ajo olemassa olevalla luvallisella mallilla ja runtimeilla. Palikkaeditorin raahaus/Alt-pudotus sekä VoiceOver-kuunteluhyväksyntä ovat vielä avoimia.
+
+Omistetut tiedostot: components/editor.tsx, components/presentation-panel.tsx (recordingActivity), styles/minimal-budjetit.css (vain aktiivinen tallennus), desktop/main.mjs (eristetty testitila), desktop/workflow-diagnostic.mjs, scripts/desktop-workflow-test.mjs, package.json (testikomento). Kiintiö ennen julkaisua: viiden tunnin ikkunassa **58 % jäljellä**, viikko 63 %. 10 % checkpoint ei lauennut.

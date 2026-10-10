@@ -1,0 +1,4 @@
+Packaging app for platform darwin arm64 using electron v44.5.1
+WARNING: Could not find icon "/private/tmp/hahmostudio-publication-20261009/desktop/assets/Hahmostudio.icns" with extension ".icon", skipping this app icon format
+/private/tmp/hahmostudio-publication-20261009/release/KOETA-darwin-arm64/KOETA.app
+/private/tmp/hahmostudio-publication-20261009/release/Hahmostudio-Mac-arm64.zip
