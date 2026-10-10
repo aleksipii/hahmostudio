@@ -1,0 +1,36 @@
+
+> hahmostudio@0.36.0 desktop:test:workflow
+> node scripts/desktop-workflow-test.mjs
+
+Error occurred in handler for 'studio:recovery-transaction': Error: ENOSPC: no space left on device, write
+    at async write (node:internal/fs/promises:1450:8)
+    at async writeFileHandle (node:internal/fs/promises:1153:7)
+    at async fsCall (node:internal/fs/promises:1118:12)
+    at async DeltaJournal.upload (file:///private/tmp/hahmostudio-publication-20261009/desktop/delta-journal.mjs:28:136)
+    at async file:///private/tmp/hahmostudio-publication-20261009/desktop/delta-journal.mjs:36:1633
+    at async file:///private/tmp/hahmostudio-publication-20261009/desktop/delta-journal.mjs:21:91 {
+  errno: -28,
+  code: 'ENOSPC',
+  syscall: 'write'
+}
+Timeout: episode {
+  recorder: undefined,
+  recordingDock: undefined,
+  audioCalls: undefined
+}
+{
+  "data": "/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/hahmostudio-workflow-1hpwy8",
+  "output": "/private/tmp/hahmostudio-publication-20261009/docs/tiimi/todennus/audio-20261010/source",
+  "exitCode": 1,
+  "report": {
+    "ok": false,
+    "state": {},
+    "error": "Timeout: episode",
+    "gui": true,
+    "physicalDevices": false,
+    "voiceOver": false,
+    "checks": [],
+    "geometry": [],
+    "errors": []
+  }
+}

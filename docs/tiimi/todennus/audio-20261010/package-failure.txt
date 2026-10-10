@@ -1,0 +1,42 @@
+Packaging app for platform darwin arm64 using electron v44.5.1
+WARNING: Could not find icon "/private/tmp/hahmostudio-publication-20261009/desktop/assets/Hahmostudio.icns" with extension ".icon", skipping this app icon format
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: codesign --verify --deep --strict --verbose=2 /var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Squirrel.framework/Versions/Current/.
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper (GPU).app
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/ReactiveObjC.framework/Versions/Current/.
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/ReactiveObjC.framework/Versions/Current/.
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Squirrel.framework/Versions/Current/.
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper (GPU).app
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Mantle.framework/Versions/Current/.
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper (Plugin).app
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper.app
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper (Renderer).app
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Mantle.framework/Versions/Current/.
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper (Plugin).app
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper.app
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/KOETA Helper (Renderer).app
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/.
+--prepared:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler
+--validated:/private/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/.
+/var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app: invalid destination for symbolic link in bundle
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at ChildProcess.exithandler (node:child_process:417:12)
+    at ChildProcess.emit (node:events:509:28)
+    at maybeClose (node:internal/child_process:1124:16)
+    at Socket.<anonymous> (node:internal/child_process:481:11)
+    at Socket.emit (node:events:509:28)
+    at Pipe.<anonymous> (node:net:350:12) {
+  code: 1,
+  killed: false,
+  signal: null,
+  cmd: 'codesign --verify --deep --strict --verbose=2 /var/folders/32/j8zsr8214zl7sfmy4myjcf7c0000gp/T/electron-packager/tmp-rqGXjE/KOETA.app'
+}
+
+Node.js v24.15.0
