@@ -21,6 +21,8 @@
     "desktop:dmg": "node scripts/package-dmg.mjs",
     "desktop:package:mac": "npm run desktop:build && node scripts/package-mac.mjs",
     "desktop:test": "node --test desktop/*.test.mjs",
+    "desktop:test:voice": "HAHMOSTUDIO_AUDIO_ACCEPTANCE=1 HAHMOSTUDIO_WORKFLOW_OUTPUT=docs/tiimi/todennus/audio-20261010/source node scripts/desktop-workflow-test.mjs",
+    "kokoro:test:real": "electron scripts/kokoro-real-test.mjs",
     "desktop:test:workflow": "node scripts/desktop-workflow-test.mjs",
     "desktop:test:package": "node scripts/desktop-package-test.mjs",
     "desktop:test:screenplay-gui": "node scripts/desktop-screenplay-gui.mjs",

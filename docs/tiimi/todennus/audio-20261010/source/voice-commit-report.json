@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "generatedInput": true,
+  "physicalMicrophone": false,
+  "pcmHash": "1f2fd6c678d9227166ab731ff9c72c86c0bb432731422d832a28e0136e946452",
+  "duration": 1.3243125,
+  "mouthKeys": 2,
+  "undo": true,
+  "redo": true,
+  "rendererReloadRecovery": true,
+  "humanListening": false
+}

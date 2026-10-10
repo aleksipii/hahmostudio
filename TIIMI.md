@@ -310,3 +310,16 @@ Toimitus: `KOETA-0.36.0-arm64-49dc85ff.dmg`, noin 463 MiB, kopio käyttäjän Co
 Kehitys jatkuu Git-projektissa /Users/Aleksi/hahmostudio. Lähdekoodin päivitys ja uusi DMG eivät päivitä asennettua sovellusta: tallenna työ, ⌘Q, vedä uusi KOETA.app Ohjelmat-kansioon ja korvaa vanha. Projektit, asetukset ja luvallinen Kokoro-malli pysyvät paketin ulkopuolella. Ei automaattipäivityksiä, Developer ID -allekirjoitusta tai notarisaatiota; näitä ei myönnetä DMG:n ominaisuudeksi. Notarisaatio ja automaattipäivityspalvelu tarvitsevat erillisen toteutuksen.
 
 Avoimet hyväksynnät ja seuraava konkreettinen sovellustyö säilyvät edellisestä kirjauksesta: tallenteen käyttäminen repliikkina + palautus/undo, oikea Kokoro-ajo ja vientisynkka, fyysiset laitteet, VoiceOver sekä palikkaeditorin raahaus/Alt-pudotus. Kiintiön viimeinen havainto ennen DMG-työtä: 51 % / 300 min, viikko 62 %; 10 % kynnys ei ollut saavutettu.
+
+
+## Codex → Claude: äänitestien välitallennus — 10.10.2026 (KESKEN)
+
+Työhaara `codex/audio-acceptance-2026-10-10`, lähtö `8d142c4`. Repliikkitallenteen PCM:n liittäminen, ajoitus/suu, undo/redo ja reload-palautus läpäisivät lähde-Electronissa generoidulla virralla. Palautettu ääni näkyy myös editorissa. Ei fyysistä mikrofonia.
+
+Kokoron aito paikallinen inferenssi onnistui olemassa olevalla hyväksytyllä mallilla: af_heart, 24 kHz, 4,825 s, RMS 0,06864, ensimmäinen ajo noin 34,8 s. WAV on käyttäjän Codex-kansiossa Kokoro-englanti-test.wav, ei Gitissä. .private-runtime/kokoro:n koodiriippuvuudet asennettu. Kokoro-mallipainoja ei ladattu eikä lisätty pakettiin. 56 asennetun runtime-riippuvuuden lisenssitekstit lisättiin licenses/kokoro/THIRD_PARTY.txt:hen ja notices-generointiin.
+
+Testi löysi index.html:n Google Fonts -pyynnön, jonka desktop-CSP esti reloadissa. Ulkoiset fonttilinkit poistettiin (paikalliset varafontit säilyvät). Suojauskäytäntöä ei väljennetty. Workflow-testin tarkka virheraportti säilytetään startup-catchissa. Kokoron vanhan testin 20 ms oletus korvattiin synteesin käynnistymisen signaalilla, ehtoja ei väljennetty.
+
+Keskeneräistä: regressioiden lopullinen ajo, Kokoron IPC-testi ja uusi Mac-paketti, jossa runtime mukana. Pakkausta käynnistettiin ennen kuin runtime-notices valmistui; tarkista sisältö tai paketoi lopullinen lähde uudelleen. Vientisynkka, fyysiset laitteet ja VoiceOver edelleen avoimia. Käyttäjälle esitetty kysymys omasta mikrofonista/VoiceOver-kokeesta on vielä vastaamatta. Älä merkitse näitä hyväksytyiksi.
+
+Omistus: index.html, desktop/main.mjs (testiraportti), desktop/workflow-diagnostic.mjs, desktop/kokoro.test.mjs, scripts/desktop-workflow-test.mjs, scripts/kokoro-real-test.mjs, scripts/desktop-notices.mjs, package.json, notices/licensing ja docs/tiimi/todennus/audio-20261010. Käytä npm run desktop:build ennen uutta paketointia. Tarkista source/ ja packaged/ raporttien ok sekä Kokoro IPC:n realInference ja vertaa paketin lisenssitekstejä. Viimeinen kiintiö 15 % / 300 min, viikko 57 %.

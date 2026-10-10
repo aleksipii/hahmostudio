@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "state": {},
+  "error": "Timeout: episode",
+  "gui": true,
+  "physicalDevices": false,
+  "voiceOver": false,
+  "checks": [],
+  "geometry": [],
+  "errors": []
+}

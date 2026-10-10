@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "text": "This is a local voice test. The animation keeps the original timing.",
+  "voice": "af_heart",
+  "sampleRate": 24000,
+  "seconds": 4.825,
+  "rms": 0.06864186739609095,
+  "elapsedMs": 34773.677417,
+  "model": "Kokoro-82M-v1.0-ONNX",
+  "realInference": true,
+  "physicalDevices": false,
+  "network": false,
+  "humanListening": false
+}
