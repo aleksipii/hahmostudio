@@ -1,0 +1,20 @@
+✔ microphone requests audio only, measures RMS, gates PCM and releases every node once (7.534875ms)
+✔ permission, worklet, context and processor failures clean up acquired devices (0.429875ms)
+✔ canceling a pending permission closes context immediately and stops a late granted stream (0.587833ms)
+✔ abort before start creates no device; missing AudioWorklet reports actionable error (0.269792ms)
+✔ Safari-style prefixed AudioContext and unavailable APIs are detected without ReferenceError (0.797625ms)
+✔ device removal and suspended context produce silence, recording preserves previous audio tail (4.438709ms)
+✔ WAV has valid mono PCM16 header, finite clipping, sample-rate and size guardrails (0.387584ms)
+✔ AudioWorklet processes copied samples only during recording and survives silent input (2.950167ms)
+✔ audio decoding selects the standard context before prefixed fallback and reports absent support (0.407875ms)
+✔ voice actor keeps original PCM rhythm and quick mouth reacts promptly to synthetic speech then releases in silence (95.29825ms)
+✔ timestamped PCM retains gaps and final queued samples before stop acknowledgement (0.610459ms)
+✔ worklet cuts a partial first quantum and acknowledges only the active epoch (2.507083ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 272.257791

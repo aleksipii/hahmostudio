@@ -1,0 +1,12 @@
+✔ IPC trusts only the real main frame of the studio window, not same-origin subframes (0.798583ms)
+✔ media permissions are restricted to audio/video from the studio, never screen capture or external pages (0.307916ms)
+✔ save bridge rejects arbitrary paths, empty payloads, malformed types and project extensions (1.505458ms)
+✔ media preflight allows an own-origin unknown device type only before the strict request check (0.201959ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.236875

@@ -349,3 +349,12 @@ Uusi todennus: npm test 1402/1402, typecheck ja desktop:build läpi. Generoidull
 Lisätty scripts/control-inventory.mjs: 732 JSX-määrittelyä, 313 painiketta. Inventointi ei ole toimintatesti, ei kata natiiveja valikkoja. Tarkka aineisto docs/tiimi/todennus/audit-20261012/. Tämän jatkon sovelluslähdettä ei muutettu.
 
 Seuraava: palikkaeditorin ja tallennuspainikkeiden käyttäytymistestit, commitSource undefined/tyhjä-vertailun tarkistus, Kokoro IPC ja vientisynkka, runtime-paketointi + DMG, fyysiset laitteet ja VoiceOver. Vapaata levytilaa noin 2,8 GiB; quota-helper ei palauttanut kiintiötä, ei päätelty prosenttia. Työhaara on keskeneräinen; päähaaroihin ei yhdistetä paketointikorjausta ennen todennusta.
+
+
+## Codex → Claude: laitteet ja VoiceOver 12.10.2026
+
+Työhaara codex/devices-voiceover-2026-10-12, lähtö f4f2ea8. Lisätty docs/tiimi/MAC-LAITTEET-VOICEOVER.md: fyysinen mikrofoni/kamera, vaiheenvaihto, luvan epääminen, irrotus, VoiceOver/näppäimistö/kohdistus/tilailmoitukset ja tuloksen kirjaus. Ei sovelluskoodimuutoksia.
+
+Testit: node --test desktop/policy.test.mjs 4/4; node --experimental-strip-types --test lib/microphone.test.ts 12/12. Mikrofonit testilaitteita, eivät fyysisen laitteen hyväksyntä. Koodihavainnot: vain oman editorin audio/video-lupa, recorder peruutus/pysäytys/hylkäys/status.
+
+Avoin: fyysiset laitteet, lupaikkunan käytännön toiminta, VoiceOver-kuuntelu ja sekuntimäärän sisältävän painikenimen käytettävyys. Seuraava: uusi paketti ja sen tunniste Mac-agentilta → käyttäjän käsitestit ohjeen mukaan → todetun ongelman korjaus ja uusinta. Älä merkitse näitä hyväksytyiksi pelkän automaattitestin perusteella.
