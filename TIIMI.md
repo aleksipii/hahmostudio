@@ -412,3 +412,14 @@ Lähdeauditoinnin modal-/fokushavainnot, ehdotukset ja avoimet kysymykset ovat d
 
 Claude jatkaa: 1) lue rootin viimeisin integraatiokirjaus ja tarkista tämän haaran commit/diff, 2) rakenna tämän muutoksen sisältävä lähde ja aja workflow; tarkista kaksi uutta nimiväitettä raportista, 3) testaa Tab/Shift+Tab ja modalin sulkemisen jälkeinen fokus eristetyllä projektilla, 4) pyydä käyttäjän fyysiset laite- ja VoiceOver-havainnot uudella paketilla. Näitä käsitestejä ei merkitä hyväksytyiksi synteettisellä ääniviralla. Mallipainoja, käyttäjän ääntä, käyttöoikeuksia ja OS-asetuksia ei muutettu. Tämä työhaara ei yksin merkitse uutta DMG:tä tai päähaarojen yhdistämistä valmiiksi.
 Checkpointin jälkeinen diagnostiikkakorjaus: tarina-review-toggle avataan vasta Rakenna jakso -toiminnon jälkeen; ennen mallia sitä ei ole DOM:ssa. Ensimmäinen Kokoro-only ajo ei saavuttanut inferenssiä ja sen workflow-report ok=false. `node --experimental-strip-types --test desktop/kokoro.test.mjs lib/kokoro.test.ts lib/presentation.test.ts`: 22/22 läpi, ei ohituksia, 1.44 s. Kohdistuskorjauksen GUI-uusinta odottaa palikka-agentin vuoroa. Tämä ei muuta tuotantosovelluksen koodia.
+
+
+## Codex → Claude: neljän agentin yhteinen checkpoint 12.10.2026
+
+Integraatiohaara codex/integration-2026-10-12, lähde 5470e7f. Mukana palikkatesti e005ea3, Kokorotesti1c4c40d, laite/VoiceOverkorjausaca2f3a, Macverifierb76095f. TIIMI-append-konflikteissa molemmat kirjaukset säilytetty.
+
+Yhdistetty tuotantolähde: desktop:build/typecheck läpi ja npm test 1404/1404, ei ohituksia. Viimeinen testidiagnostiikan kohdistuskorjaus ei muuttanut tämän testisarjan tuotantolähdettä. Lokit docs/tiimi/todennus/integration-20261012/.
+
+Avoin agenttityö: palikan GUI4tarkistusta läpi (raahaus jakaa tauon, ilme2s, levytallennus, undo-lähde), mutta Alt-pudotuksen jälkeen ilmoitus Rivi2 on muuttunut: palikkamalli voi olla eri kuin undo-palautettu käsikirjoitus. Tämä on tutkittava, ei valmis hyväksyntä. Kokoro GUI-testi kohdistuksia on korjattu; ei vielä hyväksytty synth→MP4-synkkaa. Aria-label vakaa nyt lähteessä ja render-testeissä; uusia GUIväitteitä ei ajettu integroidulla buildilla vielä.
+
+Mac-agentti odottaa lopullista blockfix/Kokoro-lähdettä ennen yhtä paketointia, resursseja valmiina; levy nyt noin18–19GiB. Uutta pakettia/DMG:tä ei vielä tehty. Fyysiset laitteet/VoiceOver-kuuntelu avoimina. Agentit vievät lisätulokset omille haaroilleen; Claude fetchää ne ennen jatkoa ja lukee viimeisen TIIMI-kirjauksen jokaiselta. Päähaarat pysyvät varmennettuna8f582d5, ei forcepush.
