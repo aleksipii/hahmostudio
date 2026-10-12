@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {readZip} from './stored-zip.mjs';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 export async function workflowDiagnostic(window,directory,{packaged=false}={}){
+ if(process.env.HAHMOSTUDIO_BLOCK_ACCEPTANCE==='1')return (await import('./block-diagnostic.mjs')).blockDiagnostic(window,directory,{packaged});
  await mkdir(directory,{recursive:true});window.showInactive();const errors=[],checks=[],geometry=[];
  const js=code=>window.webContents.executeJavaScript(code,true);
  const check=(name,ok,detail)=>{console.log((ok?'PASS ':'FAIL ')+name);if(!ok)console.error(detail);checks.push({name,ok:!!ok,...(detail===undefined?{}:{detail})});if(!ok)throw Error(name);};

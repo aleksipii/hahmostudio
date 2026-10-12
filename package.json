@@ -39,7 +39,8 @@
     "vocabulary:gaps": "node --experimental-strip-types scripts/vocabulary-gaps.ts",
     "kokoro:prepare": "node scripts/prepare-kokoro-runtime.mjs",
     "team:test:preview": "node scripts/team-preview-run.mjs",
-    "ui:census": "node scripts/ui-census.mjs"
+    "ui:census": "node scripts/ui-census.mjs",
+    "desktop:test:blocks": "HAHMOSTUDIO_BLOCK_ACCEPTANCE=1 HAHMOSTUDIO_WORKFLOW_OUTPUT=docs/tiimi/todennus/block-20261012 node scripts/desktop-workflow-test.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.32",

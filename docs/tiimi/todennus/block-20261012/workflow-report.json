@@ -1,0 +1,22 @@
+{
+  "ok": false,
+  "error": "Timeout: button Näytä palikkaeditori",
+  "packaged": false,
+  "checks": [],
+  "errors": [],
+  "state": [
+    {
+      "kind": "block block--tauko",
+      "title": "Pipsa hymyilee. Pipsa odottaa 5 s.  PIPSA “This is an English dialogue for a block timing test.”  Pipsa vilkuttaa 2 s.",
+      "aria": "PIPSA · Tauko: Tauko · alkaa 0 s · kesto 5 s",
+      "left": "0px"
+    },
+    {
+      "kind": "block block--kamera is-derived",
+      "title": "Johdettu palikka (automaattinen kuva tai tehoste)",
+      "aria": "kamera · Kamera: Laaja · alkaa 0 s · kesto 0 s",
+      "left": "0px"
+    }
+  ],
+  "source": "Pipsa hymyilee. Pipsa odottaa 5 s.  PIPSA “This is an English dialogue for a block timing test.”  Pipsa vilkuttaa 2 s.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+}
