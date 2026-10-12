@@ -9,7 +9,7 @@
 //! tässä moduulissa: [`crate::store::ModelStore`] hoitaa tiedostot.
 
 use crate::engine::{Speech, SpeechEngine, SpeechRequest};
-use crate::spoken::MODEL_VERSION;
+use crate::spoken::{is_voice, MODEL_VERSION};
 use crate::wav::Audio;
 use crate::VoiceError;
 use candle_core::{DType, Device, Tensor};
@@ -145,6 +145,13 @@ impl SpeechEngine for KokoroEngine {
         MODEL_VERSION
     }
     fn synthesize(&self, r: &SpeechRequest, cancel: &AtomicBool) -> Result<Speech, VoiceError> {
+        // Vain studion äänilista: äänen nimestä tulee tiedostopolku ja murre.
+        if !is_voice(&r.voice) {
+            return Err(VoiceError::Model(format!("Tuntematon Kokoro-ääni {}.", r.voice)));
+        }
+        if !r.speed.is_finite() || !(0.5..=2.0).contains(&r.speed) {
+            return Err(VoiceError::Engine(format!("Puhenopeus {} ei kelpaa.", r.speed)));
+        }
         let phonemes = self.g2p(&r.voice)?.phonemize(&r.text);
         let style = self.style(&r.voice)?;
         let mut samples = Vec::new();
@@ -190,20 +197,52 @@ mod tests {
         assert_eq!(normalize_name("module.generator.conv_post.parametrizations.weight.original0"), "generator.conv_post.weight_g");
     }
 
-    /// Ajetaan vain, jos malli on asennettu (HAHMOSTUDIO_KOKORO_DIR); pilvessä mallia ei ole.
     #[test]
-    fn real_model_speaks_when_installed() {
-        let Some(dir) = std::env::var_os("HAHMOSTUDIO_KOKORO_DIR") else {
-            eprintln!("ohitettu: HAHMOSTUDIO_KOKORO_DIR puuttuu");
-            return;
-        };
+    fn every_studio_voice_has_an_english_dialect() {
+        for (v, _) in crate::spoken::VOICES {
+            let d = Dialect::for_kokoro_voice(v).unwrap_or_else(|| panic!("{v}: ei murretta"));
+            assert_eq!(d == Dialect::British, v.starts_with('b'), "{v}");
+        }
+        // Britti- ja amerikkalainen sanasto antavat eri ääntämyksen samalle sanalle.
+        let us = G2p::new(Dialect::American, OovFallback::Neural).unwrap().phonemize("Tomato, water.");
+        let uk = G2p::new(Dialect::British, OovFallback::Neural).unwrap().phonemize("Tomato, water.");
+        assert_ne!(us, uk);
+    }
+
+    /// Oikea Kokoro-synteesi kahdella hahmolla. Ei kuulu tavalliseen ajoon (`ignored`),
+    /// jotta ohitus ei näytä läpäisyltä: aja
+    /// `HAHMOSTUDIO_KOKORO_DIR=<asennettu malli> cargo test -p hs-voice --release -- --ignored`.
+    /// `HAHMOSTUDIO_KOKORO_OUT=<kansio>` tallentaa WAVit kuuntelua varten.
+    #[test]
+    #[ignore = "vaatii käyttäjän luvalla asennetun Kokoro-mallin (HAHMOSTUDIO_KOKORO_DIR)"]
+    fn real_model_speaks_two_characters() {
+        let dir = std::env::var_os("HAHMOSTUDIO_KOKORO_DIR").expect("HAHMOSTUDIO_KOKORO_DIR puuttuu: oikeaa synteesiä ei ajettu");
         let engine = KokoroEngine::load(Path::new(&dir)).unwrap();
-        let s = engine
-            .synthesize(&SpeechRequest { text: "Hello there!".into(), voice: "af_heart".into(), speed: 1.0 }, &AtomicBool::new(false))
+        let never = AtomicBool::new(false);
+        let out = std::env::var_os("HAHMOSTUDIO_KOKORO_OUT").map(PathBuf::from);
+        let mut takes = Vec::new();
+        for (name, voice, text) in [("pipsa", "af_heart", "Hello there! Are you ready?"), ("ville", "am_adam", "Hello there! Are you ready?")] {
+            let s = engine.synthesize(&SpeechRequest { text: text.into(), voice: voice.into(), speed: 1.0 }, &never).unwrap();
+            let d = s.audio.duration();
+            assert_eq!(s.audio.sample_rate, SAMPLE_RATE);
+            assert!((0.8..6.0).contains(&d), "{name}: kesto {d}");
+            let peak = s.audio.samples.iter().fold(0.0f32, |m, x| m.max(x.abs()));
+            let rms = (s.audio.samples.iter().map(|x| x * x).sum::<f32>() / s.audio.samples.len() as f32).sqrt();
+            assert!(peak > 0.02 && peak <= 1.5 && rms > 0.005, "{name}: huippu {peak}, rms {rms}");
+            eprintln!("{name} ({voice}): {d:.3} s, huippu {peak:.3}, rms {rms:.4}, foneemit {:?}", s.phonemes);
+            if let Some(o) = &out {
+                std::fs::create_dir_all(o).unwrap();
+                std::fs::write(o.join(format!("kokoro-{name}-{voice}.wav")), crate::wav::encode(&s.audio)).unwrap();
+            }
+            takes.push(s);
+        }
+        // Eri äänet: sama repliikki ei saa olla sama ääni.
+        assert_ne!(takes[0].audio.samples, takes[1].audio.samples);
+        let long = engine
+            .synthesize(&SpeechRequest { text: "I'm fine (slowly)".into(), voice: "bf_emma".into(), speed: 0.85 }, &never)
             .unwrap();
-        let d = s.audio.duration();
-        assert!((0.4..4.0).contains(&d), "kesto {d}");
-        let peak = s.audio.samples.iter().fold(0.0f32, |m, x| m.max(x.abs()));
-        assert!(peak > 0.02 && peak <= 1.5, "huippu {peak}");
+        assert!(long.audio.duration() > 0.5);
+        let bad = SpeechRequest { text: "Hi".into(), voice: "../af_heart".into(), speed: 1.0 };
+        assert!(matches!(engine.synthesize(&bad, &never), Err(VoiceError::Model(_))));
     }
 }
