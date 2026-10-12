@@ -18,7 +18,7 @@ export async function workflowDiagnostic(window,directory,{packaged=false}={}){
  try{
   await wait("!!document.querySelector('.s2-project-menu')",'editor');
   await phase('characters');await click('Valitse Pipsa-3D');await wait("!!document.querySelector('.artboard canvas')",'character');
-  if(process.env.HAHMOSTUDIO_KOKORO_EXPORT_ACCEPTANCE==='1'){await phase('script');await js("document.querySelector('.tarina-review-toggle').click()");const result=await kokoroExportDiagnostic(window,directory,{packaged});await writeFile(join(directory,'workflow-report.json'),JSON.stringify({ok:true,packaged,gui:true,physicalDevices:false,voiceOver:false,kokoroExport:result},null,2));return result;}
+  if(process.env.HAHMOSTUDIO_KOKORO_EXPORT_ACCEPTANCE==='1'){await phase('script');const result=await kokoroExportDiagnostic(window,directory,{packaged});await writeFile(join(directory,'workflow-report.json'),JSON.stringify({ok:true,packaged,gui:true,physicalDevices:false,voiceOver:false,kokoroExport:result},null,2));return result;}
   await phase('script');await click('Kokeile esimerkkiä');await wait("[...document.querySelectorAll('textarea')].some(e=>e.value.length>200)",'sample');
   await click('Rakenna jakso');await wait("document.body.innerText.includes('Jakso rakennettu')",'episode');
   for(const [width,height] of [[1200,720],[1440,900]]){
