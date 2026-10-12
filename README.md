@@ -2,7 +2,9 @@
 
 Suomenkielinen animaatiostudio Macille ja selaimeen: kirjoitat käsikirjoituksen, valitset hahmot ja saat muokattavan animaation, jonka viet MP4-videoksi. Kaikki käsittely tapahtuu omalla koneella. Ainoa poikkeus on valinnainen, oletuksena pois päältä oleva tekoälyrenderöinti (ks. [Pilvirenderöinti](#pilvirenderöinti-valinnainen)).
 
-**Haarat:** `main` ja `hahmostudio1.0` sisältävät saman version (yhdistetty 2026-10-08). Uusi työ tehdään PR:nä `hahmostudio1.0`-haaraan.
+**Päähaara:** `main` on ainoa yhteinen pysyvä päähaara (12.10.2026). Työkalujen yhteiset ohjeet: `AGENTS.md`, `CLAUDE.md` ja `TIIMI.md`.
+
+Natiivin Koeta-studion päätavoite on englanninkielinen animaatiosarja paikallisilla hahmokohtaisilla Kokoro-äänillä. Rust-version käyttö ja uusi `.koeta`-sarjaprojekti: [native/README.md](native/README.md).
 
 ## Pika-aloitus
 

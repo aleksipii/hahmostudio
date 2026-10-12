@@ -582,3 +582,71 @@ Avoimet hyväksynnät: hahmojen ulkoasun taiteellinen hyväksyntä; Electronin p
 Seuraava konkreettinen työ: Macilla `cd native && cargo run --release -p hs-app`, Kokoron lataus ja kuuntelu, mikrofoni- ja kameratesti; sitten .hahmo-kirjoitus natiiviin ja jaksojen tallennus sarjaksi.
 
 Tiedostot: `native/crates/{hs-voice,hs-lipsync,hs-audio,hs-camera}/**`, `native/crates/{hs-agents,hs-app,hs-character,hs-render,hs-motion,hs-script,hs-core,hs-cli}/**`, `native/{README,PARITEETTI}.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
+
+
+## Codex: natiivin sarjaprojekti ja tallennetun puheen palautus — 12.10.2026
+
+Vaihe: Codexin projektitallennuksen ensimmäinen kokonaisuus valmis paikallisesti.
+Työhaara `work`, toteutuscommit `1dd3f873333511d981b8af35efc81d95cb4c8a53`, pohja
+`bb225e26272b5a359be80b27f39fb87eb1915b26`. Ei pushia eikä yhdistämistä etä-mainiin.
+main on ainoa yhteinen pysyvä päähaara; aiemmat kahden päähaaran ohjeet ovat historiaa.
+
+Tehty:
+- Uusi UI-riippumaton `hs-project`: versionoitu `.koeta`-ZIP, sarja/jakso-ID:t,
+  nimet/numerot, käsikirjoitukset, hahmoparametrit/äänivalinnat, fps/kuvakoko,
+  hyväksytyt puhehuomautukset ja omat sekä tuotetut ääniresurssit.
+- SHA-256, 128 MiB koko/purkukoko, rajatut resurssit, polkujen ja duplikaattien
+  tarkistus, häviötön f32-ääni, tarkistettu atominen tiedoston korvaus.
+  Tuntematon versio hylätään; vanhaa projektia ei ylikirjoiteta epäonnistumisessa.
+- `hs-agents::project::capture/restore` ja `Production.saved_speech` palauttavat
+  synteesin ilman mallia. `AudioSource::Synthesized` sisältää engine/voice/speed/
+  model_version/cache_key-tiedot ja foneemit. Oma ääni on etusijalla; alkuperäinen
+  synteesi ja poistettujen käsikirjoitusrivien äänet säilyvät. Tekstin, äänen,
+  nopeuden tai malliversion muutos ei käytä vanhaa synteesiä.
+- `hs-app`: uusi/avaa/tallenna/tallenna nimellä -sarjatoiminnot, jakson lisäys,
+  vaihto ja nimeäminen/numerointi. `.koeta` avautuu myös käynnistysargumenttina.
+  Tiedostotyö tehdään taustalla; projektin vaihtaminen ja sulkeminen käyttää
+  modaalista vahvistusta. Tallennus ja projektinvaihto estetään äänityksen/viennin
+  aikana. Projektin omat äänet eivät ylikirjoita vanhaa globaalia äänityskansiota.
+- Vienti saa samat palautetut puheet ja fps:n. Oletusesimerkin repliikit ovat
+  englanniksi; nykyiset suomenkieliset toiminta-/kameratagit säilyvät.
+
+Testattu tässä Linux-pilvessä (Rust 1.99.0, paikalliset Debian-kehityskirjastot,
+Mesa lavapipe Vulkan, Xvfb):
+- `cd native && cargo test --locked --workspace -j 4`: 78 läpi, 0 epäonnistui,
+  0 ignored. Sisältää arkistovirheet, oman/synteettisen äänen rinnakkaisen
+  säilytyksen, mallittoman palautuksen, muuttuneen äänen/tekstin/malliversion
+  mitätöinnin, erillisten jaksojen äänten eristyksen sekä nykyiset vientitestit.
+- `cargo build --locked -p hs-app -j 4`: läpi.
+- `cargo clippy --locked -p hs-project -p hs-agents -p hs-app --all-targets -j 4`:
+  läpi; kolme olemassa olevaa Rust 1.99 chunks_exact-suositusta hs-voice,
+  hs-render ja hs-camera -moduuleissa. Uusissa moduuleissa ei varoituksia.
+- Uusien moduulien rustfmt-tarkistus ja `git diff --check`: läpi.
+- Oikea Linux-GUI-koe Xvfb:ssä: avattiin levyltä kahden englanninkielisen
+  testirepliikin `.koeta`, lisättiin toinen jakso, tallennettiin valikosta,
+  vaihdettiin takaisin pilottiin ja suljettiin Tallenna sarja ja sulje -toiminnolla.
+  Manifestista varmennettiin molemmat jaksot ja alkuperäiset puheäänet.
+  Sovellus käynnistyi/palautti näyttämön ja välimuistipuheet myös ilman mallia.
+  Puhe oli selvästi TestEngine-simulaatiota, ei aitoa Kokoroa. Fyysistä
+  äänentoistolaitetta ei ole; kuuntelua ei väitetä tehdyksi.
+- Riippumaton katselmointi: projektinvaihdon vahvistuksen äänitys/tiedostotyö-
+  kilpailutilanne korjattiin modaalilla ja toimintohetken tilatarkistuksella.
+- Codex-kiintiötieto ei saatavilla; prosenttia ei päätelty.
+
+Rajat ja seuraava työ:
+- Aito Kokoro, Mac/Metal, fyysinen kamera/mikrofoni ja kuuntelu edelleen avoimet.
+- `.koeta` on uusi natiivimuoto, ei `.hahmo`-kirjoitus tai vanhan `.sarja`-tuonti.
+  Ensimmäinen tallennus voi ottaa nykyiset sovellusasetukset ja äänitykset mukaan;
+  vanhoja tiedostoja ei poisteta. Tuleville skeemaversioille tarvitaan migraatiot.
+- Sarjan automaattinen autosave, revisiohistoria, yhteisen hahmokirjaston keskitetty
+  editointi ja tulevien käsin editoitavien aikajana-/tekstitys-/kuvaresurssien
+  tallennus ovat seuraavia kokonaisuuksia. V1 tallentaa nykyisen tuotannon syötteet.
+- Claude jatkaa englanninkielisen puhemoottorin työtä tiedostoissa
+  `hs-voice/src/{engine,spoken,kokoro}.rs` ja niiden testeissä. Speech/Provenance-
+  rajapintamuutokset sovitaan hs-project-/hs-agents-sovittimen kanssa.
+
+Omistetut tiedostot: `native/crates/hs-project/**`,
+`native/crates/hs-agents/src/project.rs`, puheen palautuksen muutokset
+`hs-agents/src/{production.rs,agents/voice.rs}`, projektitestit,
+`hs-app/src/project_ui.rs` ja sen app/main/panels/voice_ui/export_job-liitännät,
+Cargo-manifestit/lockfile sekä aktiiviset työohjeet ja natiivin dokumentaatio.
