@@ -11,6 +11,7 @@ members = [
     "crates/hs-audio",
     "crates/hs-camera",
     "crates/hs-hahmo",
+    "crates/hs-project",
     "crates/hs-agents",
     "crates/hs-cli",
     "crates/hs-app",
@@ -30,6 +31,7 @@ hs-motion = { path = "crates/hs-motion" }
 hs-character = { path = "crates/hs-character" }
 hs-render = { path = "crates/hs-render", default-features = false }
 hs-hahmo = { path = "crates/hs-hahmo" }
+hs-project = { path = "crates/hs-project" }
 hs-agents = { path = "crates/hs-agents" }
 hs-voice = { path = "crates/hs-voice", default-features = false }
 hs-lipsync = { path = "crates/hs-lipsync" }

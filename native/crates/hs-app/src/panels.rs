@@ -64,6 +64,7 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
+            crate::project_ui::series_menu(app, ui);
             ui.menu_button("Toisto", |ui| {
                 if ui.button(if app.playing { "Pysäytä (välilyönti)" } else { "Toista (välilyönti)" }).clicked() {
                     app.playing = !app.playing;

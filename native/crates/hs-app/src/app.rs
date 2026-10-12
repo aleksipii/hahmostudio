@@ -40,6 +40,8 @@ pub struct StudioApp {
     pub voice: VoiceState,
     pub camera: CameraState,
     pub left_tab: LeftTab,
+    pub series: Option<crate::project_ui::OpenSeries>,
+    pub series_dirty: bool,
     screenshot: Option<PathBuf>,
     screenshot_frames: u32,
 }
@@ -109,6 +111,8 @@ impl StudioApp {
             legacy: None,
             voice,
             camera: CameraState::default(),
+            series: None,
+            series_dirty: false,
             left_tab: match options.tab.as_deref() {
                 Some("ääni" | "voice") => LeftTab::Voice,
                 Some("esitys" | "performance") => LeftTab::Performance,

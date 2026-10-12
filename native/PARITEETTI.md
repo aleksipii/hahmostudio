@@ -17,7 +17,7 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | Jaksorakentaja ja korjausehdotukset | `lib/episode-builder.ts`, `review-suggestions.ts` | — | ❌ |
 | `.hahmo` v1–v5 luku | `lib/project-file.ts` | `hs-hahmo` (perusrakenne, kuvat, rig, raidat) | 🟡 |
 | `.hahmo` kirjoitus, resurssimanifesti, tarkistussummat, historia | `lib/project-file.ts`, `lib/studio/` | — | ❌ |
-| `.sarja`-jaksot | `lib/series-archive.ts` | — | ❌ |
+| `.sarja`-jaksot | `lib/series-archive.ts` | `hs-project` (uusi `.koeta`-sarjakansio: hahmot, Kokoro-äänivalinnat, jaksot, omat äänitykset, tuotettu puhe; ei lue vanhaa `.sarja`-tiedostoa) | 🟡 |
 | PSD-tuonti (ID:t, hierarkia, rajat 100 MiB / 16 MP / 1000 tasoa) | `lib/psd-import.ts`, `psd.worker.ts` | — | ❌ |
 | 2D-rigin muunnokset ja easing (linear/smooth/hold/bezier) | `animation-transform.ts`, `animation-model.ts` | `hs-hahmo` (sama kaava) | ✅ |
 | 2D-tasojen piirto | `psd-render.ts` | `hs-hahmo` (normaali sekoitus) | 🟡 ei ryhmäeristystä eikä muita sekoitustiloja |
@@ -65,8 +65,7 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 - Kokoro puhuu vain englantia (kuten Electron-versiossa); suomenkieliset rivit äänitetään itse.
 - Kameran pään seuranta perustuu ihonväriin: se ei tunnista silmiä tai kulmia, ja
   valaistus tai ihonvärinen tausta voi häiritä. Kalibrointi ja herkkyys säädetään Esitys-välilehdellä.
-- Natiivisovellus ei vielä tallenna projektia `.hahmo`-muotoon; käsikirjoitus ja
-  hahmoparametrit säilyvät sovelluksen omissa asetuksissa ja tekstitiedostona.
+- Natiivi tallentaa sarjan omaan `.koeta`-kansioon (Sarja-valikko), ei `.hahmo`-muotoon; vanhaa `.sarja`-arkistoa ei lueta eikä kirjoiteta. Tallennus ei ole vielä automaattista eikä siinä ole palautushistoriaa.
 - GPU-polku on testattu Linuxissa Vulkanilla (lavapipe, ohjelmistopohjainen).
   Metal (Mac) ja oikea näytönohjain ovat todentamatta.
 - Käyttöliittymä on testattu Xvfb-ympäristössä kuvakaappauksella, ei Macilla.

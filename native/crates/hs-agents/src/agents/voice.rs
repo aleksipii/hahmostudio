@@ -75,7 +75,7 @@ impl StudioAgent for VoiceAgent {
                     cancel: &p.cancel,
                 };
                 match synthesize_lines(&dl, &o) {
-                    Ok(r) => r.into_iter().map(|r| (r.status, r.notices, r.speech)).collect(),
+                    Ok(r) => r.into_iter().map(|r| (r.status, r.notices, r.speech, r.provenance)).collect(),
                     Err(VoiceError::Cancelled) => return Err(AgentError::Cancelled),
                     Err(e) => return Err(AgentError::Failed { agent: "voice", message: e.to_string() }),
                 }
@@ -84,20 +84,21 @@ impl StudioAgent for VoiceAgent {
                 .iter()
                 .map(|l| {
                     if own.contains_key(&l.2.id) {
-                        (LineStatus::KeptOwnAudio, vec![], None)
+                        (LineStatus::KeptOwnAudio, vec![], None, None)
                     } else {
-                        (LineStatus::NoEngine, vec!["Puhemallia ei ole asennettu; suu liikkuu tekstin mukaan.".to_string()], None)
+                        (LineStatus::NoEngine, vec!["Puhemallia ei ole asennettu; suu liikkuu tekstin mukaan.".to_string()], None, None)
                     }
                 })
                 .collect::<Vec<_>>(),
         };
-        for ((beat, speaker, line), (status, notices, speech)) in lines.into_iter().zip(results) {
+        for ((beat, speaker, line), (status, notices, speech, provenance)) in lines.into_iter().zip(results) {
             // Oma ääni: huulisynkka käyttää rivin tekstiä äänteinä (suomi lausutaan kuten kirjoitetaan).
             let speech = match own.get(&line.id) {
                 Some(a) => Some(Arc::new(Speech { audio: (**a).clone(), phonemes: Some(line.text.to_lowercase()) })),
                 None => speech,
             };
-            out.push(VoiceLine { beat, key: line.id, speaker, text: line.text, status, notices, speech });
+            let provenance = if own.contains_key(&line.id) { None } else { provenance };
+            out.push(VoiceLine { beat, key: line.id, speaker, text: line.text, status, notices, speech, provenance });
         }
         let spoken = out.iter().filter(|l| l.speech.is_some()).count();
         let summary = match &p.voice_engine {

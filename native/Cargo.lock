@@ -2238,6 +2238,7 @@ dependencies = [
  "hs-core",
  "hs-hahmo",
  "hs-lipsync",
+ "hs-project",
  "hs-render",
  "hs-script",
  "hs-voice",
@@ -2324,6 +2325,19 @@ dependencies = [
  "hs-core",
  "hs-lipsync",
  "serde",
+]
+
+[[package]]
+name = "hs-project"
+version = "0.1.0"
+dependencies = [
+ "hs-agents",
+ "hs-character",
+ "hs-voice",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.21",
 ]
 
 [[package]]

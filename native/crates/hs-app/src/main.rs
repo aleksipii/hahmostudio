@@ -8,6 +8,7 @@ mod app;
 mod camera_ui;
 mod export_job;
 mod panels;
+mod project_ui;
 mod viewport;
 mod voice_ui;
 

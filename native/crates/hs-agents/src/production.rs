@@ -51,6 +51,8 @@ pub struct VoiceLine {
     pub status: LineStatus,
     pub notices: Vec<String>,
     pub speech: Option<Arc<Speech>>,
+    /// Synteesin alkuperä (välimuistiavain, ääni, nopeus, malliversio); puuttuu omalta äänitykseltä.
+    pub provenance: Option<hs_voice::engine::Provenance>,
 }
 
 /// Aikajanalle sijoitettu puheleike.
