@@ -1,0 +1,27 @@
+Copyright (c) 2026 aleksipii. All rights reserved.
+
+Hahmostudio and its source code, documentation and other materials in this
+repository are proprietary. No license is granted to copy, modify, merge,
+publish, distribute, sublicense or sell any part of them, or to use them to
+create derivative works, without the prior written permission of the copyright
+holder.
+
+Exceptions:
+
+1. The studio's own character, background and prop artwork (Pipsa, Ville,
+   Taru, Ukko and the studio backgrounds) is released under CC0 1.0 Universal
+   (https://creativecommons.org/publicdomain/zero/1.0/), as stated in
+   THIRD_PARTY_NOTICES.md.
+
+2. Third-party components, libraries, binaries and model weights used or
+   bundled by Hahmostudio remain under their own licenses. Their notices and
+   license texts are in THIRD_PARTY_NOTICES.md and the licenses/ directory.
+   Nothing in this file limits the rights those licenses grant.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
