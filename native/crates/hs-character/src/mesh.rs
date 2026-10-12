@@ -473,10 +473,16 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
     match p.hair_style {
         HairStyle::Bald => {}
         HairStyle::Short | HairStyle::Bob | HairStyle::Ponytail => {
-            let cap = Vec3::new(head_r.x * 1.07, head_r.y * 0.78, head_r.z * 1.07);
-            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.13, -hh * 0.04), cap, Quat::from_rotation_x(-0.18), p.hair, Bind::one(h.head), 14, 24);
-            // Otsatukka.
-            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.3, head_r.z * 0.62), Vec3::new(head_r.x * 0.86, hh * 0.13, hh * 0.16), Quat::from_rotation_x(0.35), p.hair, Bind::one(h.head), 8, 16);
+            // Päähine peittää päälaen: hiuskupu ja otsatukka jätetään pois, ettei niitä näy läpi.
+            if p.extras.hat == HatStyle::None {
+                let cap = Vec3::new(head_r.x * 1.07, head_r.y * 0.78, head_r.z * 1.07);
+                b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.13, -hh * 0.04), cap, Quat::from_rotation_x(-0.18), p.hair, Bind::one(h.head), 14, 24);
+                // Otsatukka.
+                b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.3, head_r.z * 0.62), Vec3::new(head_r.x * 0.86, hh * 0.13, hh * 0.16), Quat::from_rotation_x(0.35), p.hair, Bind::one(h.head), 8, 16);
+            } else {
+                // Hiukset näkyvät päähineen alta sivuilta ja takaa.
+                b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.02, -hh * 0.06), Vec3::new(head_r.x * 1.04, head_r.y * 0.62, head_r.z * 1.0), Quat::from_rotation_x(-0.35), p.hair, Bind::one(h.head), 12, 22);
+            }
             if p.hair_style == HairStyle::Bob {
                 let back = h.hair[0];
                 for s in [-1.0f32, 1.0] {

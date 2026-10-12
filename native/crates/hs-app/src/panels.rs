@@ -139,6 +139,7 @@ fn event_text(kind: &EventKind) -> String {
         EventKind::Background { id } => id.clone(),
         EventKind::CharacterView { view } => format!("Suunta {view:?}"),
         EventKind::Phone { view } => format!("Puhelin {view:?}"),
+        EventKind::Prop { character, item } => format!("{}esine {}", character.as_ref().map(|c| format!("{c}: ")).unwrap_or_default(), item.as_deref().unwrap_or("pois")),
         EventKind::Camera { hint } => format!("Kuva {hint:?}"),
     }
 }
@@ -255,7 +256,7 @@ pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
 fn script_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
     {
         ui.heading("Käsikirjoitus");
-        ui.label(RichText::new("Puhe tekstinä, ohjeet hakasulkeissa: [vilkuta 2s], [juokse oikealle 2s], [näpyttele puhelinta 3s], [tausta kaupunki ilta], [kuva lähikuva]. Puhuja: NIMI: repliikki.").weak().small());
+        ui.label(RichText::new("Puhe tekstinä, ohjeet hakasulkeissa: [vilkuta 2s], [juokse oikealle 2s], [näpyttele puhelinta 3s], [tausta keittiö|luokka|puisto|katu|olohuone|kaupunki ilta], [kuva laaja|kaksikko|olan yli|lähikuva|alakulma|yläkulma], [esine kahvikuppi|pizza|kirja|lahja|pallo|kukat|tölkki|mikrofoni|pois]. Puhuja: NIMI: repliikki. Sarjan perhe: KALLE, MAIJA, EETU, RONJA.").weak().small());
         ui.add_space(4.0);
         let errors: Vec<_> = app.production.diagnostics.iter().filter(|d| d.severity != Severity::Info).cloned().collect();
         let editor_h = (ui.available_height() - 40.0 - errors.len().min(6) as f32 * 22.0).max(160.0);

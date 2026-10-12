@@ -175,3 +175,18 @@ fn series_cast_and_camera_angles() {
     let (high, _, _) = cam.camera_at(8.0, aspect);
     assert!(high.eye.y > high.target.y + 0.3);
 }
+
+#[test]
+fn props_follow_the_hand_until_put_away() {
+    let script = "[tausta keittiö]\n[esine kahvikuppi]\nKALLE: Huomenta. [odota 2s]\n[esine pois]\nKALLE: No niin. [odota 2s]";
+    let mut p = Production::new(script);
+    p.width = 320;
+    p.height = 568;
+    Pipeline::default().run(&mut p).expect("putki");
+    let mut fb = hs_agents::agents::render::FrameBuilder::default();
+    let with = fb.scene(&p, 30, 320, 568).unwrap();
+    let without = fb.scene(&p, 90, 320, 568).unwrap();
+    assert_eq!(with.items.len(), without.items.len() + 1, "kuppi kädessä vain ensimmäisellä rivillä");
+    let cup = with.items.iter().find(|i| i.skin.len() == 1).expect("käteen sidottu esine");
+    assert!(cup.outline);
+}

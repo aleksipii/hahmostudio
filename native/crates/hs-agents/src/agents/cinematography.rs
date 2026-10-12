@@ -308,7 +308,8 @@ impl CameraTrack {
         };
         let (key, fill, rim, ambient) = match env {
             "city-evening-v1" => (Vec3::new(0.85, 0.62, 0.45), Vec3::new(0.16, 0.18, 0.32), Vec3::new(0.45, 0.55, 1.0), Vec3::new(0.26, 0.24, 0.36)),
-            "apartment-v1" | "studio-premium-v1" => (Vec3::new(0.78, 0.7, 0.6), Vec3::new(0.26, 0.26, 0.3), Vec3::new(0.55, 0.5, 0.45), Vec3::splat(0.34)),
+            "park-day-v1" | "street-day-v1" => (Vec3::new(0.85, 0.82, 0.74), Vec3::new(0.3, 0.34, 0.42), Vec3::new(0.6, 0.6, 0.55), Vec3::splat(0.36)),
+            "apartment-v1" | "studio-premium-v1" | "kitchen-v1" | "classroom-v1" => (Vec3::new(0.78, 0.7, 0.6), Vec3::new(0.26, 0.26, 0.3), Vec3::new(0.55, 0.5, 0.45), Vec3::splat(0.34)),
             id if id.starts_with("car") => (Vec3::new(0.75, 0.75, 0.78), Vec3::new(0.3, 0.32, 0.36), Vec3::new(0.6, 0.65, 0.7), Vec3::splat(0.33)),
             _ => (Vec3::splat(0.75), Vec3::splat(0.25), Vec3::splat(0.5), Vec3::splat(0.32)),
         };

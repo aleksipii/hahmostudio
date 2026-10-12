@@ -27,6 +27,17 @@ pub const BACKGROUND_ALIASES: &[(&str, &str)] = &[
     ("studio", "studio-v1"),
     ("studio valoisa", "studio-premium-v1"),
     ("olohuone", "apartment-v1"),
+    ("keittiö", "kitchen-v1"),
+    ("kitchen", "kitchen-v1"),
+    ("luokka", "classroom-v1"),
+    ("koulu", "classroom-v1"),
+    ("classroom", "classroom-v1"),
+    ("puisto", "park-day-v1"),
+    ("takapiha", "park-day-v1"),
+    ("park", "park-day-v1"),
+    ("katu", "street-day-v1"),
+    ("katu päivä", "street-day-v1"),
+    ("street", "street-day-v1"),
     ("kaupunki ilta", "city-evening-v1"),
     ("auto moderni", "car-interior-v2"),
     ("puhelin edestä", "phone-front-v1"),
@@ -41,6 +52,33 @@ pub const BACKGROUND_ALIASES: &[(&str, &str)] = &[
     ("car back", "car-back-v1"),
 ];
 
+/// Käteen otettavat esineet: `[esine kahvikuppi]`, pois `[esine pois]`.
+/// Tuntematonta esinettä ei arvata vaan siitä tulee virhe.
+pub const PROP_ALIASES: &[(&str, &str)] = &[
+    ("kahvikuppi", "mug"),
+    ("kuppi", "mug"),
+    ("muki", "mug"),
+    ("mug", "mug"),
+    ("pizza", "pizza-box"),
+    ("pizzalaatikko", "pizza-box"),
+    ("kirja", "book"),
+    ("book", "book"),
+    ("lahja", "gift"),
+    ("lahjapaketti", "gift"),
+    ("paketti", "gift"),
+    ("gift", "gift"),
+    ("pallo", "ball"),
+    ("ball", "ball"),
+    ("kukat", "flowers"),
+    ("kukkakimppu", "flowers"),
+    ("flowers", "flowers"),
+    ("tölkki", "can"),
+    ("limsa", "can"),
+    ("can", "can"),
+    ("mikrofoni", "microphone"),
+    ("microphone", "microphone"),
+];
+
 /// Yksi käsikirjoituksen rivi tulkittuna.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Beat {
@@ -53,6 +91,9 @@ pub struct Beat {
     pub view: Option<View>,
     pub phone: Option<PhoneView>,
     pub camera: Option<CameraHint>,
+    /// Esine käteen (`Some(Some(id))`) tai pois (`Some(None)`).
+    #[serde(default)]
+    pub prop: Option<Option<String>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -181,6 +222,7 @@ fn strip_keyword<'a>(tag: &'a str, keys: &[&str]) -> Option<&'a str> {
 
 enum Tag {
     Phone(PhoneView),
+    Prop(Option<String>),
     View(View),
     Background(String),
     Camera(CameraHint),
@@ -203,6 +245,17 @@ fn classify(tag: &str) -> Result<Tag, String> {
         if let Some(v) = v {
             return Ok(Tag::Phone(v));
         }
+    }
+    if let Some(rest) = strip_keyword(tag, &["esine", "prop"]) {
+        let key = lower(rest);
+        if matches!(key.as_str(), "pois" | "none" | "away") {
+            return Ok(Tag::Prop(None));
+        }
+        return PROP_ALIASES
+            .iter()
+            .find(|(alias, _)| *alias == key)
+            .map(|(_, id)| Tag::Prop(Some((*id).to_string())))
+            .ok_or_else(|| format!("Tuntematon esine: {rest}. Valitse kahvikuppi, pizza, kirja, lahja, pallo, kukat, tölkki tai mikrofoni."));
     }
     if let Some(rest) = strip_keyword(tag, &["hahmo", "suunta", "view"]) {
         let v = match lower(rest).as_str() {
@@ -280,6 +333,7 @@ pub fn parse(text: &str) -> ScriptPlan {
     let mut pending_view: Option<View> = None;
     let mut pending_phone: Option<PhoneView> = None;
     let mut pending_camera: Option<CameraHint> = None;
+    let mut pending_prop: Option<Option<String>> = None;
     let mut pending_line = 0;
 
     for (index, raw) in text.lines().enumerate() {
@@ -319,6 +373,7 @@ pub fn parse(text: &str) -> ScriptPlan {
         for tag in &tags {
             match classify(tag) {
                 Ok(Tag::Phone(v)) => pending_phone = Some(v),
+                Ok(Tag::Prop(p)) => pending_prop = Some(p),
                 Ok(Tag::View(v)) => pending_view = Some(v),
                 Ok(Tag::Background(id)) => pending_bg = Some(id),
                 Ok(Tag::Camera(c)) => pending_camera = Some(c),
@@ -338,7 +393,7 @@ pub fn parse(text: &str) -> ScriptPlan {
                 }
             }
         }
-        if !tags.is_empty() && (pending_bg.is_some() || pending_view.is_some() || pending_phone.is_some() || pending_camera.is_some()) {
+        if !tags.is_empty() && (pending_bg.is_some() || pending_view.is_some() || pending_phone.is_some() || pending_camera.is_some() || pending_prop.is_some()) {
             pending_line = line_no;
         }
         if !line_ok {
@@ -392,9 +447,10 @@ pub fn parse(text: &str) -> ScriptPlan {
             view: pending_view.take(),
             phone: pending_phone.take(),
             camera: pending_camera.take(),
+            prop: pending_prop.take(),
         });
     }
-    if pending_bg.is_some() || pending_view.is_some() || pending_phone.is_some() || pending_camera.is_some() {
+    if pending_bg.is_some() || pending_view.is_some() || pending_phone.is_some() || pending_camera.is_some() || pending_prop.is_some() {
         plan.diagnostics.push(Diagnostic::error(pending_line, "Lisää kuvakulmaohjeen jälkeen puhetta tai liike."));
     }
     if plan.beats.is_empty() && !plan.diagnostics.iter().any(|d| d.severity == Severity::Error) {
@@ -430,6 +486,9 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
         }
         if let Some(hint) = beat.camera {
             timeline.push(t, d, EventKind::Camera { hint }, span.clone());
+        }
+        if let Some(item) = &beat.prop {
+            timeline.push(t, d, EventKind::Prop { character: beat.speaker.clone(), item: item.clone() }, span.clone());
         }
         if !beat.text.is_empty() {
             timeline.push(t, d, EventKind::Dialogue { speaker: beat.speaker.clone(), text: beat.text.clone() }, span.clone());
@@ -498,6 +557,11 @@ mod tests {
         assert_eq!(plan.beats[0].speaker.as_deref(), Some("Pipsa"));
         assert_eq!(plan.beats[0].motion, MotionKind::PhoneTap);
         assert_eq!(plan.beats[0].camera, Some(CameraHint::Insert));
+        let props = parse("PIPSA: Kahvia! [esine kahvikuppi]\n[esine pois]\nPIPSA: Valmis.");
+        assert_eq!(props.beats[0].prop, Some(Some("mug".to_string())));
+        assert_eq!(props.beats[1].prop, Some(None));
+        let bad = parse("PIPSA: Hei! [esine lohikäärme]");
+        assert!(bad.diagnostics.iter().any(|d| d.severity == Severity::Error && d.message.contains("lohikäärme")));
         for (word, hint) in [("kaksikko", CameraHint::TwoShot), ("olan yli", CameraHint::OverShoulder), ("alakulma", CameraHint::LowAngle), ("yläkulma", CameraHint::HighAngle)] {
             assert_eq!(parse(&format!("[kuva {word}]\nPIPSA: Hei!")).beats[0].camera, Some(hint), "{word}");
         }

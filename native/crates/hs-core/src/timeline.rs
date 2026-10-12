@@ -98,6 +98,8 @@ pub enum EventKind {
     Background { id: String },
     CharacterView { view: View },
     Phone { view: PhoneView },
+    /// Hahmo ottaa käteensä esineen (`item`) tai laskee sen pois (`None`).
+    Prop { character: Option<String>, item: Option<String> },
     Camera { hint: CameraHint },
 }
 
@@ -105,7 +107,7 @@ impl EventKind {
     pub fn track(&self) -> TrackKind {
         match self {
             EventKind::Dialogue { .. } => TrackKind::Dialogue,
-            EventKind::Motion { .. } | EventKind::CharacterView { .. } | EventKind::Phone { .. } => {
+            EventKind::Motion { .. } | EventKind::CharacterView { .. } | EventKind::Phone { .. } | EventKind::Prop { .. } => {
                 TrackKind::Motion
             }
             EventKind::Camera { .. } => TrackKind::Camera,

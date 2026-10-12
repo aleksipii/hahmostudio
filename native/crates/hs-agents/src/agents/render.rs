@@ -4,6 +4,8 @@ use crate::agents::cinematography::ShotKind;
 use crate::production::{Backend, RenderRequest};
 use crate::{AgentError, AgentReport, Production, Slot, StudioAgent};
 use glam::Vec3;
+use hs_core::EventKind;
+use hs_motion::Side;
 use hs_character::{CharacterMesh, RenderStyle};
 use hs_render::cpu::CpuRenderer;
 use hs_render::export::{self, Mp4Writer, MAX_PNG_SEQUENCE};
@@ -16,6 +18,8 @@ use std::sync::Arc;
 #[derive(Default)]
 pub struct FrameBuilder {
     environments: HashMap<String, Arc<CharacterMesh>>,
+    /// Käteen otetut esineet (hahmon osoite, esine) → verkko.
+    held: HashMap<(usize, String), Arc<CharacterMesh>>,
 }
 
 impl FrameBuilder {
@@ -26,7 +30,6 @@ impl FrameBuilder {
         let env_id = camera.background_at(t).to_string();
         let env = self.environments.entry(env_id.clone()).or_insert_with(|| Arc::new(environment::build(&env_id))).clone();
         let (cam, lights, _) = camera.camera_at(t, width as f32 / height as f32);
-        let floor = environment::clear_color(&env_id);
         let mut items = vec![DrawItem::rigid(env)];
         let frames: Vec<_> = p.motion.iter().map(|m| m.evaluate(tl, t)).collect();
         // Keskustelu: puhuja ja kumppani kääntyvät hieman toisiaan kohti (sitcom-lavastus),
@@ -70,10 +73,49 @@ impl FrameBuilder {
                 }
             }
             let skeleton = &member.character.humanoid.skeleton;
-            let shadow_floor = if env_id == "studio-v1" { [0x3c, 0x52, 0x66] } else { floor };
+            let shadow_floor = environment::floor_color(&env_id);
             let scale = 1.0 / (1.0 + f.root.y * 2.5);
             items.push(DrawItem::rigid(Arc::new(props::contact_shadow(Vec3::new(f.root.x, 0.0, f.root.z), member.character.humanoid.proportions.height * 0.22 * scale, shadow_floor))));
-            items.push(DrawItem::skinned(member.mesh.clone(), skeleton.skin_matrices(&f.pose)).with_outline(member.character.params.extras.outline));
+            let skin = skeleton.skin_matrices(&f.pose);
+            // Esine oikeassa kädessä: viimeisin [esine ...] -ohje tälle hahmolle.
+            let lead = std::ptr::eq(member, &p.cast[0]);
+            let item = tl
+                .events
+                .iter()
+                .filter(|e| e.start.seconds() as f32 <= t)
+                .filter_map(|e| match &e.kind {
+                    EventKind::Prop { character, item } => {
+                        let mine = match character {
+                            Some(c) => c.eq_ignore_ascii_case(&member.character.params.name),
+                            None => lead,
+                        };
+                        mine.then_some((e.start, item))
+                    }
+                    _ => None,
+                })
+                .max_by_key(|(start, _)| *start)
+                .and_then(|(_, item)| item.clone());
+            if let Some(id) = item {
+                let arm = humanoid.arm(Side::Right);
+                let key = (Arc::as_ptr(&member.character) as usize, id.clone());
+                let mesh = match self.held.get(&key) {
+                    Some(m) => Some(m.clone()),
+                    None => {
+                        let wrist = skeleton.bind_positions()[arm.hand];
+                        let s = Side::Right.sign();
+                        let palm = wrist + Vec3::new(-s * arm.hand_len * 0.02, -arm.hand_len * 0.26, 0.0);
+                        props::held(&id, palm, s).map(|m| {
+                            let m = Arc::new(m);
+                            self.held.insert(key, m.clone());
+                            m
+                        })
+                    }
+                };
+                if let Some(mesh) = mesh {
+                    items.push(DrawItem { mesh, skin: vec![skin[arm.hand]], outline: true });
+                }
+            }
+            items.push(DrawItem::skinned(member.mesh.clone(), skin).with_outline(member.character.params.extras.outline));
             if let Some(phone) = &f.props.phone {
                 items.push(DrawItem::rigid(Arc::new(props::phone(phone))).with_outline(true));
             }
