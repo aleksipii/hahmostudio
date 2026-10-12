@@ -1,0 +1,30 @@
+✔ model is not present or downloaded until download is called; manifest records hashes and survives verify (311.273959ms)
+✔ failed or cancelled download leaves no partial model (8.055791ms)
+✔ a pinned hash mismatch rejects the model and tampering is detected on verify (17.313625ms)
+✔ service validates requests, serializes, refuses without model and releases the engine on cancel (25.525416ms)
+✔ speed cues are interpreted, unsupported emotions become notices and are never guessed (1.313666ms)
+✔ language gate: Finnish lines are not voiced by an English voice (0.4565ms)
+✔ synthesis: label, cache, one-line regeneration, notices and own audio protection (test engine, no network) (29.693417ms)
+✔ missing voice, Finnish text and cancellation do not synthesize (1.096625ms)
+✔ AudioClip.synthetic is optional and validated (20.2535ms)
+✔ binding kokoroVoice is optional, validated and survives a JSON roundtrip (2.729333ms)
+✔ KILSAT has exactly the original 18 ordered English lines, two speakers, six editorial sections and protected pauses (83.344292ms)
+✔ Markdown wrappers, CRLF, dash variants, escaped line endings and explicit speaker aliases preserve dialogue and original source (5.058833ms)
+✔ long clips produce explicit timing conflicts, preserve protected holds, never overlap and no dialogue is shortened (50.30475ms)
+✔ phone-other-phone gaze occupies the protected silent beat; dead stare holds precede actual voice and opening WIDE has its own cut (21.376083ms)
+✔ mouth comes only from linked audio; listener and protected dead stare keep resting mouths; phone carrier is unchanged by cuts (30.461834ms)
+✔ rebuild retains stable IDs, clips and locked events, reports changed locked timing, and append does not duplicate or change old tracks (47.954166ms)
+✔ v3 archives roundtrip original base project, actor PSDs, role maps, actual audio links and compiled actor timelines; malformed references reject (128.982125ms)
+✔ near-side arm renders after torso in both profiles and existing PSD IDs remain stable; centering fits moving bounds inside recommended safe area (39.633125ms)
+✔ frame-rate changes preserve seconds, dialogue lengths and holds and reject truncation (264.858333ms)
+✔ unfinished preparation roundtrips without fabricated audio and keeps original script and cast resources (116.666917ms)
+✔ updating the final scene can shorten the timeline; updating earlier timing cannot displace a later scene (66.983792ms)
+✔ recorded face cannot replace audio mouth timing; mirrored actor placement controls gaze direction (32.677667ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1438.647625

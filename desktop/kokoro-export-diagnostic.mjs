@@ -15,6 +15,7 @@ export async function kokoroExportDiagnostic(window,directory,{packaged=false}={
  try{
   await js(`(()=>{const t=document.querySelector('textarea.script-editor-field')||document.querySelector('#dialogue-script');if(!t)throw Error('Script missing');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(t,${JSON.stringify(script)});t.dispatchEvent(new Event('input',{bubbles:true}));})()`);
   await sleep(2000);await click('Rakenna jakso');await wait("document.body.innerText.includes('Jakso rakennettu')",'English episode');
+  await wait("!!document.querySelector('.tarina-review-toggle')",'review toggle');await js("document.querySelector('.tarina-review-toggle').click()");
   await wait("!!document.querySelector('.kokoro-voices select')",'voice selector');
   await js("(()=>{const e=document.querySelector('.kokoro-voices select');e.value='af_heart';e.dispatchEvent(new Event('change',{bubbles:true}));})()");await sleep(1000);
   await click('Tuota ääninauha');await wait("document.querySelector('.kokoro-panel').innerText.includes('1 riviä tuotettu')",'real voice committed',180);
