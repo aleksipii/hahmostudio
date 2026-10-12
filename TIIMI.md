@@ -349,3 +349,13 @@ Uusi todennus: npm test 1402/1402, typecheck ja desktop:build läpi. Generoidull
 Lisätty scripts/control-inventory.mjs: 732 JSX-määrittelyä, 313 painiketta. Inventointi ei ole toimintatesti, ei kata natiiveja valikkoja. Tarkka aineisto docs/tiimi/todennus/audit-20261012/. Tämän jatkon sovelluslähdettä ei muutettu.
 
 Seuraava: palikkaeditorin ja tallennuspainikkeiden käyttäytymistestit, commitSource undefined/tyhjä-vertailun tarkistus, Kokoro IPC ja vientisynkka, runtime-paketointi + DMG, fyysiset laitteet ja VoiceOver. Vapaata levytilaa noin 2,8 GiB; quota-helper ei palauttanut kiintiötä, ei päätelty prosenttia. Työhaara on keskeneräinen; päähaaroihin ei yhdistetä paketointikorjausta ennen todennusta.
+
+## Codex palikka-agentti → Claude: GUI-testin checkpoint 12.10.2026 (KESKEN)
+
+Lähtö f4f2ea8, työhaara codex/block-drag-2026-10-12. Lisätty desktop/block-diagnostic.mjs ja workflow-diagnostiikkaan vain HAHMOSTUDIO_BLOCK_ACCEPTANCE=1-ehdollinen valinta; npm run desktop:test:blocks. Tuotantopalikoiden logiikkaa ei muutettu. Testi lähettää CDP:n kautta oikeat selaimen pointertapahtumat, tarkistaa tauon jakoon siirron, Alt-pudotuksen Samalla-rivin ja yhteisen alkuajan, pysyvän snapshotin sekä undo/redo-lähteet. Ei uusia renderer-IPC:tä, fyysisiä laitteita tai VoiceOveria.
+
+Todettu: nykyisessä keskialueessa textarea.script-line-field rivieditori; rivinvaihdot yhden kentän syötteessä poistetaan. Testifixture syötetään nyt riveittäin. Palettirivin selite erotetaan otsikon spanista. Kolme kehityksen GUI-ajoa päättyi testikohdistusten virheisiin, EI hyväksyttyä raahaustulosta. Viimeinen näiden kohdistusten korjaus odottaa GUI-vuoroa Kokoro-agentin jälkeen.
+
+Testit: node --check desktop/block-diagnostic.mjs läpi; node --experimental-strip-types --test lib/blocks.test.ts 10/10 läpi, 0 ohitusta. Aineisto docs/tiimi/todennus/block-20261012/. block-report.json/workflow-report.json ovat viimeisen epäonnistuneen kohdistusajon raportteja; README erottaa lähteestä todetun, ehdotukset ja avoimen.
+
+Claude jatkaa: varmista node_modules, dist-desktop ja .private-runtime saatavilla, rakenna lähde tarvittaessa npm run desktop:build; aja npm run desktop:test:blocks yksin (GUI-vuoro sovittava muiden agenttien kanssa). Vaadi molempien JSON-raporttien ok=true ja actual check-tulokset. Jos epäonnistuu, tutki block-failed.png, lähdeteksti ja blocks-metadata. Korjaa testikohdistus tai todettu tuotekoodiongelma erikseen; älä väljennä hyväksymisehtoa. Push työhaara, ei main-merge ennen koko todennusta. Omistus uusi desktop/block-diagnostic.mjs, workflow-diagnostic.mjs vain ehdollinen import-rivi, package.json testikomento ja tämän auditoinnin aineisto. Symlinkit ja testin eristetty userData eivät kuulu Gitiin.
