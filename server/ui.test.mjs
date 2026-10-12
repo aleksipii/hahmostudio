@@ -103,3 +103,10 @@ test('Roolituksen näyttämöasetukset ovat suljetussa ryhmässä ja ympäristö
  const split=html.indexOf('<details class="stage-options is-compact"');assert.ok(split>0);assert.ok(html.slice(0,split).includes('aria-label="Kuvausympäristö"'));assert.ok(!html.slice(0,split).includes('aria-label="Videon muoto"'));assert.doesNotMatch(html.slice(split),/^<details[^>]*\sopen/);assert.ok(html.slice(split).includes('aria-label="Videon muoto"'));
  const normal=renderToStaticMarkup(React.createElement(ScenePanel,{scene:createScene(doc,1080,1920),doc,disabled:false,update:()=>{}}));assert.match(normal,/<details class="stage-options" open/);
 });
+
+test('dialogue recorder names its action explicitly and keeps status feedback separate',async()=>{
+ const {default:DialogueRecorder}=await import('../components/dialogue-recorder.tsx');
+ const html=renderToStaticMarkup(React.createElement(DialogueRecorder,{disabled:false,recorded:async()=>{},busy:()=>{}}));
+ assert.match(html,/<button[^>]*aria-label="Äänitä repliikki omalla äänellä"/);
+ assert.match(html,/<p role="status">/);
+});

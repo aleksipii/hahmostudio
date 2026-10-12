@@ -35,6 +35,10 @@ export async function workflowDiagnostic(window,directory,{packaged=false}={}){
   const generatedAudio=()=>js(`(()=>{const context=new AudioContext(),source=context.createOscillator(),gain=context.createGain(),destination=context.createMediaStreamDestination();source.frequency.value=220;gain.gain.value=.03;source.connect(gain);gain.connect(destination);source.start();window.__workflowAudio={context,source,stream:destination.stream,calls:0};Object.defineProperty(navigator.mediaDevices,'getUserMedia',{configurable:true,value:async constraints=>{if(!constraints.audio||constraints.video)throw Error('Unexpected media request');window.__workflowAudio.calls++;await context.resume();return destination.stream;}});})()`);
   await generatedAudio();
   await click('Äänitä repliikki omalla äänellä');await wait("!!document.querySelector('.production-audio-dock.is-recording')&&document.querySelector('.production-audio-dock .performance-panel .dialogue-recorder').textContent.includes('Lopeta ja käytä')",'recording');
+  const recordingNameBefore=await js("(()=>{const b=document.querySelector('.production-audio-dock .performance-panel .dialogue-recorder button');return {label:b?.getAttribute('aria-label'),text:b?.textContent};})()");
+  await sleep(250);
+  const recordingNameAfter=await js("(()=>{const b=document.querySelector('.production-audio-dock .performance-panel .dialogue-recorder button');return {label:b?.getAttribute('aria-label'),text:b?.textContent};})()");
+  check('recording action name stays stable while elapsed time changes',recordingNameBefore.label==='Lopeta ja käytä repliikki'&&recordingNameAfter.label===recordingNameBefore.label&&recordingNameAfter.text!==recordingNameBefore.text,{before:recordingNameBefore,after:recordingNameAfter});
   await js("window.__workflowRecorder=document.querySelector('.production-audio-dock .performance-panel .dialogue-recorder');window.__workflowDock=document.querySelector('.production-audio-dock.is-recording')");
   for(const step of ['shot','storyboard','characters','timeline','workshop','script']){
    await phase(step);
@@ -45,6 +49,7 @@ export async function workflowDiagnostic(window,directory,{packaged=false}={}){
   await click('Hylkää äänitys');await wait("!document.querySelector('.production-audio-dock.is-recording')",'cancel');
   check('cancel restores microphone status',await js("document.querySelector('.device-status')?.textContent.includes('Mikrofoni: pois')"));
   check('cancel releases audio track',await js("window.__workflowAudio.stream.getAudioTracks().every(t=>t.readyState==='ended')"));
+  check('cancel restores idle recording action name',await js("document.querySelector('.production-audio-dock .performance-panel .dialogue-recorder button')?.getAttribute('aria-label')==='Äänitä repliikki omalla äänellä'"));
   check('cancel preserves recorder and reports cancellation',await js("document.querySelector('.production-audio-dock .performance-panel .dialogue-recorder')===window.__workflowRecorder&&document.querySelector('.production-audio-dock .performance-panel .dialogue-recorder').textContent.includes('Äänitys peruttiin')"));
   await js("window.__workflowAudio.source.stop();window.__workflowAudio.context.close()");
   if(process.env.HAHMOSTUDIO_AUDIO_ACCEPTANCE==='1'){

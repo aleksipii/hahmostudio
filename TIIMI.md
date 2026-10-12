@@ -395,3 +395,19 @@ Valmis: paikallinen runtime `npm run kokoro:prepare` exit0, 56 koodiriippuvuutta
 Tarkistettu: node --check kolmelle testitiedostolle, git diff --check läpi. Ensimmäinen ajo pysähtyi olemassa olevan yleisworkflow'n ensimmäiseen capturePageen (ei kuvaa valmistunut), vain oma Electron PID8989 lopetettiin. Kokoro-only haara ohittaa muiden aiemmin testattujen viewport/äänitystestien ajon. Uusi ajo on käynnissä; EI vielä vientisynkan hyväksyntää. Komento: HAHMOSTUDIO_KOKORO_MODEL_DATA='/Users/Aleksi/Library/Application Support/hahmostudio' HAHMOSTUDIO_KOKORO_EXPORT_ACCEPTANCE=1 HAHMOSTUDIO_WORKFLOW_OUTPUT=/private/tmp/koeta-kokoro-export-only-20261012 npm run desktop:test:workflow. Loki /private/tmp/koeta-kokoro-export-only-20261012.log. Tarkista tuore workflow-report.json ja kokoro-export-report.json ok ennen väitteitä. Generoitu WAV ja MP4 pysyvät Gitin ulkopuolella.
 
 Seuraava: korjaa vain diagnostisen ajon todellinen epäonnistunut ehto tarvittaessa, aja loppuun, säilytä JSON/loki (ei WAV/MP4 Gitissä), varmista paketoitu ajo erikseen Mac-agentin lopullisesta .app:sta. Fyysiset laitteet, VoiceOver ja ihmisen kuulohavainto jäävät erikseen avoimiksi. Kiintiöhelper: 65% primary300min jäljellä, viikko95%; ei checkpoint-kynnystä. Tämä checkpoint on käyttäjän Claude-jatkon varmistus, ei valmis päähaarajulkaisu.
+
+## Laitteet/VoiceOver-agentti → Claude 12.10.2026
+
+Työhaara `codex/devices-voiceover-2026-10-12`, lähtö `f547274`. Eristetty klooni `/private/tmp/hahmostudio-accessibility-20261012`; käyttäjän alkuperäiseen projektiin tai asennettuun sovellukseen ei koskettu.
+
+Koodista todettu: DialogueRecorderin saavutettavuusnimi vaihtui näkyvän ajan mukana 100 ms välein. Korjattu vaihekohtaisella vakaalla aria-labelillä; näkyvä sekuntimäärä ja erillinen statusilmoitus säilyvät. Nimen vaihtuminen on lähteestä todettu, VoiceOverin käytännön haittaa ei kuunneltu. Omistetut tiedostot: components/dialogue-recorder.tsx, lib/dialogue-recorder-label.ts ja sen testi, server/ui.test.mjs:n uusi tallentimen renderöintitesti. Rootin luvalla desktop/workflow-diagnostic.mjs:ään lisätty kaksi DOM-väitettä: aika muuttuu mutta saavutettavuusnimi ei, hylkäys palauttaa idle-nimen. Nämä uudet GUI-väitteet odottavat rootin integroitua lähdebuildiä/pakettia; ei testata vanhaa distiä.
+
+Suoritetut komennot/tulokset:
+- `npm run typecheck`: läpi.
+- `node --experimental-strip-types --test lib/dialogue-recorder-label.test.ts lib/microphone.test.ts desktop/policy.test.mjs`: 17/17 läpi, 0 ohitusta.
+- `node --experimental-strip-types --test server/ui.test.mjs`: 47/47 läpi, 0 ohitusta; renderöintitestit ilman selainta/laitteita.
+- `node --check desktop/workflow-diagnostic.mjs`: läpi; syntaksitarkistus ei ole GUI-ajo.
+
+Lähdeauditoinnin modal-/fokushavainnot, ehdotukset ja avoimet kysymykset ovat docs/tiimi/MAC-LAITTEET-VOICEOVER.md:n lopussa taulukkona. CommandPalette, CloudRenderDialog, RigSuggestDialog ja RecoveryPromptModal eivät paikallisesti toteuta Tab-rajausta; toiminnallinen vaikutus ja taustan mahdollinen muu estäminen tarkistettava GUIssa. PanelDockin hostin säilyminen ei yksin todista kohdistuksen säilymistä hostin siirrossa. Ei laajaa fokuksenhallinnan muutosta ilman todennettua tapausta.
+
+Claude jatkaa: 1) lue rootin viimeisin integraatiokirjaus ja tarkista tämän haaran commit/diff, 2) rakenna tämän muutoksen sisältävä lähde ja aja workflow; tarkista kaksi uutta nimiväitettä raportista, 3) testaa Tab/Shift+Tab ja modalin sulkemisen jälkeinen fokus eristetyllä projektilla, 4) pyydä käyttäjän fyysiset laite- ja VoiceOver-havainnot uudella paketilla. Näitä käsitestejä ei merkitä hyväksytyiksi synteettisellä ääniviralla. Mallipainoja, käyttäjän ääntä, käyttöoikeuksia ja OS-asetuksia ei muutettu. Tämä työhaara ei yksin merkitse uutta DMG:tä tai päähaarojen yhdistämistä valmiiksi.
