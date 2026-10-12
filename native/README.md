@@ -11,7 +11,11 @@ hs-core       aikapohja (tikit), aikajana, diagnostiikka         ← ei riippuvu
 hs-script     käsikirjoitusjäsennin (tagit → aikajana)
 hs-motion     luuranko, IK, 5-sormiset kädet, kävely/juoksu, toisioliike
 hs-character  parametrinen 3D-hahmo (mitat, kasvot, vaatteet)
-hs-render     wgpu-GPU ja CPU-renderöijä, lavasteet, PNG/MP4-vienti
+hs-render     wgpu-GPU ja CPU-renderöijä, ääriviivat, lavasteet, esineet, PNG/MP4-vienti
+hs-lipsync    visemit (Adobe Characterin tapaan) äänteistä tai äänestä
+hs-voice      Kokoro-82M puhtaalla Rustilla (candle), mallivarasto, välimuisti
+hs-audio      toisto, mikrofoni ja reaaliaikainen suu (cpal)
+hs-camera     kamera ja pään seuranta (nokhwa, puhdas Rust, offline)
 hs-hahmo      nykyisten .hahmo-projektien luku ja 2D-piirto
 hs-agents     StudioAgent-trait ja agenttiputki
 hs-cli        hahmostudio-cli (headless)
@@ -22,7 +26,10 @@ hs-app        hahmostudio (egui/eframe-työpöytäsovellus)
 
 | Agentti | Lukee | Kirjoittaa | Tehtävä |
 | --- | --- | --- | --- |
-| `ScriptParserAgent` | Script | Timeline | Tagit aikajanan tapahtumiksi, rivikohtaiset huomautukset |
+| `ScriptParserAgent` | Script | Plan | Tagit riveiksi, rivikohtaiset huomautukset |
+| `VoiceAgent` | Plan, CastParams, Voice | Audio | Kokoro-puhe tai oma äänitys riveille; ei arvaa puuttuvaa ääntä |
+| `TimingAgent` | Plan, Audio | Timeline | Rivi kestää vähintään puheensa verran; leikkeet miksataan |
+| `LipSyncAgent` | Timeline | LipSync | Visemit leikkeittäin (välimuistissa) |
 | `CharacterMeshAgent` | Timeline, CastParams | Cast | Hahmot parametreista (rakentaa vain muuttuneet) |
 | `ProceduralMotionAgent` | Timeline, Cast | Motion | Tilaton liikefunktio jokaiselle hahmolle |
 | `CinematographyAgent` | Motion | Camera | Otokset, leikkaukset, ajot, kolmipistevalo |
@@ -43,18 +50,35 @@ cargo run --release -p hs-cli -- mittaa
 cargo test --workspace
 ```
 
+Puhemalli ladataan kerran luvalla (Ääni-välilehti tai `hahmostudio-cli ääni lataa`,
+noin 330 MiB, Apache-2.0) tai tuodaan kansiosta (`ääni tuo <kansio>`); sen jälkeen
+kaikki toimii ilman verkkoa. Malli tallentuu `~/Library/Application Support/hahmostudio/kokoro`
+(muualla XDG-datahakemisto, tai `HAHMOSTUDIO_DATA_DIR`). Linuxissa käännös tarvitsee
+`libasound2-dev`-paketin.
+
 MP4-vienti käyttää FFmpegiä (`PATH` tai `HAHMOSTUDIO_FFMPEG`). Linuxissa ilman
 näytönohjainta GPU-polun voi testata Mesan lavapipellä: `WGPU_BACKEND=vulkan`.
 
 Käsikirjoitusesimerkki:
 
 ```text
-[tausta studio]
-PIPSA: Hei! Tervetuloa mukaan. [vilkuta 2s]
-[juokse oikealle 2s]
-PIPSA: Laitan viestin. [näpyttele puhelinta 3s]
-[tausta kaupunki ilta]
-VILLE: Nähdään! [hyppää]
-[kuva lähikuva]
-PIPSA: Moikka! [nyökkää 2s]
+[tausta olohuone]
+[kuva laaja]
+KALLE: Hei kaikki, jakso alkaa! [vilkuta 2s]
+[kuva kaksikko]
+MAIJA: Taasko sinä puhut kameralle? [odota 2s]
+[kuva olan yli]
+[esine kahvikuppi]
+KALLE: Ne rakastavat minua. [nyökkää 2s]
+[kuva alakulma]
+EETU: Minä haluan olla tähti! [hyppää]
+[tausta puisto]
+RONJA: Laitan tästä viestin. [näpyttele puhelinta 3s]
 ```
+
+Taustat: studio, studio valoisa, olohuone, keittiö, luokka, puisto, katu, kaupunki ilta,
+autot ja puhelin. Kuvaohjeet: laaja, puolilähi, lähikuva, insertti, kaksikko, olan yli,
+alakulma, yläkulma. Esineet: kahvikuppi, pizza, kirja, lahja, pallo, kukat, tölkki,
+mikrofoni, pois. Tuntematonta ohjetta ei arvata, vaan siitä tulee rivikohtainen virhe.
+Vienti on oletuksena pystymuodossa 1080×1920 (TikTok, Instagram Reels, YouTube Shorts);
+`--koko 1920x1080` tekee vaakavideon YouTubeen.

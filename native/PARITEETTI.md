@@ -23,12 +23,12 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | 2D-tasojen piirto | `psd-render.ts` | `hs-hahmo` (normaali sekoitus) | 🟡 ei ryhmäeristystä eikä muita sekoitustiloja |
 | Avainruutueditori, liitokset, nivelet | `components/`, `rig-model.ts` | — | ❌ |
 | Esitys/Production-malli, lukitukset, hyväksynnät | `presentation-*.ts`, `production-*.ts` | — | ❌ |
-| MP4-vienti | WebCodecs + työpöydän ExportQueue (FFmpeg/VideoToolbox) | `hs-render::export` (FFmpeg, 30 fps, 60 s, 128 MiB) | 🟡 ei ääntä, ei VideoToolbox-koetta |
+| MP4-vienti | WebCodecs + työpöydän ExportQueue (FFmpeg/VideoToolbox) | `hs-render::export` (FFmpeg, 30 fps, 60 s, 128 MiB, AAC-ääni) | 🟡 ei VideoToolbox-koetta |
 | PNG-sarja (≤300 ruutua) | `animation-export.ts` | `hs-render::export` | ✅ |
-| Ääniraita: repliikit, tehosteet, musiikki, kaiku | `presentation-audio.ts`, `soundtrack.ts`, `sound-cues.ts` | — | ❌ |
-| Kokoro-puhesynteesi ja vientisynkka | `lib/kokoro.ts`, `desktop/` | — | ❌ |
-| Mikrofoni, äänitys, Rhubarb-visemit, whisper.cpp | `microphone.ts`, `desktop/` | — | ❌ |
-| Kamera ja kasvojenseuranta (MediaPipe) | `face-motion.ts` | — | ❌ |
+| Ääniraita: repliikit, tehosteet, musiikki, kaiku | `presentation-audio.ts`, `soundtrack.ts`, `sound-cues.ts` | `hs-agents::voice` (repliikit miksattuna 48 kHz, pehmeä rajoitin) | 🟡 tehosteet, musiikki ja kaiku puuttuvat |
+| Kokoro-puhesynteesi ja vientisynkka | `lib/kokoro.ts`, `desktop/` | `hs-voice` (Kokoro-82M puhtaalla Rustilla: candle + loqui-g2p, Metal Macilla; samat ohjesäännöt, välimuisti, oma ääni etusijalla; lataus luvalla, tuonti, poisto) | 🟡 aitoa mallia ei ole ajettu (pilvi estää Hugging Facen); kuuntelu Macilla |
+| Mikrofoni, äänitys, Rhubarb-visemit, whisper.cpp | `microphone.ts`, `desktop/` | `hs-audio` (cpal: toisto, äänitys), `hs-lipsync` (10 visemiä äänteistä tai äänestä, Adobe Characterin tapaan) | 🟡 whisper.cpp puuttuu; mikrofoni testaamatta oikealla laitteella |
+| Kamera ja kasvojenseuranta (MediaPipe) | `face-motion.ts` | `hs-camera` (nokhwa-kaappaus, pään kääntö/nyökkäys/kallistus ihonvärin ja CamShiftin avulla) | 🟡 ei kasvopisteitä (silmät, kulmat); kamera testaamatta oikealla laitteella |
 | Palautus: autosave, revisiot, keskeytetty renderöinti | `desktop/`, `lib/studio/recovery*.ts` | — | ❌ |
 | Pilvirenderöinti (opt-in, nollakustannus) | `lib/cloud-render/`, `desktop/cloud-*.mjs` | — | ❌ |
 | Tuotantonäkymät: kommentit, tehtävät, työjono, CSV | `lib/studio/` | — | ❌ |
@@ -50,13 +50,25 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | RustRenderAgent: wgpu-GPU + CPU-varapolku samalla varjostusmallilla, headless-vienti | `hs-render` | ✅ ➕ |
 | 3D-lavasteet nykyisille taustatunnisteille | `hs-render::environment` | 🟡 yksinkertaistetut |
 | egui/eframe-työpöytäsovellus: käsikirjoitus, näyttämö, aikajana, hahmosäätimet, agenttien tila, vienti taustalla | `hs-app` | 🟡 |
-| Komentorivi: tarkista, renderöi, hahmo, mittaa | `hs-cli` | ✅ |
+| Komentorivi: tarkista, renderöi, hahmo, mittaa, ääni (tila/lataa/tuo/poista), sano, huulisynkka | `hs-cli` | ✅ |
+| VoiceAgent, TimingAgent, LipSyncAgent: puhe pidentää rivit, leikkeet miksataan, visemit leikkeittäin | `hs-agents` | ✅ ➕ |
+| Rigattu suu (ylähuuli, suupielet, hampaat, kieli, leuka) ja visemien muodot | `hs-motion::face`, `hs-character` | ✅ ➕ |
+| Ääni- ja Esitys-välilehdet: rivikohtainen äänitys/WAV-tuonti, mikrofonista suu ja kamerasta pää reaaliajassa | `hs-app` | 🟡 testattu Xvfb:ssä ilman laitteita |
+| Sarjakuvaääriviivat (käänteinen kuori) GPU:lla ja CPU:lla | `hs-render` | ✅ ➕ |
+| Sarjan perhe (Kalle, Maija, Eetu, Ronja): isot päät ja silmät, pipo, lippis, lasit, vatsa | `hs-character` | ✅ ➕ alkuperäisiä hahmoja |
+| Kuvaohjeet kaksikko, olan yli, alakulma, yläkulma; laaja kuva rajaa koko joukon; keskustelijat kääntyvät toisiaan kohti | `hs-agents::cinematography` | ✅ ➕ |
+| Esineet käteen `[esine kahvikuppi]` ym. (8 esinettä), lavasteet keittiö, luokka, puisto, katu | `hs-render`, `hs-script` | ✅ ➕ |
 
 ## Tunnetut rajat (rehellisesti)
 
-- Suun liike on tekstin tavuista johdettu arvio, ei visemejä eikä ääneen sidottu.
+- Huulisynkka on ääneen sidottu, kun rivillä on Kokoro-puhe tai oma äänitys; muuten suu liikkuu tekstin äänteiden mukaan.
+- Kokoro puhuu vain englantia (kuten Electron-versiossa); suomenkieliset rivit äänitetään itse.
+- Kameran pään seuranta perustuu ihonväriin: se ei tunnista silmiä tai kulmia, ja
+  valaistus tai ihonvärinen tausta voi häiritä. Kalibrointi ja herkkyys säädetään Esitys-välilehdellä.
 - Natiivisovellus ei vielä tallenna projektia `.hahmo`-muotoon; käsikirjoitus ja
   hahmoparametrit säilyvät sovelluksen omissa asetuksissa ja tekstitiedostona.
 - GPU-polku on testattu Linuxissa Vulkanilla (lavapipe, ohjelmistopohjainen).
   Metal (Mac) ja oikea näytönohjain ovat todentamatta.
 - Käyttöliittymä on testattu Xvfb-ympäristössä kuvakaappauksella, ei Macilla.
+- macOS-käännöstä ei voitu tarkistaa pilvessä (nokhwa ja candle-Metal tarvitsevat Macin SDK:n).
+  Paketoitu sovellus tarvitsee Info.plistiin `NSMicrophoneUsageDescription` ja `NSCameraUsageDescription`.

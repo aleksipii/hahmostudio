@@ -556,3 +556,29 @@ Avoimet:
 Seuraava konkreettinen työ: ääni (Kokoro-WAV + huulisynkka) ja palikkaeditori natiiviin, sitten .hahmo-kirjoitus.
 
 Tiedostot: `native/**`, `.gitignore`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
+
+## Claude: natiivi puhe, huulisynkka, kamera ja piirrostyyli — 12.10.2026 (YHDISTETTY main + hahmostudio1.0)
+
+Työhaara `claude/project-thread-t4mzzw`, yhdistetty fast-forwardina samaan committiin `main`- ja `hahmostudio1.0`-haaroihin ilman force-pushia. Käyttäjän toimeksianto: Kokoro vanhasta mukaan, Family Guyn / South Parkin kaltaiset (alkuperäiset) hahmot, taustat, esineet, kuvakulmat, Adobe Characterin kaltainen huulisynkka, kamera pään liikkeille, offline-työpöytäsovellus.
+
+Tehty (natiivi, `native/`):
+- `hs-voice`: Kokoro-82M puhtaalla Rustilla (candle + loqui-g2p, Metal Macilla), samat puhesäännöt kuin `lib/kokoro.ts`, välimuisti, oma ääni etusijalla, mallin lataus luvalla / tuonti / poisto (`ModelStore`, sha256-manifesti).
+- `hs-lipsync`: 10 visemiä (Adobe Characterin tapaan) äänteistä tai suoraan äänestä; `hs-motion::face` + rigattu suu (ylähuuli, suupielet, hampaat, kieli, leuka).
+- Agentit `VoiceAgent`, `TimingAgent` (rivi kestää vähintään puheen verran, miksaus 48 kHz), `LipSyncAgent`; MP4:ään AAC-ääni.
+- `hs-audio` (cpal): toisto määrää ajan, rivikohtainen äänitys, mikrofonista suu reaaliajassa. `hs-camera` (nokhwa): pään kääntö/nyökkäys/kallistus ihonvärin ja CamShiftin avulla, kalibrointi, peilaus.
+- Studioon välilehdet Käsikirjoitus / Ääni / Esitys, hahmolle ääni, lisävarusteet.
+- Piirrostyyli: ääriviivat GPU:lle ja CPU:lle (käänteinen kuori, sama kaava), sarjan perhe Kalle, Maija, Eetu, Ronja (isot päät ja silmät, pipo, lippis, lasit, vatsa), kuvaohjeet kaksikko / olan yli / alakulma / yläkulma, laaja kuva rajaa koko joukon, keskustelijat kääntyvät toisiaan kohti, `[esine …]` käteen (8 esinettä), lavasteet keittiö / luokka / puisto / katu.
+
+Testattu (Linux-pilvi, Rust 1.97, lavapipe Vulkan, Xvfb):
+- `cd native && WGPU_BACKEND=vulkan cargo test --workspace`: 64 läpi, 0 fail (sis. GPU vs CPU ääriviivoineen, MP4 äänellä ffprobella, kamerakuvakulmat, esineet, pään seuranta synteettisillä kuvilla).
+- `cargo clippy --workspace --all-targets`: 0 varoitusta.
+- `xvfb-run -a -s "-screen 0 1440x900x24" env WGPU_BACKEND=vulkan ./target/debug/hahmostudio --kuvakaappaus x.png --välilehti ääni|esitys`: välilehdet piirtyvät; oma äänitys levyltä pidentää rivin ja ohjaa suuta.
+- `hahmostudio-cli renderöi esimerkki.txt -o jakso.mp4 --koko 540x960 --testipuhe`: h264 + aac, 12.5 s. Kontissa tarvittiin `apt-get install libasound2-dev`.
+
+Ei testattu (vaatii käyttäjän Macin): aito Kokoro-synteesi ja kuuntelu (Hugging Face estetty pilvessä; `hahmostudio-cli ääni lataa && hahmostudio-cli sano --teksti "Hello there"`), Metal, mikrofoni, kamera ja sen käyttölupa, macOS-käännös (nokhwa/candle-Metal tarvitsevat Macin SDK:n). Paketoitu sovellus tarvitsee `NSMicrophoneUsageDescription` ja `NSCameraUsageDescription`.
+
+Avoimet hyväksynnät: hahmojen ulkoasun taiteellinen hyväksyntä; Electronin poisto odottaa `native/PARITEETTI.md`:n pakollisia rivejä (palikkaeditori, jaksorakentaja, .hahmo-kirjoitus, PSD, Mac-paketti ym.). Haarojen poisto pilvestä palauttaa 403, käyttäjä poistaa muut kuin main ja hahmostudio1.0 itse.
+
+Seuraava konkreettinen työ: Macilla `cd native && cargo run --release -p hs-app`, Kokoron lataus ja kuuntelu, mikrofoni- ja kameratesti; sitten .hahmo-kirjoitus natiiviin ja jaksojen tallennus sarjaksi.
+
+Tiedostot: `native/crates/{hs-voice,hs-lipsync,hs-audio,hs-camera}/**`, `native/crates/{hs-agents,hs-app,hs-character,hs-render,hs-motion,hs-script,hs-core,hs-cli}/**`, `native/{README,PARITEETTI}.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
