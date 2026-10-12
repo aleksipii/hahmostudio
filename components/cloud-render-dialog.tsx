@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState} from 'react';import {createPortal} from 'react-dom';
+import {useEffect,useRef,useState} from 'react';import {useDialogFocus} from './use-dialog-focus';import {createPortal} from 'react-dom';
 import type {Presentation} from '../lib/presentation-model';
 import {canonicalFromPresentation} from '../lib/cloud-render/canonical-adapter';
 import {desktop} from '../lib/platform';
@@ -22,6 +22,7 @@ export function AuthorizationCardView({card}:{card:Json}){return <div role="grou
 export default function CloudRenderDialog({presentation,onClose}:{presentation:Presentation|null;onClose:()=>void}){
  const [health,setHealth]=useState<Json|null>(null),[error,setError]=useState(''),[canon,setCanon]=useState<Json|null>(null),[scene,setScene]=useState(''),[suggestion,setSuggestion]=useState<Json|null>(null),[workflows,setWorkflows]=useState<Json[]>([]),[workflow,setWorkflow]=useState('text_to_image'),[job,setJob]=useState<Json|null>(null),[busy,setBusy]=useState(false),[backends,setBackends]=useState<Json[]>([]),[card,setCard]=useState<Json|null>(null),[smoke,setSmoke]=useState<Json|null>(null),[refChar,setRefChar]=useState(''),[sources,setSources]=useState<Record<string,string>>({}),[refMsg,setRefMsg]=useState('');
  const box=useRef<HTMLDivElement>(null);
+ useDialogFocus(box);
  useEffect(()=>{box.current?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape')onClose();};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[]);
  useEffect(()=>{void(async()=>{const off=desktop()?'Pilvirenderöinti ei ole käytössä. Ota se käyttöön Tekoäly-paneelista (Näytä → Tekoäly…).':'Pilvirenderöinti ei ole käytössä tällä palvelimella (käynnistä yksityinen palvelin asetuksella HAHMOSTUDIO_CLOUD_RENDER=1).';try{const h=await api('GET','/api/health');if(h.status!==200){setError(off);return;}setHealth(h.body);const b=await api('GET','/api/backends');setBackends(b.body.backends??[]);setWorkflows((b.body.workflows??[]).filter((w:Json)=>w.implemented));}catch(e){setError(desktop()?(e as Error).message||off:off);}})();},[]);
  useEffect(()=>{if(!job||['COMPLETED','BLOCKED','FAILED','CANCELLED'].includes(job.state))return;const t=setTimeout(async()=>{const r=await api('GET','/api/render/'+job.job.id);if(r.status===200)setJob(r.body);},1500);return()=>clearTimeout(t);},[job]);

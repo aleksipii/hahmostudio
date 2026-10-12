@@ -1,0 +1,9 @@
+npm test (Linux-kontti, 12.10.2026, Claude). Ohitus: natiivi FFmpeg puuttuu kontista.
+# tests 1405
+# pass 1404
+# fail 0
+# skipped 1
+ok 74 - real FFmpeg decodes all exported frames and rejects truncation, wrong counts and missing audio # SKIP Bundled native FFmpeg unavailable in this environment
+
+npm run typecheck: exit 0
+npm run build:private: exit 0

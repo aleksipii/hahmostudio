@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useDialogFocus } from './use-dialog-focus';
 
 export type PaletteCommand = {
   id: string;
@@ -16,15 +17,14 @@ export default function CommandPalette({ open, commands, onClose }: { open: bool
   const [index, setIndex] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLDivElement>(null);
-  const restore = useRef<HTMLElement | null>(null);
+  const dialog = useRef<HTMLDivElement>(null);
+  useDialogFocus(dialog, open);
 
   useEffect(() => {
     if (!open) return;
-    restore.current = document.activeElement as HTMLElement | null;
     setQuery('');
     setIndex(0);
     requestAnimationFrame(() => input.current?.focus());
-    return () => restore.current?.focus?.();
   }, [open]);
 
   const results = useMemo(() => {
@@ -52,7 +52,7 @@ export default function CommandPalette({ open, commands, onClose }: { open: bool
 
   return (
     <div className="s2-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="s2-palette" role="dialog" aria-modal="true" aria-label="Hae toimintoa">
+      <div ref={dialog} className="s2-palette" role="dialog" aria-modal="true" aria-label="Hae toimintoa" onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); } }}>
         <input
           ref={input}
           role="combobox"
