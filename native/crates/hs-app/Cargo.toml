@@ -1,5 +1,25 @@
 [package]
 name = "hs-app"
+description = "Hahmostudio natiivina työpöytäsovelluksena (egui/eframe + wgpu)"
 version.workspace = true
 edition.workspace = true
-publish = false
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "hahmostudio"
+path = "src/main.rs"
+
+[dependencies]
+hs-core.workspace = true
+hs-script.workspace = true
+hs-character.workspace = true
+hs-render.workspace = true
+hs-hahmo.workspace = true
+hs-agents.workspace = true
+eframe.workspace = true
+egui-wgpu.workspace = true
+wgpu.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rfd.workspace = true

@@ -87,10 +87,10 @@ impl Default for Pipeline {
     /// Vakioputki: jäsennin → hahmot → liike → kamera → renderöinti.
     fn default() -> Self {
         let mut p = Pipeline::empty();
-        p.register(Box::new(ScriptParserAgent::default()));
+        p.register(Box::new(ScriptParserAgent));
         p.register(Box::new(CharacterMeshAgent::default()));
-        p.register(Box::new(ProceduralMotionAgent::default()));
-        p.register(Box::new(CinematographyAgent::default()));
+        p.register(Box::new(ProceduralMotionAgent));
+        p.register(Box::new(CinematographyAgent));
         p.register(Box::new(RustRenderAgent::default()));
         p
     }

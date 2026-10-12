@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn sudden_stop_makes_hair_swing_then_settle() {
         // Juoksu pysähtyy hetkellä 1 s: kiihtyvyys taaksepäin.
-        let pos = |t: f32| Vec3::new(0.0, 0.0, 3.0 * t.min(1.0) - if t > 1.0 { 0.0 } else { 0.0 });
+        let pos = |t: f32| Vec3::new(0.0, 0.0, 3.0 * t.min(1.0));
         let accel = |t: f32| acceleration(pos, t);
         let s = DampedSine::HAIR;
         let early = s.response(0.5, accel).length();

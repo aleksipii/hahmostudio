@@ -77,7 +77,7 @@ pub fn build(id: &str) -> CharacterMesh {
                 b.cuboid(Vec3::new(x, hgt * 0.5, -5.2), Vec3::new(0.85, hgt * 0.5, 0.5), Quat::IDENTITY, [0x2a, 0x26, 0x40], 0.3);
                 for row in 0..(*hgt as i32 * 2) {
                     for col in 0..3 {
-                        if (i + row as usize + col) % 3 == 0 {
+                        if (i + row as usize + col).is_multiple_of(3) {
                             continue;
                         }
                         let p = Vec3::new(x - 0.5 + col as f32 * 0.5, 0.45 + row as f32 * 0.48, -4.69);

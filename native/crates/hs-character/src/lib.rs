@@ -67,7 +67,7 @@ mod tests {
         let b = Character::build(tall).mesh;
         let c = Character::build(big_eyes).mesh;
         assert!(b.bounds().1.y > a.bounds().1.y + 0.2);
-        assert_ne!(a.vertices.len() * 0, 1);
+        assert_eq!(a.vertices.len(), c.vertices.len(), "kasvoparametri ei saa muuttaa topologiaa");
         let differs = a.vertices.iter().zip(&c.vertices).any(|(x, y)| x.position != y.position);
         assert!(differs);
     }

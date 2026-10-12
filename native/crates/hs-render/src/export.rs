@@ -55,7 +55,7 @@ pub struct Mp4Writer {
 
 impl Mp4Writer {
     pub fn create(path: &Path, width: u32, height: u32, fps: u32) -> Result<Mp4Writer, RenderError> {
-        if width % 2 != 0 || height % 2 != 0 {
+        if !width.is_multiple_of(2) || !height.is_multiple_of(2) {
             return Err(RenderError::Export("MP4-koon pitää olla parillinen".into()));
         }
         let ffmpeg = find_ffmpeg().ok_or_else(|| RenderError::Export("FFmpegiä ei löytynyt. Asenna se tai aseta HAHMOSTUDIO_FFMPEG.".into()))?;

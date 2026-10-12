@@ -152,7 +152,7 @@ pub fn duration_in(tag: &str) -> Option<f64> {
             let rest: String = chars[j..].iter().collect::<String>().to_lowercase();
             for unit in ["seconds", "sek", "s"] {
                 if let Some(after) = rest.strip_prefix(unit) {
-                    if after.chars().next().map_or(true, |c| !c.is_alphanumeric()) {
+                    if after.chars().next().is_none_or(|c| !c.is_alphanumeric()) {
                         return number.parse().ok();
                     }
                 }

@@ -1,0 +1,405 @@
+use crate::app::{StudioApp, EXAMPLE};
+use crate::export_job::ExportJob;
+use eframe::egui::{self, Color32, RichText, Stroke};
+use hs_agents::agents::cinematography::ShotKind;
+use hs_agents::{Backend, RenderRequest, Slot};
+use hs_character::{CharacterParams, ClothingStyle, HairStyle, RenderStyle};
+use hs_core::{EventKind, Severity, TrackKind};
+
+const ACCENT: Color32 = Color32::from_rgb(0xf2, 0xc2, 0x30);
+
+pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
+    egui::TopBottomPanel::top("valikko").show(ctx, |ui| {
+        egui::menu::bar(ui, |ui| {
+            ui.menu_button("Tiedosto", |ui| {
+                if ui.button("Uusi käsikirjoitus").clicked() {
+                    app.script = EXAMPLE.into();
+                    app.script_path = None;
+                    app.legacy = None;
+                    app.pipeline.mark_dirty(Slot::Script);
+                    app.run_pipeline();
+                    ui.close_menu();
+                }
+                if ui.button("Avaa käsikirjoitus…").clicked() {
+                    ui.close_menu();
+                    if let Some(p) = rfd::FileDialog::new().add_filter("Käsikirjoitus", &["txt", "md"]).pick_file() {
+                        app.open_script(p);
+                    }
+                }
+                if ui.button("Tallenna käsikirjoitus…").clicked() {
+                    ui.close_menu();
+                    if let Some(p) = rfd::FileDialog::new().set_file_name("kasikirjoitus.txt").save_file() {
+                        app.save_script(p);
+                    }
+                }
+                ui.separator();
+                if ui.button("Avaa 2D-projekti (.hahmo)…").clicked() {
+                    ui.close_menu();
+                    if let Some(p) = rfd::FileDialog::new().add_filter("Hahmostudio", &["hahmo"]).pick_file() {
+                        app.open_hahmo(p);
+                    }
+                }
+                ui.separator();
+                let can_export = app.export.is_none() && app.production.plan.as_ref().is_some_and(|p| p.is_assemblable());
+                if ui.add_enabled(can_export, egui::Button::new("Vie MP4…")).clicked() {
+                    ui.close_menu();
+                    if let Some(p) = rfd::FileDialog::new().set_file_name("jakso.mp4").save_file() {
+                        start_export(app, RenderRequest::Mp4(p));
+                    }
+                }
+                if ui.add_enabled(can_export, egui::Button::new("Vie PNG-sarja…")).clicked() {
+                    ui.close_menu();
+                    if let Some(p) = rfd::FileDialog::new().pick_folder() {
+                        start_export(app, RenderRequest::PngSequence(p));
+                    }
+                }
+                if ui.add_enabled(can_export, egui::Button::new("Vie nykyinen ruutu PNG:ksi…")).clicked() {
+                    ui.close_menu();
+                    if let Some(p) = rfd::FileDialog::new().set_file_name("ruutu.png").save_file() {
+                        start_export(app, RenderRequest::Still { frame: app.frame(), path: p });
+                    }
+                }
+                ui.separator();
+                if ui.button("Lopeta").clicked() {
+                    ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                }
+            });
+            ui.menu_button("Toisto", |ui| {
+                if ui.button(if app.playing { "Pysäytä (välilyönti)" } else { "Toista (välilyönti)" }).clicked() {
+                    app.playing = !app.playing;
+                    ui.close_menu();
+                }
+                ui.checkbox(&mut app.looping, "Toista silmukassa");
+                if ui.button("Alkuun").clicked() {
+                    app.time = 0.0;
+                    ui.close_menu();
+                }
+            });
+            ui.menu_button("Ohje", |ui| {
+                if ui.button("Tietoja Hahmostudiosta").clicked() {
+                    app.show_about = true;
+                    ui.close_menu();
+                }
+            });
+        });
+    });
+}
+
+fn start_export(app: &mut StudioApp, request: RenderRequest) {
+    let backend = if app.viewport.is_gpu() { Backend::Auto } else { Backend::Cpu };
+    app.export = Some(ExportJob::start(app.script.clone(), app.production.cast_params.clone(), request, backend, (app.production.width, app.production.height)));
+    app.status = "Vienti käynnissä…".into();
+}
+
+pub fn status_bar(app: &mut StudioApp, ctx: &egui::Context) {
+    egui::TopBottomPanel::bottom("tila").show(ctx, |ui| {
+        ui.horizontal(|ui| {
+            if let Some(job) = &app.export {
+                ui.add(egui::ProgressBar::new(job.progress()).desired_width(220.0).show_percentage());
+                ui.label(format!("Viedään {}", job.label));
+                if ui.button("Peruuta").clicked() {
+                    job.cancel.store(true, std::sync::atomic::Ordering::Relaxed);
+                }
+            } else {
+                ui.label(&app.status);
+            }
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.label(RichText::new(format!("{} · {:.1} ms/ruutu", app.viewport.backend_name, app.viewport.last_ms)).weak());
+            });
+        });
+    });
+}
+
+fn track_label(track: TrackKind) -> &'static str {
+    match track {
+        TrackKind::Dialogue => "Puhe",
+        TrackKind::Motion => "Liike",
+        TrackKind::Camera => "Kamera",
+        TrackKind::Environment => "Tausta",
+    }
+}
+
+fn event_text(kind: &EventKind) -> String {
+    match kind {
+        EventKind::Dialogue { speaker, text } => match speaker {
+            Some(s) => format!("{s}: {text}"),
+            None => text.clone(),
+        },
+        EventKind::Motion { motion, character } => match character {
+            Some(c) => format!("{c}: {}", motion.finnish_name()),
+            None => motion.finnish_name().to_string(),
+        },
+        EventKind::Background { id } => id.clone(),
+        EventKind::CharacterView { view } => format!("Suunta {view:?}"),
+        EventKind::Phone { view } => format!("Puhelin {view:?}"),
+        EventKind::Camera { hint } => format!("Kuva {hint:?}"),
+    }
+}
+
+pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
+    egui::TopBottomPanel::bottom("aikajana").resizable(true).default_height(190.0).min_height(120.0).show(ctx, |ui| {
+        ui.horizontal(|ui| {
+            if ui.button(if app.playing { "⏸ Pysäytä" } else { "▶ Toista" }).clicked() {
+                app.playing = !app.playing;
+            }
+            if ui.button("⏮").on_hover_text("Alkuun").clicked() {
+                app.time = 0.0;
+            }
+            let d = app.duration();
+            ui.label(RichText::new(format!("{:05.2} / {:05.2} s · ruutu {} / {}", app.time, d, app.frame(), app.production.frame_count())).monospace());
+            if let Some(cam) = &app.production.camera {
+                if let Some(s) = cam.shot_at(app.time) {
+                    ui.separator();
+                    ui.label(format!("Otos: {}", s.kind.finnish()));
+                }
+            }
+        });
+        let Some(tl) = app.production.timeline.clone() else { return };
+        let duration = tl.duration.seconds().max(0.1) as f32;
+        type Clip = (f32, f32, String, Color32);
+        let rows: Vec<(String, Vec<Clip>)> = {
+            let mut rows = Vec::new();
+            for track in [TrackKind::Dialogue, TrackKind::Motion, TrackKind::Environment] {
+                let color = match track {
+                    TrackKind::Dialogue => Color32::from_rgb(0x4e, 0x8c, 0xc2),
+                    TrackKind::Motion => Color32::from_rgb(0x5d, 0xa8, 0x6c),
+                    _ => Color32::from_rgb(0x8c, 0x6c, 0xb8),
+                };
+                let items = tl.on_track(track).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. })).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color)).collect();
+                rows.push((track_label(track).to_string(), items));
+            }
+            if let Some(cam) = &app.production.camera {
+                let items = cam
+                    .shots
+                    .iter()
+                    .map(|s| {
+                        let c = match s.kind {
+                            ShotKind::Wide => Color32::from_rgb(0xc2, 0x7c, 0x3a),
+                            ShotKind::Full => Color32::from_rgb(0xb8, 0x6a, 0x2a),
+                            ShotKind::Medium => Color32::from_rgb(0xa8, 0x5a, 0x4a),
+                            ShotKind::CloseUp => Color32::from_rgb(0x98, 0x4a, 0x5a),
+                            ShotKind::Insert => Color32::from_rgb(0x7a, 0x4a, 0x8a),
+                        };
+                        (s.start, s.end, format!("{}{}", s.kind.finnish(), if s.tracking { " · seuranta" } else { "" }), c)
+                    })
+                    .collect();
+                rows.insert(2, ("Kamera".to_string(), items));
+            }
+            rows
+        };
+        let label_w = 70.0;
+        let row_h = 26.0;
+        let (rect, response) = ui.allocate_exact_size(egui::vec2(ui.available_width(), row_h * rows.len() as f32 + 18.0), egui::Sense::click_and_drag());
+        let painter = ui.painter_at(rect);
+        let lane = egui::Rect::from_min_max(egui::pos2(rect.left() + label_w, rect.top() + 18.0), rect.max);
+        let x_of = |t: f32| lane.left() + t / duration * lane.width();
+        // Sekuntiviivain.
+        let step = if duration > 30.0 { 5.0 } else if duration > 10.0 { 2.0 } else { 1.0 };
+        let mut s = 0.0;
+        while s <= duration {
+            let x = x_of(s);
+            painter.line_segment([egui::pos2(x, rect.top() + 12.0), egui::pos2(x, rect.bottom())], Stroke::new(1.0_f32, ui.visuals().faint_bg_color.gamma_multiply(2.0)));
+            painter.text(egui::pos2(x + 2.0, rect.top()), egui::Align2::LEFT_TOP, format!("{s:.0}s"), egui::FontId::proportional(11.0), ui.visuals().weak_text_color());
+            s += step;
+        }
+        for (i, (name, items)) in rows.iter().enumerate() {
+            let y = lane.top() + i as f32 * row_h;
+            painter.text(egui::pos2(rect.left() + 4.0, y + row_h * 0.5), egui::Align2::LEFT_CENTER, name, egui::FontId::proportional(13.0), ui.visuals().text_color());
+            for (a, b, text, color) in items {
+                let r = egui::Rect::from_min_max(egui::pos2(x_of(*a) + 1.0, y + 3.0), egui::pos2(x_of(*b) - 1.0, y + row_h - 3.0));
+                painter.rect_filled(r, 4.0, *color);
+                let galley = painter.layout_no_wrap(text.clone(), egui::FontId::proportional(12.0), Color32::WHITE);
+                let clip = painter.with_clip_rect(r.shrink(2.0));
+                clip.galley(egui::pos2(r.left() + 5.0, r.center().y - galley.size().y * 0.5), galley, Color32::WHITE);
+            }
+        }
+        // Toistopää.
+        let x = x_of(app.time);
+        painter.line_segment([egui::pos2(x, rect.top() + 12.0), egui::pos2(x, rect.bottom())], Stroke::new(2.0_f32, ACCENT));
+        if let Some(pos) = response.interact_pointer_pos() {
+            if response.dragged() || response.clicked() {
+                app.time = ((pos.x - lane.left()) / lane.width() * duration).clamp(0.0, duration);
+                app.playing = false;
+            }
+        }
+    });
+}
+
+pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
+    egui::SidePanel::left("kasikirjoitus").resizable(true).default_width(380.0).min_width(260.0).show(ctx, |ui| {
+        ui.heading("Käsikirjoitus");
+        ui.label(RichText::new("Puhe tekstinä, ohjeet hakasulkeissa: [vilkuta 2s], [juokse oikealle 2s], [näpyttele puhelinta 3s], [tausta kaupunki ilta], [kuva lähikuva]. Puhuja: NIMI: repliikki.").weak().small());
+        ui.add_space(4.0);
+        let errors: Vec<_> = app.production.diagnostics.iter().filter(|d| d.severity != Severity::Info).cloned().collect();
+        let editor_h = (ui.available_height() - 40.0 - errors.len().min(6) as f32 * 22.0).max(160.0);
+        egui::ScrollArea::vertical().max_height(editor_h).show(ui, |ui| {
+            let edit = egui::TextEdit::multiline(&mut app.script).code_editor().desired_width(f32::INFINITY).desired_rows(18).lock_focus(true);
+            if ui.add(edit).changed() {
+                app.script_changed();
+            }
+        });
+        ui.separator();
+        if errors.is_empty() {
+            if let Some(plan) = &app.production.plan {
+                ui.label(RichText::new(format!("✓ {} riviä, {:.1} s – valmis vietäväksi", plan.beats.len(), plan.seconds)).color(Color32::from_rgb(0x5d, 0xa8, 0x6c)));
+            }
+        } else {
+            egui::ScrollArea::vertical().id_salt("huomautukset").max_height(140.0).show(ui, |ui| {
+                for d in errors {
+                    let color = if d.severity == Severity::Error { Color32::from_rgb(0xe0, 0x6c, 0x5a) } else { Color32::from_rgb(0xd8, 0xa8, 0x3a) };
+                    ui.label(RichText::new(format!("Rivi {}: {}", d.line, d.message)).color(color));
+                }
+            });
+        }
+        if let Some(e) = &app.pipeline_error {
+            ui.label(RichText::new(e).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)));
+        }
+    });
+}
+
+fn color_row(ui: &mut egui::Ui, label: &str, c: &mut [u8; 3]) -> bool {
+    ui.horizontal(|ui| {
+        ui.label(label);
+        ui.color_edit_button_srgb(c).changed()
+    })
+    .inner
+}
+
+pub fn cast_panel(app: &mut StudioApp, ctx: &egui::Context) {
+    egui::SidePanel::right("hahmot").resizable(true).default_width(300.0).min_width(240.0).show(ctx, |ui| {
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.heading("Hahmot");
+            app.ensure_cast_params();
+            let names: Vec<String> = app.production.cast.iter().map(|c| c.character.params.name.clone()).collect();
+            if names.is_empty() {
+                ui.label("Ei hahmoja.");
+            } else {
+                app.selected_cast = app.selected_cast.min(names.len() - 1);
+                ui.horizontal_wrapped(|ui| {
+                    for (i, n) in names.iter().enumerate() {
+                        ui.selectable_value(&mut app.selected_cast, i, n);
+                    }
+                });
+                let name = names[app.selected_cast].clone();
+                let Some(idx) = app.production.cast_params.iter().position(|c| c.name == name) else { return };
+                let mut changed = false;
+                {
+                    let p: &mut CharacterParams = &mut app.production.cast_params[idx];
+                    ui.add_space(4.0);
+                    ui.label(RichText::new("Mitat").strong());
+                    changed |= ui.add(egui::Slider::new(&mut p.height, 0.8..=2.0).text("pituus (m)")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.build, 0.7..=1.5).text("vartalo")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.head_scale, 0.7..=1.4).text("pää")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.leg_ratio, 0.38..=0.52).text("jalat")).changed();
+                    ui.label(RichText::new("Kasvot").strong());
+                    changed |= ui.add(egui::Slider::new(&mut p.face.eye_size, 0.6..=1.7).text("silmät")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.face.eye_spacing, 0.7..=1.4).text("silmäväli")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.face.mouth_width, 0.5..=1.8).text("suu")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.face.nose_size, 0.5..=1.8).text("nenä")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.face.brow_thickness, 0.4..=2.2).text("kulmat")).changed();
+                    changed |= ui.checkbox(&mut p.face.cheeks, "posket").changed();
+                    changed |= color_row(ui, "Silmät", &mut p.face.eye_color);
+                    ui.label(RichText::new("Hiukset ja iho").strong());
+                    egui::ComboBox::from_label("kampaus").selected_text(format!("{:?}", p.hair_style)).show_ui(ui, |ui| {
+                        for (v, n) in [(HairStyle::Short, "lyhyt"), (HairStyle::Bob, "polkka"), (HairStyle::Ponytail, "poninhäntä"), (HairStyle::Bald, "kalju")] {
+                            changed |= ui.selectable_value(&mut p.hair_style, v, n).changed();
+                        }
+                    });
+                    changed |= color_row(ui, "Hiukset", &mut p.hair);
+                    changed |= color_row(ui, "Iho", &mut p.skin);
+                    ui.label(RichText::new("Vaatteet").strong());
+                    egui::ComboBox::from_label("asu").selected_text(format!("{:?}", p.clothing)).show_ui(ui, |ui| {
+                        for (v, n) in [(ClothingStyle::Shirt, "paita"), (ClothingStyle::Hoodie, "huppari"), (ClothingStyle::Dress, "mekko")] {
+                            changed |= ui.selectable_value(&mut p.clothing, v, n).changed();
+                        }
+                    });
+                    changed |= ui.add(egui::Slider::new(&mut p.sleeve, 0.0..=1.0).text("hiha")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.trouser, 0.0..=1.0).text("lahje")).changed();
+                    changed |= color_row(ui, "Yläosa", &mut p.top);
+                    changed |= color_row(ui, "Alaosa", &mut p.bottom);
+                    changed |= color_row(ui, "Kengät", &mut p.shoes);
+                    ui.horizontal(|ui| {
+                        ui.label("Tyyli");
+                        changed |= ui.selectable_value(&mut p.render_style, RenderStyle::Flat, "tasavärit").changed();
+                        changed |= ui.selectable_value(&mut p.render_style, RenderStyle::Cel, "sävytetty").changed();
+                    });
+                }
+                ui.horizontal(|ui| {
+                    if ui.button("Palauta esiasetus").clicked() {
+                        if let Some(preset) = CharacterParams::presets().into_iter().find(|c| c.name == name) {
+                            app.production.cast_params[idx] = preset;
+                            changed = true;
+                        }
+                    }
+                });
+                if changed {
+                    app.cast_changed();
+                }
+            }
+            ui.separator();
+            ui.heading("Agentit");
+            egui::Grid::new("agentit").striped(true).num_columns(3).show(ui, |ui| {
+                for r in &app.last_runs {
+                    ui.label(r.name);
+                    ui.label(RichText::new(format!("{:.1} ms", r.took.as_secs_f64() * 1000.0)).monospace());
+                    match &r.outcome {
+                        Ok(s) => ui.label(RichText::new(s).small()),
+                        Err(e) => ui.label(RichText::new(e).small().color(Color32::from_rgb(0xe0, 0x6c, 0x5a))),
+                    };
+                    ui.end_row();
+                }
+            });
+        });
+    });
+}
+
+pub fn stage(app: &mut StudioApp, ctx: &egui::Context, frame: &eframe::Frame) {
+    egui::CentralPanel::default().frame(egui::Frame::default().fill(Color32::from_rgb(0x16, 0x1b, 0x22))).show(ctx, |ui| {
+        let avail = ui.available_size();
+        let aspect = app.production.width as f32 / app.production.height as f32;
+        let (w, h) = if avail.x / avail.y > aspect { (avail.y * aspect, avail.y) } else { (avail.x, avail.x / aspect) };
+        let ppp = ctx.pixels_per_point();
+        if let Some(legacy) = &mut app.legacy {
+            // Vanha 2D-projekti: piirretään hs-hahmolla.
+            let fps = legacy.project.fps() as f32;
+            let f = ((app.time * fps) as u32) % legacy.project.frame_count().max(1);
+            if legacy.frame != f || legacy.texture.is_none() {
+                if let Ok(pix) = legacy.project.render(f) {
+                    // tiny-skia käyttää esikerrottua alfaa.
+                    let img = egui::ColorImage::from_rgba_premultiplied([pix.width() as usize, pix.height() as usize], pix.data());
+                    match &mut legacy.texture {
+                        Some(t) => t.set(img, egui::TextureOptions::LINEAR),
+                        None => legacy.texture = Some(ctx.load_texture("hahmo2d", img, egui::TextureOptions::LINEAR)),
+                    }
+                    legacy.frame = f;
+                }
+            }
+            ui.label(egui::RichText::new(format!("{} (2D, vain katselu)", legacy.name)).weak());
+            let avail = ui.available_size();
+            if let Some(t) = &legacy.texture {
+                let a = t.size()[0] as f32 / t.size()[1] as f32;
+                let (w, h) = if avail.x / avail.y > a { (avail.y * a, avail.y) } else { (avail.x, avail.x / a) };
+                ui.centered_and_justified(|ui| ui.image((t.id(), egui::vec2(w, h))));
+            }
+            return;
+        }
+        let px = [((w * ppp) as u32).min(app.production.width), ((h * ppp) as u32).min(app.production.height)];
+        let time = app.time;
+        if let Some(id) = app.viewport.draw(ui, frame, &app.production, time, px) {
+            ui.centered_and_justified(|ui| ui.image((id, egui::vec2(w, h))));
+        } else {
+            ui.centered_and_justified(|ui| ui.label("Korjaa käsikirjoituksen virheet nähdäksesi näyttämön."));
+        }
+    });
+}
+
+pub fn dialogs(app: &mut StudioApp, ctx: &egui::Context) {
+    if app.show_about {
+        egui::Window::new("Tietoja").collapsible(false).resizable(false).open(&mut app.show_about).show(ctx, |ui| {
+            ui.heading("Hahmostudio – natiivi");
+            ui.label(format!("Versio {}", env!("CARGO_PKG_VERSION")));
+            ui.label("Rust, egui/eframe ja wgpu. Agenttiputki: käsikirjoitus → hahmot → liike → kamera → renderöinti.");
+            ui.label("Kaikki käsittely tapahtuu paikallisesti.");
+        });
+    }
+}
