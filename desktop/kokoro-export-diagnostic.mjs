@@ -7,13 +7,17 @@ import {inspectMp4} from './export-e2e-diagnostic.mjs';
 export async function kokoroExportDiagnostic(window,directory,{packaged=false}={}){
  const js=s=>window.webContents.executeJavaScript(s,true),sleep=ms=>new Promise(r=>setTimeout(r,ms));
  const wait=async(s,label,seconds=30)=>{for(let i=0;i<seconds*10;i++){if(await js(s))return;await sleep(100);}throw Error('Kokoro export timeout: '+label);};
- const click=async text=>{await wait(`[...document.querySelectorAll('button')].some(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled)`,text);await js(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled);b.click();})()`);await sleep(300);};
+ const click=async text=>{console.log("KOKORO STEP "+text);await wait(`[...document.querySelectorAll('button')].some(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled)`,text);await js(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled);b.click();})()`);await sleep(300);};
  const text='This is a local voice test. The animation keeps the original timing.';
- const script='Tausta: keittiö\n\nPipsa: '+text+'\n';
+ const script='PIPSA: '+text; // Puhujatunniste isoin kirjaimin; "Pipsa: …" ei ole repliikkirivi (0 tapahtumaa).
  const archive=async()=>{const r=await js('window.hahmostudio.recoveryLatest()');if(!r?.bytes)throw Error('No recovery snapshot');const files=readZip(r.bytes);return {files,meta:JSON.parse(files['project.json'].toString())};};
- let report={ok:false,realInference:false,packaged,physicalDevices:false,humanListening:false};
+ // Pilvitesti (scripts/kokoro-standin-runtime.mjs): sama polku sijaismoottorilla; raportti ei väitä aitoa inferenssiä.
+ const standin=process.env.HAHMOSTUDIO_KOKORO_STANDIN==='1';
+ let report={ok:false,realInference:false,standinEngine:standin,packaged,physicalDevices:false,humanListening:false};
  try{
-  await js(`(()=>{const t=document.querySelector('textarea.script-editor-field')||document.querySelector('#dialogue-script');if(!t)throw Error('Script missing');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(t,${JSON.stringify(script)});t.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  await click('Aloita tyhjästä');
+  await wait("!!document.querySelector('textarea.script-line-field,textarea.script-editor-field,#dialogue-script')",'script field');
+  await js(`(()=>{const t=document.querySelector('textarea.script-line-field,textarea.script-editor-field,#dialogue-script');if(!t)throw Error('Script missing');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(t,${JSON.stringify(script)});t.dispatchEvent(new Event('input',{bubbles:true}));})()`);
   await sleep(2000);await click('Rakenna jakso');await wait("document.body.innerText.includes('Jakso rakennettu')",'English episode');
   await wait("!!document.querySelector('.tarina-review-toggle')",'review toggle');await js("document.querySelector('.tarina-review-toggle').click()");
   await wait("!!document.querySelector('.kokoro-voices select')",'voice selector');
@@ -22,7 +26,7 @@ export async function kokoroExportDiagnostic(window,directory,{packaged=false}={
   const saved=await archive(),p=saved.meta.scene.presentationDraft,clip=p.audioClips.find(c=>c.synthetic?.engine==='kokoro'),voice=clip&&saved.meta.presentationAudio[clip.asset];
   if(!clip||!voice||!clip.mouth.some(m=>m.shape!=='rest')||clip.duration<1)throw Error('Missing synthetic PCM or mouth timing');
   const original=join(directory,'kokoro-english-original.wav');await writeFile(original,saved.files[voice.path]);
-  report={...report,realInference:true,text,voice:clip.synthetic.voice,clip:{duration:clip.duration,mouthKeys:clip.mouth.length,source:clip.source,synthetic:clip.synthetic}};
+  report={...report,realInference:!standin,text,voice:clip.synthetic.voice,clip:{duration:clip.duration,mouthKeys:clip.mouth.length,source:clip.source,synthetic:clip.synthetic}};
   await click('Rakenna jakso');await sleep(1500);
   await js("(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith('Olen tarkis')&&!b.disabled);b?.click();})()");await sleep(500);
   await click('Rakenna muokattava jakso projektiin');await wait("document.body.innerText.includes('Kohtaus lisätty')||document.body.innerText.includes('Dialogikohtaus lisätty')",'scene installed',60);
@@ -42,12 +46,17 @@ export async function kokoroExportDiagnostic(window,directory,{packaged=false}={
   const dest=process.env.HAHMOSTUDIO_KOKORO_EXPORT_DESTINATION,binary=packaged?join(process.resourcesPath,'native/bin/ffmpeg'):resolve('.private-runtime/native/bin/ffmpeg');
   const mp4=inspectMp4(binary,dest),bytes=(await stat(dest)).size;
   const decode=path=>{const r=spawnSync(binary,['-v','error','-i',path,'-vn','-ac','1','-ar','8000','-f','f32le','-'],{maxBuffer:32*1024*1024});if(r.status!==0)throw Error(r.stderr.toString());return new Float32Array(r.stdout.buffer.slice(r.stdout.byteOffset,r.stdout.byteOffset+r.stdout.length));};
-  const source=decode(original),output=decode(dest);let best={correlation:-1,offsetSamples:0};
+  const source=decode(original),output=decode(dest);
+  const correlate=(offset,stride)=>{let xy=0,xx=0,yy=0;for(let i=0;i<source.length&&i+offset<output.length;i+=stride){const x=source[i],y=output[i+offset];xy+=x*y;xx+=x*x;yy+=y*y;}return xy/Math.sqrt(xx*yy);};
   // Codec delay may shift audio by a few milliseconds; compare real decoded PCM within ±250 ms of the compiled event.
-  for(let offset=Math.max(0,Math.round(start*8000)-2000);offset<=Math.round(start*8000)+2000;offset+=8){let xy=0,xx=0,yy=0;for(let i=0;i<source.length&&i+offset<output.length;i+=4){const x=source[i],y=output[i+offset];xy+=x*y;xx+=x*x;yy+=y*y;}const correlation=xy/Math.sqrt(xx*yy);if(correlation>best.correlation)best={correlation,offsetSamples:offset};}
+  // Karkea haku 1 ms välein ohittaa huipun (puheen 2–4 kHz osuus kääntää vaiheen jo 0,5 ms:ssa), joten huippu tarkennetaan näytteen tarkkuudella.
+  let best={correlation:-1,offsetSamples:0};
+  for(let offset=Math.max(0,Math.round(start*8000)-2000);offset<=Math.round(start*8000)+2000;offset+=8){const correlation=correlate(offset,4);if(correlation>best.correlation)best={correlation,offsetSamples:offset};}
+  const coarse=best.offsetSamples;best={correlation:-1,offsetSamples:coarse};
+  for(let offset=Math.max(0,coarse-8);offset<=coarse+8;offset++){const correlation=correlate(offset,1);if(correlation>best.correlation)best={correlation,offsetSamples:offset};}
   const deltaSeconds=best.offsetSamples/8000-start;
   report={...report,ok:mp4.video?.codec==='h264'&&!!mp4.audio&&best.correlation>.9&&Math.abs(deltaSeconds)<=1/30,mp4,bytes,eventStartSeconds:start,audioAlignment:{...best,deltaSeconds,toleranceSeconds:1/30},job:{state:job.state,encoder:job.encoder},mouth:'linked analyzed timing and compiled actor tracks checked; rendered visual/human lip-sync approval remains open'};
   if(!report.ok)throw Error('PCM alignment or MP4 check failed');
- }catch(error){report={...report,ok:false,error:error.message};await writeFile(join(directory,'kokoro-export-failed.png'),(await window.webContents.capturePage()).toPNG());}
+ }catch(error){report={...report,ok:false,error:error.message};await writeFile(join(directory,'kokoro-export-failed.html'),await js('document.documentElement.outerHTML'));await writeFile(join(directory,'kokoro-export-failed.png'),(await window.webContents.capturePage()).toPNG());}
  await writeFile(join(directory,'kokoro-export-report.json'),JSON.stringify(report,null,2));if(!report.ok)throw Error(report.error);return report;
 }

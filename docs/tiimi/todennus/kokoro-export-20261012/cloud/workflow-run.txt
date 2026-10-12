@@ -1,0 +1,80 @@
+[3335:1012/070704.894363:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[3335:1012/070704.894456:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3335:1012/070705.003207:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[3335:1012/070705.003306:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[3335:1012/070705.016716:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3335:1012/070705.016867:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3335:1012/070705.021981:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3335:1012/070705.197940:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3335:1012/070705.222961:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+KOKORO STEP Aloita tyhjästä
+KOKORO STEP Rakenna jakso
+KOKORO STEP Tuota ääninauha
+KOKORO STEP Rakenna jakso
+KOKORO STEP Rakenna muokattava jakso projektiin
+KOKORO STEP Vie…
+KOKORO STEP Pikavienti
+[3335:1012/070715.181827:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+{
+  "data": "/tmp/hahmostudio-workflow-HDcoEn",
+  "output": "/tmp/claude-0/kx/out",
+  "exitCode": 0,
+  "report": {
+    "ok": true,
+    "packaged": false,
+    "gui": true,
+    "physicalDevices": false,
+    "voiceOver": false,
+    "kokoroExport": {
+      "ok": true,
+      "realInference": false,
+      "standinEngine": true,
+      "packaged": false,
+      "physicalDevices": false,
+      "humanListening": false,
+      "text": "This is a local voice test. The animation keeps the original timing.",
+      "voice": "af_heart",
+      "clip": {
+        "duration": 4.993492063492064,
+        "mouthKeys": 26,
+        "source": "volume",
+        "synthetic": {
+          "engine": "kokoro",
+          "key": "2598b1977bef521431a33ddd58472b41a744c298c3de5820ebb809084133d97c",
+          "modelVersion": "Kokoro-82M-v1.0-ONNX",
+          "speed": 1,
+          "voice": "af_heart"
+        }
+      },
+      "compiledMouthKeysMatched": 25,
+      "mp4": {
+        "video": {
+          "codec": "h264",
+          "width": 1080,
+          "height": 1920,
+          "fps": 30
+        },
+        "audio": {
+          "codec": "aac",
+          "hz": 48000
+        },
+        "seconds": 5.1,
+        "meanVolumeDb": -16.9,
+        "maxVolumeDb": -4.1
+      },
+      "bytes": 467504,
+      "eventStartSeconds": 0.08333333333333333,
+      "audioAlignment": {
+        "correlation": 0.99635026153167,
+        "offsetSamples": 667,
+        "deltaSeconds": 0.000041666666666675956,
+        "toleranceSeconds": 0.03333333333333333
+      },
+      "job": {
+        "state": "done",
+        "encoder": "libopenh264 · ohjelmisto"
+      },
+      "mouth": "linked analyzed timing and compiled actor tracks checked; rendered visual/human lip-sync approval remains open"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+frames 153 mouth px min/max 0 1275
+lag -6 frames corr -0.298
+lag -5 frames corr -0.261
+lag -4 frames corr -0.121
+lag -3 frames corr 0.11
+lag -2 frames corr 0.389
+lag -1 frames corr 0.653
+lag 0 frames corr 0.791
+lag 1 frames corr 0.7
+lag 2 frames corr 0.455
+lag 3 frames corr 0.106
+lag 4 frames corr -0.131
+lag 5 frames corr -0.282
+lag 6 frames corr -0.303
+silent frames mouth px mean 627.6279069767442 loud 1240.3225806451612

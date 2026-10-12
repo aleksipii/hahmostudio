@@ -11,7 +11,9 @@ await mkdir(output,{recursive:true});await rm(join(output,'workflow-report.json'
 const binary=packaged?resolve(`release/KOETA-darwin-${process.arch}/KOETA.app/Contents/MacOS/KOETA`):createRequire(import.meta.url)('electron');
 if(process.env.HAHMOSTUDIO_KOKORO_EXPORT_ACCEPTANCE==="1"){await mkdir(join(data,"export-out"),{recursive:true});process.env.HAHMOSTUDIO_KOKORO_EXPORT_DESTINATION=join(data,"export-out","kokoro.mp4");await writeFile(join(data,"export-preferences.json"),JSON.stringify({presets:[],last:null,destination:{path:process.env.HAHMOSTUDIO_KOKORO_EXPORT_DESTINATION,format:"mp4"}}));}
 const env={...process.env,HAHMOSTUDIO_TEST_DATA_DIR:data,HAHMOSTUDIO_WORKFLOW_OUTPUT:output};delete env.ELECTRON_RUN_AS_NODE;
-const result=spawnSync(binary,[...(packaged?[]:['.']),'--workflow-gui-test'],{stdio:'inherit',env,timeout:600000});
+// Pilvikontti ajaa rootina, jolloin Chromium vaatii --no-sandbox; vain eksplisiittisellä ympäristömuuttujalla.
+const sandbox=process.env.HAHMOSTUDIO_ELECTRON_NO_SANDBOX==='1'?['--no-sandbox']:[];
+const result=spawnSync(binary,[...(packaged?[]:['.']),...sandbox,'--workflow-gui-test'],{stdio:'inherit',env,timeout:600000});
 const report=await readFile(join(output,'workflow-report.json'),'utf8').then(JSON.parse).catch(()=>null);
 console.log(JSON.stringify({data,output,exitCode:result.status,error:result.error?.message,report},null,2));
 process.exit(result.status===0&&report?.ok===true&&report.packaged===packaged?0:1);
