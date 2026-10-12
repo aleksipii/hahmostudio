@@ -1,0 +1,15 @@
+[package]
+name = "hs-core"
+description = "Hahmostudio: aikapohja, aikajana ja yhteiset tietotyypit (ei käyttöliittymää eikä käyttöjärjestelmäriippuvuuksia)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+glam.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

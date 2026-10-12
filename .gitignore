@@ -30,3 +30,6 @@ release/
 # Team verification output and dependency symlink
 dist-team-preview/
 node_modules
+
+# Native Rust workspace build output
+native/target/

@@ -1,0 +1,11 @@
+[package]
+name = "hs-script"
+description = "Hahmostudio: sääntöpohjainen käsikirjoitusjäsennin (tagit -> aikajana)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+hs-core.workspace = true
+serde.workspace = true
