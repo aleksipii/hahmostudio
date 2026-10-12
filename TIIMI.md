@@ -365,3 +365,15 @@ Työhaara `codex/mac-package-2026-10-12`, lähtö `f4f2ea8`. Omistettu uusi tied
 Todettu: `node --check scripts/verify-mac-bundle.mjs` ja `git diff --check` läpi. Mac arm64, Node24.15.0. Kokoro-runtime valmistunut toisessa agentissa; kopioitu omaan ignored .private-runtimeen cp -cR, 56 todella asennettua riippuvuutta vastaavat nykyisiä THIRD_PARTY.txt-versiorivejä. Native/Rhubarb ja vision kopioitu oman pakkaustyöpuun resursseiksi; käyttäjän asennettua appia tai dataa ei muutettu. Quota-helper available=false, prosenttia ei päätelty. Levytila valmistelun aikana 7,2→5,2GiB; ennen raskasta ajoa tarkista uudelleen.
 
 Avoin: tarkistinta ei vielä ajettu uuteen pakettiin, eikä uutta DMG:tä rakennettu. Root kokoaa agenttien lähteet ensin; paketoi kerran lopullinen yhdistetty SHA. Konkreettinen jatko: integroi rootin ilmoittama candidate omaan worktreeen, npm run desktop:build; electron_config_cache=/Users/Aleksi/Library/Caches/electron node scripts/package-mac.mjs; node scripts/verify-mac-bundle.mjs; npm run desktop:test:package; eristetyt --packaged workflow/Kokoro-testit; node scripts/package-dmg.mjs; node scripts/verify-dmg.mjs <DMG>. Paketoidun raportin packaged=true vaaditaan. Mallipainot pysyvät sovelluksen datakansiossa, eivät Gitissä/paketissa. Fyysiset laitteet/VoiceOver erillisen agentin ohjeessa ja edelleen ihmisen hyväksyntää vaativia. Ei main-mergeä tästä keskeneräisestä haarasta.
+
+
+## Codex → Claude: neljän auditointiagentin työnjako 12.10.2026
+
+Käyttäjä pyysi agentit avoimiin töihin ja Clauden jatkamaan keskeneräiset. Root kokoaa codex/integration-2026-10-12-haaran; päähaaroihin vain varmennettu kokonaisuus.
+
+- palikka_auditointi: codex/block-drag-2026-10-12, oikeat pointer/CDP-raahaukset, tauko/Alt-Samalla, undo/redo ja levyyn tallennettu lähde. Testin fixturekohdistus vielä kehityksessä; ei hyväksyntää ennen raporttia.
+- kokoro_vientisynkka: paikallinen englanti af_heart, syntheticPCM/suukeys, compile ja oikean MP4:n dekoodatun äänen ajoitusvertailu. Ei ihmisen kuulohyväksynnän korvaamista. Oma haara ja tulokset agentin kirjauksessa.
+- mac_dmg: codex/mac-package-2026-10-12 b76095f, pakettitarkistin valmis. Odottaa yhdistettyä lähdettä ja sitten build/package/codesign/licensing/packagedworkflow/DMGverify.
+- laitteet_voiceover: lähtö codex/devices-voiceover-2026-10-12 f547274. Turvallinen keyboard/DOM-auditointi ja käsitestiohje, ei käyttäjän laitteiden käyttöä automaattisesti. Fyysiset laitteet/VoiceOver-kuuntelu avoimia ilman ihmishavaintoa.
+
+Agentit kirjaavat täsmälliset komennot, tulokset, lähteestä todetut/ehdotukset/avoimet, työhaaran/SHA ja seuraavan tehtävän. Claude: fetch kaikki agenttihaarat, lue niiden viimeiset TIIMI-kirjaukset sekä integraatiohaaran tila. Älä pidä työnjakoa valmistumisraporttina. Säilytä kaikki ainutkertaiset muutokset; yhteisen lähteen testit ja paketin lähdevastaavuus tarkistettava ennen main/hahmostudio1.0-yhdistystä.
