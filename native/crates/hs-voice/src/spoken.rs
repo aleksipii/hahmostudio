@@ -74,8 +74,14 @@ pub fn parse_spoken_text(raw: &str) -> SpokenLine {
     SpokenLine { text, speed: (speed * 1000.0).round() / 1000.0, notices }
 }
 
-const FINNISH_WORDS: &[&str] =
-    &["että", "mutta", "minä", "sinä", "mitä", "kun", "niin", "olen", "oli", "joo", "ei", "kyllä", "hän", "siirsitkö", "eilen"];
+/// Yleisiä suomen sanoja ilman ä/ö-kirjaimia (ne tunnistetaan jo kirjaimista).
+/// Lista on lib/kokoro.ts:n lista + tervehdyksiä ja pikkusanoja, joilla ei ole
+/// englanninkielistä vastinetta (esim. "Hei Ville!" ei saa kuulostaa "Hey").
+const FINNISH_WORDS: &[&str] = &[
+    "että", "mutta", "minä", "sinä", "mitä", "kun", "niin", "olen", "oli", "joo", "ei", "kyllä", "hän", "siirsitkö", "eilen",
+    "hei", "moi", "moikka", "terve", "kiitos", "anteeksi", "okei", "ja", "jos", "nyt", "vai", "kanssa", "minun", "sinun",
+    "miksi", "tule", "tuolla", "huomenna", "kiva",
+];
 
 /// Kokoro-ääni tässä vaiheessa vain englanniksi; suomalaista riviä ei yritetä
 /// lausua englantilaisella äänellä.
@@ -123,6 +129,38 @@ mod tests {
         assert!(!is_english_line("Hei, nähdään huomenna!"));
         assert!(!is_english_line("Joo ok"));
         assert!(!is_english_line("1234"));
+        assert!(!is_english_line("Hei Ville!"));
+        assert!(!is_english_line("Moi, kiitos ja anteeksi"));
+        // Englannin lyhenteet, välimerkit ja numerot eivät tee rivistä suomea.
+        for line in ["Don't worry, I'm fine.", "Hey Ville! Are you OK?", "It's 5 o'clock... right?", "On my way—now!"] {
+            assert!(is_english_line(line), "{line}");
+        }
+    }
+
+    #[test]
+    fn english_dialogue_is_cleaned_for_speech() {
+        let s = parse_spoken_text("  Hi   there!\n(quickly)  Let's   go. ");
+        assert_eq!((s.text.as_str(), s.speed, s.notices.len()), ("Hi there! Let's go.", 1.2, 0));
+        // Kaksi nopeusohjetta rajataan, ristiriitaiset kumoavat osittain.
+        assert_eq!(parse_spoken_text("Go (fast) (quickly)").speed, 1.25);
+        assert_eq!(parse_spoken_text("Go (slowly) (slowly) (slowly)").speed, 0.7);
+        assert_eq!(parse_spoken_text("Go (fast) (slowly)").speed, 1.02);
+        // Pelkkä ohje ei ole puhuttavaa tekstiä.
+        assert!(parse_spoken_text("(whispers)").text.is_empty());
+        let long = "word ".repeat(200);
+        assert!(parse_spoken_text(&long).notices.iter().any(|n| n.contains("600")));
+    }
+
+    #[test]
+    fn only_listed_voices_are_valid() {
+        for (v, _) in VOICES {
+            assert!(is_voice(v));
+            // Äänen nimi kelpaa tiedostonimeksi sellaisenaan (ei polkuja).
+            assert!(v.chars().all(|c| c.is_ascii_lowercase() || c == '_'), "{v}");
+        }
+        for v in ["", "AF_HEART", "af_heart ", "af_sky", "../voices/af_heart", "voices/af_heart.bin"] {
+            assert!(!is_voice(v), "{v:?}");
+        }
     }
 
     #[test]
@@ -130,6 +168,11 @@ mod tests {
         let a = cache_key("Hi", "af_heart", 1.0, MODEL_VERSION);
         assert_eq!(a, cache_key("Hi", "af_heart", 1.0, MODEL_VERSION));
         assert_ne!(a, cache_key("Hi", "am_adam", 1.0, MODEL_VERSION));
+        assert_ne!(a, cache_key("Hi!", "af_heart", 1.0, MODEL_VERSION));
+        assert_ne!(a, cache_key("Hi", "af_heart", 1.2, MODEL_VERSION));
+        assert_ne!(a, cache_key("Hi", "af_heart", 1.0, "Kokoro-82M-v1.1"));
+        // Kentät eivät sekoitu keskenään (JSON-taulukko, ei pelkkä yhdistetty merkkijono).
+        assert_ne!(cache_key("a", "b", 1.0, "c"), cache_key("ab", "", 1.0, "c"));
         assert_eq!(a.len(), 64);
     }
 }

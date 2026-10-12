@@ -4,7 +4,7 @@
 //! deterministinen [`TestEngine`]. Synteesi tuottaa vain puuttuvat tai
 //! muuttuneet rivit eikä koskaan korvaa käyttäjän omaa ääntä.
 
-use crate::spoken::{cache_key, is_english_line, is_voice, parse_spoken_text, MAX_LINE, MAX_SECONDS};
+use crate::spoken::{cache_key, is_english_line, is_voice, parse_spoken_text, MAX_LINE, MAX_SECONDS, VOICES};
 use crate::wav::Audio;
 use crate::VoiceError;
 use std::collections::{BTreeSet, HashMap};
@@ -55,8 +55,12 @@ impl SpeechEngine for TestEngine {
         if cancel.load(Ordering::Relaxed) {
             return Err(VoiceError::Cancelled);
         }
+        // Jokaisella studion äänellä oma sävelkorkeus, jotta hahmot erottuvat testeissäkin.
+        let Some(index) = VOICES.iter().position(|(v, _)| *v == r.voice) else {
+            return Err(VoiceError::Model(format!("Tuntematon Kokoro-ääni {}.", r.voice)));
+        };
         self.calls.lock().unwrap().push(r.clone());
-        let pitch = 180.0 + (r.voice.as_bytes()[0] % 7) as f32 * 20.0;
+        let pitch = 140.0 + index as f32 * 20.0;
         Ok(Speech { audio: Audio::synthetic_speech(&r.text, r.speed, pitch), phonemes: Some(r.text.to_lowercase()) })
     }
 }
@@ -64,10 +68,14 @@ impl SpeechEngine for TestEngine {
 /// Taustasynteesi käyttöliittymälle: `synthesize` ei koskaan odota mallia,
 /// vaan jonottaa pyynnön ja palauttaa [`VoiceError::Pending`]. Valmis puhe
 /// menee suoraan jaettuun välimuistiin, josta seuraava putken ajo löytää sen.
+/// Epäonnistunutta riviä ei jonoteta uudelleen (valmistumisilmoitus ajaa
+/// putken uudelleen, joten uusi yritys kiertäisi loputtomasti); sama pyyntö
+/// palauttaa tallennetun virheen. Uusi moottori (mallin uusi avaus) yrittää alusta.
 pub struct BackgroundEngine {
     inner: Arc<dyn SpeechEngine>,
     cache: SpeechCache,
     queued: Arc<Mutex<BTreeSet<String>>>,
+    failed: Arc<Mutex<HashMap<String, String>>>,
     tx: Mutex<std::sync::mpsc::Sender<(String, SpeechRequest)>>,
     /// Virheet taustasynteesistä (rivin avain, viesti).
     pub errors: Arc<Mutex<Vec<(String, String)>>>,
@@ -79,24 +87,28 @@ impl BackgroundEngine {
         let (tx, rx) = std::sync::mpsc::channel::<(String, SpeechRequest)>();
         let queued: Arc<Mutex<BTreeSet<String>>> = Default::default();
         let errors: Arc<Mutex<Vec<(String, String)>>> = Default::default();
-        let (engine, c, q, errs) = (inner.clone(), cache.clone(), queued.clone(), errors.clone());
+        let failed: Arc<Mutex<HashMap<String, String>>> = Default::default();
+        let (engine, c, q, errs, f) = (inner.clone(), cache.clone(), queued.clone(), errors.clone(), failed.clone());
         std::thread::Builder::new()
             .name("puhesynteesi".into())
             .spawn(move || {
                 let never = AtomicBool::new(false);
                 for (key, req) in rx {
-                    match engine.synthesize(&req, &never) {
+                    match engine.synthesize(&req, &never).and_then(|s| check_speech(&s).map(|_| s)) {
                         Ok(speech) => {
                             c.lock().unwrap().insert(key.clone(), Arc::new(speech));
                         }
-                        Err(e) => errs.lock().unwrap().push((key.clone(), e.to_string())),
+                        Err(e) => {
+                            f.lock().unwrap().insert(key.clone(), e.to_string());
+                            errs.lock().unwrap().push((key.clone(), e.to_string()));
+                        }
                     }
                     q.lock().unwrap().remove(&key);
                     notify();
                 }
             })
             .expect("puhesäie");
-        BackgroundEngine { inner, cache, queued, tx: Mutex::new(tx), errors }
+        BackgroundEngine { inner, cache, queued, failed, tx: Mutex::new(tx), errors }
     }
 
     /// Alla oleva moottori (vienti käyttää sitä suoraan omassa säikeessään).
@@ -120,6 +132,9 @@ impl SpeechEngine for BackgroundEngine {
         let key = cache_key(&r.text, &r.voice, r.speed, self.inner.model_version());
         if let Some(s) = self.cache.lock().unwrap().get(&key) {
             return Ok((**s).clone());
+        }
+        if let Some(e) = self.failed.lock().unwrap().get(&key) {
+            return Err(VoiceError::Engine(e.clone()));
         }
         if self.queued.lock().unwrap().insert(key.clone()) {
             let _ = self.tx.lock().unwrap().send((key, r.clone()));
@@ -248,13 +263,24 @@ fn synthesize_one(line: &DialogueLine, o: &SynthesisOptions) -> Result<LineResul
         }
         r => r?,
     };
-    let d = speech.audio.duration();
-    if speech.audio.samples.is_empty() || speech.audio.sample_rate < 8000 || !d.is_finite() || d > MAX_SECONDS {
-        return Err(VoiceError::Engine("Puhemoottori palautti virheellisen äänen.".into()));
-    }
+    check_speech(&speech)?;
     let speech = Arc::new(speech);
     o.cache.lock().unwrap().insert(key, speech.clone());
     Ok(LineResult { id: line.id.clone(), status: LineStatus::Synthesized, notices, speech: Some(speech), provenance: Some(provenance) })
+}
+
+/// Hylkää tyhjän, liian pitkän tai rikkinäisen äänen ennen välimuistia.
+fn check_speech(speech: &Speech) -> Result<(), VoiceError> {
+    let d = speech.audio.duration();
+    if speech.audio.samples.is_empty()
+        || speech.audio.sample_rate < 8000
+        || !d.is_finite()
+        || d > MAX_SECONDS
+        || speech.audio.samples.iter().any(|x| !x.is_finite())
+    {
+        return Err(VoiceError::Engine("Puhemoottori palautti virheellisen äänen.".into()));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -305,5 +331,205 @@ mod tests {
         assert_eq!(bg.queue_len(), 0);
         let again = synthesize_lines(&lines()[..1], &o).unwrap();
         assert_eq!(again[0].status, LineStatus::Cached);
+    }
+
+    /// Testimoottori, jonka malliversio ja virheet voi valita; laskee kutsut.
+    struct Scripted {
+        version: &'static str,
+        fail: bool,
+        empty: bool,
+        calls: Mutex<Vec<SpeechRequest>>,
+    }
+
+    impl Scripted {
+        fn new(version: &'static str) -> Self {
+            Scripted { version, fail: false, empty: false, calls: Mutex::new(Vec::new()) }
+        }
+        fn calls(&self) -> Vec<SpeechRequest> {
+            self.calls.lock().unwrap().clone()
+        }
+    }
+
+    impl SpeechEngine for Scripted {
+        fn id(&self) -> &str {
+            "scripted"
+        }
+        fn model_version(&self) -> &str {
+            self.version
+        }
+        fn synthesize(&self, r: &SpeechRequest, cancel: &AtomicBool) -> Result<Speech, VoiceError> {
+            self.calls.lock().unwrap().push(r.clone());
+            if self.fail {
+                return Err(VoiceError::Engine("rikki".into()));
+            }
+            if self.empty {
+                return Ok(Speech { audio: Audio { samples: vec![], sample_rate: 24000 }, phonemes: None });
+            }
+            TestEngine::default().synthesize(r, cancel)
+        }
+    }
+
+    fn dialogue(rows: &[(&str, &str)]) -> Vec<DialogueLine> {
+        rows.iter().map(|(s, t)| DialogueLine { id: crate::spoken::line_key(s, t), speaker: s.to_string(), text: t.to_string() }).collect()
+    }
+
+    fn run(engine: &dyn SpeechEngine, lines: &[DialogueLine], voices: &[(&str, &str)], own: &[&str], cache: &SpeechCache) -> Vec<LineResult> {
+        let cancel = AtomicBool::new(false);
+        let accepted = BTreeSet::new();
+        let voice_for = |s: &str| voices.iter().find(|(n, _)| n.eq_ignore_ascii_case(s)).map(|(_, v)| v.to_string());
+        let has_own = |id: &str| own.contains(&id);
+        let o = SynthesisOptions { engine, voice_for: &voice_for, has_own_audio: &has_own, accepted_notices: &accepted, cache: cache.clone(), cancel: &cancel };
+        synthesize_lines(lines, &o).unwrap()
+    }
+
+    fn statuses(r: &[LineResult]) -> Vec<LineStatus> {
+        r.iter().map(|r| r.status).collect()
+    }
+
+    const TWO: &[(&str, &str)] = &[("PIPSA", "af_heart"), ("VILLE", "am_adam")];
+
+    #[test]
+    fn two_characters_keep_their_own_english_voices() {
+        let engine = Scripted::new("v1");
+        let cache = SpeechCache::default();
+        let lines = dialogue(&[("PIPSA", "Hello there!"), ("VILLE", "Hello there!"), ("Pipsa", "Don't worry, I'm fine.")]);
+        let r = run(&engine, &lines, TWO, &[], &cache);
+        assert_eq!(statuses(&r), [LineStatus::Synthesized; 3]);
+        let voices: Vec<_> = engine.calls().iter().map(|c| c.voice.clone()).collect();
+        assert_eq!(voices, ["af_heart", "am_adam", "af_heart"]);
+        // Sama teksti eri hahmoilla: eri avain, eri ääni, oma alkuperätieto.
+        let (a, b) = (r[0].provenance.as_ref().unwrap(), r[1].provenance.as_ref().unwrap());
+        assert_ne!(a.key, b.key);
+        assert_eq!((a.voice.as_str(), b.voice.as_str()), ("af_heart", "am_adam"));
+        assert_eq!((a.model_version.as_str(), a.engine.as_str(), a.speed), ("v1", "scripted", 1.0));
+        assert_ne!(r[0].speech.as_ref().unwrap().audio.samples, r[1].speech.as_ref().unwrap().audio.samples);
+        // Uusi ajo samoilla valinnoilla: kaikki välimuistista, ei uutta synteesiä.
+        let again = run(&engine, &lines, TWO, &[], &cache);
+        assert_eq!(statuses(&again), [LineStatus::Cached; 3]);
+        assert_eq!(engine.calls().len(), 3);
+        assert!(Arc::ptr_eq(again[1].speech.as_ref().unwrap(), r[1].speech.as_ref().unwrap()));
+    }
+
+    #[test]
+    fn invalid_or_missing_voices_are_never_synthesized() {
+        let engine = Scripted::new("v1");
+        let cache = SpeechCache::default();
+        let lines = dialogue(&[("PIPSA", "Hello."), ("VILLE", "Hello."), ("TARU", "Hello."), ("UKKO", "Hello.")]);
+        let voices = [("PIPSA", "af_sky"), ("VILLE", "../../etc/passwd"), ("TARU", "")];
+        let r = run(&engine, &lines, &voices, &[], &cache);
+        assert_eq!(statuses(&r), [LineStatus::NoVoice; 4]);
+        assert!(engine.calls().is_empty());
+        // Suora kutsu tuntemattomalla tai tyhjällä äänellä on virhe, ei paniikki.
+        let never = AtomicBool::new(false);
+        for voice in ["", "af_sky", "../x"] {
+            let req = SpeechRequest { text: "Hi".into(), voice: voice.into(), speed: 1.0 };
+            assert!(matches!(TestEngine::default().synthesize(&req, &never), Err(VoiceError::Model(_))));
+        }
+    }
+
+    #[test]
+    fn cache_follows_text_voice_speed_and_model_version() {
+        let cache = SpeechCache::default();
+        let v1 = Scripted::new("v1");
+        let base = [("PIPSA", "Good morning."), ("VILLE", "Where is the bus?"), ("PIPSA", "Over there."), ("VILLE", "Thanks a lot.")];
+        run(&v1, &dialogue(&base), TWO, &[], &cache);
+        assert_eq!(v1.calls().len(), 4);
+
+        // 1. Yhden repliikin tekstin muutos: vain se syntetisoidaan.
+        let mut edited = base;
+        edited[2].1 = "Right over there.";
+        let r = run(&v1, &dialogue(&edited), TWO, &[], &cache);
+        assert_eq!(statuses(&r), [LineStatus::Cached, LineStatus::Cached, LineStatus::Synthesized, LineStatus::Cached]);
+        assert_eq!(v1.calls().last().unwrap().text, "Right over there.");
+        assert_eq!(v1.calls().len(), 5);
+
+        // 2. Nopeusohje muuttaa vain oman rivinsä.
+        edited[1].1 = "Where is the bus? (slowly)";
+        let r = run(&v1, &dialogue(&edited), TWO, &[], &cache);
+        assert_eq!(statuses(&r), [LineStatus::Cached, LineStatus::Synthesized, LineStatus::Cached, LineStatus::Cached]);
+        assert_eq!((v1.calls().last().unwrap().speed, v1.calls().len()), (0.85, 6));
+
+        // 3. Villen äänen vaihto: vain Villen rivit syntetisoidaan, Pipsan pysyvät.
+        let swapped = [("PIPSA", "af_heart"), ("VILLE", "bm_george")];
+        let r = run(&v1, &dialogue(&edited), &swapped, &[], &cache);
+        assert_eq!(statuses(&r), [LineStatus::Cached, LineStatus::Synthesized, LineStatus::Cached, LineStatus::Synthesized]);
+        assert!(v1.calls()[6..].iter().all(|c| c.voice == "bm_george"));
+        assert_eq!(v1.calls().len(), 8);
+        // Paluu aiempaan ääneen löytää vanhan puheen välimuistista.
+        let r = run(&v1, &dialogue(&edited), TWO, &[], &cache);
+        assert_eq!(statuses(&r), [LineStatus::Cached; 4]);
+        assert_eq!(v1.calls().len(), 8);
+
+        // 4. Uusi malliversio: mitään vanhaa ei käytetä.
+        let v2 = Scripted::new("v2");
+        let r = run(&v2, &dialogue(&edited), TWO, &[], &cache);
+        assert_eq!(statuses(&r), [LineStatus::Synthesized; 4]);
+        assert_eq!(v2.calls().len(), 4);
+    }
+
+    #[test]
+    fn own_or_imported_audio_is_never_replaced() {
+        let cache = SpeechCache::default();
+        let engine = Scripted::new("v1");
+        let lines = dialogue(&[("PIPSA", "Hello there!"), ("VILLE", "See you later."), ("VILLE", "Moi kaikki")]);
+        // Välimuistissa on jo synteesi Villen riville (esim. ennen omaa äänitystä).
+        run(&engine, &lines[..2], TWO, &[], &cache);
+        assert_eq!(engine.calls().len(), 2);
+        let own = [lines[1].id.as_str(), lines[2].id.as_str()];
+        let r = run(&engine, &lines, TWO, &own, &cache);
+        assert_eq!(statuses(&r), [LineStatus::Cached, LineStatus::KeptOwnAudio, LineStatus::KeptOwnAudio]);
+        assert!(r[1].speech.is_none() && r[1].provenance.is_none() && r[1].notices.is_empty());
+        assert_eq!(engine.calls().len(), 2);
+
+        // Taustamoottori ei edes jonota omaa riviä.
+        let (tx, _rx) = std::sync::mpsc::channel();
+        let tx = Mutex::new(tx);
+        let bg = BackgroundEngine::new(Arc::new(Scripted::new("v1")), SpeechCache::default(), Arc::new(move || tx.lock().unwrap().send(()).unwrap()));
+        let r = run(&bg, &lines[1..], TWO, &own, &SpeechCache::default());
+        assert_eq!(statuses(&r), [LineStatus::KeptOwnAudio; 2]);
+        assert_eq!(bg.queue_len(), 0);
+    }
+
+    fn background(engine: Scripted) -> (BackgroundEngine, SpeechCache, std::sync::mpsc::Receiver<()>) {
+        let cache = SpeechCache::default();
+        let (tx, rx) = std::sync::mpsc::channel();
+        let tx = Mutex::new(tx);
+        let bg = BackgroundEngine::new(Arc::new(engine), cache.clone(), Arc::new(move || tx.lock().unwrap().send(()).unwrap()));
+        (bg, cache, rx)
+    }
+
+    #[test]
+    fn background_failure_is_reported_once_not_retried_forever() {
+        let mut failing = Scripted::new("v1");
+        failing.fail = true;
+        let (bg, cache, rx) = background(failing);
+        let lines = dialogue(&[("PIPSA", "Hello there!")]);
+        assert_eq!(statuses(&run(&bg, &lines, TWO, &[], &cache)), [LineStatus::Pending]);
+        rx.recv_timeout(std::time::Duration::from_secs(5)).unwrap();
+        assert_eq!(bg.errors.lock().unwrap().len(), 1);
+        // Valmistumisilmoitus ajaa putken uudelleen: virhe näkyy eikä riviä jonoteta uudestaan.
+        let cancel = AtomicBool::new(false);
+        let accepted = BTreeSet::new();
+        let voice_for = |_: &str| Some("af_heart".to_string());
+        let own = |_: &str| false;
+        let o = SynthesisOptions { engine: &bg, voice_for: &voice_for, has_own_audio: &own, accepted_notices: &accepted, cache: cache.clone(), cancel: &cancel };
+        for _ in 0..3 {
+            assert!(matches!(synthesize_lines(&lines, &o), Err(VoiceError::Engine(_))));
+        }
+        assert!(rx.recv_timeout(std::time::Duration::from_millis(200)).is_err());
+        assert_eq!(bg.queue_len(), 0);
+        assert_eq!(bg.errors.lock().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn background_never_caches_invalid_audio() {
+        let mut empty = Scripted::new("v1");
+        empty.empty = true;
+        let (bg, cache, rx) = background(empty);
+        let lines = dialogue(&[("PIPSA", "Hello there!")]);
+        assert_eq!(statuses(&run(&bg, &lines, TWO, &[], &cache)), [LineStatus::Pending]);
+        rx.recv_timeout(std::time::Duration::from_secs(5)).unwrap();
+        assert!(cache.lock().unwrap().is_empty());
+        assert!(bg.errors.lock().unwrap()[0].1.contains("virheellisen"));
     }
 }
