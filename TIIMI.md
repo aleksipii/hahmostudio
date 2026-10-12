@@ -650,3 +650,33 @@ Omistetut tiedostot: `native/crates/hs-project/**`,
 `hs-agents/src/{production.rs,agents/voice.rs}`, projektitestit,
 `hs-app/src/project_ui.rs` ja sen app/main/panels/voice_ui/export_job-liitännät,
 Cargo-manifestit/lockfile sekä aktiiviset työohjeet ja natiivin dokumentaatio.
+## Claude: englanninkielinen Kokoro-puhe, äänivalinnat ja puhevälimuisti — 12.10.2026 (TYÖHAARASSA, luonnos-PR)
+
+Työhaara `claude/project-thread-vqcdwl`, pohja `main` bb225e2. Pilvicheckout, erillään Codexin paikallisesta työstä. Omistetut tiedostot: `native/crates/hs-voice/src/{engine,spoken,kokoro}.rs` ja niiden testit. Codexin alueisiin (hs-project, .koeta, hs-agentsin projektisovitin ja puheen palautus, hs-appin sarjatoiminnot) tai Speech/Provenance/LineStatus/VoiceError-rajapintoihin ei koskettu.
+
+Korjattu:
+- Taustasynteesin loputon uusinta: epäonnistunut rivi ilmoitti valmistumisesta, ilmoitus ajoi putken uudelleen ja rivi jonottui taas. Nyt epäonnistunut avain muistetaan, eikä sitä jonoteta uudelleen. Sama pyyntö palauttaa tallennetun virheen (näkyy putken virheenä). Mallin uusi avaus luo uuden moottorin, joka yrittää alusta.
+- Taustasynteesi tallensi välimuistiin tarkistamatonta ääntä (tyhjä, NaN, liian pitkä). Sama `check_speech` koskee nyt molempia polkuja.
+- `KokoroEngine` hyväksyy vain studion äänilistan (äänen nimestä tulee `voices/<id>.bin`-polku, joten esim. `../x` hylätään) ja nopeuden 0,5–2,0.
+- `TestEngine` ei enää kaadu tyhjään ääneen ja antaa jokaiselle äänelle oman sävelkorkeuden (ennen af_heart ja am_adam kuulostivat testeissä samalta).
+- Suomen tunnistus: lisätty esim. hei, moi, kiitos, ja, nyt ("Hei Ville!" ei enää mene englantilaiselle äänelle). `lib/kokoro.ts`:n lista on edelleen suppeampi.
+
+Testattu (Linux-pilvi, Rust 1.97, lavapipe Vulkan; kontissa `apt-get install libasound2-dev mesa-vulkan-drivers libxkbcommon-x11-0`):
+- Simuloitu (testimoottori, EI Kokoro-ääntä): `cd native && cargo test -p hs-voice` 17 läpi, 1 ohitettu. Kaksi hahmoa eri äänillä, sama teksti antaa eri avaimen ja äänen, uusi ajo kokonaan välimuistista. Tekstin, nopeusohjeen ja äänen vaihto syntetisoi vain muuttuneet rivit, ja paluu vanhaan ääneen löytää vanhan puheen. Uusi malliversio syntetisoi kaiken. Omaa ääntä ei korvata, vaikka välimuistissa olisi synteesi, eikä taustamoottori jonota sitä. Virheellinen tai puuttuva ääni ei synteesiin. Virhe ei uusiudu, eikä rikkinäistä ääntä tallenneta.
+- `WGPU_BACKEND=vulkan cargo test --workspace`: 72 läpi, 0 fail, 1 ohitettu. `cargo clippy --workspace --all-targets`: 0 varoitusta.
+- Aito Kokoro-synteesi: EI AJETTU. Kontissa ei ole mallia, ja huggingface.co palauttaa 403 (välityspalvelin). Mallia ei ladattu. `cargo test -p hs-voice -- --ignored` epäonnistuu tarkoituksella viestiin "HAHMOSTUDIO_KOKORO_DIR puuttuu: oikeaa synteesiä ei ajettu". Testi on nyt `#[ignore]`, eikä ohitus enää näy läpäisynä.
+- Kuuntelu: EI TEHTY.
+
+Avoimet (käyttäjän Macilla, hyväksytyllä jo asennetulla mallilla):
+`cd native && HAHMOSTUDIO_KOKORO_DIR="$HOME/Library/Application Support/hahmostudio/kokoro/model" HAHMOSTUDIO_KOKORO_OUT=/tmp/kokoro-koe cargo test -p hs-voice --release -- --ignored --nocapture`. Testi kirjoittaa kokoro-pipsa-af_heart.wav ja kokoro-ville-am_adam.wav ihmisen kuunneltaviksi. Jos mallia ei ole asennettu, lataus vaatii käyttäjän luvan.
+
+Handoff Codexille / UI:lle (ei muutettu, sovittava):
+- hs-agents `voice.rs`: oma äänitys on sidottu avaimeen `line_key(puhuja, teksti)`. Jos repliikin tekstiä muokataan, sidos katoaa ja rivi syntetisoidaan, joten oma ääni jää käyttämättä (ei poistu). Sama puhuja ja sama teksti kahdesti jakavat yhden äänityksen. Tarvitaan pysyvä rivitunniste tai varmistus ennen synteesiä.
+- Epäonnistunut taustarivi näkyy nyt putken virheenä. Rivikohtainen tila "epäonnistui" vaatisi uuden LineStatus-arvon, eli rajapintamuutoksen.
+- Välimuistiavain sisältää tekstin, äänen, nopeuden ja `MODEL_VERSION`-vakion, mutta ei loqui-g2p-versiota. Välimuisti on vain muistissa; tallennettu puhe on Codexin projektityötä.
+- Pysyvä äänivalinta on `CharacterParams.voice`. Tallennus ja avaus testataan Codexin .koeta-työssä. Tuntematon tallennettu ääni antaa tilan "ei ääntä", ei synteesiä.
+- Huulisynkka: ei muutoksia. Oikea Kokoro antaa IPA-foneemit, testimoottori pientä tekstiä.
+
+Seuraava konkreettinen työ: yllä oleva aito synteesi ja kuuntelu Macilla, sitten oman äänityksen pysyvä rivitunniste yhdessä Codexin kanssa.
+
+Tiedostot: `native/crates/hs-voice/src/{engine,spoken,kokoro}.rs`, `TIIMI.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
