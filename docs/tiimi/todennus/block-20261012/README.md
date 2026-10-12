@@ -18,10 +18,10 @@ Tarkistettavat jälkiehdot: lähde ja ackattu levy-snapshot ennen editointia; ta
 
 - `node --check desktop/block-diagnostic.mjs`: läpi.
 - `node --experimental-strip-types --test lib/blocks.test.ts`: **10/10 läpi**, ei ohituksia.
-- `npm run desktop:test:blocks`: GUI-ajo vielä kesken; lue viimeisen ajon block-report.json ja workflow-report.json, älä päättele onnistumista tästä suunnitelmasta.
+- `npm run desktop:test:blocks`: **4 tarkistusta läpi, Alt-vaihe epäonnistui**. Aito pointer-raahaus jakoi tauon ja ilme alkoi 2 s, lähde tallentui pysyvästi, undo palautti tarkan lähteen. Undo ei palauttanut palikka-aikajanan mallia: ilme edelleen 2 s, mutta lähde ensimmäisellä rivillä. Alt-pudotus sen jälkeen ilmoitti “Rivi 2 on muuttunut palikan lukemisen jälkeen”. block-failed.png sekä JSON source/blocks todentavat ristiriidan.
 
 Buildin muuttumaton `dist-desktop` ja private runtime käytetään toisesta saman SHA:n auditointikopiosta symlinkeillä levytilan säästämiseksi. Symlinkkejä, runtimeja ja testin userDataa ei stageta Gitissä. Tuotantokomponentteja ei tässä vaiheessa muutettu.
 
 ## Avoimet kysymykset ja ehdotukset
 
-Avoinna: viimeisen kohdistuksiltaan korjatun GUI-ajon hyväksyntä. Aiemmat kehitysajot pysähtyivät testikohdistuksiin eivätkä ole näyttö tuotantopalikan viasta. Laajennusehdotus: erilliset usean palikan drag-, reunasta venytys-, pointercancel-, kirjasto-HTML-drag/drop- ja näppäimistötestit. Tämä testi ei hyväksy näitä eikä fyysisiä laitteita tai VoiceOveria.
+Avoinna: undo/source/model-ristiriidan juurisyy ja korjaus, sitten undo+Alt+redo uusinta. Neljäs ajo pääsi oikeaan raahaukseen ja löysi todellisen käyttöliittymän ristiriidan; ensimmäiset kolme ajoa olivat vain kohdistusvirheitä. Laajennusehdotus: erilliset usean palikan drag-, reunasta venytys-, pointercancel-, kirjasto-HTML-drag/drop- ja näppäimistötestit. Tämä testi ei hyväksy näitä eikä fyysisiä laitteita tai VoiceOveria.
