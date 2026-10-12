@@ -532,3 +532,27 @@ Avoimet hyväksynnät (käyttäjän Macilla, ei tehty pilvessä):
 - Fyysinen mikrofoni, kamera ja VoiceOver: `docs/tiimi/LAITEHYVAKSYNTA-TARKISTUSLISTA.md` (12 kohtaa).
 
 Seuraava konkreettinen työ: DMG:n rakentaminen ja yllä olevat laitehyväksynnät käyttäjän Macilla. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
+
+## Claude: natiivi Rust-studio (egui/wgpu + agentit) — 12.10.2026 (TYÖHAARASSA, draft-PR)
+
+Työhaara `claude/project-thread-t4mzzw`, pohja `main` aaa37dc. Uusi Cargo-työtila `native/` (9 cratea: hs-core, hs-script, hs-motion, hs-character, hs-render, hs-hahmo, hs-agents, hs-cli, hs-app). Electron-sovellus on koskematon ja edelleen julkaistava versio; natiivi rinnalla, kunnes `native/PARITEETTI.md` on valmis.
+
+Tehty:
+- `StudioAgent`-trait ja riippuvuusjärjestetty putki (vain likaiset agentit ajetaan uudelleen): ScriptParserAgent (lib/screenplay.ts:n sääntöjen portti, ei arvaa eikä paniikoi), CharacterMeshAgent (parametrinen hahmo mitoista, kasvoista ja vaatteista, rakennus ~4 ms), ProceduralMotionAgent (kävely/juoksu, pelvis-pomppu, hartiavastakierto, IK-jalat ilman liukumaa, hiukset/vaatteet vaimennetulla sinillä, viisisorminen puhelimen näpyttely CCD-IK:lla ~1 mm tarkkuudella), CinematographyAgent (otokset, 30°/180°-säännöt, push-in/seuranta, 3-pistevalaistus), RustRenderAgent (wgpu 4×MSAA ja CPU-rasteri samoilla sävytysyhtälöillä, PNG/MP4-vienti FFmpeg-putkella).
+- egui/eframe-studio: käsikirjoitus + diagnostiikka, hahmotyöpaja liukusäätimin, agenttitaulukko, neljän raidan aikajana, taustavienti peruutuksella, vanhojen .hahmo-tiedostojen katselu.
+- CLI `hahmostudio-cli`: tarkista, renderöi (mp4/png), hahmo, mittaa.
+
+Testattu (Linux-pilvi, Rust 1.97, Mesa lavapipe Vulkan, Xvfb):
+- `cd native && WGPU_BACKEND=vulkan cargo test --workspace`: 39 läpi, 0 fail (sis. GPU vs CPU -kuvavertailu ja MP4-vienti).
+- `cargo clippy --workspace --all-targets`: 0 varoitusta.
+- `xvfb-run -a -s "-screen 0 1600x1000x24" env WGPU_BACKEND=vulkan ./target/debug/hahmostudio --kuvakaappaus gui.png --aika 5.0`: ikkuna, GPU-näyttämö ja aikajana piirtyvät. Kontissa tarvittiin `apt-get install mesa-vulkan-drivers libxkbcommon-x11-0`.
+- `cargo run --release -p hs-cli -- mittaa`: putki 3.9 ms, liike 0.22 ms/ruutu, 540×960 CPU 130 ms/ruutu, GPU 35 ms/ruutu (ohjelmistopohjainen llvmpipe; oikealla GPU:lla moninkertaisesti nopeampi, ei mitattu).
+
+Avoimet:
+- Electronin poisto odottaa pariteettia (ääni/Kokoro/Rhubarb, palikkaeditori, jaksorakentaja, .hahmo-kirjoitus, PSD, Mac-paketti ym., ks. PARITEETTI.md).
+- Haarojen poisto pilvestä palautti 403. Käyttäjä poistaa itse; kaikki paitsi `claude/project-thread-a0orsy` (1 yhdistämätön commit: LICENSE, PR #18) sisältyvät mainiin.
+- Natiivin ulkoasun ja liikkeen taiteellinen hyväksyntä sekä ajo Macilla (Metal) puuttuvat.
+
+Seuraava konkreettinen työ: ääni (Kokoro-WAV + huulisynkka) ja palikkaeditori natiiviin, sitten .hahmo-kirjoitus.
+
+Tiedostot: `native/**`, `.gitignore`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
