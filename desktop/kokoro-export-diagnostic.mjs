@@ -7,13 +7,15 @@ import {inspectMp4} from './export-e2e-diagnostic.mjs';
 export async function kokoroExportDiagnostic(window,directory,{packaged=false}={}){
  const js=s=>window.webContents.executeJavaScript(s,true),sleep=ms=>new Promise(r=>setTimeout(r,ms));
  const wait=async(s,label,seconds=30)=>{for(let i=0;i<seconds*10;i++){if(await js(s))return;await sleep(100);}throw Error('Kokoro export timeout: '+label);};
- const click=async text=>{await wait(`[...document.querySelectorAll('button')].some(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled)`,text);await js(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled);b.click();})()`);await sleep(300);};
+ const click=async text=>{console.log("KOKORO STEP "+text);await wait(`[...document.querySelectorAll('button')].some(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled)`,text);await js(`(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith(${JSON.stringify(text)})&&!b.disabled);b.click();})()`);await sleep(300);};
  const text='This is a local voice test. The animation keeps the original timing.';
- const script='Tausta: keittiö\n\nPipsa: '+text+'\n';
+ const script='Pipsa: '+text;
  const archive=async()=>{const r=await js('window.hahmostudio.recoveryLatest()');if(!r?.bytes)throw Error('No recovery snapshot');const files=readZip(r.bytes);return {files,meta:JSON.parse(files['project.json'].toString())};};
  let report={ok:false,realInference:false,packaged,physicalDevices:false,humanListening:false};
  try{
-  await js(`(()=>{const t=document.querySelector('textarea.script-editor-field')||document.querySelector('#dialogue-script');if(!t)throw Error('Script missing');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(t,${JSON.stringify(script)});t.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  await click('Aloita tyhjästä');
+  await wait("!!document.querySelector('textarea.script-line-field,textarea.script-editor-field,#dialogue-script')",'script field');
+  await js(`(()=>{const t=document.querySelector('textarea.script-line-field,textarea.script-editor-field,#dialogue-script');if(!t)throw Error('Script missing');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(t,${JSON.stringify(script)});t.dispatchEvent(new Event('input',{bubbles:true}));})()`);
   await sleep(2000);await click('Rakenna jakso');await wait("document.body.innerText.includes('Jakso rakennettu')",'English episode');
   await wait("!!document.querySelector('.tarina-review-toggle')",'review toggle');await js("document.querySelector('.tarina-review-toggle').click()");
   await wait("!!document.querySelector('.kokoro-voices select')",'voice selector');
@@ -48,6 +50,6 @@ export async function kokoroExportDiagnostic(window,directory,{packaged=false}={
   const deltaSeconds=best.offsetSamples/8000-start;
   report={...report,ok:mp4.video?.codec==='h264'&&!!mp4.audio&&best.correlation>.9&&Math.abs(deltaSeconds)<=1/30,mp4,bytes,eventStartSeconds:start,audioAlignment:{...best,deltaSeconds,toleranceSeconds:1/30},job:{state:job.state,encoder:job.encoder},mouth:'linked analyzed timing and compiled actor tracks checked; rendered visual/human lip-sync approval remains open'};
   if(!report.ok)throw Error('PCM alignment or MP4 check failed');
- }catch(error){report={...report,ok:false,error:error.message};await writeFile(join(directory,'kokoro-export-failed.png'),(await window.webContents.capturePage()).toPNG());}
+ }catch(error){report={...report,ok:false,error:error.message};await writeFile(join(directory,'kokoro-export-failed.html'),await js('document.documentElement.outerHTML'));await writeFile(join(directory,'kokoro-export-failed.png'),(await window.webContents.capturePage()).toPNG());}
  await writeFile(join(directory,'kokoro-export-report.json'),JSON.stringify(report,null,2));if(!report.ok)throw Error(report.error);return report;
 }
