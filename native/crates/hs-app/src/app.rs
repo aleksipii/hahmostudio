@@ -9,7 +9,7 @@ use hs_character::CharacterParams;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-pub const EXAMPLE: &str = "[tausta olohuone]\n[kuva laaja]\nKALLE: Hei kaikki, jakso alkaa! [vilkuta 2s]\n[kuva kaksikko]\nMAIJA: Taasko sinä puhut kameralle? [odota 2s]\n[kuva olan yli]\nKALLE: Ne rakastavat minua. [nyökkää 2s]\n[kuva alakulma]\nEETU: Minä haluan olla tähti! [hyppää]\nRONJA: Laitan tästä viestin. [näpyttele puhelinta 3s]\n[kuva yläkulma]\nEETU: Odottakaa! [juokse oikealle 2s]";
+pub const EXAMPLE: &str = "[tausta olohuone]\n[kuva laaja]\nKALLE: Hello everyone, welcome to our show! [vilkuta 2s]\n[kuva kaksikko]\nMAIJA: Are you talking to the camera again? [odota 2s]\n[kuva olan yli]\nKALLE: They love me. [nyökkää 2s]\n[kuva alakulma]\nEETU: I want to be a star! [hyppää]\nRONJA: I will send them a message. [näpyttele puhelinta 3s]\n[kuva yläkulma]\nEETU: Wait for me! [juokse oikealle 2s]";
 
 #[derive(Default)]
 pub struct LaunchOptions {
@@ -21,6 +21,7 @@ pub struct LaunchOptions {
 }
 
 pub struct StudioApp {
+    pub project: crate::project_ui::ProjectState,
     pub production: Production,
     pub pipeline: Pipeline,
     pub script: String,
@@ -77,7 +78,8 @@ impl StudioApp {
                 }
             }
         }
-        if let Some(p) = &options.script_path {
+        let series_path = options.script_path.as_ref().filter(|p| p.extension().is_some_and(|e| e == "koeta")).cloned();
+        if let Some(p) = options.script_path.as_ref().filter(|_| series_path.is_none()) {
             match std::fs::read_to_string(p) {
                 Ok(s) => script = s,
                 Err(e) => eprintln!("{}: {e}", p.display()),
@@ -90,7 +92,9 @@ impl StudioApp {
         let viewport = Viewport::new(cc, options.force_cpu);
         let voice = VoiceState::new(&cc.egui_ctx, options.screenshot.is_some());
         production.own_audio = voice.load_recordings().into_iter().collect();
+        let project = crate::project_ui::ProjectState::new(&production);
         let mut app = StudioApp {
+            project,
             production,
             pipeline: Pipeline::default(),
             script,
@@ -118,8 +122,11 @@ impl StudioApp {
             screenshot_frames: 0,
         };
         app.run_pipeline();
+        if let Some(path) = series_path { app.script_path = None; app.open_series(path, &cc.egui_ctx); }
         app
     }
+
+    pub fn screenshot_mode(&self) -> bool { self.screenshot.is_some() }
 
     pub fn run_pipeline(&mut self) {
         self.production.script = self.script.clone();
@@ -247,6 +254,11 @@ impl eframe::App for StudioApp {
             } else {
                 ctx.request_repaint_after(Duration::from_millis(60));
             }
+        }
+        crate::project_ui::update(self, ctx);
+        if crate::project_ui::busy(self) {
+            egui::CentralPanel::default().show(ctx, |ui| { ui.spinner(); ui.label(&self.status); });
+            return;
         }
         crate::voice_ui::update(self, ctx);
         if self.playing && !crate::voice_ui::has_player(self) {

@@ -61,37 +61,44 @@ impl StudioAgent for VoiceAgent {
         }
         let own: HashMap<String, Arc<Audio>> = p.own_audio.clone();
         let mut out: Vec<VoiceLine> = Vec::new();
-        let results = match &p.voice_engine {
-            Some(engine) => {
-                let voice_for = |s: &str| voice_for(p, s);
-                let has_own = |id: &str| own.contains_key(id);
-                let dl: Vec<DialogueLine> = lines.iter().map(|l| l.2.clone()).collect();
-                let o = SynthesisOptions {
-                    engine: engine.as_ref(),
-                    voice_for: &voice_for,
-                    has_own_audio: &has_own,
-                    accepted_notices: &p.accepted_notices,
-                    cache: p.speech_cache.clone(),
-                    cancel: &p.cancel,
-                };
-                match synthesize_lines(&dl, &o) {
-                    Ok(r) => r.into_iter().map(|r| (r.status, r.notices, r.speech)).collect(),
-                    Err(VoiceError::Cancelled) => return Err(AgentError::Cancelled),
-                    Err(e) => return Err(AgentError::Failed { agent: "voice", message: e.to_string() }),
+        let voice_for = |s: &str| voice_for(p, s);
+        let has_own = |id: &str| own.contains_key(id);
+        let mut results = Vec::new();
+        for (_, _, line) in &lines {
+            if let Some(binding) = p.saved_speech.get(&line.id).filter(|_| !has_own(&line.id)) {
+                if saved_matches(p, line, binding) {
+                    results.push((LineStatus::Cached, vec![], Some(Arc::new(binding.speech.clone())), None));
+                    continue;
                 }
             }
-            None => lines
-                .iter()
-                .map(|l| {
-                    if own.contains_key(&l.2.id) {
-                        (LineStatus::KeptOwnAudio, vec![], None)
-                    } else {
-                        (LineStatus::NoEngine, vec!["Puhemallia ei ole asennettu; suu liikkuu tekstin mukaan.".to_string()], None)
-                    }
-                })
-                .collect::<Vec<_>>(),
-        };
-        for ((beat, speaker, line), (status, notices, speech)) in lines.into_iter().zip(results) {
+            match &p.voice_engine {
+                Some(engine) => {
+                    let o = SynthesisOptions {
+                        engine: engine.as_ref(), voice_for: &voice_for, has_own_audio: &has_own,
+                        accepted_notices: &p.accepted_notices, cache: p.speech_cache.clone(), cancel: &p.cancel,
+                    };
+                    let mut r = match synthesize_lines(std::slice::from_ref(line), &o) {
+                        Ok(r) => r,
+                        Err(VoiceError::Cancelled) => return Err(AgentError::Cancelled),
+                        Err(e) => return Err(AgentError::Failed { agent: "voice", message: e.to_string() }),
+                    };
+                    let r = r.remove(0);
+                    results.push((r.status, r.notices, r.speech, r.provenance));
+                }
+                None if has_own(&line.id) => results.push((LineStatus::KeptOwnAudio, vec![], None, None)),
+                None => results.push((LineStatus::NoEngine, vec!["Puhemallia ei ole asennettu; suu liikkuu tekstin mukaan.".into()], None, None)),
+            }
+        }
+        for ((beat, speaker, line), (status, notices, speech, provenance)) in lines.into_iter().zip(results) {
+            if let (Some(s), Some(meta)) = (&speech, provenance) {
+                p.saved_speech.insert(line.id.clone(), hs_project::AudioBinding {
+                    line_key: line.id.clone(), speech: (**s).clone(),
+                    source: hs_project::AudioSource::Synthesized {
+                        engine: meta.engine, voice: meta.voice, speed: meta.speed,
+                        model_version: meta.model_version, cache_key: meta.key,
+                    },
+                });
+            }
             // Oma ääni: huulisynkka käyttää rivin tekstiä äänteinä (suomi lausutaan kuten kirjoitetaan).
             let speech = match own.get(&line.id) {
                 Some(a) => Some(Arc::new(Speech { audio: (**a).clone(), phonemes: Some(line.text.to_lowercase()) })),
@@ -115,6 +122,17 @@ impl StudioAgent for VoiceAgent {
         let report = AgentReport::new(summary);
         Ok(if same { report.unchanged() } else { report })
     }
+}
+
+/// Stored speech is reusable offline, but never after changing text, voice, speed or model.
+fn saved_matches(p: &Production, line: &DialogueLine, binding: &hs_project::AudioBinding) -> bool {
+    let hs_project::AudioSource::Synthesized { engine, voice, speed, model_version, cache_key } = &binding.source else { return false };
+    let spoken = hs_voice::spoken::parse_spoken_text(&line.text);
+    if !spoken.notices.is_empty() && !p.accepted_notices.contains(&line.id) { return false; }
+    voice_for(p, &line.speaker).as_deref() == Some(voice.as_str())
+        && spoken.speed == *speed
+        && *cache_key == hs_voice::spoken::cache_key(&spoken.text, voice, *speed, model_version)
+        && !p.voice_engine.as_ref().is_some_and(|e| e.id() != engine || e.model_version() != model_version)
 }
 
 /// Mix-raidan näytetaajuus.

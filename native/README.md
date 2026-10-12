@@ -82,3 +82,39 @@ alakulma, yläkulma. Esineet: kahvikuppi, pizza, kirja, lahja, pallo, kukat, tö
 mikrofoni, pois. Tuntematonta ohjetta ei arvata, vaan siitä tulee rivikohtainen virhe.
 Vienti on oletuksena pystymuodossa 1080×1920 (TikTok, Instagram Reels, YouTube Shorts);
 `--koko 1920x1080` tekee vaakavideon YouTubeen.
+
+## Natiivin sarjaprojektin tallennus (.koeta)
+
+Tiedosto-valikossa **Uusi sarjaprojekti**, **Avaa sarjaprojekti (.koeta)**,
+**Tallenna sarjaprojekti** ja **Tallenna sarjaprojekti nimellä** käsittelevät
+koko sarjaa. Samassa valikossa voi nimetä sarjan ja jakson, muuttaa jaksonumeroa,
+lisätä jakson ja vaihtaa jaksojen välillä. Jakson vaihto säilyttää nykyisen
+jakson tilan muistissa; tallenna koko sarja levylle ennen sulkemista.
+
+Version 1 projekti sisältää käsikirjoitukset, hahmoparametrit ja niiden
+Kokoro-äänivalinnat, kuvakoon/fps:n, hyväksytyt puhehuomautukset, omat äänet ja
+valmistuneen synteettisen puheen alkuperätietoineen ja foneemeineen. Puhe
+säilytetään häviöttöminä f32-näytteinä ja SHA-256 tarkistetaan avatessa.
+Mallipainoja, käyttäjän absoluuttisia polkuja tai laiteyhteyksiä ei tallenneta.
+
+Tallennettu puhe voidaan toistaa ja viedä ilman asennettua mallia.
+Tekstin, äänen, puhenopeuden tai käytössä olevan malliversion muutos mitätöi
+vain siitä riippuvan tallennetun synteesin. Oma ääni on aina etusijalla;
+alkuperäinen synteesi säilyy myös oman äänen rinnalla. Käsikirjoituksesta
+poistetun rivin äänet säilyvät projektissa, eivätkä saman repliikin eri jaksojen
+äänitykset sekoitu keskenään.
+
+Tallennus tehdään taustasäikeessä tarkistettuun väliaikaistiedostoon ja
+korvataan atomisesti. Epäonnistunut avaus säilyttää nykyisen projektin,
+epäonnistunut tallennus aiemman tiedoston. Sarjan vaihtamisesta ja sovelluksen
+sulkemisesta pyydetään tallentamattoman työn päätös. Tämä ei ole automaattinen
+sarjan autosave eikä sähkökatkodurabiliteettilupaus. Vanhojen sovellusasetusten
+käsikirjoitus/hahmot ja paikalliset äänitykset voidaan tallentaa ensimmäiseksi
+.koeta-projektiksi; vanhoja tiedostoja ei poisteta.
+
+`.koeta` on natiivin studion erillinen formaatti. Se ei korvaa eikä väitä
+lukevansa vanhaa TypeScript-version `.sarja`-arkistoa tai kirjoittavansa
+`.hahmo`-projekteja. V1 ei vielä sisällä tulevaa käsin editoitavaa aikajanaa,
+tekstityksiä, kuvaeditoriresursseja tai autosave-historiaa. Kuva, liike ja kamera
+rakennetaan nykyisistä käsikirjoitustageista. Formaatti ja rajat:
+[hs-project/README.md](crates/hs-project/README.md).

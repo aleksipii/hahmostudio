@@ -190,3 +190,41 @@ fn props_follow_the_hand_until_put_away() {
     let cup = with.items.iter().find(|i| i.skin.len() == 1).expect("käteen sidottu esine");
     assert!(cup.outline);
 }
+
+#[test]
+fn portable_series_reopens_without_engine_and_preserves_own_audio() {
+    use hs_project::{Series, AudioSource};
+    use hs_voice::{Audio, TestEngine, LineStatus};
+    use std::sync::Arc;
+    let engine = Arc::new(TestEngine::default());
+    let mut original = Production::new("KALLE: Hello, welcome to our show! [odota 1s]\nMAIJA: I have my own voice. [odota 1s]");
+    original.voice_engine = Some(engine.clone());
+    original.cast_params = hs_character::CharacterParams::presets();
+    let own_key = hs_voice::spoken::line_key("MAIJA", "I have my own voice.");
+    let own = Audio::synthetic_speech("I have my own voice.", 1.0, 140.0);
+    original.own_audio.insert(own_key.clone(), Arc::new(own.clone()));
+    // Orphan audio is user work, even after deleting its script line.
+    original.own_audio.insert("orphan-recording".into(), Arc::new(own.clone()));
+    Pipeline::default().run(&mut original).unwrap();
+    assert_eq!(original.voice_lines[0].status, LineStatus::Synthesized);
+    let episode = hs_agents::project::capture(&original, "episode-1".into(), 1, "Pilot".into());
+    assert!(episode.audio.iter().any(|b| matches!(b.source, AudioSource::Synthesized { .. })));
+    let archive = hs_project::encode(&Series { id:"series-1".into(), name:"Our show".into(), episodes:vec![episode] }).unwrap();
+    let opened = hs_project::decode(&archive).unwrap();
+    let mut restored = hs_agents::project::restore(&opened.episodes[0]);
+    assert!(restored.voice_engine.is_none());
+    assert!(restored.own_audio.contains_key("orphan-recording"));
+    Pipeline::default().run(&mut restored).unwrap();
+    assert_eq!(restored.voice_lines[0].status, LineStatus::Cached);
+    assert_eq!(restored.voice_lines[1].status, LineStatus::KeptOwnAudio);
+    assert_eq!(engine.calls.lock().unwrap().len(), 1);
+    assert_eq!(restored.mix.as_ref().unwrap().samples, original.mix.as_ref().unwrap().samples);
+    assert_eq!(restored.timeline.as_ref().unwrap().duration, original.timeline.as_ref().unwrap().duration);
+    assert_eq!(restored.lipsync[0].track.keys.len(), original.lipsync[0].track.keys.len());
+    // Changing voice invalidates only synthesized audio, never the user's recording.
+    restored.cast_params.iter_mut().find(|c| c.name.eq_ignore_ascii_case("Kalle")).unwrap().voice = Some("af_heart".into());
+    let mut pipe = Pipeline::default();
+    pipe.run(&mut restored).unwrap();
+    assert_eq!(restored.voice_lines[0].status, LineStatus::NoEngine);
+    assert_eq!(restored.voice_lines[1].status, LineStatus::KeptOwnAudio);
+}

@@ -11,6 +11,7 @@ default = ["gpu"]
 gpu = ["hs-render/gpu"]
 
 [dependencies]
+hs-project.workspace = true
 hs-core.workspace = true
 hs-script.workspace = true
 hs-motion.workspace = true

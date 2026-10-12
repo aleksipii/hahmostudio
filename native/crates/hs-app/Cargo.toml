@@ -11,6 +11,7 @@ name = "hahmostudio"
 path = "src/main.rs"
 
 [dependencies]
+hs-project.workspace = true
 hs-core.workspace = true
 hs-script.workspace = true
 hs-character.workspace = true

@@ -86,6 +86,23 @@ impl VoiceState {
         v
     }
 
+    /// Rebind the installed engine to a fresh project's cache, without opening new devices.
+    pub fn attach_project(&mut self, p: &mut hs_agents::Production, ctx: &egui::Context) {
+        if let Some(player) = &self.player { player.pause(); player.set_audio(None); }
+        self.mix_ptr = 0;
+        // Project-owned recordings must never overwrite/delete legacy global recordings.
+        self.recordings_dir = None;
+        if let Some(old) = &self.engine {
+            let ready = self.ready.clone();
+            let ctx = ctx.clone();
+            let bg = Arc::new(BackgroundEngine::new(old.inner(), p.speech_cache.clone(), Arc::new(move || {
+                ready.store(true, Ordering::Relaxed); ctx.request_repaint();
+            })));
+            p.voice_engine = Some(bg.clone());
+            self.engine = Some(bg);
+        }
+    }
+
     /// Avaa mallin taustasäikeessä (painot ~330 MiB).
     pub fn start_loading(&mut self, ctx: &egui::Context) {
         let Some(store) = &self.store else { return };
@@ -299,7 +316,11 @@ pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
             ui.label(RichText::new(e).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)).small());
         }
     } else {
-        ui.label("Puhemallia ei ole asennettu. Suut liikkuvat silti tekstin mukaan, ja voit äänittää rivit itse.");
+        if app.production.voice_lines.iter().any(|l| l.speech.is_some()) {
+            ui.label("Puhemallia ei ole asennettu. Projektin tallennetut puheet ja omat äänet ovat käytössä; uusi synteesi tarvitsee Kokoron.");
+        } else {
+            ui.label("Puhemallia ei ole asennettu. Suut liikkuvat silti tekstin mukaan, ja voit äänittää rivit itse.");
+        }
         ui.horizontal(|ui| {
             if ui.add_enabled(app.voice.store.is_some(), egui::Button::new("Lataa Kokoro…")).clicked() {
                 app.voice.confirm_download = true;

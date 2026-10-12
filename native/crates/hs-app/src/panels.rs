@@ -12,6 +12,8 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
     egui::TopBottomPanel::top("valikko").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("Tiedosto", |ui| {
+                crate::project_ui::menu(app, ui);
+                ui.separator();
                 if ui.button("Uusi käsikirjoitus").clicked() {
                     app.script = EXAMPLE.into();
                     app.script_path = None;
@@ -61,6 +63,7 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                 }
                 ui.separator();
                 if ui.button("Lopeta").clicked() {
+                    ui.close_menu();
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
@@ -89,9 +92,11 @@ fn start_export(app: &mut StudioApp, request: RenderRequest) {
     let backend = if app.viewport.is_gpu() { Backend::Auto } else { Backend::Cpu };
     // Vienti käyttää mallia suoraan (odottaa puheen valmistumisen), ei käyttöliittymän taustajonoa.
     let voice = ExportVoice {
+        fps: Some(app.production.fps),
         engine: app.voice.engine.as_ref().map(|bg| bg.inner()),
         cache: app.production.speech_cache.clone(),
         own_audio: app.production.own_audio.clone(),
+        saved_speech: app.production.saved_speech.clone(),
         accepted_notices: app.production.accepted_notices.clone(),
     };
     app.export = Some(ExportJob::start(app.script.clone(), app.production.cast_params.clone(), voice, request, backend, (app.production.width, app.production.height)));

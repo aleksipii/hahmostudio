@@ -12,7 +12,9 @@ use std::sync::Arc;
 #[derive(Clone, Default)]
 pub struct ExportVoice {
     pub engine: Option<Arc<dyn hs_voice::SpeechEngine>>,
+    pub fps: Option<hs_core::Fps>,
     pub cache: hs_voice::SpeechCache,
+    pub saved_speech: std::collections::HashMap<String, hs_project::AudioBinding>,
     pub own_audio: std::collections::HashMap<String, Arc<hs_voice::Audio>>,
     pub accepted_notices: std::collections::BTreeSet<String>,
 }
@@ -39,9 +41,11 @@ impl ExportJob {
         std::thread::spawn(move || {
             let mut p = Production::new(script);
             p.cast_params = cast;
+            if let Some(fps) = voice.fps { p.fps = fps; }
             p.voice_engine = voice.engine;
             p.speech_cache = voice.cache;
             p.own_audio = voice.own_audio;
+            p.saved_speech = voice.saved_speech;
             p.accepted_notices = voice.accepted_notices;
             p.width = size.0;
             p.height = size.1;

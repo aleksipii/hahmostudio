@@ -98,6 +98,8 @@ pub struct Production {
     pub speech_cache: SpeechCache,
     /// Käyttäjän äänitykset tai tuodut äänet rivin avaimen mukaan. Niitä ei koskaan korvata synteesillä.
     pub own_audio: HashMap<String, Arc<Audio>>,
+    /// Portable synthesized speech, including provenance; orphan lines are retained.
+    pub saved_speech: HashMap<String, hs_project::AudioBinding>,
     /// Rivit, joiden huomautukset (esim. tukematon sulkeohje) käyttäjä on hyväksynyt.
     pub accepted_notices: BTreeSet<String>,
 
@@ -133,6 +135,7 @@ impl Production {
             voice_engine: None,
             speech_cache: SpeechCache::default(),
             own_audio: HashMap::new(),
+            saved_speech: HashMap::new(),
             accepted_notices: BTreeSet::new(),
             plan: None,
             voice_lines: Vec::new(),

@@ -1,6 +1,6 @@
 //! Hahmostudio – natiivi työpöytäsovellus.
 //!
-//! Käynnistys: `hahmostudio [käsikirjoitus.txt]`.
+//! Käynnistys: `hahmostudio [käsikirjoitus.txt | sarja.koeta]`.
 //! Testikäyttö: `hahmostudio --kuvakaappaus kuva.png [--aika 5.0] [käsikirjoitus.txt]`
 //! piirtää ikkunan, tallentaa kuvakaappauksen ja sulkeutuu. `--välilehti ääni|esitys` avaa vasemman paneelin välilehden.
 
@@ -8,6 +8,7 @@ mod app;
 mod camera_ui;
 mod export_job;
 mod panels;
+mod project_ui;
 mod viewport;
 mod voice_ui;
 
