@@ -76,7 +76,8 @@ export default function PresentationPanel({recordingActivity,recordingTarget,doc
  const setPreviewFrame=(next:number)=>{setLocalPreviewFrame(next);if(activeDock)globalSeek?.(documentFrame(next,model?.startFrame));};
  useEffect(()=>{if(activeDock&&globalFrame!==undefined)setLocalPreviewFrame(sceneFrame(globalFrame,model?.startFrame));},[globalFrame,activeDock,model?.startFrame]);
  useEffect(()=>{previewModel?.(compiled??undefined,assets);},[compiled,assets]);
- useEffect(()=>{const incoming=scene.presentationDraft?.id===model?.id?scene.presentationDraft:scene.presentations?.find(p=>p.id===model?.id);if(incoming&&model&&JSON.stringify(incoming.bindings)!==JSON.stringify(model.bindings))setModel({...model,bindings:incoming.bindings});},[scene.presentationDraft,scene.presentations]);
+ // Funktionaalinen päivitys: projektin kumoaminen asettaa samassa commitissa uuden mallin (projectEpoch-efekti); vanha sulkeuma palauttaisi kumotun mallin.
+ useEffect(()=>{setModel(current=>{const incoming=scene.presentationDraft?.id===current?.id?scene.presentationDraft:scene.presentations?.find(p=>p.id===current?.id);return incoming&&current&&JSON.stringify(incoming.bindings)!==JSON.stringify(current.bindings)?{...current,bindings:incoming.bindings}:current;});},[scene.presentationDraft,scene.presentations]);
  useEffect(()=>{previewAvailable?.(!!compiled);return()=>previewAvailable?.(false);},[!!compiled,previewAvailable]);
  useEffect(()=>()=>{controller.current?.abort();urls.current.forEach(URL.revokeObjectURL);activity?.(false);},[]);
  useEffect(()=>{

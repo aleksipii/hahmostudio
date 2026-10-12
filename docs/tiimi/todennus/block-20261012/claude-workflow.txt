@@ -1,0 +1,22 @@
+PASS script 1200: no horizontal overflow
+PASS characters 1200: no horizontal overflow
+PASS storyboard 1200: no horizontal overflow
+PASS shot 1200: no horizontal overflow
+PASS timeline 1200: no horizontal overflow
+PASS workshop 1200: no horizontal overflow
+PASS script 1440: no horizontal overflow
+PASS characters 1440: no horizontal overflow
+PASS storyboard 1440: no horizontal overflow
+PASS shot 1440: no horizontal overflow
+PASS timeline 1440: no horizontal overflow
+PASS workshop 1440: no horizontal overflow
+PASS recording survives shot
+PASS recording survives storyboard
+PASS recording survives characters
+PASS recording survives timeline
+PASS recording survives workshop
+PASS recording survives script
+PASS cancel restores microphone status
+PASS cancel releases audio track
+PASS cancel preserves recorder and reports cancellation
+PASS no renderer errors
