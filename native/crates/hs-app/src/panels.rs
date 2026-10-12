@@ -3,7 +3,7 @@ use crate::export_job::{ExportJob, ExportVoice};
 use eframe::egui::{self, Color32, RichText, Stroke};
 use hs_agents::agents::cinematography::ShotKind;
 use hs_agents::{Backend, RenderRequest, Slot};
-use hs_character::{CharacterParams, ClothingStyle, HairStyle, RenderStyle};
+use hs_character::{CharacterParams, ClothingStyle, HairStyle, HatStyle, RenderStyle};
 use hs_core::{EventKind, Severity, TrackKind};
 
 const ACCENT: Color32 = Color32::from_rgb(0xf2, 0xc2, 0x30);
@@ -186,6 +186,10 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                             ShotKind::Medium => Color32::from_rgb(0xa8, 0x5a, 0x4a),
                             ShotKind::CloseUp => Color32::from_rgb(0x98, 0x4a, 0x5a),
                             ShotKind::Insert => Color32::from_rgb(0x7a, 0x4a, 0x8a),
+                            ShotKind::TwoShot => Color32::from_rgb(0x4a, 0x7a, 0x8a),
+                            ShotKind::OverShoulder => Color32::from_rgb(0x3a, 0x6a, 0x9a),
+                            ShotKind::LowAngle => Color32::from_rgb(0x5a, 0x8a, 0x4a),
+                            ShotKind::HighAngle => Color32::from_rgb(0x4a, 0x8a, 0x6a),
                         };
                         (s.start, s.end, format!("{}{}", s.kind.finnish(), if s.tracking { " · seuranta" } else { "" }), c)
                     })
@@ -264,7 +268,7 @@ fn script_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
         ui.separator();
         if errors.is_empty() {
             if let Some(plan) = &app.production.plan {
-                ui.label(RichText::new(format!("✓ {} riviä, {:.1} s – valmis vietäväksi", plan.beats.len(), plan.seconds)).color(Color32::from_rgb(0x5d, 0xa8, 0x6c)));
+                ui.label(RichText::new(format!("{} riviä, {:.1} s – valmis vietäväksi", plan.beats.len(), plan.seconds)).color(Color32::from_rgb(0x5d, 0xa8, 0x6c)));
             }
         } else {
             egui::ScrollArea::vertical().id_salt("huomautukset").max_height(140.0).show(ui, |ui| {
@@ -322,10 +326,10 @@ pub fn cast_panel(app: &mut StudioApp, ctx: &egui::Context) {
                     ui.label(RichText::new("Mitat").strong());
                     changed |= ui.add(egui::Slider::new(&mut p.height, 0.8..=2.0).text("pituus (m)")).changed();
                     changed |= ui.add(egui::Slider::new(&mut p.build, 0.7..=1.5).text("vartalo")).changed();
-                    changed |= ui.add(egui::Slider::new(&mut p.head_scale, 0.7..=1.4).text("pää")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.head_scale, 0.7..=1.8).text("pää")).changed();
                     changed |= ui.add(egui::Slider::new(&mut p.leg_ratio, 0.38..=0.52).text("jalat")).changed();
                     ui.label(RichText::new("Kasvot").strong());
-                    changed |= ui.add(egui::Slider::new(&mut p.face.eye_size, 0.6..=1.7).text("silmät")).changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.face.eye_size, 0.6..=1.8).text("silmät")).changed();
                     changed |= ui.add(egui::Slider::new(&mut p.face.eye_spacing, 0.7..=1.4).text("silmäväli")).changed();
                     changed |= ui.add(egui::Slider::new(&mut p.face.mouth_width, 0.5..=1.8).text("suu")).changed();
                     changed |= ui.add(egui::Slider::new(&mut p.face.nose_size, 0.5..=1.8).text("nenä")).changed();
@@ -351,6 +355,22 @@ pub fn cast_panel(app: &mut StudioApp, ctx: &egui::Context) {
                     changed |= color_row(ui, "Yläosa", &mut p.top);
                     changed |= color_row(ui, "Alaosa", &mut p.bottom);
                     changed |= color_row(ui, "Kengät", &mut p.shoes);
+                    ui.label(RichText::new("Lisävarusteet").strong());
+                    egui::ComboBox::from_label("päähine").selected_text(match p.extras.hat {
+                        HatStyle::None => "ei",
+                        HatStyle::Beanie => "pipo",
+                        HatStyle::Cap => "lippis",
+                    }).show_ui(ui, |ui| {
+                        for (v, n) in [(HatStyle::None, "ei"), (HatStyle::Beanie, "pipo"), (HatStyle::Cap, "lippis")] {
+                            changed |= ui.selectable_value(&mut p.extras.hat, v, n).changed();
+                        }
+                    });
+                    if p.extras.hat != HatStyle::None {
+                        changed |= color_row(ui, "Päähine", &mut p.extras.hat_color);
+                    }
+                    changed |= ui.checkbox(&mut p.extras.glasses, "silmälasit").changed();
+                    changed |= ui.add(egui::Slider::new(&mut p.extras.belly, 0.0..=1.0).text("vatsa")).changed();
+                    changed |= ui.checkbox(&mut p.extras.outline, "ääriviiva").changed();
                     ui.horizontal(|ui| {
                         ui.label("Tyyli");
                         changed |= ui.selectable_value(&mut p.render_style, RenderStyle::Flat, "tasavärit").changed();

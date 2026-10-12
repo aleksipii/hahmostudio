@@ -9,7 +9,7 @@ pub mod mesh;
 pub mod params;
 
 pub use mesh::{srgb_to_linear, Bind, CharacterMesh, MeshBuilder, Vertex};
-pub use params::{CharacterParams, ClothingStyle, FaceParams, HairStyle, RenderStyle};
+pub use params::{CharacterParams, ClothingStyle, Extras, FaceParams, HairStyle, HatStyle, RenderStyle};
 
 use hs_motion::{Humanoid, ProceduralMotion};
 

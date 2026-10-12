@@ -1,4 +1,4 @@
-use crate::params::{CharacterParams, ClothingStyle, HairStyle};
+use crate::params::{CharacterParams, ClothingStyle, HairStyle, HatStyle};
 use bytemuck::{Pod, Zeroable};
 use glam::{Quat, Vec3};
 use hs_motion::{Humanoid, Side};
@@ -213,6 +213,13 @@ impl MeshBuilder {
         }
     }
 
+    /// Poistaa ääriviivan kärkipisteistä `start..` (värin alfa 0): posket, pupillit, kiillot.
+    pub fn no_outline(&mut self, start: usize) {
+        for v in &mut self.mesh.vertices[start..] {
+            v.color[3] = 0.0;
+        }
+    }
+
     fn unshaded_ellipsoid(&mut self, center: Vec3, radii: Vec3, rot: Quat, color: [u8; 3], bind: Bind) {
         let start = self.mesh.vertices.len();
         self.ellipsoid(center, radii, rot, color, bind, 8, 12);
@@ -294,6 +301,13 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
     b.ellipsoid(pelvis + Vec3::Y * height * 0.01, Vec3::new(h.proportions.hip_width * 0.62, height * 0.07, height * 0.065 * wide), Quat::IDENTITY, if dress { p.top } else { p.bottom }, Bind::one(h.pelvis), 12, 18);
     b.capsule(pelvis + Vec3::Y * height * 0.03, chest, torso_r * 0.92, torso_r, p.top, Bind { a: h.spine, b: h.pelvis }, 18, true);
     b.ellipsoid(chest + Vec3::Y * height * 0.03, Vec3::new(h.proportions.shoulder_width * 0.52, (neck.y - chest.y) * 0.75, torso_r * 0.95), Quat::IDENTITY, p.top, Bind { a: h.chest, b: h.spine }, 12, 18);
+    let belly = p.extras.belly.clamp(0.0, 1.0);
+    if belly > 0.05 {
+        // Vatsa: eteen pullistuva ellipsoidi vyötärön kohdalla.
+        let c = pelvis.lerp(chest, 0.55) + Vec3::Z * torso_r * (0.25 + belly * 0.35);
+        let r = Vec3::new(torso_r * (0.95 + belly * 0.25), (chest.y - pelvis.y) * (0.45 + belly * 0.1), torso_r * (0.7 + belly * 0.35));
+        b.ellipsoid(c, r, Quat::IDENTITY, p.top, Bind { a: h.spine, b: h.pelvis }, 12, 18);
+    }
     if hoodie {
         b.ellipsoid(neck + Vec3::new(0.0, -height * 0.005, -torso_r * 0.55), Vec3::new(torso_r * 0.7, height * 0.03, torso_r * 0.4), Quat::IDENTITY, mix(p.top, [0, 0, 0], 0.15), Bind::one(h.chest), 8, 14);
     }
@@ -397,8 +411,11 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
         let normal = Vec3::new(x / head_r.x.powi(2), (eye_y - head_c.y) / head_r.y.powi(2), (z - head_c.z) / head_r.z.powi(2)).normalize();
         let face_rot = Quat::from_rotation_arc(Vec3::Z, normal);
         b.unshaded_ellipsoid(Vec3::new(x, eye_y, z - eye_r * 0.25), Vec3::new(eye_r * 0.82, eye_r, eye_r * 0.45), face_rot, [0xfb, 0xfb, 0xf8], Bind::one(h.head));
-        b.unshaded_ellipsoid(Vec3::new(x, eye_y - eye_r * 0.12, z - eye_r * 0.02), Vec3::new(eye_r * 0.5, eye_r * 0.62, eye_r * 0.3), face_rot, f.eye_color, Bind::one(h.head));
-        b.unshaded_ellipsoid(Vec3::new(x + eye_r * 0.15, eye_y + eye_r * 0.18, z + eye_r * 0.06), Vec3::splat(eye_r * 0.14), face_rot, [255, 255, 255], Bind::one(h.head));
+        let details = b.mesh.vertices.len();
+        // Isoissa sarjakuvasilmissä pupilli on pienempi suhteessa valkuaiseen.
+        let pupil = 1.0 / f.eye_size.clamp(0.5, 1.8).max(1.0).powf(0.6);
+        b.unshaded_ellipsoid(Vec3::new(x * (1.0 - 0.04 * pupil), eye_y - eye_r * 0.12, z - eye_r * 0.02), Vec3::new(eye_r * 0.5 * pupil, eye_r * 0.62 * pupil, eye_r * 0.3), face_rot, f.eye_color, Bind::one(h.head));
+        b.unshaded_ellipsoid(Vec3::new(x + eye_r * 0.15 * pupil, eye_y + eye_r * 0.18 * pupil, z + eye_r * 0.06), Vec3::splat(eye_r * 0.14 * pupil), face_rot, [255, 255, 255], Bind::one(h.head));
         // Kulmakarvat hiusten värillä.
         let brow_y = eye_y + eye_r * 1.45;
         let brow_z = surface(x, brow_y);
@@ -408,12 +425,49 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
             let cx = s * eye_dx * 1.25;
             b.unshaded_ellipsoid(Vec3::new(cx, cy, surface(cx, cy) - hh * 0.012), Vec3::new(eye_r * 0.6, eye_r * 0.32, eye_r * 0.2), face_rot, mix(skin, [0xe8, 0x6a, 0x6a], 0.35), Bind::one(h.head));
         }
+        b.no_outline(details);
+        if p.extras.glasses {
+            // Pyöreät sankalasit: kehä kapseleista silmän ympärillä, silta nenän yli.
+            let ring_r = eye_r * 1.15;
+            let rz = z + eye_r * 0.3;
+            let wire = hh * 0.008;
+            let pts: Vec<Vec3> = (0..=16)
+                .map(|k| {
+                    let a = k as f32 / 16.0 * TAU;
+                    Vec3::new(x, eye_y, rz) + face_rot * Vec3::new(a.cos() * ring_r, a.sin() * ring_r * 0.9, 0.0)
+                })
+                .collect();
+            for w in pts.windows(2) {
+                b.capsule(w[0], w[1], wire, wire, [0x22, 0x1e, 0x22], Bind::one(h.head), 6, false);
+            }
+            if s > 0.0 {
+                let inner = eye_dx - ring_r;
+                b.capsule(Vec3::new(-inner, eye_y + eye_r * 0.2, rz + hh * 0.01), Vec3::new(inner, eye_y + eye_r * 0.2, rz + hh * 0.01), wire, wire, [0x22, 0x1e, 0x22], Bind::one(h.head), 6, false);
+            }
+        }
     }
     // Nenä ja suu.
     let nose_y = eye_y - hh * 0.1;
     let nose_z = head_c.z + head_r.z * (1.0 - ((nose_y - head_c.y) / head_r.y).powi(2)).sqrt();
     b.ellipsoid(Vec3::new(0.0, nose_y, nose_z), Vec3::new(hh * 0.035, hh * 0.04, hh * 0.04) * f.nose_size.clamp(0.4, 2.0), Quat::IDENTITY, mix(skin, [0xb0, 0x60, 0x50], 0.12), Bind::one(h.head), 6, 10);
     mouth(&mut b, h, head_c, head_r, j(h.jaw).y, hh * 0.11 * f.mouth_width.clamp(0.4, 2.0));
+
+    // Päähine.
+    let hat = p.extras.hat_color;
+    match p.extras.hat {
+        HatStyle::None => {}
+        HatStyle::Beanie => {
+            let top = head_c + Vec3::new(0.0, hh * 0.16, -hh * 0.03);
+            b.ellipsoid(top, Vec3::new(head_r.x * 1.13, head_r.y * 0.8, head_r.z * 1.13), Quat::from_rotation_x(-0.12), hat, Bind::one(h.head), 14, 24);
+            // Käänne ja tupsu.
+            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.2, -hh * 0.01), Vec3::new(head_r.x * 1.17, hh * 0.08, head_r.z * 1.17), Quat::from_rotation_x(-0.18), mix(hat, [0, 0, 0], 0.18), Bind::one(h.head), 6, 28);
+            b.ellipsoid(head_c + Vec3::new(0.0, head_r.y * 1.02, -hh * 0.06), Vec3::splat(hh * 0.1), Quat::IDENTITY, [0xd8, 0x3a, 0x34], Bind::one(h.head), 8, 12);
+        }
+        HatStyle::Cap => {
+            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.18, -hh * 0.02), Vec3::new(head_r.x * 1.1, head_r.y * 0.62, head_r.z * 1.1), Quat::from_rotation_x(-0.1), hat, Bind::one(h.head), 12, 24);
+            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.27, head_r.z * 0.98), Vec3::new(head_r.x * 0.72, hh * 0.025, head_r.z * 0.55), Quat::from_rotation_x(0.12), mix(hat, [0, 0, 0], 0.12), Bind::one(h.head), 6, 20);
+        }
+    }
 
     // Hiukset.
     match p.hair_style {

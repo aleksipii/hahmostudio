@@ -1,5 +1,6 @@
 //! GPU-kiihdytetty renderöinti ja headless-vienti.
 
+use crate::agents::cinematography::ShotKind;
 use crate::production::{Backend, RenderRequest};
 use crate::{AgentError, AgentReport, Production, Slot, StudioAgent};
 use glam::Vec3;
@@ -27,8 +28,31 @@ impl FrameBuilder {
         let (cam, lights, _) = camera.camera_at(t, width as f32 / height as f32);
         let floor = environment::clear_color(&env_id);
         let mut items = vec![DrawItem::rigid(env)];
-        for (member, motion) in p.cast.iter().zip(&p.motion) {
-            let mut f = motion.evaluate(tl, t);
+        let frames: Vec<_> = p.motion.iter().map(|m| m.evaluate(tl, t)).collect();
+        // Keskustelu: puhuja ja kumppani kääntyvät hieman toisiaan kohti (sitcom-lavastus),
+        // kun kumpikaan ei liiku eikä ole erikseen käännetty.
+        let turns: Vec<f32> = {
+            let mut turns = vec![0.0f32; frames.len()];
+            if let Some(shot) = camera.shot_at(t).filter(|s| matches!(s.kind, ShotKind::Medium | ShotKind::CloseUp | ShotKind::TwoShot | ShotKind::OverShoulder)) {
+                if let Some(other) = shot.partner.filter(|o| *o != shot.subject && *o < frames.len() && shot.subject < frames.len()) {
+                    let ease = ((t - shot.start) / 0.35).clamp(0.0, 1.0);
+                    let ease = ease * ease * (3.0 - 2.0 * ease);
+                    for (a, b) in [(shot.subject, other), (other, shot.subject)] {
+                        let (fa, fb) = (&frames[a], &frames[b]);
+                        let still = fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
+                        let dx = fb.root.x - fa.root.x;
+                        if still && dx.abs() > 0.05 {
+                            turns[a] = dx.signum() * 0.5 * ease;
+                        }
+                    }
+                }
+            }
+            turns
+        };
+        for ((member, motion), (mut f, turn)) in p.cast.iter().zip(&p.motion).zip(frames.into_iter().zip(turns)) {
+            if turn != 0.0 {
+                f.pose.root_rot = glam::Quat::from_rotation_y(turn) * f.pose.root_rot;
+            }
             // Äänellinen huulisynkka korvaa tekstistä arvioidun suun.
             let humanoid = &member.character.humanoid;
             if let Some(shape) = p.mouth_at(&|s| motion.motion.speaks(s), t) {
@@ -49,16 +73,18 @@ impl FrameBuilder {
             let shadow_floor = if env_id == "studio-v1" { [0x3c, 0x52, 0x66] } else { floor };
             let scale = 1.0 / (1.0 + f.root.y * 2.5);
             items.push(DrawItem::rigid(Arc::new(props::contact_shadow(Vec3::new(f.root.x, 0.0, f.root.z), member.character.humanoid.proportions.height * 0.22 * scale, shadow_floor))));
-            items.push(DrawItem { mesh: member.mesh.clone(), skin: skeleton.skin_matrices(&f.pose) });
+            items.push(DrawItem::skinned(member.mesh.clone(), skeleton.skin_matrices(&f.pose)).with_outline(member.character.params.extras.outline));
             if let Some(phone) = &f.props.phone {
-                items.push(DrawItem::rigid(Arc::new(props::phone(phone))));
+                items.push(DrawItem::rigid(Arc::new(props::phone(phone))).with_outline(true));
             }
         }
         let style = match p.cast.first().map(|c| c.character.params.render_style) {
             Some(RenderStyle::Cel) => ShadingStyle::Cel,
             _ => ShadingStyle::Flat,
         };
-        Some(RenderScene { width, height, camera: cam, lights, style, clear: environment::clear_color(&env_id), items })
+        // Sarjakuvaääriviiva skaalautuu kuvan korkeuden mukaan (1080×1920: noin 4 px).
+        let outline = (height as f32 * 0.0021).max(1.2);
+        Some(RenderScene { width, height, camera: cam, lights, style, clear: environment::clear_color(&env_id), outline, items })
     }
 }
 

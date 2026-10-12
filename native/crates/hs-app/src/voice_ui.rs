@@ -288,7 +288,7 @@ pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
         });
     } else if let Some(engine) = &app.voice.engine {
         let q = engine.queue_len();
-        ui.label(RichText::new(format!("✓ Kokoro-82M käytössä ({} MiB, Apache-2.0)", app.voice.status.bytes >> 20)).color(Color32::from_rgb(0x5d, 0xa8, 0x6c)));
+        ui.label(RichText::new(format!("Kokoro-82M käytössä ({} MiB, Apache-2.0)", app.voice.status.bytes >> 20)).color(Color32::from_rgb(0x5d, 0xa8, 0x6c)));
         if q > 0 {
             ui.horizontal(|ui| {
                 ui.spinner();

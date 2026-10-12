@@ -19,6 +19,37 @@ pub enum ClothingStyle {
     Dress,
 }
 
+/// Päähine.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum HatStyle {
+    #[default]
+    None,
+    /// Pipo tupsulla.
+    Beanie,
+    /// Lippalakki.
+    Cap,
+}
+
+/// Lisävarusteet ja sarjakuvamaiset liioittelut. Puuttuvat kentät (vanhat
+/// tallennukset) saavat oletusarvot.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Extras {
+    pub hat: HatStyle,
+    pub hat_color: [u8; 3],
+    pub glasses: bool,
+    /// Vatsa 0 (ei) .. 1 (iso).
+    pub belly: f32,
+    /// Ääriviiva (sarjakuvatyyli).
+    pub outline: bool,
+}
+
+impl Default for Extras {
+    fn default() -> Self {
+        Extras { hat: HatStyle::None, hat_color: [0x2f, 0x5f, 0xb0], glasses: false, belly: 0.0, outline: true }
+    }
+}
+
 /// `flat` = pelkät perusvärit ilman ääriviivoja, `cel` = porrastettu varjostus.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RenderStyle {
@@ -77,6 +108,8 @@ pub struct CharacterParams {
     /// Kokoro-ääni (esim. `af_heart`). Puuttuva ääni: rivi jää ilman synteettistä puhetta.
     #[serde(default)]
     pub voice: Option<String>,
+    #[serde(default)]
+    pub extras: Extras,
 }
 
 fn hex(c: u32) -> [u8; 3] {
@@ -104,6 +137,7 @@ impl CharacterParams {
             trouser: 1.0,
             render_style: RenderStyle::Flat,
             voice: Some("af_heart".into()),
+            extras: Extras::default(),
         }
     }
     pub fn ville() -> Self {
@@ -160,8 +194,98 @@ impl CharacterParams {
             ..Self::pipsa()
         }
     }
+    /// Sarjan perhe: isopäiset piirroshahmot (alkuperäisiä, Family Guyn ja
+    /// South Parkin tapaan liioiteltuja mittasuhteita).
+    pub fn kalle() -> Self {
+        CharacterParams {
+            name: "Kalle".into(),
+            voice: Some("am_michael".into()),
+            height: 1.78,
+            build: 1.3,
+            head_scale: 1.75,
+            leg_ratio: 0.4,
+            face: FaceParams { eye_size: 1.45, eye_spacing: 0.78, brow_thickness: 1.4, mouth_width: 1.3, nose_size: 1.4, cheeks: false, ..FaceParams::default() },
+            skin: hex(0xf3cfb0),
+            hair: hex(0x4a3222),
+            hair_style: HairStyle::Short,
+            top: hex(0xf4f2ea),
+            bottom: hex(0x3f6b4a),
+            shoes: hex(0x2d2622),
+            clothing: ClothingStyle::Shirt,
+            sleeve: 0.4,
+            trouser: 1.0,
+            extras: Extras { glasses: true, belly: 0.9, ..Extras::default() },
+            ..Self::pipsa()
+        }
+    }
+    pub fn maija() -> Self {
+        CharacterParams {
+            name: "Maija".into(),
+            voice: Some("af_nicole".into()),
+            height: 1.68,
+            build: 0.95,
+            head_scale: 1.7,
+            leg_ratio: 0.43,
+            face: FaceParams { eye_size: 1.5, eye_spacing: 0.8, mouth_width: 1.1, ..FaceParams::default() },
+            skin: hex(0xf6d6bd),
+            hair: hex(0xc4462a),
+            hair_style: HairStyle::Bob,
+            top: hex(0x56a36b),
+            bottom: hex(0x2c3e66),
+            shoes: hex(0x7a2d3a),
+            clothing: ClothingStyle::Shirt,
+            sleeve: 0.9,
+            trouser: 1.0,
+            ..Self::pipsa()
+        }
+    }
+    pub fn eetu() -> Self {
+        CharacterParams {
+            name: "Eetu".into(),
+            voice: Some("am_adam".into()),
+            height: 1.0,
+            build: 1.15,
+            head_scale: 1.7,
+            leg_ratio: 0.36,
+            face: FaceParams { eye_size: 1.7, eye_spacing: 0.72, mouth_width: 1.2, nose_size: 0.6, cheeks: false, ..FaceParams::default() },
+            skin: hex(0xf5d3b5),
+            hair: hex(0x3a2a1e),
+            hair_style: HairStyle::Short,
+            top: hex(0xd6462f),
+            bottom: hex(0x34507a),
+            shoes: hex(0x1f1f24),
+            clothing: ClothingStyle::Hoodie,
+            sleeve: 1.0,
+            trouser: 1.0,
+            extras: Extras { hat: HatStyle::Beanie, hat_color: hex(0x2f8fd0), ..Extras::default() },
+            ..Self::pipsa()
+        }
+    }
+    pub fn ronja() -> Self {
+        CharacterParams {
+            name: "Ronja".into(),
+            voice: Some("af_bella".into()),
+            height: 1.04,
+            build: 1.0,
+            head_scale: 1.65,
+            leg_ratio: 0.37,
+            face: FaceParams { eye_size: 1.75, eye_spacing: 0.74, nose_size: 0.55, ..FaceParams::default() },
+            skin: hex(0xa8714c),
+            hair: hex(0x1e1714),
+            hair_style: HairStyle::Ponytail,
+            top: hex(0x8e5bc4),
+            bottom: hex(0x2b2b38),
+            shoes: hex(0xf2f2ee),
+            clothing: ClothingStyle::Dress,
+            sleeve: 0.3,
+            trouser: 1.0,
+            extras: Extras { hat: HatStyle::Cap, hat_color: hex(0xf2c230), ..Extras::default() },
+            ..Self::pipsa()
+        }
+    }
+
     pub fn presets() -> Vec<CharacterParams> {
-        vec![Self::pipsa(), Self::ville(), Self::taru(), Self::ukko()]
+        vec![Self::pipsa(), Self::ville(), Self::taru(), Self::ukko(), Self::kalle(), Self::maija(), Self::eetu(), Self::ronja()]
     }
 
     pub fn proportions(&self) -> Proportions {
@@ -173,7 +297,7 @@ impl CharacterParams {
             arm_ratio: 0.40 + adult * 0.03,
             shoulder_width: self.height * 0.205 * self.build.clamp(0.6, 1.6),
             hip_width: self.height * 0.135 * self.build.clamp(0.6, 1.6),
-            head_ratio: (0.17 - adult * 0.045) * self.head_scale.clamp(0.6, 1.5),
+            head_ratio: (0.17 - adult * 0.045) * self.head_scale.clamp(0.6, 1.8),
             hand_scale: d.hand_scale,
             hair_length: match self.hair_style {
                 HairStyle::Ponytail => 0.18 * self.height / 1.25,

@@ -17,7 +17,7 @@ pub fn apply_mouth(h: &Humanoid, pose: &mut Pose, m: &MouthShape) {
     let round = m.round.clamp(0.0, 1.0);
     let wide = m.wide.clamp(-1.0, 1.0);
     let lip_up = Vec3::new(0.0, open * hh * 0.012 - m.closed * hh * 0.004, round * hh * 0.02);
-    pose.translate[h.jaw] = Vec3::new(0.0, -open * hh * 0.085, -open * hh * 0.01 + round * hh * 0.01);
+    pose.translate[h.jaw] = Vec3::new(0.0, -open * hh * 0.12, -open * hh * 0.01 + round * hh * 0.01);
     pose.translate[r.lip_upper] = lip_up;
     for (bone, s) in [(r.corner_left, 1.0f32), (r.corner_right, -1.0)] {
         pose.translate[bone] = Vec3::new(s * (wide * hh * 0.035 - round * hh * 0.032), -open * hh * 0.03, round * hh * 0.012);

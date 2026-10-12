@@ -139,3 +139,39 @@ fn speech_extends_lines_and_drives_lips_and_audio() {
         }
     }
 }
+
+#[test]
+fn series_cast_and_camera_angles() {
+    use hs_agents::agents::cinematography::ShotKind;
+    let script = "[tausta olohuone]\n[kuva laaja]\nKALLE: Hei kaikki! [vilkuta 2s]\n[kuva kaksikko]\nMAIJA: Moikka! [odota 2s]\n[kuva olan yli]\nKALLE: Mitä syödään? [odota 2s]\n[kuva alakulma]\nEETU: Pizzaa! [hyppää]\n[kuva yläkulma]\nRONJA: Ei taas! [odota 2s]";
+    let mut p = Production::new(script);
+    p.width = 1280;
+    p.height = 720;
+    Pipeline::default().run(&mut p).expect("putki");
+    let names: Vec<_> = p.cast.iter().map(|c| c.character.params.name.as_str()).collect();
+    assert_eq!(names, ["Kalle", "Maija", "Eetu", "Ronja"]);
+    assert!(p.cast[2].character.humanoid.proportions.head_ratio > 0.25, "lapsilla iso pää");
+    let cam = p.camera.as_ref().unwrap();
+    let kinds: Vec<_> = cam.shots.iter().map(|s| s.kind).collect();
+    assert_eq!(kinds, [ShotKind::Wide, ShotKind::TwoShot, ShotKind::OverShoulder, ShotKind::LowAngle, ShotKind::HighAngle]);
+    let aspect = 1280.0 / 720.0;
+    let tl = p.timeline.as_ref().unwrap();
+    let on_screen = |t: f32, who: usize| {
+        let (c, _, _) = cam.camera_at(t, aspect);
+        let f = p.motion[who].evaluate(tl, t);
+        let head = f.root + glam::Vec3::Y * p.cast[who].character.humanoid.proportions.height * 0.9;
+        let clip = c.view_proj(aspect) * head.extend(1.0);
+        let (x, y) = (clip.x / clip.w, clip.y / clip.w);
+        clip.w > 0.0 && x.abs() < 1.0 && y.abs() < 1.0
+    };
+    // Laaja kuva näyttää koko perheen, kaksikko molemmat puhujat.
+    for who in 0..4 {
+        assert!(on_screen(1.0, who), "laaja: hahmo {who} ei näy");
+    }
+    assert!(on_screen(3.0, 0) && on_screen(3.0, 1));
+    // Ala- ja yläkulma: kamera kohteen alapuolella / yläpuolella.
+    let (low, _, _) = cam.camera_at(6.5, aspect);
+    assert!(low.eye.y < low.target.y);
+    let (high, _, _) = cam.camera_at(8.0, aspect);
+    assert!(high.eye.y > high.target.y + 0.3);
+}

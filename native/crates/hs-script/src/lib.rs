@@ -9,7 +9,7 @@
 //! Lisäykset natiiviversioon (taaksepäin yhteensopivia):
 //! * `NIMI: repliikki` -puhujaetuliite.
 //! * `[näpyttele puhelinta 3s]` -> [`MotionKind::PhoneTap`].
-//! * `[kuva laaja|puolilähi|lähikuva|insertti]` -> kameraohje.
+//! * `[kuva laaja|puolilähi|lähikuva|insertti|kaksikko|olan yli|alakulma|yläkulma]` -> kameraohje.
 
 use hs_core::{
     CameraHint, Diagnostic, Direction, EventKind, Fps, MotionKind, PhoneView, Severity,
@@ -230,11 +230,15 @@ fn classify(tag: &str) -> Result<Tag, String> {
             "puolilähi" | "puolikuva" | "medium" => Some(CameraHint::Medium),
             "lähikuva" | "lähi" | "close" | "closeup" | "close-up" => Some(CameraHint::CloseUp),
             "insertti" | "insert" => Some(CameraHint::Insert),
+            "kaksikko" | "kaksoiskuva" | "two-shot" | "twoshot" => Some(CameraHint::TwoShot),
+            "olan yli" | "olanyli" | "over-shoulder" | "ots" => Some(CameraHint::OverShoulder),
+            "alakulma" | "sammakko" | "low" | "low-angle" => Some(CameraHint::LowAngle),
+            "yläkulma" | "lintu" | "high" | "high-angle" => Some(CameraHint::HighAngle),
             _ => None,
         };
         return hint
             .map(Tag::Camera)
-            .ok_or_else(|| format!("Tuntematon kuvaohje: [{tag}]. Käytä laaja, puolilähi, lähikuva tai insertti."));
+            .ok_or_else(|| format!("Tuntematon kuvaohje: [{tag}]. Käytä laaja, puolilähi, lähikuva, insertti, kaksikko, olan yli, alakulma tai yläkulma."));
     }
     match motion_from_text(tag) {
         Some(m) => Ok(Tag::Motion(m, duration_in(tag))),
@@ -494,6 +498,9 @@ mod tests {
         assert_eq!(plan.beats[0].speaker.as_deref(), Some("Pipsa"));
         assert_eq!(plan.beats[0].motion, MotionKind::PhoneTap);
         assert_eq!(plan.beats[0].camera, Some(CameraHint::Insert));
+        for (word, hint) in [("kaksikko", CameraHint::TwoShot), ("olan yli", CameraHint::OverShoulder), ("alakulma", CameraHint::LowAngle), ("yläkulma", CameraHint::HighAngle)] {
+            assert_eq!(parse(&format!("[kuva {word}]\nPIPSA: Hei!")).beats[0].camera, Some(hint), "{word}");
+        }
         assert_eq!(plan.beats[1].phone, Some(PhoneView::Hidden));
         assert_eq!(plan.beats[1].motion, MotionKind::Run(Direction::Left));
     }

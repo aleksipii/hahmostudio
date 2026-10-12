@@ -29,7 +29,8 @@ fn main() {
             lights: Lights::default(),
             style: ShadingStyle::Flat,
             clear: [40, 50, 60],
-            items: vec![DrawItem::rigid(env.clone()), DrawItem { mesh: p.cast[0].mesh.clone(), skin: p.cast[0].character.humanoid.skeleton.skin_matrices(&f.pose) }],
+            outline: 1.5,
+            items: vec![DrawItem::rigid(env.clone()), DrawItem::skinned(p.cast[0].mesh.clone(), p.cast[0].character.humanoid.skeleton.skin_matrices(&f.pose))],
         };
         let img = CpuRenderer::default().render(&scene).unwrap();
         for y in 0..h as usize {

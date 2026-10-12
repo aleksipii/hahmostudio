@@ -58,11 +58,21 @@ pub enum ShadingStyle {
 pub struct DrawItem {
     pub mesh: Arc<CharacterMesh>,
     pub skin: Vec<Mat4>,
+    /// Piirretäänkö sarjakuvamainen ääriviiva (hahmot ja esineet, ei lavasteet).
+    pub outline: bool,
 }
 
 impl DrawItem {
     pub fn rigid(mesh: Arc<CharacterMesh>) -> Self {
-        DrawItem { mesh, skin: Vec::new() }
+        DrawItem { mesh, skin: Vec::new(), outline: false }
+    }
+    /// Luilla liikkuva hahmo ääriviivoineen.
+    pub fn skinned(mesh: Arc<CharacterMesh>, skin: Vec<Mat4>) -> Self {
+        DrawItem { mesh, skin, outline: true }
+    }
+    pub fn with_outline(mut self, outline: bool) -> Self {
+        self.outline = outline;
+        self
     }
     pub fn skin_matrix(&self, bone: u32) -> Mat4 {
         self.skin.get(bone as usize).copied().unwrap_or(Mat4::IDENTITY)
@@ -78,7 +88,20 @@ pub struct RenderScene {
     pub style: ShadingStyle,
     /// Taustaväri (sRGB) niille kohdille, joihin mikään ei piirry.
     pub clear: [u8; 3],
+    /// Ääriviivan leveys pikseleinä (0 = ei ääriviivoja).
+    pub outline: f32,
     pub items: Vec<DrawItem>,
+}
+
+impl RenderScene {
+    /// Ääriviivan leveys maailman yksikköinä yhtä leikekoordinaatin w-yksikköä kohden:
+    /// siirtymä `normaali · k · w` näkyy kuvassa `outline` pikselin levyisenä etäisyydestä riippumatta.
+    pub fn outline_factor(&self) -> f32 {
+        if self.outline <= 0.0 {
+            return 0.0;
+        }
+        self.outline * 2.0 * (self.camera.fov_y.to_radians() * 0.5).tan() / self.height.max(1) as f32
+    }
 }
 
 /// RGBA8-kuva (sRGB), rivit ylhäältä alas.

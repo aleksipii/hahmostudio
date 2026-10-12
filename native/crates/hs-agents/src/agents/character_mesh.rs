@@ -40,7 +40,8 @@ fn params_for(p: &Production, name: Option<&str>, index: usize) -> CharacterPara
             return c;
         }
         // Tuntematon nimi: esiasetus järjestyksessä, nimi säilyy.
-        let mut c = CharacterParams::presets()[index % 4].clone();
+        let presets = CharacterParams::presets();
+        let mut c = presets[index % presets.len()].clone();
         c.name = n.to_string();
         return c;
     }

@@ -32,6 +32,9 @@ pub fn shade(base: Vec3, normal: Vec3, to_eye: Vec3, shade_flag: f32, style: Sha
     unlit.lerp(lit_color, shade_flag.clamp(0.0, 1.0))
 }
 
+/// Ääriviivojen muste (lineaarinen RGB). Sama vakio on varjostimessa `INK`.
+pub const INK: Vec3 = Vec3::new(0.012, 0.009, 0.011);
+
 pub fn linear_to_srgb(x: f32) -> u8 {
     let x = x.clamp(0.0, 1.0);
     let s = if x <= 0.003_130_8 { x * 12.92 } else { 1.055 * x.powf(1.0 / 2.4) - 0.055 };

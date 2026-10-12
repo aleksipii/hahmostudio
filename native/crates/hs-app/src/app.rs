@@ -9,7 +9,7 @@ use hs_character::CharacterParams;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-pub const EXAMPLE: &str = "[tausta studio]\nPIPSA: Hei! Tervetuloa mukaan. [vilkuta 2s]\n[juokse oikealle 2s]\nPIPSA: Laitan viestin. [näpyttele puhelinta 3s]\n[tausta kaupunki ilta]\nVILLE: Nähdään! [hyppää]\n[kuva lähikuva]\nPIPSA: Moikka! [nyökkää 2s]";
+pub const EXAMPLE: &str = "[tausta olohuone]\n[kuva laaja]\nKALLE: Hei kaikki, jakso alkaa! [vilkuta 2s]\n[kuva kaksikko]\nMAIJA: Taasko sinä puhut kameralle? [odota 2s]\n[kuva olan yli]\nKALLE: Ne rakastavat minua. [nyökkää 2s]\n[kuva alakulma]\nEETU: Minä haluan olla tähti! [hyppää]\nRONJA: Laitan tästä viestin. [näpyttele puhelinta 3s]\n[kuva yläkulma]\nEETU: Odottakaa! [juokse oikealle 2s]";
 
 #[derive(Default)]
 pub struct LaunchOptions {

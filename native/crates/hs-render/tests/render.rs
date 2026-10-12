@@ -18,7 +18,8 @@ fn scene(style: ShadingStyle, w: u32, h: u32) -> RenderScene {
         lights: Lights::default(),
         style,
         clear: environment::clear_color("studio-v1"),
-        items: vec![DrawItem::rigid(Arc::new(env)), DrawItem::rigid(Arc::new(shadow)), DrawItem { mesh: Arc::new(c.mesh), skin }],
+        outline: 2.0,
+        items: vec![DrawItem::rigid(Arc::new(env)), DrawItem::rigid(Arc::new(shadow)), DrawItem::skinned(Arc::new(c.mesh), skin)],
     }
 }
 
@@ -42,6 +43,12 @@ fn cpu_draws_character_over_background() {
         p[0] > 180 && p[1] > 140 && p[2] < 110
     }).count();
     assert!(yellowish > 500, "keltaista paitaa {yellowish} px");
+    // Ääriviivat: hahmon reunalla on mustetta, ilman niitä ei.
+    let dark = |img: &hs_render::Image| img.rgba.chunks(4).filter(|p| p[0] < 30 && p[1] < 30 && p[2] < 30).count();
+    let mut plain = scene(ShadingStyle::Flat, 320, 480);
+    plain.outline = 0.0;
+    let plain = CpuRenderer::default().render(&plain).unwrap();
+    assert!(dark(&img) > dark(&plain) + 400, "{} vs {}", dark(&img), dark(&plain));
     let cel = CpuRenderer::default().render(&scene(ShadingStyle::Cel, 320, 480)).unwrap();
     hs_render::export::write_png(&cel, &out_dir().join("cpu-cel.png")).unwrap();
     assert!(cel.mean_abs_diff(&img) > 1.0);

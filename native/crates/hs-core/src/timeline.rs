@@ -73,6 +73,14 @@ pub enum CameraHint {
     CloseUp,
     /// Lähikuva puhelimen ruudusta / käsistä.
     Insert,
+    /// Kaksi hahmoa samassa kuvassa (puhuja ja keskustelukumppani).
+    TwoShot,
+    /// Olan yli: kumppanin olka etualalla, puhuja kuvan keskellä.
+    OverShoulder,
+    /// Alakulma: kamera alhaalla, hahmo näyttää suurelta.
+    LowAngle,
+    /// Yläkulma: kamera ylhäällä, hahmo näyttää pieneltä.
+    HighAngle,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]

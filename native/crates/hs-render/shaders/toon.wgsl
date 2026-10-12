@@ -10,7 +10,7 @@ struct Globals {
     rim_dir: vec4<f32>,
     rim_col: vec4<f32>,
     ambient: vec4<f32>,
-    // x = tyyli (0 flat, 1 cel)
+    // x = tyyli (0 flat, 1 cel), y = ääriviivan kerroin (maailmayksikköä per w)
     style: vec4<f32>,
 };
 
@@ -37,6 +37,9 @@ struct VOut {
     @location(2) color: vec3<f32>,
     @location(3) shade: f32,
 };
+
+// Ääriviivojen muste; sama kuin shading::INK.
+const INK: vec3<f32> = vec3<f32>(0.012, 0.009, 0.011);
 
 @vertex
 fn vs_main(v: VIn) -> VOut {
@@ -89,4 +92,34 @@ fn fs_main(i: VOut) -> @location(0) vec4<f32> {
     let unlit = i.color * (0.92 + 0.08 * k);
     let c = mix(unlit, lit_color, clamp(i.shade, 0.0, 1.0));
     return vec4<f32>(clamp(c, vec3<f32>(0.0), vec3<f32>(1.0)), 1.0);
+}
+
+// Ääriviiva (käänteinen kuori): verkko paisutetaan normaalin suuntaan vakiopikselimäärän
+// verran ja siitä piirretään vain kamerasta poispäin osoittava puoli.
+// Kärkipisteen värin alfa 0 = ei ääriviivaa (posket, pupillit).
+@vertex
+fn vs_outline(v: VIn) -> VOut {
+    let ma = bones.m[v.bone.x];
+    let mb = bones.m[v.bone.y];
+    let p = vec4<f32>(v.pos, 1.0);
+    let nv = vec4<f32>(v.normal, 0.0);
+    let world = ((ma * p) * v.weight + (mb * p) * (1.0 - v.weight)).xyz;
+    let n = safe_normalize(((ma * nv) * v.weight + (mb * nv) * (1.0 - v.weight)).xyz);
+    let c0 = g.view_proj * vec4<f32>(world, 1.0);
+    let grown = world + n * (g.style.y * c0.w);
+    var o: VOut;
+    o.clip = g.view_proj * vec4<f32>(grown, 1.0);
+    o.world = grown;
+    o.normal = n;
+    o.color = v.color.rgb;
+    o.shade = v.color.a;
+    return o;
+}
+
+@fragment
+fn fs_outline(i: VOut) -> @location(0) vec4<f32> {
+    if (dot(i.normal, g.eye.xyz - i.world) > 0.0 || i.shade < 0.5) {
+        discard;
+    }
+    return vec4<f32>(INK, 1.0);
 }

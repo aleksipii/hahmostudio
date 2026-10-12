@@ -24,6 +24,10 @@ pub enum ShotKind {
     Medium,
     CloseUp,
     Insert,
+    TwoShot,
+    OverShoulder,
+    LowAngle,
+    HighAngle,
 }
 
 impl ShotKind {
@@ -34,6 +38,10 @@ impl ShotKind {
             ShotKind::Medium => "Puolilähi",
             ShotKind::CloseUp => "Lähikuva",
             ShotKind::Insert => "Insertti",
+            ShotKind::TwoShot => "Kaksikko",
+            ShotKind::OverShoulder => "Olan yli",
+            ShotKind::LowAngle => "Alakulma",
+            ShotKind::HighAngle => "Yläkulma",
         }
     }
 }
@@ -44,6 +52,8 @@ pub struct Shot {
     pub end: f32,
     pub kind: ShotKind,
     pub subject: usize,
+    /// Keskustelukumppani (kaksikko ja olan yli -kuvat).
+    pub partner: Option<usize>,
     /// Kameran atsimuuttipoikkeama (radiaaneina) etusuunnasta.
     pub angle: f32,
     pub tracking: bool,
@@ -73,6 +83,22 @@ impl CameraTrack {
         beats.sort_by_key(|e| e.start);
         let mut shots: Vec<Shot> = Vec::new();
         let mut dialogue_run = 0;
+        // Puhujat aikajärjestyksessä keskustelukumppanin päättelyä varten.
+        let mut speakers: Vec<(f32, usize)> = tl
+            .events
+            .iter()
+            .filter_map(|d| match &d.kind {
+                EventKind::Dialogue { speaker: Some(sp), .. } => Some((d.start.seconds() as f32, subject_of(Some(sp)))),
+                _ => None,
+            })
+            .collect();
+        speakers.sort_by(|a, b| a.0.total_cmp(&b.0));
+        let cast = heights.len();
+        let partner_of = |subject: usize, t: f32| -> Option<usize> {
+            let before = speakers.iter().rev().filter(|(s, _)| *s < t).find(|(_, w)| *w != subject).map(|(_, w)| *w);
+            let after = speakers.iter().filter(|(s, _)| *s > t).find(|(_, w)| *w != subject).map(|(_, w)| *w);
+            before.or(after).or_else(|| (0..cast).find(|i| *i != subject))
+        };
         for e in beats {
             let EventKind::Motion { motion: mk, character } = &e.kind else { continue };
             let (start, end) = (e.start.seconds() as f32, e.end().seconds() as f32);
@@ -85,12 +111,18 @@ impl CameraTrack {
                 _ => None,
             });
             let subject = subject_of(character.as_ref().or(speaker.as_ref().and_then(|s| s.as_ref())));
-            let mut push = |kind: ShotKind, s: f32, t: f32, tracking: bool| shots.push(Shot { start: s, end: t, kind, subject, angle: 0.0, tracking });
+            let partner = partner_of(subject, start);
+            let mut push = |kind: ShotKind, s: f32, t: f32, tracking: bool| shots.push(Shot { start: s, end: t, kind, subject, partner, angle: 0.0, tracking });
             match hint {
                 Some(CameraHint::Wide) => push(ShotKind::Wide, start, end, mk.is_locomotion()),
                 Some(CameraHint::Medium) => push(ShotKind::Medium, start, end, mk.is_locomotion()),
                 Some(CameraHint::CloseUp) => push(ShotKind::CloseUp, start, end, mk.is_locomotion()),
                 Some(CameraHint::Insert) => push(ShotKind::Insert, start, end, false),
+                Some(CameraHint::TwoShot) if partner.is_some() => push(ShotKind::TwoShot, start, end, false),
+                Some(CameraHint::OverShoulder) if partner.is_some() => push(ShotKind::OverShoulder, start, end, false),
+                Some(CameraHint::TwoShot | CameraHint::OverShoulder) => push(ShotKind::Medium, start, end, false),
+                Some(CameraHint::LowAngle) => push(ShotKind::LowAngle, start, end, mk.is_locomotion()),
+                Some(CameraHint::HighAngle) => push(ShotKind::HighAngle, start, end, mk.is_locomotion()),
                 None => match mk {
                     MotionKind::Walk(_) | MotionKind::Run(_) => push(ShotKind::Wide, start, end, true),
                     MotionKind::Jump | MotionKind::Crouch | MotionKind::Wave => push(ShotKind::Full, start, end, false),
@@ -106,7 +138,12 @@ impl CameraTrack {
                     }
                     MotionKind::Wait => {
                         dialogue_run += 1;
-                        let kind = if speaker.is_some() && dialogue_run % 2 == 0 { ShotKind::CloseUp } else { ShotKind::Medium };
+                        // Keskustelu: puolilähi → lähikuva → kaksikko (kun kumppani on), toistuen.
+                        let kind = match (speaker.is_some(), dialogue_run % 3, partner.is_some()) {
+                            (true, 2, _) => ShotKind::CloseUp,
+                            (true, 0, true) => ShotKind::TwoShot,
+                            _ => ShotKind::Medium,
+                        };
                         push(kind, start, end, false);
                     }
                 },
@@ -119,7 +156,7 @@ impl CameraTrack {
         let mut merged: Vec<Shot> = Vec::new();
         for s in shots {
             if let Some(last) = merged.last_mut() {
-                let same = last.kind == s.kind && last.subject == s.subject && last.tracking == s.tracking;
+                let same = last.kind == s.kind && last.subject == s.subject && last.tracking == s.tracking && last.partner == s.partner;
                 if same || s.end - s.start < MIN_SHOT {
                     last.end = s.end;
                     last.tracking |= s.tracking;
@@ -131,7 +168,7 @@ impl CameraTrack {
         // 30 asteen sääntö: vaihtele kulmaa otoksesta toiseen.
         for (i, s) in merged.iter_mut().enumerate() {
             s.angle = match s.kind {
-                ShotKind::Insert => 0.0,
+                ShotKind::Insert | ShotKind::TwoShot | ShotKind::OverShoulder => 0.0,
                 _ => [0.0f32, 0.32, -0.3][i % 3],
             };
         }
@@ -156,7 +193,13 @@ impl CameraTrack {
 
     /// Pehmennetty juuren paikka (painotettu keskiarvo ±0,4 s) seurantaa varten.
     fn smooth_root(&self, subject: usize, t: f32) -> Vec3 {
-        let Some(m) = self.motion.get(subject) else { return Vec3::ZERO };
+        match self.motion.get(subject) {
+            Some(m) => self.smooth_root_of(m, t),
+            None => Vec3::ZERO,
+        }
+    }
+
+    fn smooth_root_of(&self, m: &PreparedMotion, t: f32) -> Vec3 {
         let mut acc = Vec3::ZERO;
         let mut wsum = 0.0;
         for k in -8..=8 {
@@ -180,17 +223,56 @@ impl CameraTrack {
         let jump = self.motion.get(s).map_or(0.0, |m| m.root_at(t).0.y);
         let (_, yaw) = self.motion.get(s).map_or((Vec3::ZERO, 0.0), |m| m.root_at(t));
         // Rajattava korkeus F, kohdepisteen korkeus ja kameran korotus.
+        let tallest = self.heights.iter().cloned().fold(h, f32::max);
         let (frame_h, target_y, elevation): (f32, f32, f32) = match shot.kind {
             ShotKind::Wide => {
-                let spread = self.motion.iter().map(|m| m.root_at(t).0.x).fold(f32::MIN, f32::max) - self.motion.iter().map(|m| m.root_at(t).0.x).fold(f32::MAX, f32::min);
-                (h * 1.7 + spread / aspect.max(0.3) * 0.6, h * 0.55, 0.14)
+                // Koko joukko kuvaan: kehyksen leveys kattaa kaikkien hahmojen paikat.
+                let xs: Vec<f32> = self.motion.iter().map(|m| self.smooth_root_of(m, if shot.tracking { t } else { shot.start + 0.4 }).x).collect();
+                let spread = xs.iter().cloned().fold(f32::MIN, f32::max) - xs.iter().cloned().fold(f32::MAX, f32::min);
+                ((tallest * 1.45).max((spread.max(0.0) + tallest * 1.1) / aspect.max(0.3)), tallest * 0.5, 0.14)
             }
+            ShotKind::TwoShot => {
+                let other = shot.partner.and_then(|p| self.motion.get(p)).map_or(anchor, |m| self.smooth_root_of(m, shot.start + 0.4));
+                let spread = (other.x - anchor.x).abs();
+                let h2 = self.heights.get(shot.partner.unwrap_or(s)).copied().unwrap_or(h).max(h);
+                ((h2 * 0.8).max((spread + h2 * 0.9) / aspect.max(0.3)), h2 * 0.62, 0.06)
+            }
+            ShotKind::LowAngle => (h * 0.95, h * 0.62 + jump * 0.5, -0.32),
+            ShotKind::HighAngle => (h * 1.0, h * 0.45 + jump * 0.5, 0.62),
+            ShotKind::OverShoulder => (head * 3.4, h - head * 0.55, 0.04),
             ShotKind::Full => (h / 0.72, h * 0.52 + jump * 0.5, 0.08),
             ShotKind::Medium => (h * 0.62, h * 0.70, 0.05),
             ShotKind::CloseUp => (head * 2.6, h - head * 0.5, 0.02),
             ShotKind::Insert => (0.42, h * 0.56, 0.62),
         };
-        let mut target = Vec3::new(anchor.x, target_y, anchor.z);
+        let group_x = match shot.kind {
+            ShotKind::Wide if !shot.tracking => {
+                let xs: Vec<f32> = self.motion.iter().map(|m| self.smooth_root_of(m, shot.start + 0.4).x).collect();
+                (xs.iter().cloned().fold(f32::MIN, f32::max) + xs.iter().cloned().fold(f32::MAX, f32::min)) * 0.5
+            }
+            ShotKind::TwoShot => {
+                let other = shot.partner.and_then(|p| self.motion.get(p)).map_or(anchor, |m| self.smooth_root_of(m, shot.start + 0.4));
+                (anchor.x + other.x) * 0.5
+            }
+            _ => anchor.x,
+        };
+        let mut target = Vec3::new(group_x, target_y, anchor.z);
+        if shot.kind == ShotKind::OverShoulder {
+            if let Some(p) = shot.partner.filter(|p| *p != s) {
+                // Kamera kumppanin olan takana ja vähän sivussa, katse puhujan kasvoihin.
+                let other = self.motion.get(p).map_or(anchor, |m| self.smooth_root_of(m, shot.start + 0.4));
+                let ph = self.heights.get(p).copied().unwrap_or(h);
+                let side = (other.x - anchor.x).signum();
+                let shoulder = Vec3::new(other.x, ph * 0.8, other.z);
+                // Kumppanin pää ja olka jäävät etualalle kuvan reunaan, puhuja kolmen neljäsosan kulmasta.
+                let eye = shoulder + Vec3::new(side * 0.42, ph * 0.08 + 0.05, 0.62);
+                let progress = ((t - shot.start) / (shot.end - shot.start).max(1e-3)).clamp(0.0, 1.0);
+                let target = target.lerp(shoulder, 0.2) + Vec3::Y * 0.01 * smoothstep(progress);
+                let camera = Camera { eye, target, fov_y: self.fov_y * 0.85 };
+                let az = (eye.x - target.x).atan2(eye.z - target.z);
+                return (camera, self.lights(az, self.background_at(t)), shot.kind);
+            }
+        }
         if shot.kind == ShotKind::Insert {
             // Insertti olan yli puhelimen ruutuun (leikkauskuva; 180 asteen sääntö ei koske sitä).
             let sample = shot.start + (shot.end - shot.start) * 0.3;

@@ -53,6 +53,7 @@ pub struct GpuRenderer {
     device: Arc<wgpu::Device>,
     queue: Arc<wgpu::Queue>,
     pipeline: wgpu::RenderPipeline,
+    outline: wgpu::RenderPipeline,
     globals: wgpu::Buffer,
     globals_group: wgpu::BindGroup,
     bones_layout: wgpu::BindGroupLayout,
@@ -114,27 +115,31 @@ impl GpuRenderer {
         });
         let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor { label: Some("toon"), bind_group_layouts: &[&globals_layout, &bones_layout], push_constant_ranges: &[] });
         let attributes = wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Float32x4, 3 => Uint32x2, 4 => Float32, 5 => Float32];
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("toon"),
-            layout: Some(&layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &[wgpu::VertexBufferLayout { array_stride: std::mem::size_of::<Vertex>() as u64, step_mode: wgpu::VertexStepMode::Vertex, attributes: &attributes }],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState { format: COLOR_FORMAT, blend: None, write_mask: wgpu::ColorWrites::ALL })],
-            }),
-            primitive: wgpu::PrimitiveState { cull_mode: None, ..Default::default() },
-            depth_stencil: Some(wgpu::DepthStencilState { format: DEPTH_FORMAT, depth_write_enabled: true, depth_compare: wgpu::CompareFunction::Less, stencil: Default::default(), bias: Default::default() }),
-            multisample: wgpu::MultisampleState { count: samples, ..Default::default() },
-            multiview: None,
-            cache: None,
-        });
+        let make = |label: &str, vs: &str, fs: &str| {
+            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some(label),
+                layout: Some(&layout),
+                vertex: wgpu::VertexState {
+                    module: &shader,
+                    entry_point: Some(vs),
+                    compilation_options: Default::default(),
+                    buffers: &[wgpu::VertexBufferLayout { array_stride: std::mem::size_of::<Vertex>() as u64, step_mode: wgpu::VertexStepMode::Vertex, attributes: &attributes }],
+                },
+                fragment: Some(wgpu::FragmentState {
+                    module: &shader,
+                    entry_point: Some(fs),
+                    compilation_options: Default::default(),
+                    targets: &[Some(wgpu::ColorTargetState { format: COLOR_FORMAT, blend: None, write_mask: wgpu::ColorWrites::ALL })],
+                }),
+                primitive: wgpu::PrimitiveState { cull_mode: None, ..Default::default() },
+                depth_stencil: Some(wgpu::DepthStencilState { format: DEPTH_FORMAT, depth_write_enabled: true, depth_compare: wgpu::CompareFunction::Less, stencil: Default::default(), bias: Default::default() }),
+                multisample: wgpu::MultisampleState { count: samples, ..Default::default() },
+                multiview: None,
+                cache: None,
+            })
+        };
+        let pipeline = make("toon", "vs_main", "fs_main");
+        let outline = make("outline", "vs_outline", "fs_outline");
         let globals = device.create_buffer(&wgpu::BufferDescriptor { label: Some("globals"), size: std::mem::size_of::<Globals>() as u64, usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST, mapped_at_creation: false });
         let globals_group = device.create_bind_group(&wgpu::BindGroupDescriptor { label: Some("globals"), layout: &globals_layout, entries: &[wgpu::BindGroupEntry { binding: 0, resource: globals.as_entire_binding() }] });
         let (bones, bones_group) = Self::bone_buffer(&device, &bones_layout, 8);
@@ -142,6 +147,7 @@ impl GpuRenderer {
             device,
             queue,
             pipeline,
+            outline,
             globals,
             globals_group,
             bones_layout,
@@ -262,7 +268,7 @@ impl GpuRenderer {
             rim_dir: vec4(l.rim.dir, 0.0),
             rim_col: vec4(l.rim.color, 0.0),
             ambient: vec4(l.ambient, 0.0),
-            style: [if scene.style == ShadingStyle::Cel { 1.0 } else { 0.0 }, 0.0, 0.0, 0.0],
+            style: [if scene.style == ShadingStyle::Cel { 1.0 } else { 0.0 }, scene.outline_factor(), 0.0, 0.0],
         };
         self.queue.write_buffer(&self.globals, 0, bytemuck::bytes_of(&globals));
         let n = scene.items.len().max(1) as u64;
@@ -308,6 +314,16 @@ impl GpuRenderer {
                 pass.set_vertex_buffer(0, m.vertices.slice(..));
                 pass.set_index_buffer(m.indices.slice(..), wgpu::IndexFormat::Uint32);
                 pass.draw_indexed(0..m.count, 0, 0..1);
+            }
+            if scene.outline > 0.0 {
+                pass.set_pipeline(&self.outline);
+                for (i, item) in scene.items.iter().enumerate().filter(|(_, it)| it.outline) {
+                    let m = &self.meshes[&Self::mesh_key(&item.mesh)];
+                    pass.set_bind_group(1, &self.bones_group, &[(i as u64 * BONE_BLOCK) as u32]);
+                    pass.set_vertex_buffer(0, m.vertices.slice(..));
+                    pass.set_index_buffer(m.indices.slice(..), wgpu::IndexFormat::Uint32);
+                    pass.draw_indexed(0..m.count, 0, 0..1);
+                }
             }
         }
         self.queue.submit(Some(encoder.finish()));
