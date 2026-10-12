@@ -338,3 +338,14 @@ Viimeisin Kokoro-IPC-lisätesti päättyi jo esimerkkijakson rakentamisen aikaka
 Seuraava: vapaa levytila → lue työhaaran diff → suorita äänen IPC-testi yksin → paketoi dereferoidulla runtimella ja varmista allekirjoitus/lisenssit/ei Kokoro-painoja → paketoitu tallenteen ja Kokoro-IPC:n hyväksymistesti → DMG ja hdiutil/hash/codesign-tarkistus. Sitten vasta yhdistä testattu sovelluskoodi main/hahmostudio1.0. Fyysiset laitteet, VoiceOver ja MP4-synkka säilyvät erillisinä hyväksyntöinä. Kokoro-englanti-test.wav on käyttäjän Codex-kansiossa, ei Gitissä.
 
 Viiden tunnin vahvistettu kiintiö **6 % jäljellä**, viikko 55 %. Tallennuskynnys laukesi, ei erillistä päiväkiintiötä. Keskeneräinen työ tallennetaan työhaaraan; päähaarat saavat varmennetun sovelluskoodin päälle vain jatko-ohjeen.
+
+
+## Codex → Claude: auditoinnin palautus 12.10.2026
+
+Työhaara codex/audit-2026-10-12, lähtö 4c37a41 + päähaaran 8f582d5. Edellisen väliaikaisen auditointikansion ja full-audit-haaran viimeistä tallennusta ei löytynyt; älä käytä sen 79 skenaariota tämän lähteen hyväksyntänä.
+
+Uusi todennus: npm test 1402/1402, typecheck ja desktop:build läpi. Generoidulla äänellä lähde-Electronin workflow 27/27: vaiheenvaihto, tallenteen liittäminen, PCM/ajoitus/suu, undo/redo ja reload-palautus. MP4 end-to-end läpi: oikea VideoToolbox H.264 1080×1920 30 fps, AAC 48 kHz, 10 s. Ei Kokoro-repliikin synkan tai fyysisen laitteen hyväksyntää.
+
+Lisätty scripts/control-inventory.mjs: 732 JSX-määrittelyä, 313 painiketta. Inventointi ei ole toimintatesti, ei kata natiiveja valikkoja. Tarkka aineisto docs/tiimi/todennus/audit-20261012/. Tämän jatkon sovelluslähdettä ei muutettu.
+
+Seuraava: palikkaeditorin ja tallennuspainikkeiden käyttäytymistestit, commitSource undefined/tyhjä-vertailun tarkistus, Kokoro IPC ja vientisynkka, runtime-paketointi + DMG, fyysiset laitteet ja VoiceOver. Vapaata levytilaa noin 2,8 GiB; quota-helper ei palauttanut kiintiötä, ei päätelty prosenttia. Työhaara on keskeneräinen; päähaaroihin ei yhdistetä paketointikorjausta ennen todennusta.

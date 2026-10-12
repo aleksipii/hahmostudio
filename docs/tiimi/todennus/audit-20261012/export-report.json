@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "job": {
+    "state": "done",
+    "encoder": "h264_videotoolbox · laitteisto",
+    "preset": {
+      "name": "MP4 · 1080p",
+      "audio": true,
+      "format": "mp4",
+      "fps": 30
+    }
+  },
+  "bytes": 1225543,
+  "mp4": {
+    "video": {
+      "codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "audio": {
+      "codec": "aac",
+      "hz": 48000
+    },
+    "seconds": 10,
+    "meanVolumeDb": -28.6,
+    "maxVolumeDb": -6
+  },
+  "format": "mp4",
+  "errors": [],
+  "gui": true,
+  "devices": false
+}

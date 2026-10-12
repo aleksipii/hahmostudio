@@ -1,0 +1,8676 @@
+{
+  "scope": "Component JSX declaration sites; repeated instances, native menus and runtime conditions require separate checks",
+  "behaviourCoverage": false,
+  "total": 732,
+  "buttons": 313,
+  "entries": [
+    {
+      "file": "components/accessibility-settings.tsx",
+      "line": 3,
+      "column": 1013,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 9,
+      "column": 13,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 26,
+      "column": 182,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 29,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!status.secrets.encryption}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 29,
+      "column": 169,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!status.secrets.encryption}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 29,
+      "column": 337,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!status.secrets.encryption}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 29,
+      "column": 482,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!keys.some(([,v])=>v.set)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 31,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 31,
+      "column": 272,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 33,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 33,
+      "column": 148,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 34,
+      "column": 21,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 34,
+      "column": 134,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 68,
+      "column": 13,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 101,
+      "column": 69,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/ai-panel.tsx",
+      "line": 102,
+      "column": 41,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 14,
+      "column": 366,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 14,
+      "column": 571,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title={`Ruutu ${k.frame}`}",
+        "aria-label={`${n.name}: avainruutu ${k.frame}`}",
+        "disabled={exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 15,
+      "column": 103,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={label}",
+        "disabled={!part || playing || exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 16,
+      "column": 86,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 16,
+      "column": 731,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Avainruudun siirtymä\"",
+        "disabled={!part || playing || exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 16,
+      "column": 1193,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!part || playing || exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 16,
+      "column": 1336,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!atKey || playing || exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 16,
+      "column": 1451,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!part || playing || exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 18,
+      "column": 50,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Aikajanan zoom\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 20,
+      "column": 18,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!canUndo || playing || exporting}",
+        "title=\"Kumoa (Cmd/Ctrl+Z)\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 20,
+      "column": 218,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!canRedo || playing || exporting}",
+        "title=\"Tee uudelleen (Cmd/Ctrl+Shift+Z)\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 21,
+      "column": 33,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Kuvataajuus\"",
+        "disabled={playing || exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 21,
+      "column": 294,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Animaation ruutumäärä\"",
+        "disabled={playing || exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 21,
+      "column": 556,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={playing}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 23,
+      "column": 131,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Animaatio\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 23,
+      "column": 213,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 23,
+      "column": 549,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 23,
+      "column": 654,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 23,
+      "column": 799,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/animation-panel.tsx",
+      "line": 23,
+      "column": 875,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Aikajanan ruutu\"",
+        "disabled={exporting}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/app-menu.tsx",
+      "line": 5,
+      "column": 167,
+      "tag": "details",
+      "handlers": [
+        "onClick",
+        "onKeyDown"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/app-menu.tsx",
+      "line": 5,
+      "column": 1338,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [
+        "title={title}",
+        "aria-label={summary?label:undefined}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/app-menu.tsx",
+      "line": 5,
+      "column": 1424,
+      "tag": "div",
+      "handlers": [
+        "onMouseDown"
+      ],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label={label}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 814,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={current===c.name+'.psd'?undefined:'Valitse '+(c.name.endsWith('-Monikulma')?c.name.split('-')[0]+' · eri kulmat':c.name)}",
+        "disabled={disabled||current===c.name+'.psd'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 1151,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [
+        "aria-label={'Tiedot ja lataus: '+c.name}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 1303,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 1411,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 2068,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 2523,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 2752,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 3039,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!current}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 3163,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 3372,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 3502,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 3618,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/asset-library.tsx",
+      "line": 4,
+      "column": 3732,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 10,
+      "column": 68,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 10,
+      "column": 451,
+      "tag": "svg",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "role=\"img\"",
+        "aria-label=\"Äänen aaltomuoto ja hiljaiset alueet\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 11,
+      "column": 206,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 11,
+      "column": 331,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 11,
+      "column": 516,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||working||!model?.model||!model?.binary}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 11,
+      "column": 668,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 12,
+      "column": 133,
+      "tag": "textarea",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={`Segmentin ${i+1} teksti`}",
+        "disabled={disabled||working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 12,
+      "column": 362,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled||working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 12,
+      "column": 661,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 12,
+      "column": 762,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 13,
+      "column": 20,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/audio-analysis.tsx",
+      "line": 13,
+      "column": 397,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/batch-shot-task-editor.tsx",
+      "line": 7,
+      "column": 71,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/batch-shot-task-editor.tsx",
+      "line": 8,
+      "column": 49,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/batch-shot-task-editor.tsx",
+      "line": 8,
+      "column": 296,
+      "tag": "form",
+      "handlers": [
+        "onSubmit"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/batch-shot-task-editor.tsx",
+      "line": 9,
+      "column": 94,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/batch-shot-task-editor.tsx",
+      "line": 10,
+      "column": 83,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/batch-shot-task-editor.tsx",
+      "line": 11,
+      "column": 2,
+      "tag": "button",
+      "handlers": [],
+      "attributes": [
+        "disabled={disabled||!shots.length||ownerMode==='keep'&&dateMode==='keep'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 61,
+      "column": 3,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"toolbar\"",
+        "aria-label=\"Palikkakirjasto: vedä raidalle tai paina Enter lisätäksesi toistopisteeseen\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 62,
+      "column": 19,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 63,
+      "column": 32,
+      "tag": "button",
+      "handlers": [
+        "onDragStart",
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!libraryLane}",
+        "aria-label={`Lisää ${item.label} hahmolle ${displayName(libraryLane)} kohtaan ${fmt(playhead)} s`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 65,
+      "column": 3,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Monivalinta\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 65,
+      "column": 78,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 65,
+      "column": 227,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 65,
+      "column": 324,
+      "tag": "span",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 66,
+      "column": 3,
+      "tag": "div",
+      "handlers": [
+        "onPointerMove",
+        "onPointerUp",
+        "onPointerCancel"
+      ],
+      "attributes": [
+        "role=\"application\"",
+        "aria-label=\"Palikka-aikajana\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 68,
+      "column": 21,
+      "tag": "div",
+      "handlers": [
+        "onDragOver",
+        "onDrop"
+      ],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label={'Raita: '+laneName(lane)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 72,
+      "column": 14,
+      "tag": "div",
+      "handlers": [
+        "onKeyDown",
+        "onClick",
+        "onPointerDown"
+      ],
+      "attributes": [
+        "role=\"button\"",
+        "aria-label={blockAria(b)}",
+        "title={b.editable?b.lineText.trim():'Johdettu palikka (automaattinen kuva tai tehoste)'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 73,
+      "column": 98,
+      "tag": "span",
+      "handlers": [
+        "onPointerDown"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 79,
+      "column": 37,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 86,
+      "column": 38,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 87,
+      "column": 73,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 88,
+      "column": 36,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 89,
+      "column": 38,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 90,
+      "column": 42,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 91,
+      "column": 54,
+      "tag": "input",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 93,
+      "column": 24,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/block-timeline.tsx",
+      "line": 93,
+      "column": 139,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 20,
+      "column": 97,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={label}",
+        "disabled={running||loading||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 53,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 954,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 1117,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!(running||loading)&&(!head||disabled)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 1370,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!running||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 1538,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!running||disabled||combined}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 1869,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!head||running||loading||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 2014,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 2184,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/camera-panel.tsx",
+      "line": 21,
+      "column": 2578,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 14,
+      "column": 66,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Valtuutus ennen suoritusta\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 20,
+      "column": 44,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 43,
+      "column": 69,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 44,
+      "column": 63,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 46,
+      "column": 11,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 48,
+      "column": 71,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!health||!presentation}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 48,
+      "column": 221,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 48,
+      "column": 428,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 49,
+      "column": 286,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 49,
+      "column": 508,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 49,
+      "column": 1414,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 50,
+      "column": 71,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!canon}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 52,
+      "column": 152,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 53,
+      "column": 78,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 53,
+      "column": 301,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!canon}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 55,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!canRender(card,job,busy)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 56,
+      "column": 13,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 56,
+      "column": 274,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!health}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 58,
+      "column": 18,
+      "tag": "pre",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 58,
+      "column": 101,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 59,
+      "column": 66,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Kaggle-muistikirja\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 59,
+      "column": 313,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 59,
+      "column": 440,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 59,
+      "column": 558,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/cloud-render-dialog.tsx",
+      "line": 60,
+      "column": 101,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/command-palette.tsx",
+      "line": 54,
+      "column": 5,
+      "tag": "div",
+      "handlers": [
+        "onMouseDown"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/command-palette.tsx",
+      "line": 55,
+      "column": 7,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"dialog\"",
+        "aria-label=\"Hae toimintoa\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/command-palette.tsx",
+      "line": 56,
+      "column": 9,
+      "tag": "input",
+      "handlers": [
+        "onChange",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "role=\"combobox\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/command-palette.tsx",
+      "line": 72,
+      "column": 9,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"listbox\"",
+        "aria-label=\"Toiminnot\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/command-palette.tsx",
+      "line": 78,
+      "column": 15,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"presentation\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/command-palette.tsx",
+      "line": 79,
+      "column": 26,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"presentation\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/command-palette.tsx",
+      "line": 80,
+      "column": 17,
+      "tag": "div",
+      "handlers": [
+        "onMouseMove",
+        "onClick"
+      ],
+      "attributes": [
+        "role=\"option\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/dialogue-recorder.tsx",
+      "line": 10,
+      "column": 44,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={mode==='saving'||mode==='idle'&&disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/dialogue-recorder.tsx",
+      "line": 10,
+      "column": 425,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/dialogue-recorder.tsx",
+      "line": 10,
+      "column": 509,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/easing-editor.tsx",
+      "line": 12,
+      "column": 96,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/easing-editor.tsx",
+      "line": 13,
+      "column": 2,
+      "tag": "svg",
+      "handlers": [
+        "onPointerMove",
+        "onPointerUp",
+        "onPointerCancel"
+      ],
+      "attributes": [
+        "aria-label=\"Bézier-käyrä: vaaka-akseli aika, pystyakseli liike\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/easing-editor.tsx",
+      "line": 18,
+      "column": 54,
+      "tag": "circle",
+      "handlers": [
+        "onPointerDown",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "role=\"button\"",
+        "aria-label={`${point.toUpperCase()}: X ${draft[point].x.toFixed(2)}, Y ${draft[point].y.toFixed(2)}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/easing-editor.tsx",
+      "line": 19,
+      "column": 31,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 312,
+      "column": 27,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!!layerQuery.trim()}",
+        "aria-label={`${layerQuery.trim()?'Hakutuloksen':collapsed.has(n.key) ? 'Avaa' : 'Sulje'} ryhmä ${n.name}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 313,
+      "column": 5,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title={n.path}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 316,
+      "column": 5,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={`${n.visible ? 'Piilota' : 'Näytä'} ${n.name}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 534,
+      "column": 87,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Hahmon kuvakulma\"",
+        "disabled={cameraActive||quickBusy||playing||frameExport||projectBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 535,
+      "column": 117,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 608,
+      "column": 9,
+      "tag": "StudioShell",
+      "handlers": [
+        "onDragOver",
+        "onDragLeave",
+        "onDrop"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 611,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={openDisabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 612,
+      "column": 77,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 612,
+      "column": 131,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={openDisabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 613,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={saveDisabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 614,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc||projectBusy||frameExport||quickBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 615,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc||!animation||!rig}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 619,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={importDisabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 620,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={audioDisabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 621,
+      "column": 61,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 621,
+      "column": 104,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc || frameExport||cameraActive||quickBusy||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 621,
+      "column": 277,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!animation || !rig || frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 621,
+      "column": 418,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc || frameExport||cameraActive||quickBusy||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 621,
+      "column": 579,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!rig || !doc || frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 622,
+      "column": 24,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={quickBusy||projectBusy||frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 622,
+      "column": 198,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={quickBusy||projectBusy||frameExport||cameraActive}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 623,
+      "column": 61,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 623,
+      "column": 366,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 623,
+      "column": 430,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 623,
+      "column": 508,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 623,
+      "column": 633,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 625,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 626,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 627,
+      "column": 4,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 628,
+      "column": 20,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 629,
+      "column": 20,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={quickBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 634,
+      "column": 3,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 635,
+      "column": 3,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 636,
+      "column": 3,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 637,
+      "column": 3,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 638,
+      "column": 3,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 639,
+      "column": 266,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 639,
+      "column": 375,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 639,
+      "column": 470,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 641,
+      "column": 13,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 641,
+      "column": 99,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Sulje virheilmoitus\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 68,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 220,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 387,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 493,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 739,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 936,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 1116,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 1288,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 1687,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 3624,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title=\"Dialogi ja leikkaukset\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 3910,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title=\"Yhden hahmon liikkeet\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 643,
+      "column": 4264,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||projectBusy||frameExport||cameraActive||quickBusy||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 644,
+      "column": 66,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Hae hahmon osaa\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 644,
+      "column": 236,
+      "tag": "span",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 644,
+      "column": 593,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 644,
+      "column": 738,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={exporting || !nodes.some(n => n.png)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 647,
+      "column": 652,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 647,
+      "column": 793,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 647,
+      "column": 903,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title=\"Koko näytön käsikirjoitus · Esc sulkee\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 647,
+      "column": 1181,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title={b === 'checker' ? 'Läpinäkyvyysruudukko' : b === 'dark' ? 'Tumma tausta' : 'Valkoinen tausta'}",
+        "aria-label={b === 'checker' ? 'Läpinäkyvyysruudukko' : b === 'dark' ? 'Tumma tausta' : 'Valkoinen tausta'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 650,
+      "column": 282,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 650,
+      "column": 403,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 650,
+      "column": 549,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc||quickBusy||cameraActive}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 650,
+      "column": 739,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc?.compositeImage}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 652,
+      "column": 1229,
+      "tag": "svg",
+      "handlers": [
+        "onPointerDown"
+      ],
+      "attributes": [
+        "aria-label=\"Nivelmäärityksen pisteet\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 659,
+      "column": 660,
+      "tag": "svg",
+      "handlers": [
+        "onPointerDown"
+      ],
+      "attributes": [
+        "aria-label=\"Raajan tavoitepiste\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 659,
+      "column": 1941,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={projectBusy||busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 659,
+      "column": 2075,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 659,
+      "column": 2172,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 659,
+      "column": 2388,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 659,
+      "column": 2623,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 659,
+      "column": 2838,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 661,
+      "column": 15,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 661,
+      "column": 128,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 243,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 400,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 1036,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={playing||cameraActive||quickBusy||frameExport||speechBusy||projectBusy}",
+        "title=\"Muuttaa hahmojen kokoa myös videossa\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 1291,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={playing||cameraActive||quickBusy||frameExport||speechBusy||projectBusy}",
+        "title=\"Muuttaa hahmojen kokoa myös videossa\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 1712,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 1775,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Loitonna\"",
+        "disabled={!doc || frameExport||cameraActive||quickBusy||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 2029,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Lähennä\"",
+        "disabled={!doc || frameExport||cameraActive||quickBusy||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 2222,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!doc || frameExport||cameraActive||quickBusy||speechBusy}",
+        "title=\"Sovita kuva\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 663,
+      "column": 2501,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={playing||cameraActive||quickBusy||frameExport||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 666,
+      "column": 555,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 666,
+      "column": 1326,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={quickBusy||speechBusy||projectBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 666,
+      "column": 4127,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 666,
+      "column": 4229,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={frameExport||projectBusy||speechBusy||cameraActive||quickBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 666,
+      "column": 4598,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={frameExport||cameraActive||quickBusy||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 666,
+      "column": 4898,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!animation||projectBusy||speechBusy||cameraActive||quickBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 2539,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 2696,
+      "tag": "EasingEditor",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={playing||busy||projectBusy||frameExport||cameraActive||quickBusy||speechBusy||key.easing==='hold'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 3226,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 3269,
+      "tag": "StateEditor",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={playing||busy||projectBusy||frameExport||cameraActive||quickBusy||speechBusy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 4278,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 4635,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Raajan alaosa\"",
+        "disabled={cameraActive||frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 4994,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Taivutussuunta\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 667,
+      "column": 5214,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!selected||!limbLower||!rig.parts.find(p=>p.key===limbLower)?.joints.length||cameraActive||frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 668,
+      "column": 60,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 668,
+      "column": 220,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Suljettu suu\"",
+        "disabled={speechBusy||frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 668,
+      "column": 520,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Avoin suu\"",
+        "disabled={speechBusy||frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 668,
+      "column": 797,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={speechBusy||frameExport||!closedMouth||!openMouth||closedMouth===openMouth}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 669,
+      "column": 761,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 669,
+      "column": 1433,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 669,
+      "column": 1630,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 672,
+      "column": 375,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 100,
+      "tag": "span",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 344,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Toisto\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 412,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={projectBusy||frameExport||cameraActive||quickBusy||speechBusy}",
+        "title={playing?'Tauko (Välilyönti)':'Toista (Välilyönti)'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 926,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title=\"Pysäytä\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 1186,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={projectBusy||frameExport||cameraActive||quickBusy||speechBusy}",
+        "title=\"Uudelleen alusta\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 1669,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={projectBusy||frameExport}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 2056,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 2118,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 673,
+      "column": 2446,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!fpsReport?.samples}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 676,
+      "column": 57,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 676,
+      "column": 235,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 676,
+      "column": 339,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 18,
+      "tag": "div",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 87,
+      "tag": "section",
+      "handlers": [
+        "onClick",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 387,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 553,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"radiogroup\"",
+        "aria-label=\"Ulkoasu\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 704,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "role=\"radio\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 1599,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 1883,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 2095,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 2240,
+      "tag": "strong",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 687,
+      "column": 2670,
+      "tag": "span",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 688,
+      "column": 12,
+      "tag": "div",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 688,
+      "column": 75,
+      "tag": "section",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/editor.tsx",
+      "line": 688,
+      "column": 310,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Sulje käyttöohje\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 294,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 500,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={locked||!current||items.length===5}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 928,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={locked||items.length===5}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 1705,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={locked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 1893,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={`Siirrä jakso ${index+1} ylemmäs`}",
+        "disabled={locked||index===0}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 2085,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={`Siirrä jakso ${index+1} alemmas`}",
+        "disabled={locked||index===items.length-1}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 2290,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={`Poista jakso ${index+1}`}",
+        "disabled={locked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 2503,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!exporting&&(locked||!items.length)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 2780,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={locked||!items.length}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/episode-panel.tsx",
+      "line": 18,
+      "column": 3131,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/expert-settings.tsx",
+      "line": 6,
+      "column": 87,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!episode||working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 249,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 418,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Sulje vienti\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 536,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 627,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 768,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!episode||working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 922,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 1188,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 1933,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 2171,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 2319,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 2485,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 3025,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 3122,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 3506,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||!episode}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 4065,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||!episode}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 4193,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 4259,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 4873,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 4968,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 5106,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 5258,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/export-panel.tsx",
+      "line": 20,
+      "column": 5367,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/flow-pin-settings.tsx",
+      "line": 21,
+      "column": 9,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/flow-pin-settings.tsx",
+      "line": 38,
+      "column": 7,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/import-review.tsx",
+      "line": 12,
+      "column": 62,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/import-review.tsx",
+      "line": 12,
+      "column": 439,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/import-review.tsx",
+      "line": 12,
+      "column": 1482,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kilsat-app-shell.tsx",
+      "line": 47,
+      "column": 5,
+      "tag": "main",
+      "handlers": [
+        "onDragOver",
+        "onDragLeave",
+        "onDrop"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kilsat-app-shell.tsx",
+      "line": 60,
+      "column": 9,
+      "tag": "span",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kilsat-app-shell.tsx",
+      "line": 68,
+      "column": 11,
+      "tag": "aside",
+      "handlers": [],
+      "attributes": [
+        "role=\"toolbar\"",
+        "aria-label=\"Kirjasto\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kilsat-app-shell.tsx",
+      "line": 69,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Käsikirjoitus\"",
+        "title=\"Käsikirjoitus\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kilsat-app-shell.tsx",
+      "line": 78,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Hahmot\"",
+        "title=\"Hahmot\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kilsat-app-shell.tsx",
+      "line": 87,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Kuvat ja taustat\"",
+        "title=\"Kuvat\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kilsat-app-shell.tsx",
+      "line": 90,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Äänet\"",
+        "title=\"Äänet\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 156,
+      "column": 29,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 157,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!idle}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 158,
+      "column": 20,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 166,
+      "column": 17,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={!idle}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 180,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!idle || !dialogue.length}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 181,
+      "column": 22,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 182,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!idle}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 195,
+      "column": 40,
+      "tag": "em",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 198,
+      "column": 23,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 202,
+      "column": 28,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={`Soita: ${e.text}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 203,
+      "column": 19,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!idle || own}",
+        "title={own ? 'Oma ääni suojataan' : undefined}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 210,
+      "column": 28,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/kokoro-panel.tsx",
+      "line": 211,
+      "column": 19,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 34,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 117,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 164,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!layer}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 256,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 440,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 600,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 750,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 825,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 1179,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={layer.locked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 1641,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 18,
+      "column": 1822,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 19,
+      "column": 15,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 19,
+      "column": 107,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 19,
+      "column": 207,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 19,
+      "column": 335,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={points.length<2}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 19,
+      "column": 420,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 25,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 516,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 675,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 817,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 978,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 1126,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 1411,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 20,
+      "column": 1609,
+      "tag": "textarea",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 22,
+      "column": 109,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 22,
+      "column": 242,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 22,
+      "column": 425,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 22,
+      "column": 518,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 22,
+      "column": 670,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 22,
+      "column": 784,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!canUndo}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 22,
+      "column": 847,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!canRedo}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 23,
+      "column": 142,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/layer-editor.tsx",
+      "line": 24,
+      "column": 39,
+      "tag": "svg",
+      "handlers": [
+        "onPointerDown",
+        "onPointerMove",
+        "onPointerUp",
+        "onPointerCancel"
+      ],
+      "attributes": [
+        "aria-label=\"Piirtoalue\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/movement-bar.tsx",
+      "line": 2,
+      "column": 228,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Kävely ja juoksu\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/movement-bar.tsx",
+      "line": 2,
+      "column": 313,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/movement-bar.tsx",
+      "line": 2,
+      "column": 598,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/panel-resizer.tsx",
+      "line": 4,
+      "column": 9,
+      "tag": "div",
+      "handlers": [
+        "onPointerDown",
+        "onPointerMove",
+        "onPointerUp",
+        "onPointerCancel",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "role=\"separator\"",
+        "aria-label={label}",
+        "title={label+' · vedä tai käytä nuolinäppäimiä'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phone-panel.tsx",
+      "line": 2,
+      "column": 398,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phone-panel.tsx",
+      "line": 2,
+      "column": 750,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phone-panel.tsx",
+      "line": 2,
+      "column": 805,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phone-panel.tsx",
+      "line": 2,
+      "column": 1339,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phone-panel.tsx",
+      "line": 2,
+      "column": 1680,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phonetic-panel.tsx",
+      "line": 7,
+      "column": 48,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phonetic-panel.tsx",
+      "line": 7,
+      "column": 170,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Puheen kieli\"",
+        "disabled={working||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phonetic-panel.tsx",
+      "line": 7,
+      "column": 487,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={mouthLabels[shape]}",
+        "disabled={working||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phonetic-panel.tsx",
+      "line": 7,
+      "column": 854,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||working||!mouthShapes.slice(0,6).every(s=>map[s])}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phonetic-panel.tsx",
+      "line": 7,
+      "column": 1029,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/phonetic-panel.tsx",
+      "line": 7,
+      "column": 1123,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 609,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Käsikirjoitus\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 853,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title=\"Siirry työvaiheeseen Tarina · ⌥1\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 1082,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title=\"Tunnistuksen tarkistus, korjausehdotukset, hahmot, äänet ja ohjaussuunnitelma · myös Työkalut /\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 1739,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 1941,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 2131,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 2243,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 2385,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 197,
+      "column": 2821,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={index>0&&!model}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 198,
+      "column": 312,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 200,
+      "column": 190,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 200,
+      "column": 598,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 200,
+      "column": 688,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||disabled||!doc}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 201,
+      "column": 306,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 201,
+      "column": 1199,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||disabled||recordingVoice}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 202,
+      "column": 668,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 203,
+      "column": 246,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={recordingVoice||working||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 221,
+      "column": 53,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||disabled||recordingVoice||!(projectUndo?canProjectUndo:editPast.current.length)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 221,
+      "column": 224,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||disabled||recordingVoice||!(projectUndo?canProjectRedo:editFuture.current.length)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 273,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 914,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 1427,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 1686,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 2040,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 2809,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 3487,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working||disabled||recordingVoice}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 4285,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working||disabled||recordingVoice}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 4781,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 5131,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 5419,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 5566,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 5860,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 6121,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 6357,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 6635,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 224,
+      "column": 6722,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 232,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 447,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 697,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 1013,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 1353,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 1920,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 2041,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 2274,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 2533,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 2791,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working||disabled||recordingVoice}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 3324,
+      "tag": "form",
+      "handlers": [
+        "onSubmit"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 3503,
+      "tag": "input",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 3625,
+      "tag": "input",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 3725,
+      "tag": "button",
+      "handlers": [],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 3826,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 225,
+      "column": 4090,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 226,
+      "column": 30,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 226,
+      "column": 676,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 95,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 557,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 793,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 1170,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={e.protected||e.kind==='dialogue'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 1751,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 2134,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 2425,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 2711,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={e.protected}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 2980,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 227,
+      "column": 3390,
+      "tag": "textarea",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 228,
+      "column": 142,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={!isCutoutPresentation(compiled,assets)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 228,
+      "column": 511,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working||disabled||!importBackgroundImage}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 228,
+      "column": 1005,
+      "tag": "canvas",
+      "handlers": [
+        "onPointerDown"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 228,
+      "column": 3149,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Kohtauksen toistopää\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 228,
+      "column": 3470,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 229,
+      "column": 2,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!base||working||!prepare}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 229,
+      "column": 413,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!base||working||disabled||(compiled.diagnostics.some(d=>d.severity==='error')||compiled.direction?.requirements.some(r=>requirementStatus(compiled,r)==='estimated'&&!r.accepted))}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-panel.tsx",
+      "line": 229,
+      "column": 1146,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-timeline.tsx",
+      "line": 5,
+      "column": 1080,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}",
+        "aria-label={`${label}: ${e.text??e.value}, ${(offset+(e.at??0)).toFixed(2)} s, ${(e.duration??0).toFixed(2)} s${e.protected?', suojattu':''}`}",
+        "title={e.text??e.value}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/presentation-timeline.tsx",
+      "line": 5,
+      "column": 1754,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}",
+        "aria-label={`${c}: suu ${m.shape} ${(offset+e.at!+m.time).toFixed(2)} s · ${a.source}`}",
+        "title={m.shape+' · '+a.source}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 18,
+      "column": 378,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 18,
+      "column": 685,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 19,
+      "column": 317,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 22,
+      "column": 28,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 22,
+      "column": 176,
+      "tag": "article",
+      "handlers": [
+        "onDragStart",
+        "onDragOver",
+        "onDrop"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 22,
+      "column": 463,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 22,
+      "column": 1149,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={'Siirrä kuva '+(i+1)+' aiemmaksi'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 23,
+      "column": 110,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 24,
+      "column": 474,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 24,
+      "column": 1096,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 24,
+      "column": 1598,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 26,
+      "column": 50,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 26,
+      "column": 424,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 26,
+      "column": 1717,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 26,
+      "column": 2309,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 26,
+      "column": 2526,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 27,
+      "column": 40,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 27,
+      "column": 212,
+      "tag": "textarea",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 27,
+      "column": 469,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 27,
+      "column": 804,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={production.alternatives.length>=20}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 27,
+      "column": 1139,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 27,
+      "column": 1331,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 10,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 558,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 741,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 955,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 1233,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 1627,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 1905,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={production.seriesProfile.noCameraMotion}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 2365,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 2565,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 2787,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 3017,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 3376,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 3639,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 4120,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 4241,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-board.tsx",
+      "line": 28,
+      "column": 4734,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-csv-export.tsx",
+      "line": 9,
+      "column": 48,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-csv-export.tsx",
+      "line": 9,
+      "column": 324,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled||busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-csv-export.tsx",
+      "line": 9,
+      "column": 623,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||busy||!rows.length}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-csv-export.tsx",
+      "line": 9,
+      "column": 741,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-dashboard.tsx",
+      "line": 7,
+      "column": 572,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-dashboard.tsx",
+      "line": 7,
+      "column": 1221,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-dashboard.tsx",
+      "line": 7,
+      "column": 1338,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!next}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-resources-panel.tsx",
+      "line": 7,
+      "column": 48,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-resources-panel.tsx",
+      "line": 7,
+      "column": 510,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-resources-panel.tsx",
+      "line": 7,
+      "column": 801,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-validation-panel.tsx",
+      "line": 6,
+      "column": 48,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-validation-panel.tsx",
+      "line": 6,
+      "column": 405,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-validation-panel.tsx",
+      "line": 6,
+      "column": 655,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-validation-panel.tsx",
+      "line": 6,
+      "column": 813,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-validation-panel.tsx",
+      "line": 6,
+      "column": 881,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!next}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-validation-panel.tsx",
+      "line": 6,
+      "column": 1007,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/production-validation-panel.tsx",
+      "line": 6,
+      "column": 1234,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 264,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 421,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={recording||finishing}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 800,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={recording||finishing}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 1204,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!props.active||finishing||recording&&!microphone}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 1771,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!props.enabled||finishing||loading}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 2105,
+      "tag": "button",
+      "handlers": [
+        "onPointerDown",
+        "onPointerUp",
+        "onPointerCancel",
+        "onClick",
+        "onKeyDown",
+        "onKeyUp"
+      ],
+      "attributes": [
+        "disabled={!props.enabled||finishing}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 2993,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={recording||finishing}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3118,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3157,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3274,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3420,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3553,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3690,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3829,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 3962,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 4330,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 4676,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 5028,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/quick-panel.tsx",
+      "line": 41,
+      "column": 5112,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={recording||finishing||!props.enabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 24,
+      "column": 5,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"presentation\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 25,
+      "column": 7,
+      "tag": "section",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 43,
+      "column": 13,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 47,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 70,
+      "column": 17,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 76,
+      "column": 17,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 79,
+      "column": 17,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/recovery-prompt-modal.tsx",
+      "line": 82,
+      "column": 17,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 529,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 961,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={motion.mode!=='ik'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 1225,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 1377,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={motion.mode!=='ik'||motion.ikWeight===0}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 1732,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 1859,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 2253,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!complete}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/relink-mapping-panel.tsx",
+      "line": 10,
+      "column": 2344,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-comments.tsx",
+      "line": 7,
+      "column": 44,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-comments.tsx",
+      "line": 7,
+      "column": 247,
+      "tag": "form",
+      "handlers": [
+        "onSubmit"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-comments.tsx",
+      "line": 7,
+      "column": 430,
+      "tag": "textarea",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-comments.tsx",
+      "line": 7,
+      "column": 590,
+      "tag": "button",
+      "handlers": [],
+      "attributes": [
+        "disabled={disabled||!body.trim()}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-comments.tsx",
+      "line": 7,
+      "column": 725,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-comments.tsx",
+      "line": 7,
+      "column": 1383,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!nav}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-comments.tsx",
+      "line": 7,
+      "column": 1482,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-suggestions.tsx",
+      "line": 13,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/review-suggestions.tsx",
+      "line": 14,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!projectId||!bridge}",
+        "title={!bridge?'Revisiohistoria on käytettävissä KOETAn Mac-versiossa.':undefined}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 245,
+      "tag": "dialog",
+      "handlers": [
+        "onKeyDown",
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 562,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 837,
+      "tag": "form",
+      "handlers": [
+        "onSubmit"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 1148,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 1313,
+      "tag": "button",
+      "handlers": [],
+      "attributes": [
+        "disabled={working||disabled||!label.trim()}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 1418,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 1789,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working||disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 2034,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 2146,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Vahvista version poisto\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 2288,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/revision-panel.tsx",
+      "line": 9,
+      "column": 2498,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-panel.tsx",
+      "line": 4,
+      "column": 184,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={`${label} ${axis.toUpperCase()}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-panel.tsx",
+      "line": 5,
+      "column": 150,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-panel.tsx",
+      "line": 5,
+      "column": 418,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Liitä osaan\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-panel.tsx",
+      "line": 5,
+      "column": 855,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-panel.tsx",
+      "line": 5,
+      "column": 1505,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-panel.tsx",
+      "line": 5,
+      "column": 2173,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={`Poista nivel ${i + 1}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 12,
+      "column": 9,
+      "tag": "div",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 12,
+      "column": 59,
+      "tag": "section",
+      "handlers": [
+        "onClick",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 13,
+      "column": 96,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 15,
+      "column": 32,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 16,
+      "column": 694,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 17,
+      "column": 43,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 18,
+      "column": 24,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"note\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 20,
+      "column": 24,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={busy||!result.suggestions.length}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/rig-suggest-dialog.tsx",
+      "line": 20,
+      "column": 183,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 49,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 315,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 350,
+      "tag": "form",
+      "handlers": [
+        "onSubmit"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 704,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={!!loaded.error}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 821,
+      "tag": "button",
+      "handlers": [],
+      "attributes": [
+        "disabled={!!loaded.error||data.views.length>=20||!name.trim()}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 980,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 1072,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={'Poista hakunäkymä '+v.name}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/saved-shot-views.tsx",
+      "line": 9,
+      "column": 1323,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 874,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={label}",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 1241,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Kuvausympäristö\"",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 1639,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 1720,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Videon muoto\"",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 2616,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 3023,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 3246,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 3327,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label=\"Videon taustaväri\"",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 3545,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 3758,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 3998,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 4446,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 4807,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 4970,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/scene-panel.tsx",
+      "line": 6,
+      "column": 5347,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={({yaw:'Kamera vasemmalle / oikealle',pitch:'Kamera ylös / alas',depth:'Osien syvyys'})[key]}",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-command-palette.tsx",
+      "line": 99,
+      "column": 5,
+      "tag": "div",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-command-palette.tsx",
+      "line": 100,
+      "column": 7,
+      "tag": "div",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "role=\"dialog\"",
+        "aria-label=\"Käsikirjoituksen työkalut\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-command-palette.tsx",
+      "line": 109,
+      "column": 9,
+      "tag": "input",
+      "handlers": [
+        "onChange",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "aria-label=\"Hae työkalua\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-command-palette.tsx",
+      "line": 126,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 99,
+      "column": 15,
+      "tag": "div",
+      "handlers": [
+        "onPointerDown"
+      ],
+      "attributes": [
+        "role=\"separator\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 118,
+      "column": 15,
+      "tag": "textarea",
+      "handlers": [
+        "onChange",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "disabled={locked}",
+        "aria-label={`Rivi ${n}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 376,
+      "column": 7,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 390,
+      "column": 9,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"region\"",
+        "aria-label=\"Syntaksiohje\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 392,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 398,
+      "column": 9,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 399,
+      "column": 11,
+      "tag": "div",
+      "handlers": [
+        "onDragOver",
+        "onDragLeave",
+        "onDrop"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 418,
+      "column": 17,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 422,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked || !onImportFile}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 430,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 444,
+      "column": 17,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 445,
+      "column": 17,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Aloituspohjat\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 447,
+      "column": 21,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}",
+        "title=\"Englanninkieliset repliikit: äänen voi luoda paikallisesti Kokorolla (Mac-sovellus)\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 452,
+      "column": 21,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}",
+        "title={`${t.description} Esimerkkirepliikit korvataan omilla. Kesto ilman ääniä noin ${t.approxSeconds[0]}–${t.approxSeconds[1]} s.`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 470,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 476,
+      "column": 13,
+      "tag": "ScriptLineSheet",
+      "handlers": [
+        "onDrag"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 500,
+      "column": 19,
+      "tag": "textarea",
+      "handlers": [
+        "onChange",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 514,
+      "column": 21,
+      "tag": "div",
+      "handlers": [
+        "onPointerDown",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "role=\"slider\"",
+        "aria-label=\"Jakoviiva ennen Jaa kohtauksiin -toimintoa\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 544,
+      "column": 13,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 546,
+      "column": 15,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 551,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 559,
+      "column": 15,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={parseDisabled}",
+        "title=\"Tunnistaa käsikirjoituksen, roolittaa hahmot, valitsee taustat ja rakentaa liikkeet yhdellä kumottavalla muutoksella (⌘↵)\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 570,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={parseDisabled}",
+        "title={parseTitle}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-compose-editor.tsx",
+      "line": 602,
+      "column": 5,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"progressbar\"",
+        "aria-label=\"Jakson rakennus\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-guide.tsx",
+      "line": 6,
+      "column": 73,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-guide.tsx",
+      "line": 6,
+      "column": 843,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-guide.tsx",
+      "line": 6,
+      "column": 1166,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!empty}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-guide.tsx",
+      "line": 6,
+      "column": 1374,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-guide.tsx",
+      "line": 6,
+      "column": 1843,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-panel.tsx",
+      "line": 7,
+      "column": 318,
+      "tag": "textarea",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-panel.tsx",
+      "line": 7,
+      "column": 449,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-panel.tsx",
+      "line": 7,
+      "column": 843,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-panel.tsx",
+      "line": 7,
+      "column": 1019,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-panel.tsx",
+      "line": 7,
+      "column": 2266,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"alert\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-panel.tsx",
+      "line": 7,
+      "column": 2409,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!plan||!animation||!profile}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-reparse-confirm.tsx",
+      "line": 31,
+      "column": 5,
+      "tag": "div",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-reparse-confirm.tsx",
+      "line": 32,
+      "column": 7,
+      "tag": "div",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "role=\"alertdialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-reparse-confirm.tsx",
+      "line": 50,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-reparse-confirm.tsx",
+      "line": 53,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 31,
+      "column": 7,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"toolbar\"",
+        "aria-label=\"Käsikirjoitustoiminnot\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 36,
+      "column": 13,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 49,
+      "column": 13,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 61,
+      "column": 11,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [
+        "title={docked ? 'Esimerkit' : undefined}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 63,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 66,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 69,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 72,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 77,
+      "column": 9,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 81,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={scriptLocked}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/script-toolbar-rail.tsx",
+      "line": 87,
+      "column": 9,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [
+        "title={docked ? 'Syntaksiohje' : undefined}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-checklist.tsx",
+      "line": 5,
+      "column": 48,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-task-editor.tsx",
+      "line": 8,
+      "column": 49,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-task-editor.tsx",
+      "line": 8,
+      "column": 198,
+      "tag": "form",
+      "handlers": [
+        "onSubmit"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-task-editor.tsx",
+      "line": 8,
+      "column": 359,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-task-editor.tsx",
+      "line": 8,
+      "column": 533,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-task-editor.tsx",
+      "line": 8,
+      "column": 696,
+      "tag": "button",
+      "handlers": [],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-task-editor.tsx",
+      "line": 8,
+      "column": 755,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!task}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-task-editor.tsx",
+      "line": 8,
+      "column": 981,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/shot-timeline-strip.tsx",
+      "line": 31,
+      "column": 505,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}",
+        "title={`${shot.name} · ${seconds(shot.at).toFixed(2)} s · ${seg.duration.toFixed(2)} s`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/speaker-binding-table.tsx",
+      "line": 32,
+      "column": 7,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/speaker-binding-table.tsx",
+      "line": 69,
+      "column": 21,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={`${row.speaker} · hahmopaketti`}",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/speaker-binding-table.tsx",
+      "line": 86,
+      "column": 23,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/speaker-binding-table.tsx",
+      "line": 115,
+      "column": 9,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/speaker-binding-table.tsx",
+      "line": 118,
+      "column": 9,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/speaker-binding-table.tsx",
+      "line": 121,
+      "column": 9,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/stage-position.tsx",
+      "line": 6,
+      "column": 9,
+      "tag": "svg",
+      "handlers": [
+        "onKeyDown",
+        "onPointerDown",
+        "onPointerMove",
+        "onPointerUp",
+        "onPointerCancel"
+      ],
+      "attributes": [
+        "role=\"application\"",
+        "aria-label={label+' — raahaa tai siirrä nuolinäppäimillä'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 9,
+      "column": 23,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!tracks.length||machine.states.length>=256}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 12,
+      "column": 57,
+      "tag": "g",
+      "handlers": [
+        "onClick",
+        "onKeyDown"
+      ],
+      "attributes": [
+        "role=\"button\"",
+        "aria-label={`${s.name}${s.id===machine.entryState?', aloitustila':''}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 13,
+      "column": 126,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 13,
+      "column": 320,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 13,
+      "column": 724,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 13,
+      "column": 995,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 13,
+      "column": 1116,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={machine.states.length===1}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 14,
+      "column": 70,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 14,
+      "column": 265,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 14,
+      "column": 444,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!from||!to||from===to||machine.transitions.length>=1024}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 14,
+      "column": 904,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/state-editor.tsx",
+      "line": 14,
+      "column": 1190,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-flow-nav.tsx",
+      "line": 13,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title={hint}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-flow-tabs.tsx",
+      "line": 8,
+      "column": 9,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title={hint}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-flow-tour.tsx",
+      "line": 93,
+      "column": 5,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"presentation\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-flow-tour.tsx",
+      "line": 102,
+      "column": 7,
+      "tag": "section",
+      "handlers": [],
+      "attributes": [
+        "role=\"dialog\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-flow-tour.tsx",
+      "line": 116,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-flow-tour.tsx",
+      "line": 119,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-flow-tour.tsx",
+      "line": 122,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shell.tsx",
+      "line": 62,
+      "column": 5,
+      "tag": "main",
+      "handlers": [
+        "onDragOver",
+        "onDragLeave",
+        "onDrop"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shell.tsx",
+      "line": 77,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title={`${hint} · ⌥${index + 1}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shell.tsx",
+      "line": 92,
+      "column": 9,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label={studioWorkshop.label}",
+        "title={studioWorkshop.hint}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shell.tsx",
+      "line": 105,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "aria-label=\"Hae toimintoa (⌘K)\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shell.tsx",
+      "line": 110,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!canUndo}",
+        "title=\"Kumoa (⌘Z)\"",
+        "aria-label=\"Kumoa\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shell.tsx",
+      "line": 113,
+      "column": 11,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={!canRedo}",
+        "title=\"Tee uudelleen (⇧⌘Z)\"",
+        "aria-label=\"Tee uudelleen\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shell.tsx",
+      "line": 117,
+      "column": 13,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "title={`${next.hint} · ⌥${nextIndex + 1}`}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 147,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Kuvataulun esitystapa\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 230,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 316,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 404,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 554,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 613,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 894,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 1001,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 1216,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 1902,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 26,
+      "column": 2570,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 27,
+      "column": 206,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 27,
+      "column": 1161,
+      "tag": "div",
+      "handlers": [],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label={shot.name+' · hyväksyntä'}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 27,
+      "column": 1242,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!!shot.errors.length||shot.audioStatus==='missing'||!!overview.byShot.get(shot.id)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 27,
+      "column": 1445,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!!overview.byShot.get(shot.id)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 27,
+      "column": 1591,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 27,
+      "column": 1841,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={current===0}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/studio-shot-board.tsx",
+      "line": 27,
+      "column": 1962,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={current+1>=pages}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/user-guide.tsx",
+      "line": 3,
+      "column": 163,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/view-menu.tsx",
+      "line": 3,
+      "column": 145,
+      "tag": "details",
+      "handlers": [
+        "onKeyDown"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/view-menu.tsx",
+      "line": 3,
+      "column": 563,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/view-menu.tsx",
+      "line": 6,
+      "column": 141,
+      "tag": "div",
+      "handlers": [
+        "onMouseDown"
+      ],
+      "attributes": [
+        "role=\"group\"",
+        "aria-label=\"Näkyvät paneelit\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/view-menu.tsx",
+      "line": 6,
+      "column": 366,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/view-menu.tsx",
+      "line": 6,
+      "column": 484,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/voice-check.tsx",
+      "line": 37,
+      "column": 3,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||working}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/voice-check.tsx",
+      "line": 37,
+      "column": 139,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/voice-check.tsx",
+      "line": 38,
+      "column": 13,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/voice-check.tsx",
+      "line": 39,
+      "column": 14,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/walk-panel.tsx",
+      "line": 4,
+      "column": 133,
+      "tag": "select",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={label}",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/walk-panel.tsx",
+      "line": 5,
+      "column": 108,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "aria-label={label}",
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/walk-panel.tsx",
+      "line": 6,
+      "column": 48,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/walk-panel.tsx",
+      "line": 6,
+      "column": 419,
+      "tag": "summary",
+      "handlers": [],
+      "attributes": [],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/walk-panel.tsx",
+      "line": 6,
+      "column": 1036,
+      "tag": "input",
+      "handlers": [
+        "onChange"
+      ],
+      "attributes": [
+        "disabled={disabled}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/walk-panel.tsx",
+      "line": 6,
+      "column": 1353,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [
+        "disabled={disabled||!leftLeg||!rightLeg||(!whole&&frame===animation.duration-1)}"
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/walk-panel.tsx",
+      "line": 6,
+      "column": 1839,
+      "tag": "p",
+      "handlers": [],
+      "attributes": [
+        "role=\"status\""
+      ],
+      "verification": "unverified"
+    },
+    {
+      "file": "components/workspace-tabs.tsx",
+      "line": 3,
+      "column": 167,
+      "tag": "button",
+      "handlers": [
+        "onClick"
+      ],
+      "attributes": [],
+      "verification": "unverified"
+    }
+  ]
+}
