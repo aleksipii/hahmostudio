@@ -17,6 +17,7 @@ pub mod production;
 pub use agents::{
     character_mesh::CharacterMeshAgent, cinematography::CinematographyAgent, procedural_motion::ProceduralMotionAgent,
     render::RustRenderAgent, script_parser::ScriptParserAgent,
+    voice::{LipSyncAgent, TimingAgent, VoiceAgent},
 };
 pub use production::{Backend, Production, RenderRequest};
 
@@ -28,8 +29,15 @@ use std::time::{Duration, Instant};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
 pub enum Slot {
     Script,
+    /// Jäsennetty käsikirjoitus (rivit, kestot, tagit).
+    Plan,
     CastParams,
+    /// Puhemoottori, omat äänitykset ja hyväksytyt huomautukset.
+    Voice,
+    /// Rivien puhe.
+    Audio,
     Timeline,
+    LipSync,
     Cast,
     Motion,
     Camera,
@@ -51,6 +59,19 @@ pub enum AgentError {
 pub struct AgentReport {
     /// Lyhyt suomenkielinen yhteenveto käyttöliittymään.
     pub summary: String,
+    /// Tuotos on sama kuin edellisellä ajolla: seuraavia vaiheita ei tarvitse ajaa.
+    pub unchanged: bool,
+}
+
+impl AgentReport {
+    pub fn new(summary: impl Into<String>) -> Self {
+        AgentReport { summary: summary.into(), unchanged: false }
+    }
+
+    pub fn unchanged(mut self) -> Self {
+        self.unchanged = true;
+        self
+    }
 }
 
 /// Yksi osa-alue putkessa.
@@ -84,10 +105,13 @@ pub struct Pipeline {
 }
 
 impl Default for Pipeline {
-    /// Vakioputki: jäsennin → hahmot → liike → kamera → renderöinti.
+    /// Vakioputki: jäsennin → ääni → ajoitus → huulisynkka → hahmot → liike → kamera → renderöinti.
     fn default() -> Self {
         let mut p = Pipeline::empty();
         p.register(Box::new(ScriptParserAgent));
+        p.register(Box::new(VoiceAgent::default()));
+        p.register(Box::new(TimingAgent));
+        p.register(Box::new(LipSyncAgent::default()));
         p.register(Box::new(CharacterMeshAgent::default()));
         p.register(Box::new(ProceduralMotionAgent));
         p.register(Box::new(CinematographyAgent));
@@ -98,7 +122,7 @@ impl Default for Pipeline {
 
 impl Pipeline {
     pub fn empty() -> Self {
-        Pipeline { agents: Vec::new(), dirty: [Slot::Script, Slot::CastParams].into_iter().collect(), history: Vec::new() }
+        Pipeline { agents: Vec::new(), dirty: [Slot::Script, Slot::CastParams, Slot::Voice].into_iter().collect(), history: Vec::new() }
     }
 
     /// Lisää agentin ja järjestää putken uudelleen riippuvuuksien mukaan.
@@ -156,6 +180,7 @@ impl Pipeline {
             self.history.push(run.clone());
             runs.push(run);
             match result {
+                Ok(r) if r.unchanged => {}
                 Ok(_) => self.dirty.extend(agent.writes().iter().copied()),
                 Err(e) => return Err(e),
             }

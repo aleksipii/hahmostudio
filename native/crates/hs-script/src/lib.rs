@@ -401,13 +401,20 @@ pub fn parse(text: &str) -> ScriptPlan {
 
 /// Muuntaa suunnitelman aikajanaksi. Jokainen tapahtuma muistaa lähderivinsä.
 pub fn to_timeline(plan: &ScriptPlan, source: &str, fps: Fps) -> Timeline {
+    let seconds: Vec<f64> = plan.beats.iter().map(|b| b.seconds).collect();
+    to_timeline_with(plan, source, fps, &seconds)
+}
+
+/// Kuten [`to_timeline`], mutta rivien kestot annetaan erikseen (esim. puheen
+/// pituuden mukaan pidennettyinä). `seconds[i]` koskee `plan.beats[i]`:tä.
+pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f64]) -> Timeline {
     let lines: Vec<&str> = source.lines().collect();
     let mut timeline = Timeline::new(fps);
     let mut t = Tick::ZERO;
     let mut backgrounds: Vec<(Tick, String, SourceSpan)> = Vec::new();
-    for beat in &plan.beats {
+    for (i, beat) in plan.beats.iter().enumerate() {
         let span = SourceSpan { line: beat.line, text: lines.get(beat.line - 1).unwrap_or(&"").trim().to_string() };
-        let d = Tick::from_seconds(beat.seconds);
+        let d = Tick::from_seconds(seconds.get(i).copied().unwrap_or(beat.seconds));
         if let Some(bg) = &beat.background {
             backgrounds.push((t, bg.clone(), span.clone()));
         }

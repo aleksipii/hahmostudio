@@ -28,7 +28,11 @@ impl FrameBuilder {
         let floor = environment::clear_color(&env_id);
         let mut items = vec![DrawItem::rigid(env)];
         for (member, motion) in p.cast.iter().zip(&p.motion) {
-            let f = motion.evaluate(tl, t);
+            let mut f = motion.evaluate(tl, t);
+            // Äänellinen huulisynkka korvaa tekstistä arvioidun suun.
+            if let Some(shape) = p.mouth_at(&|s| motion.motion.speaks(s), t) {
+                hs_motion::face::apply_mouth(&member.character.humanoid, &mut f.pose, &shape);
+            }
             let skeleton = &member.character.humanoid.skeleton;
             let shadow_floor = if env_id == "studio-v1" { [0x3c, 0x52, 0x66] } else { floor };
             let scale = 1.0 / (1.0 + f.root.y * 2.5);
@@ -77,6 +81,15 @@ impl RustRenderAgent {
     }
 }
 
+/// Poistaa väliaikaisen tiedoston, kun vienti päättyy millä tavalla tahansa.
+struct TempFile(std::path::PathBuf);
+
+impl Drop for TempFile {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
+}
+
 fn fail(e: impl ToString) -> AgentError {
     AgentError::Failed { agent: "render", message: e.to_string() }
 }
@@ -89,7 +102,7 @@ impl StudioAgent for RustRenderAgent {
         "Renderöinti"
     }
     fn reads(&self) -> &'static [Slot] {
-        &[Slot::Camera, Slot::RenderRequest]
+        &[Slot::Camera, Slot::LipSync, Slot::RenderRequest]
     }
     fn writes(&self) -> &'static [Slot] {
         &[Slot::Output]
@@ -97,7 +110,7 @@ impl StudioAgent for RustRenderAgent {
     fn run(&mut self, p: &mut Production) -> Result<AgentReport, AgentError> {
         let request = p.render_request.clone();
         if request == RenderRequest::None {
-            return Ok(AgentReport { summary: "esikatselu valmis".into() });
+            return Ok(AgentReport::new("esikatselu valmis"));
         }
         if let Some(plan) = &p.plan {
             if !plan.is_assemblable() {
@@ -135,7 +148,13 @@ impl StudioAgent for RustRenderAgent {
                 format!("{total} PNG-ruutua kansioon {} ({backend})", dir.display())
             }
             RenderRequest::Mp4(path) => {
-                let mut writer = Mp4Writer::create(path, p.width, p.height, p.fps.0).map_err(fail)?;
+                // Ääniraita väliaikaiseen WAV-tiedostoon viennin ajaksi.
+                let audio = TempFile(path.with_extension("aani.wav"));
+                if let Some(mix) = &p.mix {
+                    std::fs::write(&audio.0, hs_voice::wav::encode(mix)).map_err(fail)?;
+                }
+                let audio_arg = p.mix.is_some().then_some(audio.0.as_path());
+                let mut writer = Mp4Writer::create_with_audio(path, p.width, p.height, p.fps.0, audio_arg).map_err(fail)?;
                 for i in 0..total {
                     if p.cancel.load(Ordering::Relaxed) {
                         writer.cancel();
@@ -159,6 +178,6 @@ impl StudioAgent for RustRenderAgent {
             }
         };
         p.output = Some(summary.clone());
-        Ok(AgentReport { summary })
+        Ok(AgentReport::new(summary))
     }
 }

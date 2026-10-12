@@ -45,8 +45,11 @@ pub struct PropFrame {
 pub struct CharacterFrame {
     pub pose: Pose,
     pub props: PropFrame,
-    /// Suun avautuminen 0..1 (tekstipohjainen arvio; visemejä ei ole vielä siirretty).
+    /// Suun avautuminen 0..1 (sama kuin `mouth.open`).
     pub mouth_open: f32,
+    /// Suun muoto: tekstistä johdetut visemit. Äänellinen huulisynkka korvaa
+    /// tämän renderöinnissä ([`crate::face::apply_mouth`]).
+    pub mouth: hs_lipsync::MouthShape,
     pub motion: Option<MotionKind>,
     pub speaking: bool,
     pub root: Vec3,
@@ -64,6 +67,8 @@ struct PathSample {
 pub struct PreparedMotion {
     pub motion: ProceduralMotion,
     events: Vec<TimelineEvent>,
+    /// Repliikkien tekstivisemit tapahtuman tunnisteen mukaan.
+    mouths: std::collections::HashMap<hs_core::EventId, hs_lipsync::VisemeTrack>,
     path: Vec<PathSample>,
     duration: f32,
 }
@@ -188,8 +193,32 @@ impl ProceduralMotion {
             pos += velocity * dt;
             path.push(PathSample { pos: Vec3::new(pos.x, jump_y, pos.z), yaw });
         }
-        PreparedMotion { motion: self, events, path, duration }
+        let mut mouths = std::collections::HashMap::new();
+        for e in &timeline.events {
+            if let EventKind::Dialogue { speaker, text } = &e.kind {
+                if self.speaks(speaker) {
+                    let d = e.duration.seconds() as f32;
+                    mouths.insert(e.id, hs_lipsync::from_text_timed(text, speech_length(text, d)));
+                }
+            }
+        }
+        PreparedMotion { motion: self, events, mouths, path, duration }
     }
+
+    /// Onko repliikki tämän hahmon? Nimetön repliikki kuuluu päähenkilölle.
+    pub fn speaks(&self, speaker: &Option<String>) -> bool {
+        match (speaker, &self.name) {
+            (None, _) => self.lead,
+            (Some(s), Some(n)) => s.eq_ignore_ascii_case(n),
+            (Some(_), None) => self.lead,
+        }
+    }
+}
+
+/// Puheen kesto tekstistä (noin 4,5 tavua sekunnissa), enintään repliikin pituus.
+pub fn speech_length(text: &str, duration: f32) -> f32 {
+    let syllables = text.chars().filter(|c| "aeiouyäöåAEIOUYÄÖÅ".contains(*c)).count().max(1) as f32;
+    (syllables / 4.5).min(duration)
 }
 
 impl PreparedMotion {
@@ -331,32 +360,23 @@ impl PreparedMotion {
             }
         }
 
-        // Puhe: pää elää repliikin tahdissa ja suu avautuu tavujen tahdissa.
+        // Puhe: pää elää repliikin tahdissa ja suu muodostaa tekstin äänteet.
         let mut speaking = false;
-        let mut mouth_open = 0.0;
+        let mut mouth = hs_lipsync::Viseme::Rest.shape();
         for e in timeline.events_at(hs_core::Tick::from_seconds(t as f64)) {
-            if let EventKind::Dialogue { speaker, text } = &e.kind {
-                let mine = match (speaker, &m.name) {
-                    (None, _) => m.lead,
-                    (Some(s), Some(n)) => s.eq_ignore_ascii_case(n),
-                    (Some(_), None) => m.lead,
-                };
-                if mine {
+            if let EventKind::Dialogue { speaker, .. } = &e.kind {
+                if m.speaks(speaker) {
                     speaking = true;
                     let tau = t - e.start.seconds() as f32;
-                    let d = e.duration.seconds() as f32;
-                    let syllables = text.chars().filter(|c| "aeiouyäöåAEIOUYÄÖÅ".contains(*c)).count().max(1) as f32;
-                    let speech_len = (syllables / 4.5).min(d);
-                    if tau < speech_len {
-                        let rate = syllables / speech_len.max(0.1);
-                        mouth_open = (PI * rate * tau).sin().abs() * ramp(tau, speech_len, 0.08);
+                    if let Some(track) = self.mouths.get(&e.id) {
+                        mouth = track.shape_at(tau);
                     }
                     pose.local[h.head] = Quat::from_rotation_x(0.035 * (TAU * 1.3 * t).sin()) * pose.local[h.head];
                 }
             }
         }
-
-        pose.translate[h.jaw].y = -mouth_open * h.head_height * 0.07;
+        let mouth_open = mouth.open;
+        crate::face::apply_mouth(h, &mut pose, &mouth);
         if crouch > 0.0 {
             pose.translate[h.pelvis].y -= crouch * leg * 0.5;
         }
@@ -413,6 +433,7 @@ impl PreparedMotion {
             pose,
             props,
             mouth_open,
+            mouth,
             motion,
             speaking,
             root: path.pos,

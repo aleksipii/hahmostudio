@@ -6,6 +6,8 @@ members = [
     "crates/hs-motion",
     "crates/hs-character",
     "crates/hs-render",
+    "crates/hs-lipsync",
+    "crates/hs-voice",
     "crates/hs-hahmo",
     "crates/hs-agents",
     "crates/hs-cli",
@@ -27,6 +29,8 @@ hs-character = { path = "crates/hs-character" }
 hs-render = { path = "crates/hs-render", default-features = false }
 hs-hahmo = { path = "crates/hs-hahmo" }
 hs-agents = { path = "crates/hs-agents" }
+hs-voice = { path = "crates/hs-voice", default-features = false }
+hs-lipsync = { path = "crates/hs-lipsync" }
 glam = { version = "0.29", features = ["serde", "bytemuck"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

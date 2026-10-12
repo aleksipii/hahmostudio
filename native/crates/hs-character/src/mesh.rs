@@ -222,6 +222,56 @@ impl MeshBuilder {
     }
 }
 
+/// Rigattu suu: tumma suuontelo, jonka reunat seuraavat ylähuulta, leukaa ja
+/// suupieliä, sekä hampaat ja kieli. Levossa ontelo on ohut viiva ja
+/// hampaiden ja kielen korkeus on nolla, joten ne eivät näy.
+fn mouth(b: &mut MeshBuilder, h: &Humanoid, head_c: Vec3, head_r: Vec3, y: f32, mw: f32) {
+    let hh = h.head_height;
+    let r = h.mouth;
+    let lift = hh * 0.012;
+    let surface = |x: f32, y: f32| {
+        let u = (x / head_r.x).powi(2) + ((y - head_c.y) / head_r.y).powi(2);
+        head_c.z + head_r.z * (1.0 - u).max(0.0).sqrt() + lift
+    };
+    let n = Vec3::new(0.0, -0.25, 1.0).normalize();
+    let cavity = srgb_to_linear([0x4a, 0x14, 0x1a]);
+    let mh = hh * 0.011;
+    // Ontelo: keskipiste + reunakehä. Ylä-/alapuolisko seuraa ylähuulta/leukaa,
+    // sivut suupieliä (paino cos²).
+    let center = b.push(Vec3::new(0.0, y, surface(0.0, y)), n, cavity, [r.lip_upper as u32, h.jaw as u32], 0.5, 0.0);
+    let segments = 24;
+    let ring: Vec<u32> = (0..segments)
+        .map(|k| {
+            let a = k as f32 / segments as f32 * TAU;
+            let (x, yy) = (a.cos() * mw, y + a.sin() * mh);
+            let corner = if a.cos() >= 0.0 { r.corner_left } else { r.corner_right };
+            let lip = if a.sin() >= 0.0 { r.lip_upper } else { h.jaw };
+            b.push(Vec3::new(x, yy, surface(x, yy)), n, cavity, [corner as u32, lip as u32], a.cos().powi(2), 0.0)
+        })
+        .collect();
+    for k in 0..segments {
+        b.mesh.indices.extend_from_slice(&[center, ring[k], ring[(k + 1) % segments]]);
+    }
+    // Hampaat (yläreuna ylähuulessa, alareuna hammasluussa) ja kieli (leuka → kielen kärki).
+    let strip = |b: &mut MeshBuilder, half_w: f32, z_off: f32, top: usize, bottom: usize, color: [u8; 3]| {
+        let c = srgb_to_linear(color);
+        let base = b.mesh.vertices.len() as u32;
+        let cols = 6;
+        for k in 0..=cols {
+            let x = -half_w + 2.0 * half_w * k as f32 / cols as f32;
+            let z = surface(x, y) + z_off;
+            b.push(Vec3::new(x, y, z), n, c, [top as u32, top as u32], 1.0, 0.0);
+            b.push(Vec3::new(x, y, z), n, c, [bottom as u32, bottom as u32], 1.0, 0.0);
+        }
+        for k in 0..cols as u32 {
+            let (t0, b0, t1, b1) = (base + 2 * k, base + 2 * k + 1, base + 2 * k + 2, base + 2 * k + 3);
+            b.mesh.indices.extend_from_slice(&[t0, b0, t1, t1, b0, b1]);
+        }
+    };
+    strip(b, mw * 0.62, hh * 0.002, r.lip_upper, r.teeth, [0xf6, 0xf4, 0xee]);
+    strip(b, mw * 0.5, hh * 0.001, h.jaw, r.tongue, [0xd8, 0x5a, 0x66]);
+}
+
 /// Rakentaa verkon luurangon ympärille. Kaikki muodot ovat suljettuja ja
 /// ääriviivattomia; vain kasvojen yksityiskohdat ovat tummia.
 pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
@@ -363,11 +413,7 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
     let nose_y = eye_y - hh * 0.1;
     let nose_z = head_c.z + head_r.z * (1.0 - ((nose_y - head_c.y) / head_r.y).powi(2)).sqrt();
     b.ellipsoid(Vec3::new(0.0, nose_y, nose_z), Vec3::new(hh * 0.035, hh * 0.04, hh * 0.04) * f.nose_size.clamp(0.4, 2.0), Quat::IDENTITY, mix(skin, [0xb0, 0x60, 0x50], 0.12), Bind::one(h.head), 6, 10);
-    let mouth = j(h.jaw);
-    let mouth_z = head_c.z + head_r.z * (1.0 - ((mouth.y - head_c.y) / head_r.y).powi(2)).sqrt() - hh * 0.02;
-    let mw = hh * 0.11 * f.mouth_width.clamp(0.4, 2.0);
-    b.unshaded_ellipsoid(Vec3::new(0.0, mouth.y + hh * 0.008, mouth_z), Vec3::new(mw, hh * 0.022, hh * 0.03), Quat::IDENTITY, [0x5a, 0x1e, 0x22], Bind::one(h.head));
-    b.unshaded_ellipsoid(Vec3::new(0.0, mouth.y - hh * 0.004, mouth_z - hh * 0.004), Vec3::new(mw * 0.85, hh * 0.022, hh * 0.028), Quat::IDENTITY, [0x5a, 0x1e, 0x22], Bind::one(h.jaw));
+    mouth(&mut b, h, head_c, head_r, j(h.jaw).y, hh * 0.11 * f.mouth_width.clamp(0.4, 2.0));
 
     // Hiukset.
     match p.hair_style {

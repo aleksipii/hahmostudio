@@ -74,6 +74,9 @@ pub struct CharacterParams {
     /// Lahkeen pituus 0 (shortsit) .. 1 (pitkät).
     pub trouser: f32,
     pub render_style: RenderStyle,
+    /// Kokoro-ääni (esim. `af_heart`). Puuttuva ääni: rivi jää ilman synteettistä puhetta.
+    #[serde(default)]
+    pub voice: Option<String>,
 }
 
 fn hex(c: u32) -> [u8; 3] {
@@ -100,11 +103,13 @@ impl CharacterParams {
             sleeve: 0.45,
             trouser: 1.0,
             render_style: RenderStyle::Flat,
+            voice: Some("af_heart".into()),
         }
     }
     pub fn ville() -> Self {
         CharacterParams {
             name: "Ville".into(),
+            voice: Some("am_adam".into()),
             height: 1.30,
             face: FaceParams { eye_size: 0.9, ..FaceParams::default() },
             skin: hex(0xf6d2b6),
@@ -121,6 +126,7 @@ impl CharacterParams {
     pub fn taru() -> Self {
         CharacterParams {
             name: "Taru".into(),
+            voice: Some("af_bella".into()),
             height: 1.26,
             face: FaceParams { eye_size: 1.1, ..FaceParams::default() },
             skin: hex(0x8a5a3c),
@@ -137,6 +143,7 @@ impl CharacterParams {
     pub fn ukko() -> Self {
         CharacterParams {
             name: "Ukko".into(),
+            voice: Some("bm_george".into()),
             height: 1.74,
             build: 1.15,
             head_scale: 0.78,

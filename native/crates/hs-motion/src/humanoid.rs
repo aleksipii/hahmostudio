@@ -112,11 +112,25 @@ pub struct Humanoid {
     pub head_height: f32,
     /// Leuka: suun alahuuli seuraa tätä (suun avautuminen siirtää sitä alas).
     pub jaw: usize,
+    /// Suun rigi visemeille (ks. [`crate::face`]).
+    pub mouth: MouthRig,
     pub hair: Vec<usize>,
     pub hem_front: usize,
     pub hem_back: usize,
     pub arms: [Arm; 2],
     pub legs: [Leg; 2],
+}
+
+/// Suun luut: ylähuuli, suupielet, hampaat ja kieli. Alahuuli seuraa leukaa.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub struct MouthRig {
+    pub lip_upper: usize,
+    pub corner_left: usize,
+    pub corner_right: usize,
+    /// Ylähampaiden alareuna (lepoasennossa ylähuulen kohdalla, jolloin hampaat eivät näy).
+    pub teeth: usize,
+    /// Kielen kärki, leuan lapsi.
+    pub tongue: usize,
 }
 
 pub const FINGER_NAMES: [&str; 5] = ["thumb", "index", "middle", "ring", "pinky"];
@@ -137,6 +151,13 @@ impl Humanoid {
         let head = s.add("head", Some(neck), Vec3::new(0.0, neck_len, 0.0));
 
         let jaw = s.add("jaw", Some(head), Vec3::new(0.0, head_h * 0.26, head_h * 0.36));
+        let mouth = MouthRig {
+            lip_upper: s.add("lip_upper", Some(head), Vec3::new(0.0, head_h * 0.27, head_h * 0.36)),
+            corner_left: s.add("mouth_l", Some(head), Vec3::new(head_h * 0.1, head_h * 0.265, head_h * 0.33)),
+            corner_right: s.add("mouth_r", Some(head), Vec3::new(-head_h * 0.1, head_h * 0.265, head_h * 0.33)),
+            teeth: s.add("teeth", Some(head), Vec3::new(0.0, head_h * 0.27, head_h * 0.36)),
+            tongue: s.add("tongue", Some(jaw), Vec3::ZERO),
+        };
         let mut hair = Vec::new();
         if p.hair_length > 0.01 {
             let h0 = s.add("hair0", Some(head), Vec3::new(0.0, head_h * 0.72, -head_h * 0.42));
@@ -229,6 +250,7 @@ impl Humanoid {
             head,
             head_height: head_h,
             jaw,
+            mouth,
             hair,
             hem_front,
             hem_back,

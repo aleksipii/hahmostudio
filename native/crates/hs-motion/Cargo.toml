@@ -8,5 +8,6 @@ publish.workspace = true
 
 [dependencies]
 hs-core.workspace = true
+hs-lipsync.workspace = true
 glam.workspace = true
 serde.workspace = true

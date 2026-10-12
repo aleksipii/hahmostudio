@@ -267,6 +267,6 @@ impl StudioAgent for CinematographyAgent {
             track.shots.iter().map(|s| s.kind.finnish()).collect::<Vec<_>>().join(" · ")
         );
         p.camera = Some(Arc::new(track));
-        Ok(AgentReport { summary })
+        Ok(AgentReport::new(summary))
     }
 }

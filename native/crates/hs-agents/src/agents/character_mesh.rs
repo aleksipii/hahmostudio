@@ -97,6 +97,6 @@ impl StudioAgent for CharacterMeshAgent {
         let tris: usize = cast.iter().map(|c| c.mesh.triangle_count()).sum();
         let names: Vec<_> = cast.iter().map(|c| c.character.params.name.clone()).collect();
         p.cast = cast;
-        Ok(AgentReport { summary: format!("{} ({} kolmiota, {built} rakennettu)", names.join(", "), tris) })
+        Ok(AgentReport::new(format!("{} ({} kolmiota, {built} rakennettu)", names.join(", "), tris)))
     }
 }

@@ -2,6 +2,9 @@ use hs_character::{Character, CharacterParams, CharacterMesh};
 use hs_core::{Diagnostic, Fps, Timeline};
 use hs_motion::procedural::PreparedMotion;
 use hs_script::ScriptPlan;
+use hs_lipsync::VisemeTrack;
+use hs_voice::{Audio, LineStatus, Speech, SpeechCache, SpeechEngine};
+use std::collections::{BTreeSet, HashMap};
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
@@ -36,6 +39,38 @@ pub struct CastMember {
     pub lead: bool,
 }
 
+/// Yhden käsikirjoitusrivin puhe.
+#[derive(Clone, Debug)]
+pub struct VoiceLine {
+    /// Indeksi `plan.beats`-listaan.
+    pub beat: usize,
+    /// Pysyvä tunniste ([`hs_voice::spoken::line_key`]); omat äänitykset tallennetaan tällä.
+    pub key: String,
+    pub speaker: Option<String>,
+    pub text: String,
+    pub status: LineStatus,
+    pub notices: Vec<String>,
+    pub speech: Option<Arc<Speech>>,
+}
+
+/// Aikajanalle sijoitettu puheleike.
+#[derive(Clone, Debug)]
+pub struct PlacedClip {
+    pub beat: usize,
+    pub speaker: Option<String>,
+    /// Alku sekunteina.
+    pub start: f32,
+    pub speech: Arc<Speech>,
+}
+
+/// Puhujan huulisynkka yhdelle leikkeelle.
+#[derive(Clone, Debug)]
+pub struct LipClip {
+    pub speaker: Option<String>,
+    pub start: f32,
+    pub track: Arc<VisemeTrack>,
+}
+
 /// Koko tuotannon tila, jota agentit lukevat ja kirjoittavat.
 pub struct Production {
     pub script: String,
@@ -49,7 +84,20 @@ pub struct Production {
     pub cancel: Arc<AtomicBool>,
     pub progress: Option<Arc<dyn Fn(u32, u32) + Send + Sync>>,
 
+    /// Puhemoottori (Kokoro, kun malli on asennettu). Ilman sitä käytetään vain omia äänityksiä.
+    pub voice_engine: Option<Arc<dyn SpeechEngine>>,
+    pub speech_cache: SpeechCache,
+    /// Käyttäjän äänitykset tai tuodut äänet rivin avaimen mukaan. Niitä ei koskaan korvata synteesillä.
+    pub own_audio: HashMap<String, Arc<Audio>>,
+    /// Rivit, joiden huomautukset (esim. tukematon sulkeohje) käyttäjä on hyväksynyt.
+    pub accepted_notices: BTreeSet<String>,
+
     pub plan: Option<ScriptPlan>,
+    pub voice_lines: Vec<VoiceLine>,
+    pub clips: Vec<PlacedClip>,
+    /// Koko jakson ääni 48 kHz mono (esikatselu ja vienti).
+    pub mix: Option<Arc<Audio>>,
+    pub lipsync: Vec<LipClip>,
     pub timeline: Option<Timeline>,
     pub cast: Vec<CastMember>,
     pub motion: Vec<Arc<PreparedMotion>>,
@@ -71,7 +119,15 @@ impl Production {
             render_request: RenderRequest::None,
             cancel: Arc::new(AtomicBool::new(false)),
             progress: None,
+            voice_engine: None,
+            speech_cache: SpeechCache::default(),
+            own_audio: HashMap::new(),
+            accepted_notices: BTreeSet::new(),
             plan: None,
+            voice_lines: Vec::new(),
+            clips: Vec::new(),
+            mix: None,
+            lipsync: Vec::new(),
             timeline: None,
             cast: Vec::new(),
             motion: Vec::new(),
@@ -79,6 +135,15 @@ impl Production {
             diagnostics: Vec::new(),
             output: None,
         }
+    }
+
+    /// Puhujan suun muoto äänellisestä huulisynkasta, jos jokin leike kattaa hetken `t`.
+    pub fn mouth_at(&self, speaker: &dyn Fn(&Option<String>) -> bool, t: f32) -> Option<hs_lipsync::MouthShape> {
+        self.lipsync
+            .iter()
+            .filter(|c| speaker(&c.speaker) && t >= c.start && t <= c.start + c.track.duration + 0.1)
+            .map(|c| c.track.shape_at(t - c.start))
+            .next()
     }
 
     pub fn frame_count(&self) -> u32 {

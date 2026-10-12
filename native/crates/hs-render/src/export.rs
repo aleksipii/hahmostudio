@@ -55,6 +55,11 @@ pub struct Mp4Writer {
 
 impl Mp4Writer {
     pub fn create(path: &Path, width: u32, height: u32, fps: u32) -> Result<Mp4Writer, RenderError> {
+        Self::create_with_audio(path, width, height, fps, None)
+    }
+
+    /// Kuten [`Mp4Writer::create`], mutta liittää mukaan ääniraidan (WAV, AAC 160 kbit/s).
+    pub fn create_with_audio(path: &Path, width: u32, height: u32, fps: u32, audio: Option<&Path>) -> Result<Mp4Writer, RenderError> {
         if !width.is_multiple_of(2) || !height.is_multiple_of(2) {
             return Err(RenderError::Export("MP4-koon pitää olla parillinen".into()));
         }
@@ -62,7 +67,12 @@ impl Mp4Writer {
         let child = Command::new(ffmpeg)
             .args(["-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s"])
             .arg(format!("{width}x{height}"))
-            .args(["-r", &fps.to_string(), "-i", "-", "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart"])
+            .args(["-r", &fps.to_string(), "-i", "-"])
+            .args(match audio {
+                Some(a) => vec!["-i".into(), a.as_os_str().to_owned(), "-map".into(), "0:v".into(), "-map".into(), "1:a".into(), "-c:a".into(), "aac".into(), "-b:a".into(), "160k".into(), "-shortest".into()],
+                None => vec!["-an".into()],
+            } as Vec<std::ffi::OsString>)
+            .args(["-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart"])
             .arg(path)
             .stdin(Stdio::piped())
             .stdout(Stdio::null())

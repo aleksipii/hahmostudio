@@ -32,6 +32,6 @@ impl StudioAgent for ProceduralMotionAgent {
                 Arc::new(m.prepare(tl))
             })
             .collect();
-        Ok(AgentReport { summary: format!("{} hahmoa, {} ruutua", p.motion.len(), tl.frame_count()) })
+        Ok(AgentReport::new(format!("{} hahmoa, {} ruutua", p.motion.len(), tl.frame_count())))
     }
 }
