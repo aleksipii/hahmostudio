@@ -363,3 +363,20 @@ Seuraava: korjaa vain diagnostisen ajon todellinen epäonnistunut ehto tarvittae
 Checkpointin jälkeinen diagnostiikkakorjaus: tarina-review-toggle avataan vasta Rakenna jakso -toiminnon jälkeen; ennen mallia sitä ei ole DOM:ssa. Ensimmäinen Kokoro-only ajo ei saavuttanut inferenssiä ja sen workflow-report ok=false. `node --experimental-strip-types --test desktop/kokoro.test.mjs lib/kokoro.test.ts lib/presentation.test.ts`: 22/22 läpi, ei ohituksia, 1.44 s. Kohdistuskorjauksen GUI-uusinta odottaa palikka-agentin vuoroa. Tämä ei muuta tuotantosovelluksen koodia.
 
 GUI-kohdistuksen jatko: tyhjä Tarina avataan ensin Aloita tyhjästä -painikkeella. Oletus on rivieditori (.script-line-field); kenttä normalisoi rivinvaihdot, joten monirivinen testisyöte oli väärä ja rakentui 0 hahmoa. Tämä selitti voiceselectorin puuttumisen R4-ajossa, eikä inferenssiä suoritettu. Testisyöte korjattu yhdeksi oikeaksi Pipsa: englanninrepliikki -riviksi; tausta jätetty pois. Virhetilanteeseen lisätty testin synteettisen DOM:n HTML-tallennus. Tuotantosovelluksen käyttäytymistä ei muutettu. Palikka-agentin tuotteenkoodikorjauksen GUI-testi käyttää vuoron ensin.
+
+## Claude: Kokoro-vientisynkka pilvessä — 12.10.2026 (TYÖHAARASSA)
+
+Työhaara `claude/project-thread-t7q5ab`, lähtö `codex/kokoro-export-2026-10-12` @ `d79e9c4`. Ei yhdistetty päähaaroihin eikä integraatiohaaraan; root yhdistää. Aineisto ja täsmälliset komennot: `docs/tiimi/todennus/kokoro-export-20261012/cloud/README.md`.
+
+Tehty:
+- **Tuotekoodikorjaus `desktop/encoder.mjs`:** MP4:n `-t` on nyt `ceil(pituus×fps)/fps`. Ennen ei-kokonaislukuinen pituus (5,083 s @ 30 fps) tuotti ffmpeg 6.1:llä 152 ruutua ja vientitarkistus hylkäsi videon (odotettu 153). Uusi testi `desktop/encoder.test.mjs` epäonnistuu ilman korjausta. Koskee kaikkia MP4-vientejä, joten Mac-agentin paketti tarvitsee tämän lähteen.
+- Diagnostiikka: käsikirjoitusrivi `PIPSA: …` (sekakirjaiminen `Pipsa: …` ei ole repliikki → 0 tapahtumaa, tämä oli Codexin R4-ajon pysähdyksen syy), äänen korrelaatiohuippu tarkennetaan näytteen tarkkuudella (1 ms ruudukko antoi 0,85 todellisen 0,996 sijaan), `HAHMOSTUDIO_KOKORO_STANDIN=1` merkitsee raporttiin `realInference:false`.
+- Pilvitestiympäristö: `scripts/kokoro-standin-runtime.mjs` + `kokoro-standin-engine.cjs` (sijaismoottori, ei kirjoita oikean runtimen päälle), `HAHMOSTUDIO_ELECTRON_NO_SANDBOX=1` testiajurissa root-konttia varten.
+
+Testattu: lähde-Electron Xvfb:ssä, Kokoro-vientiosuus ok=true. Repliikki 4,99 s, 25/26 suuavainta koostetuilla raidoilla, MP4 H.264 1080×1920 30 fps + AAC 48 kHz, 153 ruutua. Dekoodattu ääni korrelaatio 0,9964, ajoitusero +0,04 ms. Renderöidyn suun aukeama vs. äänen voimakkuus: paras viive 0 ruutua. `npm test` 1403/1403, `npm run typecheck` läpi.
+
+Ei testattu: aito Kokoro-malli (Hugging Face estetty kontissa), Macin ffmpeg 8.1 / VideoToolbox, paketoitu .app, ihmisen kuuntelu ja silmämääräinen huulisynkka.
+
+Seuraava konkreettinen työ omalla Macilla: `npm run desktop:build` tästä haarasta, sitten `HAHMOSTUDIO_KOKORO_MODEL_DATA='/Users/Aleksi/Library/Application Support/hahmostudio' HAHMOSTUDIO_KOKORO_EXPORT_ACCEPTANCE=1 HAHMOSTUDIO_WORKFLOW_OUTPUT=/private/tmp/koeta-kokoro-export npm run desktop:test:workflow` (ilman STANDIN/NO_SANDBOX), tarkista `realInference:true` ja `ok:true`; sama `--packaged`-ajona uudesta paketista. Sen jälkeen käyttäjä katsoo ja kuuntelee MP4:n.
+
+Omistetut tiedostot: desktop/encoder.mjs (-t), desktop/encoder.test.mjs, desktop/kokoro-export-diagnostic.mjs, scripts/desktop-workflow-test.mjs (no-sandbox-rivi), scripts/kokoro-standin-*. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin mittaria ei käytetty.

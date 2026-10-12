@@ -1,0 +1,58 @@
+{
+  "ok": true,
+  "packaged": false,
+  "gui": true,
+  "physicalDevices": false,
+  "voiceOver": false,
+  "kokoroExport": {
+    "ok": true,
+    "realInference": false,
+    "standinEngine": true,
+    "packaged": false,
+    "physicalDevices": false,
+    "humanListening": false,
+    "text": "This is a local voice test. The animation keeps the original timing.",
+    "voice": "af_heart",
+    "clip": {
+      "duration": 4.993492063492064,
+      "mouthKeys": 26,
+      "source": "volume",
+      "synthetic": {
+        "engine": "kokoro",
+        "key": "2598b1977bef521431a33ddd58472b41a744c298c3de5820ebb809084133d97c",
+        "modelVersion": "Kokoro-82M-v1.0-ONNX",
+        "speed": 1,
+        "voice": "af_heart"
+      }
+    },
+    "compiledMouthKeysMatched": 25,
+    "mp4": {
+      "video": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920,
+        "fps": 30
+      },
+      "audio": {
+        "codec": "aac",
+        "hz": 48000
+      },
+      "seconds": 5.1,
+      "meanVolumeDb": -16.9,
+      "maxVolumeDb": -4.1
+    },
+    "bytes": 467504,
+    "eventStartSeconds": 0.08333333333333333,
+    "audioAlignment": {
+      "correlation": 0.99635026153167,
+      "offsetSamples": 667,
+      "deltaSeconds": 0.000041666666666675956,
+      "toleranceSeconds": 0.03333333333333333
+    },
+    "job": {
+      "state": "done",
+      "encoder": "libopenh264 · ohjelmisto"
+    },
+    "mouth": "linked analyzed timing and compiled actor tracks checked; rendered visual/human lip-sync approval remains open"
+  }
+}
