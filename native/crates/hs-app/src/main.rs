@@ -9,6 +9,10 @@ mod camera_ui;
 mod export_job;
 mod panels;
 mod project_ui;
+mod image_ui;
+mod editing_ui;
+mod production_ui;
+mod blocks_ui;
 mod viewport;
 mod voice_ui;
 
@@ -26,7 +30,7 @@ fn main() -> eframe::Result<()> {
     }
     let native = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
-            .with_title("Hahmostudio")
+            .with_title("Koeta")
             .with_inner_size([1440.0, 900.0])
             .with_min_inner_size([900.0, 600.0]),
         renderer: eframe::Renderer::Wgpu,

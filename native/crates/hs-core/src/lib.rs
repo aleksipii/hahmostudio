@@ -11,6 +11,6 @@ pub mod timeline;
 pub use diagnostics::{Diagnostic, Severity};
 pub use time::{Fps, Tick, TICKS_PER_SECOND};
 pub use timeline::{
-    CameraHint, Direction, EventId, EventKind, MotionKind, PhoneView, SourceSpan, Timeline,
+    CameraHint, Direction, EventId, EventKind, Expression, LookTarget, MotionKind, PhoneView, SourceSpan, Timeline,
     TimelineEvent, TrackKind, View,
 };

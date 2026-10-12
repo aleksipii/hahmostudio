@@ -1,7 +1,9 @@
 //! Portable series workflow. Files are read/written off the UI thread.
 use crate::app::StudioApp;
 use eframe::egui;
-use hs_project::{Episode, Series};
+use hs_project::{Episode, Series, ProjectAsset};
+use hs_project::recovery::{RecoveryStore, RecoveredSnapshot};
+use std::time::{Duration, Instant};
 use std::{
     path::PathBuf,
     sync::mpsc::{self, Receiver},
@@ -17,7 +19,13 @@ pub struct ProjectState {
     confirm_close: bool,
     close_after_save: bool,
     allow_close: bool,
+    recovery: Option<RecoveryStore>,
+    recovery_job: Option<Receiver<Result<RecoveryOutcome,String>>>,
+    recoveries: Vec<RecoveredSnapshot>,
+    recovery_due: Instant,
+
 }
+enum RecoveryOutcome { Discovered(Vec<RecoveredSnapshot>), Saved(String) }
 enum JobResult {
     Open(Series, PathBuf),
     Saved(PathBuf),
@@ -56,6 +64,8 @@ impl ProjectState {
             confirm_close: false,
             close_after_save: false,
             allow_close: false,
+            recovery: hs_voice::store::ModelStore::default_data_dir().map(|dir| RecoveryStore::new(dir.join("koeta-recovery"),512*1024*1024)),
+            recovery_job: None, recoveries: Vec::new(), recovery_due:Instant::now()+Duration::from_secs(30),
         }
     }
 }
@@ -64,8 +74,8 @@ impl StudioApp {
         let (tx, rx) = mpsc::channel();
         let ctx = ctx.clone();
         std::thread::spawn(move || {
-            let result = hs_project::load(&path)
-                .map(|s| JobResult::Open(s, path))
+            let result = hs_project::load(&path).map_err(|e|e.to_string())
+                .and_then(|s| { validate_workspaces(&s)?; Ok(JobResult::Open(s,path)) })
                 .map_err(|e| e.to_string());
             let _ = tx.send(result);
             ctx.request_repaint();
@@ -74,35 +84,61 @@ impl StudioApp {
         self.status = "Avataan sarjaprojektia…".into();
     }
 
-    fn capture_episode(&mut self) {
-        // Include the current text even while the debounced pipeline is pending.
+    fn capture_episode(&mut self) -> Result<(),String> {
         self.production.script = self.script.clone();
         let old = &self.project.series.episodes[self.project.selected];
-        let snapshot = hs_agents::project::capture(
-            &self.production,
-            old.id.clone(),
-            old.number,
-            old.name.clone(),
-        );
+        let mut snapshot = hs_agents::project::capture(&self.production,old.id.clone(),old.number,old.name.clone());
+        snapshot.assets = vec![
+            ProjectAsset{id:"image-workspace".into(),kind:"image".into(),bytes:self.image.snapshot()?},
+            ProjectAsset{id:"editing-workspace".into(),kind:"editing".into(),bytes:hs_edit::encode_workspace(&self.editing.tracks)?},
+        ];
         self.project.series.episodes[self.project.selected] = snapshot;
+        Ok(())
     }
-    fn activate_episode(&mut self, index: usize, ctx: &egui::Context) {
-        self.playing = false;
-        let mut production = hs_agents::project::restore(&self.project.series.episodes[index]);
-        self.voice.attach_project(&mut production, ctx);
-        self.production = production;
-        self.script = self.production.script.clone();
-        self.script_path = None;
-        self.dirty_since = None;
-        self.legacy = None;
-        self.time = 0.0;
-        self.selected_cast = 0;
-        self.project.selected = index;
-        self.pipeline = hs_agents::Pipeline::default();
-        self.run_pipeline();
+    fn activate_episode(&mut self, index:usize, ctx:&egui::Context) {
+        let episode=&self.project.series.episodes[index];
+        let mut image=crate::image_ui::ImageWorkspace::default();
+        let mut editing=crate::editing_ui::EditingState::default();
+        for asset in &episode.assets {
+            let result=match asset.kind.as_str() {
+                "image" => image.restore(&asset.bytes),
+                "editing" => hs_edit::decode_workspace(&asset.bytes).map(|tracks| editing.tracks=tracks),
+                _ => Err("Tuntematon työtilaresurssi".into()),
+            };
+            if let Err(e)=result {self.status=e;return;}
+        }
+        let mut production=hs_agents::project::restore(episode);
+        production.soundtrack=editing.tracks.clone();
+        self.playing=false;
+        self.voice.attach_project(&mut production,ctx);
+        self.production=production;self.image=image;self.editing=editing;
+        self.script=self.production.script.clone();self.script_path=None;self.dirty_since=None;self.legacy=None;
+        self.time=0.0;self.selected_cast=0;self.project.selected=index;self.blocks=Default::default();
+        self.pipeline=hs_agents::Pipeline::default();self.run_pipeline();
+    }
+    pub fn scan_recovery(&mut self,ctx:&egui::Context) {
+        let Some(store)=self.project.recovery.clone() else {return};
+        let (tx,rx)=mpsc::channel();let ctx=ctx.clone();
+        std::thread::spawn(move || {let result=store.discover().map(RecoveryOutcome::Discovered).map_err(|e|e.to_string());let _=tx.send(result);ctx.request_repaint();});
+        self.project.recovery_job=Some(rx);
+    }
+    fn checkpoint_project(&mut self,ctx:&egui::Context,named:bool) {
+        self.project.recovery_due=Instant::now()+Duration::from_secs(30);
+        if self.project.recovery_job.is_some() {return;}
+        let Some(store)=self.project.recovery.clone() else {return};
+        if let Err(e)=self.capture_episode(){self.status=e;return;}
+        let snapshot=self.project.series.clone();let name=fresh_id();
+        let (tx,rx)=mpsc::channel();let ctx=ctx.clone();
+        std::thread::spawn(move || {
+            let r=if named {store.save_revision(&snapshot,&name)} else {store.autosave(&snapshot)};
+            let result=r.map(|_|RecoveryOutcome::Saved(if named {"Nimetty palautusrevisio tallennettu.".into()} else {"Automaattinen palautuspiste tallennettu.".into()})).map_err(|e|e.to_string());
+            let _=tx.send(result);ctx.request_repaint();
+        });
+        self.project.recovery_job=Some(rx);
+        self.project.recovery_due=Instant::now()+Duration::from_secs(30);
     }
     fn save_series(&mut self, path: PathBuf, ctx: &egui::Context) {
-        self.capture_episode();
+        if let Err(e)=self.capture_episode(){self.project.close_after_save=false;self.status=e;return;}
         let snapshot = self.project.series.clone();
         let (tx, rx) = mpsc::channel();
         let ctx = ctx.clone();
@@ -120,7 +156,7 @@ impl StudioApp {
 pub fn menu(app: &mut StudioApp, ui: &mut egui::Ui) {
     let ctx = ui.ctx().clone();
     let can_change =
-        app.project.job.is_none() && app.voice.recorder.is_none() && app.export.is_none();
+        app.project.job.is_none() && app.voice.recorder.is_none() && app.export.is_none() && !app.image.is_busy();
     ui.add_enabled_ui(can_change, |ui| {
         if ui.button("Uusi sarjaprojekti").clicked() {
             app.project.new_series = true;
@@ -177,11 +213,12 @@ pub fn menu(app: &mut StudioApp, ui: &mut egui::Ui) {
                 }
             });
         if selected_after != selected {
-            app.capture_episode();
+            if let Err(e)=app.capture_episode(){app.status=e;return;}
             app.activate_episode(selected_after, &ctx);
         }
+        if ui.button("Tallenna palautusrevisio").clicked() { app.checkpoint_project(&ctx,true);ui.close_menu(); }
         if ui.button("Lisää uusi jakso").clicked() {
-            app.capture_episode();
+            if let Err(e)=app.capture_episode(){app.status=e;return;}
             let number = app
                 .project
                 .series
@@ -213,6 +250,45 @@ pub fn busy(app: &StudioApp) -> bool {
 }
 
 pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
+    let recovered=app.project.recovery_job.as_ref().and_then(|rx|match rx.try_recv() {
+        Ok(result)=>Some(result),
+        Err(mpsc::TryRecvError::Disconnected)=>Some(Err("Palautustyö keskeytyi.".into())),
+        Err(mpsc::TryRecvError::Empty)=>None,
+    });
+    if let Some(result)=recovered {
+        app.project.recovery_job=None;
+        match result {
+            Ok(RecoveryOutcome::Discovered(items))=>app.project.recoveries=items,
+            Ok(RecoveryOutcome::Saved(message))=>app.status=message,
+            Err(e)=>app.status=format!("Palautuspisteen virhe: {e}"),
+        }
+    }
+    if app.project.recovery_job.is_some() {ctx.request_repaint_after(Duration::from_millis(100));}
+    if !app.project.recoveries.is_empty() && !app.project.confirm_close && app.project.job.is_none() {
+        let mut choice=None;
+        egui::Modal::new(egui::Id::new("koeta-recovery")).show(ctx,|ui| {
+            ui.heading("Palauta aiempi työ?");ui.label("Palautus avaa kopion. Alkuperäistä projektitiedostoa ei korvata.");
+            for (index,rec) in app.project.recoveries.iter().enumerate() {
+                if ui.button(format!("Palauta {} · revisio {}",rec.series.name,rec.sequence)).clicked(){choice=Some(index);}
+            }
+            if ui.button("Jatka palauttamatta").clicked(){choice=Some(usize::MAX);}
+        });
+        if let Some(index)=choice {
+            if index<app.project.recoveries.len() {
+                let item=app.project.recoveries.remove(index);
+                match validate_workspaces(&item.series) {
+                    Ok(())=>{app.project.series=item.series;app.project.path=None;app.activate_episode(0,ctx);app.status="Palautettu kopio; tallenna sarjaprojektina.".into();},
+                    Err(e)=>app.status=e,
+                }
+            }
+            app.project.recoveries.clear();
+        }
+    }
+    if app.project.recovery_due<=Instant::now() && app.project.job.is_none() && app.project.recovery_job.is_none()
+        && app.voice.recorder.is_none() && app.export.is_none() && !app.image.is_busy() && !app.screenshot_mode() && app.project.recoveries.is_empty() {
+        app.checkpoint_project(ctx,false);
+    }
+    if !app.screenshot_mode() {ctx.request_repaint_after(Duration::from_secs(5));}
     let result = app.project.job.as_ref().and_then(|rx| match rx.try_recv() {
         Ok(r) => Some(r),
         Err(mpsc::TryRecvError::Disconnected) => {
@@ -260,7 +336,7 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
             ui.heading("Sulje Koeta?");
             ui.label("Säilytä koko sarja tallentamalla .koeta-projekti. Sovelluksen asetukset eivät korvaa sarjaprojektia.");
             if ui.button("Peruuta").clicked() { app.project.confirm_close = false; }
-            if ui.button("Tallenna sarja ja sulje").clicked() && app.voice.recorder.is_none() && app.export.is_none() {
+            if ui.button("Tallenna sarja ja sulje").clicked() && app.voice.recorder.is_none() && app.export.is_none() && !app.image.is_busy() {
                 let path = app.project.path.clone().or_else(|| rfd::FileDialog::new().add_filter("Koeta", &["koeta"]).set_file_name("sarja.koeta").save_file());
                 if let Some(path) = path { app.project.close_after_save = true; app.save_series(path, ctx); }
             }
@@ -279,7 +355,7 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
             ui.heading("Vaihda sarjaprojektia?");
             ui.label("Nykyisen sarjan tallentamattomat muutokset jäävät pois. Tallenna sarja ensin, jos haluat säilyttää ne.");
             if ui.button("Peruuta").clicked() { app.project.confirm_replace = false; }
-            if ui.add_enabled(app.project.job.is_none() && app.voice.recorder.is_none() && app.export.is_none(), egui::Button::new(if app.project.new_series { "Luo uusi sarja" } else { "Jatka avaamiseen…" })).clicked() {
+            if ui.add_enabled(app.project.job.is_none() && app.voice.recorder.is_none() && app.export.is_none() && !app.image.is_busy(), egui::Button::new(if app.project.new_series { "Luo uusi sarja" } else { "Jatka avaamiseen…" })).clicked() {
                 app.project.confirm_replace = false;
                 if app.project.new_series {
                     let p = hs_agents::Production::new("");
@@ -292,4 +368,14 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
             }
         });
     }
+}
+
+fn validate_workspaces(series:&Series)->Result<(),String> {
+    for e in &series.episodes { for a in &e.assets {
+        match a.kind.as_str() {
+            "image"=>{hs_image::Document::decode(&a.bytes)?;},
+            "editing"=>{hs_edit::decode_workspace(&a.bytes)?;},
+            _=>return Err("Tuntematon työtilaresurssi".into()),
+        }
+    }} Ok(())
 }

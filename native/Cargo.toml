@@ -1,6 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/hs-subtitle",
+    "crates/hs-edit",
+    "crates/hs-image",
     "crates/hs-project",
     "crates/hs-core",
     "crates/hs-script",
@@ -25,6 +28,9 @@ license = "LicenseRef-Proprietary"
 publish = false
 
 [workspace.dependencies]
+hs-subtitle = { path = "crates/hs-subtitle" }
+hs-edit = { path = "crates/hs-edit" }
+hs-image = { path = "crates/hs-image" }
 hs-project = { path = "crates/hs-project" }
 hs-core = { path = "crates/hs-core" }
 hs-script = { path = "crates/hs-script" }

@@ -12,6 +12,7 @@
 //! Kaikki on deterministiä ja tilatonta: minkä tahansa ruudun voi laskea
 //! suoraan, joten aikajanan selaus ja rinnakkainen vienti tuottavat saman tuloksen.
 
+pub mod expression;
 pub mod face;
 pub mod gait;
 pub mod hands;

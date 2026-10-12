@@ -52,7 +52,8 @@ impl FrameBuilder {
             }
             turns
         };
-        for ((member, motion), (mut f, turn)) in p.cast.iter().zip(&p.motion).zip(frames.into_iter().zip(turns)) {
+        let positions:Vec<_>=frames.iter().map(|f|f.root).collect();
+        for (index,((member, motion), (mut f, turn))) in p.cast.iter().zip(&p.motion).zip(frames.into_iter().zip(turns)).enumerate() {
             if turn != 0.0 {
                 f.pose.root_rot = glam::Quat::from_rotation_y(turn) * f.pose.root_rot;
             }
@@ -70,6 +71,30 @@ impl FrameBuilder {
                     let q = glam::Quat::from_euler(glam::EulerRot::YXZ, yaw * 0.65, pitch * 0.7, roll * 0.7);
                     f.pose.local[humanoid.neck] = glam::Quat::from_euler(glam::EulerRot::YXZ, yaw * 0.35, pitch * 0.3, roll * 0.3) * f.pose.local[humanoid.neck];
                     f.pose.local[humanoid.head] = q * f.pose.local[humanoid.head];
+                }
+            }
+            let now=hs_core::Tick::from_seconds(t as f64);
+            let mine=|character:&Option<String>| character.as_ref().map_or(index==0,|c|c.eq_ignore_ascii_case(&member.character.params.name));
+            for event in tl.events.iter().filter(|e|e.start<=now && now<e.end()) {
+                match &event.kind {
+                    EventKind::Expression{character,expression} if mine(character)=>{
+                        let speaking=p.mouth_at(&|s|motion.motion.speaks(s),t).is_some() || p.live.as_ref().is_some_and(|l|l.speaker.eq_ignore_ascii_case(&member.character.params.name)&&l.mouth.is_some());
+                        hs_motion::expression::apply_expression(humanoid,&mut f.pose,*expression,speaking);
+                    }
+                    EventKind::LookAt{character,target} if mine(character) && !p.live.as_ref().is_some_and(|l|l.speaker.eq_ignore_ascii_case(&member.character.params.name)&&l.head.is_some())=>{
+                        let destination=match target {
+                            hs_core::LookTarget::Camera=>Some(cam.eye),
+                            hs_core::LookTarget::Character(name)=>p.cast.iter().position(|c|c.character.params.name.eq_ignore_ascii_case(name)).map(|other|positions[other]+Vec3::Y*p.cast[other].character.params.height*0.9),
+                        };
+                        if let Some(destination)=destination {
+                            let from=f.root+Vec3::Y*member.character.params.height*0.9;
+                            let local=f.pose.root_rot.inverse()*(destination-from);
+                            let yaw=local.x.atan2(local.z).clamp(-0.7,0.7);
+                            let pitch=(-local.y).atan2(local.x.hypot(local.z)).clamp(-0.45,0.45);
+                            f.pose.local[humanoid.head]=glam::Quat::from_euler(glam::EulerRot::YXZ,yaw,pitch,0.0)*f.pose.local[humanoid.head];
+                        }
+                    }
+                    _=>{}
                 }
             }
             let skeleton = &member.character.humanoid.skeleton;
@@ -157,7 +182,9 @@ pub struct RustRenderAgent {
 impl RustRenderAgent {
     pub fn render_frame(&mut self, p: &Production, renderer: &mut dyn Renderer, frame: u32) -> Result<hs_render::Image, AgentError> {
         let scene = self.frames.scene(p, frame, p.width, p.height).ok_or(AgentError::Missing { agent: "render", slot: Slot::Camera })?;
-        renderer.render(&scene).map_err(|e| AgentError::Failed { agent: "render", message: e.to_string() })
+        let mut image = renderer.render(&scene).map_err(|e| AgentError::Failed { agent: "render", message: e.to_string() })?;
+        hs_subtitle::burn_captions(&mut image, p.fps.frame_to_tick(frame), &crate::captions::cues(p), &p.caption_settings).map_err(fail)?;
+        Ok(image)
     }
 }
 

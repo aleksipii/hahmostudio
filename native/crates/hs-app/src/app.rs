@@ -22,6 +22,9 @@ pub struct LaunchOptions {
 
 pub struct StudioApp {
     pub project: crate::project_ui::ProjectState,
+    pub image: crate::image_ui::ImageWorkspace,
+    pub editing: crate::editing_ui::EditingState,
+    pub blocks: crate::blocks_ui::BlocksState,
     pub production: Production,
     pub pipeline: Pipeline,
     pub script: String,
@@ -51,6 +54,8 @@ pub enum LeftTab {
     Script,
     Voice,
     Performance,
+    Image,
+    Edit,
 }
 
 /// Avattu vanha `.hahmo`-projekti (2D-leikehahmo) esikatselua varten.
@@ -95,6 +100,9 @@ impl StudioApp {
         let project = crate::project_ui::ProjectState::new(&production);
         let mut app = StudioApp {
             project,
+            image: Default::default(),
+            editing: Default::default(),
+            blocks: Default::default(),
             production,
             pipeline: Pipeline::default(),
             script,
@@ -116,6 +124,8 @@ impl StudioApp {
             left_tab: match options.tab.as_deref() {
                 Some("ääni" | "voice") => LeftTab::Voice,
                 Some("esitys" | "performance") => LeftTab::Performance,
+                Some("kuva" | "image") => LeftTab::Image,
+                Some("leikkaus" | "edit") => LeftTab::Edit,
                 _ => LeftTab::Script,
             },
             screenshot: options.screenshot,
@@ -123,6 +133,7 @@ impl StudioApp {
         };
         app.run_pipeline();
         if let Some(path) = series_path { app.script_path = None; app.open_series(path, &cc.egui_ctx); }
+        else if !app.screenshot_mode() {app.scan_recovery(&cc.egui_ctx);}
         app
     }
 
@@ -255,6 +266,7 @@ impl eframe::App for StudioApp {
                 ctx.request_repaint_after(Duration::from_millis(60));
             }
         }
+        self.image.update();
         crate::project_ui::update(self, ctx);
         if crate::project_ui::busy(self) {
             egui::CentralPanel::default().show(ctx, |ui| { ui.spinner(); ui.label(&self.status); });
@@ -292,7 +304,11 @@ impl eframe::App for StudioApp {
         panels::timeline(self, ctx);
         panels::script_panel(self, ctx);
         panels::cast_panel(self, ctx);
-        panels::stage(self, ctx, frame);
+        if self.left_tab == LeftTab::Image {
+            egui::CentralPanel::default().show(ctx, |ui| self.image.ui(ui));
+        } else if self.left_tab == LeftTab::Edit {
+            crate::production_ui::show(self, ctx);
+        } else { panels::stage(self, ctx, frame); }
         panels::dialogs(self, ctx);
         self.handle_screenshot(ctx);
     }

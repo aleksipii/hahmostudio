@@ -7,6 +7,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+hs-subtitle.workspace = true
 hs-character.workspace = true
 hs-voice = { workspace = true, default-features = false }
 serde.workspace = true

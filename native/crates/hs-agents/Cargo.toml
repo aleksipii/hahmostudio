@@ -11,6 +11,9 @@ default = ["gpu"]
 gpu = ["hs-render/gpu"]
 
 [dependencies]
+hs-image.workspace = true
+hs-edit.workspace = true
+hs-subtitle.workspace = true
 hs-project.workspace = true
 hs-core.workspace = true
 hs-script.workspace = true
@@ -23,3 +26,6 @@ glam.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

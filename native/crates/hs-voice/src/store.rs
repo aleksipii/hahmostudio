@@ -68,6 +68,47 @@ fn sha256_file(path: &Path) -> Result<String, VoiceError> {
     Ok(hasher.finalize().iter().map(|b| format!("{b:02x}")).collect())
 }
 
+/// Explicitly supplied complete PEM trust store for managed environments.
+/// The desktop default remains ureq's verified Mozilla roots. A configured
+/// bundle replaces those roots; it must include all public/private CAs needed.
+/// Certificate verification is never disabled and a bad override is an error.
+#[cfg(feature = "download")]
+fn download_tls_config(bundle: Option<&Path>) -> Result<ureq::tls::TlsConfig, VoiceError> {
+    use std::io::Read;
+    use ureq::tls::{parse_pem, PemItem, RootCerts, TlsConfig};
+    let Some(bundle) = bundle else { return Ok(TlsConfig::default()); };
+    const MAX_CA_BYTES: u64 = 2 * 1024 * 1024;
+    let mut bytes = Vec::new();
+    let file = std::fs::File::open(bundle).map_err(|_| VoiceError::Model(
+        "CA bundle cannot be opened. Check HAHMOSTUDIO_CA_BUNDLE or SSL_CERT_FILE; TLS verification remains enabled.".into()))?;
+    file.take(MAX_CA_BYTES + 1).read_to_end(&mut bytes).map_err(|_| VoiceError::Model(
+        "CA bundle cannot be read. Check HAHMOSTUDIO_CA_BUNDLE or SSL_CERT_FILE.".into()))?;
+    if bytes.len() as u64 > MAX_CA_BYTES {
+        return Err(VoiceError::Model("CA bundle exceeds the 2 MiB limit.".into()));
+    }
+    let mut certificates = Vec::new();
+    for item in parse_pem(&bytes) {
+        match item {
+            Ok(PemItem::Certificate(certificate)) => certificates.push(certificate),
+            Ok(_) => return Err(VoiceError::Model("CA bundle must contain public certificates, not private keys.".into())),
+            Err(_) => return Err(VoiceError::Model("CA bundle contains malformed PEM certificates. TLS verification remains enabled.".into())),
+        }
+    }
+    if certificates.is_empty() {
+        return Err(VoiceError::Model("CA bundle contains no PEM certificates. Check HAHMOSTUDIO_CA_BUNDLE or SSL_CERT_FILE.".into()));
+    }
+    Ok(TlsConfig::builder().root_certs(RootCerts::from(certificates)).build())
+}
+
+#[cfg(feature = "download")]
+fn download_agent() -> Result<ureq::Agent, VoiceError> {
+    let bundle = std::env::var_os("HAHMOSTUDIO_CA_BUNDLE")
+        .or_else(|| std::env::var_os("SSL_CERT_FILE")).map(PathBuf::from);
+    let tls = download_tls_config(bundle.as_deref())?;
+    Ok(ureq::Agent::config_builder().proxy(ureq::Proxy::try_from_env())
+        .tls_config(tls).build().into())
+}
+
 impl ModelStore {
     /// `data_dir` on sovelluksen tietokansio; malli menee sen alikansioon `kokoro`.
     pub fn new(data_dir: impl AsRef<Path>) -> Self {
@@ -179,7 +220,7 @@ impl ModelStore {
         std::fs::create_dir_all(&self.dir)?;
         let staging = self.dir.join(format!("staging-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&staging);
-        let agent: ureq::Agent = ureq::Agent::config_builder().proxy(ureq::Proxy::try_from_env()).build().into();
+        let agent = download_agent()?;
         let result = (|| {
             let mut entries = Vec::new();
             for f in model_files() {
@@ -232,6 +273,46 @@ impl ModelStore {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "download")]
+    #[test]
+    fn ca_bundle_rejects_missing_empty_and_malformed_files() {
+        let root = std::env::temp_dir().join(format!("hs-voice-ca-tests-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("bundle.pem");
+        let _ = std::fs::remove_file(&path);
+        assert!(download_tls_config(Some(&path)).is_err());
+        for bytes in [b"".as_slice(), b"not a certificate".as_slice(),
+            b"-----BEGIN CERTIFICATE-----\n!badbase64!\n-----END CERTIFICATE-----\n".as_slice()] {
+            std::fs::write(&path, bytes).unwrap();
+            assert!(download_tls_config(Some(&path)).is_err());
+        }
+        std::fs::write(&path, b"-----BEGIN PRIVATE KEY-----\nMAMCAQA=\n-----END PRIVATE KEY-----\n").unwrap();
+        assert!(download_tls_config(Some(&path)).is_err());
+        std::fs::write(&path, vec![b'x'; 2 * 1024 * 1024 + 1]).unwrap();
+        assert!(download_tls_config(Some(&path)).is_err());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(feature = "download")]
+    #[test]
+    fn default_tls_verification_is_enabled_and_uses_public_roots() {
+        let config = download_tls_config(None).unwrap();
+        assert!(matches!(config.root_certs(), ureq::tls::RootCerts::WebPki));
+        assert!(!config.disable_verification());
+    }
+
+    #[cfg(feature = "download")]
+    #[test]
+    fn injected_platform_bundle_loads_without_exposing_certificates() {
+        let Some(path) = std::env::var_os("SSL_CERT_FILE") else {
+            eprintln!("SKIP platform CA fixture: SSL_CERT_FILE is not injected");
+            return;
+        };
+        let config = download_tls_config(Some(Path::new(&path))).unwrap();
+        assert!(matches!(config.root_certs(), ureq::tls::RootCerts::Specific(certificates) if !certificates.is_empty()));
+        assert!(!config.disable_verification());
+    }
 
     #[test]
     fn import_verifies_and_detects_tampering() {

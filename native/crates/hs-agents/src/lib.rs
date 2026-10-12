@@ -14,6 +14,7 @@
 pub mod agents;
 pub mod production;
 pub mod project;
+pub mod captions;
 
 pub use agents::{
     character_mesh::CharacterMeshAgent, cinematography::CinematographyAgent, procedural_motion::ProceduralMotionAgent,

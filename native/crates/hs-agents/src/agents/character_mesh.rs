@@ -18,7 +18,7 @@ pub fn cast_names(p: &Production) -> Vec<String> {
         for e in &tl.events {
             let n = match &e.kind {
                 EventKind::Dialogue { speaker: Some(s), .. } => Some(s),
-                EventKind::Motion { character: Some(c), .. } => Some(c),
+                EventKind::Motion { character: Some(c), .. } | EventKind::Expression {character:Some(c),..} | EventKind::LookAt {character:Some(c),..} => Some(c),
                 _ => None,
             };
             if let Some(n) = n {
@@ -63,12 +63,17 @@ impl StudioAgent for CharacterMeshAgent {
     }
     fn run(&mut self, p: &mut Production) -> Result<AgentReport, AgentError> {
         let names = cast_names(p);
-        let mut wanted: Vec<CharacterParams> = if names.is_empty() {
+        let wanted: Vec<CharacterParams> = if names.is_empty() {
             vec![params_for(p, None, 0)]
         } else {
             names.iter().enumerate().map(|(i, n)| params_for(p, Some(n), i)).collect()
         };
-        wanted.truncate(4);
+        if wanted.len()>4 {return Err(AgentError::Failed{agent:"character-mesh",message:"Näyttämölle mahtuu enintään neljä hahmoa.".into()});}
+        if let Some(tl)=&p.timeline {for event in &tl.events {
+            if let EventKind::LookAt{target:hs_core::LookTarget::Character(name),..}=&event.kind {
+                if !wanted.iter().any(|c|c.name.eq_ignore_ascii_case(name)){return Err(AgentError::Failed{agent:"character-mesh",message:format!("Katseen kohde {name} ei ole kohtauksen hahmo.")});}
+            }
+        }}
         let mut built = 0;
         let mut cast = Vec::new();
         let n = wanted.len();

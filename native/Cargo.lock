@@ -2215,14 +2215,18 @@ dependencies = [
  "glam",
  "hs-character",
  "hs-core",
+ "hs-edit",
+ "hs-image",
  "hs-lipsync",
  "hs-motion",
  "hs-project",
  "hs-render",
  "hs-script",
+ "hs-subtitle",
  "hs-voice",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror 2.0.21",
 ]
 
@@ -2237,11 +2241,14 @@ dependencies = [
  "hs-camera",
  "hs-character",
  "hs-core",
+ "hs-edit",
  "hs-hahmo",
+ "hs-image",
  "hs-lipsync",
  "hs-project",
  "hs-render",
  "hs-script",
+ "hs-subtitle",
  "hs-voice",
  "rfd",
  "serde",
@@ -2284,8 +2291,10 @@ dependencies = [
  "hs-core",
  "hs-hahmo",
  "hs-lipsync",
+ "hs-project",
  "hs-render",
  "hs-script",
+ "hs-subtitle",
  "hs-voice",
  "serde_json",
 ]
@@ -2301,6 +2310,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "hs-edit"
+version = "0.1.0"
+dependencies = [
+ "hs-core",
+ "hs-lipsync",
+]
+
+[[package]]
 name = "hs-hahmo"
 version = "0.1.0"
 dependencies = [
@@ -2309,6 +2326,15 @@ dependencies = [
  "thiserror 2.0.21",
  "tiny-skia",
  "zip 2.4.2",
+]
+
+[[package]]
+name = "hs-image"
+version = "0.1.0"
+dependencies = [
+ "png 0.17.16",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -2333,6 +2359,7 @@ name = "hs-project"
 version = "0.1.0"
 dependencies = [
  "hs-character",
+ "hs-subtitle",
  "hs-voice",
  "serde",
  "serde_json",
@@ -2353,6 +2380,8 @@ dependencies = [
  "hs-motion",
  "png 0.17.16",
  "pollster",
+ "serde_json",
+ "tempfile",
  "thiserror 2.0.21",
  "wgpu",
 ]
@@ -2363,6 +2392,18 @@ version = "0.1.0"
 dependencies = [
  "hs-core",
  "serde",
+]
+
+[[package]]
+name = "hs-subtitle"
+version = "0.1.0"
+dependencies = [
+ "ab_glyph",
+ "epaint_default_fonts",
+ "hs-core",
+ "hs-render",
+ "serde",
+ "thiserror 2.0.21",
 ]
 
 [[package]]

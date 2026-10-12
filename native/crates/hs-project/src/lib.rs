@@ -2,7 +2,10 @@
 //! [`encode`]/[`decode`] preserve exact finite f32 mono samples, phonemes and
 //! speech provenance. [`save_atomic`] verifies a complete temporary archive
 //! before replacing its target. This is not a power-loss durability guarantee.
+pub mod recovery;
+
 use hs_character::CharacterParams;
+use hs_subtitle::{CaptionCue, CaptionSettings};
 use hs_voice::{Audio, Speech};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -50,6 +53,16 @@ pub struct Episode {
     pub height: u32,
     pub accepted_notices: BTreeSet<String>,
     pub audio: Vec<AudioBinding>,
+    pub captions: Vec<CaptionCue>,
+    pub caption_settings: CaptionSettings,
+    pub assets: Vec<ProjectAsset>,
+}
+/// Opaque, checksummed episode resources. Consumers validate content before use.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ProjectAsset {
+    pub id: String,
+    pub kind: String,
+    pub bytes: Vec<u8>,
 }
 #[derive(Clone, Debug)]
 pub struct AudioBinding {
@@ -91,6 +104,21 @@ struct StoredEpisode {
     height: u32,
     accepted_notices: BTreeSet<String>,
     audio: Vec<StoredAudio>,
+    #[serde(default)]
+    captions: Vec<CaptionCue>,
+    #[serde(default)]
+    caption_settings: CaptionSettings,
+    #[serde(default)]
+    assets: Vec<StoredAsset>,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct StoredAsset {
+    id: String,
+    kind: String,
+    path: String,
+    sha256: String,
+    bytes: usize,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -132,7 +160,9 @@ fn validate(series: &Series) -> Result<(), ProjectError> {
     let bindings = series
         .episodes
         .iter()
-        .try_fold(0usize, |n, e| n.checked_add(e.audio.len()))
+        .try_fold(0usize, |n, e| {
+            n.checked_add(e.audio.len())?.checked_add(e.assets.len())
+        })
         .ok_or_else(|| invalid("entry count overflow"))?;
     if bindings + 1 > MAX_ENTRIES {
         return Err(invalid("entry count limit"));
@@ -185,6 +215,36 @@ fn validate(series: &Series) -> Result<(), ProjectError> {
             {
                 return Err(invalid("non-finite character parameter"));
             }
+        }
+        hs_subtitle::validate_cues(&e.captions).map_err(|err| invalid(err.to_string()))?;
+        let style = &e.caption_settings.style;
+        if !style.font_height.is_finite()
+            || !(0.02..=0.08).contains(&style.font_height)
+            || !style.bottom_margin.is_finite()
+            || !(0.02..=0.20).contains(&style.bottom_margin)
+        {
+            return Err(invalid("caption style bounds"));
+        }
+        for cue in &e.captions {
+            metadata_bytes = metadata_bytes
+                .saturating_add(cue.id.len())
+                .saturating_add(cue.text.len())
+                .saturating_add(cue.speaker.as_ref().map_or(0, |speaker| speaker.len()));
+        }
+        let mut asset_ids = BTreeSet::new();
+        let mut asset_kinds = BTreeSet::new();
+        for asset in &e.assets {
+            if !id_valid(&asset.id)
+                || !asset_ids.insert(&asset.id)
+                || !matches!(asset.kind.as_str(), "image" | "editing")
+                || !asset_kinds.insert(&asset.kind)
+                || asset.bytes.len() > MAX_BYTES
+            {
+                return Err(invalid("asset ID, kind or size bounds"));
+            }
+            metadata_bytes = metadata_bytes
+                .saturating_add(asset.id.len())
+                .saturating_add(asset.kind.len());
         }
         let mut keys = BTreeSet::new();
         for a in &e.audio {
@@ -265,6 +325,22 @@ pub fn encode(series: &Series) -> Result<Vec<u8>, ProjectError> {
             });
             resources.push((path, bytes));
         }
+        let mut assets = Vec::new();
+        for asset in &e.assets {
+            total = total
+                .checked_add(asset.bytes.len())
+                .filter(|n| *n <= MAX_BYTES)
+                .ok_or_else(|| invalid("archive size limit"))?;
+            let path = format!("assets/{}.bin", resources.len());
+            assets.push(StoredAsset {
+                id: asset.id.clone(),
+                kind: asset.kind.clone(),
+                path: path.clone(),
+                sha256: hash(&asset.bytes),
+                bytes: asset.bytes.len(),
+            });
+            resources.push((path, asset.bytes.clone()));
+        }
         episodes.push(StoredEpisode {
             id: e.id.clone(),
             number: e.number,
@@ -276,6 +352,9 @@ pub fn encode(series: &Series) -> Result<Vec<u8>, ProjectError> {
             height: e.height,
             accepted_notices: e.accepted_notices.clone(),
             audio,
+            captions: e.captions.clone(),
+            caption_settings: e.caption_settings.clone(),
+            assets,
         });
     }
     if resources.len() + 1 > MAX_ENTRIES {
@@ -283,7 +362,7 @@ pub fn encode(series: &Series) -> Result<Vec<u8>, ProjectError> {
     }
     let manifest = serde_json::to_vec(&Manifest {
         format: "koeta-series".into(),
-        version: 1,
+        version: 2,
         id: series.id.clone(),
         name: series.name.clone(),
         episodes,
@@ -324,6 +403,10 @@ pub fn decode(bytes: &[u8]) -> Result<Series, ProjectError> {
             || name
                 .strip_prefix("audio/")
                 .and_then(|s| s.strip_suffix(".f32"))
+                .is_some_and(|s| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()))
+            || name
+                .strip_prefix("assets/")
+                .and_then(|s| s.strip_suffix(".bin"))
                 .is_some_and(|s| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()));
         if !valid || entries.contains_key(&name) || file.is_dir() {
             return Err(invalid("unsafe, duplicate or unexpected entry"));
@@ -348,13 +431,23 @@ pub fn decode(bytes: &[u8]) -> Result<Series, ProjectError> {
             .remove("manifest.json")
             .ok_or_else(|| invalid("missing manifest"))?,
     )?;
-    if manifest.format != "koeta-series" || manifest.version != 1 {
+    if manifest.format != "koeta-series" || !(1..=2).contains(&manifest.version) {
         return Err(invalid("unsupported project version"));
     }
     let mut episodes = Vec::new();
     for e in manifest.episodes {
+        if manifest.version == 1
+            && (!e.captions.is_empty()
+                || !e.assets.is_empty()
+                || e.caption_settings != CaptionSettings::default())
+        {
+            return Err(invalid("version 1 project contains version 2 data"));
+        }
         let mut audio = Vec::new();
         for a in e.audio {
+            if !a.path.starts_with("audio/") {
+                return Err(invalid("invalid audio resource path"));
+            }
             let data = entries
                 .remove(&a.path)
                 .ok_or_else(|| invalid("missing or multiply bound audio"))?;
@@ -383,6 +476,23 @@ pub fn decode(bytes: &[u8]) -> Result<Series, ProjectError> {
                 },
             });
         }
+        let mut assets = Vec::new();
+        for asset in e.assets {
+            if !asset.path.starts_with("assets/") {
+                return Err(invalid("invalid asset resource path"));
+            }
+            let data = entries
+                .remove(&asset.path)
+                .ok_or_else(|| invalid("missing or multiply bound asset"))?;
+            if asset.bytes != data.len() || hash(&data) != asset.sha256 {
+                return Err(invalid("asset length or checksum mismatch"));
+            }
+            assets.push(ProjectAsset {
+                id: asset.id,
+                kind: asset.kind,
+                bytes: data,
+            });
+        }
         episodes.push(Episode {
             id: e.id,
             number: e.number,
@@ -394,6 +504,9 @@ pub fn decode(bytes: &[u8]) -> Result<Series, ProjectError> {
             height: e.height,
             accepted_notices: e.accepted_notices,
             audio,
+            captions: e.captions,
+            caption_settings: e.caption_settings,
+            assets,
         });
     }
     if !entries.is_empty() {
@@ -450,6 +563,9 @@ mod tests {
                 width: 1920,
                 height: 1080,
                 accepted_notices: BTreeSet::from(["notice-1".into()]),
+                captions: Vec::new(),
+                caption_settings: CaptionSettings::default(),
+                assets: Vec::new(),
                 audio: vec![
                     AudioBinding {
                         line_key: "orphan-own-line".into(),
@@ -555,7 +671,7 @@ mod tests {
     fn unknown_version_and_missing_resources_rejected() {
         let bytes = encode(&series()).unwrap();
         for (from, to) in [
-            ("\"version\":1", "\"version\":2"),
+            ("\"version\":2", "\"version\":3"),
             ("audio/0.f32", "audio/999.f32"),
         ] {
             let changed = rewrite(&bytes, |name, data| {
@@ -670,5 +786,150 @@ mod tests {
         let duplicate = s.episodes[0].audio[1].clone();
         s.episodes[0].audio.push(duplicate);
         assert!(encode(&s).is_err());
+    }
+    fn caption() -> CaptionCue {
+        serde_json::from_value(serde_json::json!({
+            "id":"hello-caption", "start":0, "end":705600000,
+            "text":"Hello, café!", "speaker":"Kalle"
+        }))
+        .unwrap()
+    }
+    fn with_assets() -> Series {
+        let mut s = series();
+        let e = &mut s.episodes[0];
+        e.captions = vec![caption()];
+        e.caption_settings.enabled = false;
+        e.caption_settings.style.bottom_margin = 0.15;
+        e.assets = vec![
+            ProjectAsset {
+                id: "image-document".into(),
+                kind: "image".into(),
+                bytes: b"opaque image domain".to_vec(),
+            },
+            ProjectAsset {
+                id: "editing-document".into(),
+                kind: "editing".into(),
+                bytes: b"opaque editing domain".to_vec(),
+            },
+        ];
+        s
+    }
+    #[test]
+    fn version_two_captions_and_assets_preserve_audio() {
+        let original = with_assets();
+        let loaded = decode(&encode(&original).unwrap()).unwrap();
+        let a = &original.episodes[0];
+        let b = &loaded.episodes[0];
+        assert_eq!(a.assets, b.assets);
+        assert_eq!(a.captions, b.captions);
+        assert_eq!(a.caption_settings, b.caption_settings);
+        assert_eq!(a.audio.len(), b.audio.len());
+        for (a, b) in a.audio.iter().zip(&b.audio) {
+            assert_eq!(a.source, b.source);
+            assert_eq!(a.speech.phonemes, b.speech.phonemes);
+            assert_eq!(
+                a.speech
+                    .audio
+                    .samples
+                    .iter()
+                    .map(|s| s.to_bits())
+                    .collect::<Vec<_>>(),
+                b.speech
+                    .audio
+                    .samples
+                    .iter()
+                    .map(|s| s.to_bits())
+                    .collect::<Vec<_>>()
+            );
+        }
+    }
+    #[test]
+    fn version_one_migrates_with_default_captions_and_assets() {
+        let original = series();
+        let v1 = rewrite(&encode(&original).unwrap(), |name, data| {
+            if name == "manifest.json" {
+                let mut manifest: serde_json::Value = serde_json::from_slice(data).unwrap();
+                manifest["version"] = 1.into();
+                for episode in manifest["episodes"].as_array_mut().unwrap() {
+                    for field in ["captions", "caption_settings", "assets"] {
+                        episode.as_object_mut().unwrap().remove(field);
+                    }
+                }
+                *data = serde_json::to_vec(&manifest).unwrap();
+            }
+        });
+        let migrated = decode(&v1).unwrap();
+        let e = &migrated.episodes[0];
+        assert!(e.assets.is_empty());
+        assert!(e.captions.is_empty());
+        assert_eq!(e.caption_settings, CaptionSettings::default());
+        assert_eq!(
+            e.audio[0].speech.audio,
+            original.episodes[0].audio[0].speech.audio
+        );
+        let saved = encode(&migrated).unwrap();
+        let mut archive = zip::ZipArchive::new(Cursor::new(saved)).unwrap();
+        let mut manifest = String::new();
+        archive
+            .by_name("manifest.json")
+            .unwrap()
+            .read_to_string(&mut manifest)
+            .unwrap();
+        let manifest: serde_json::Value = serde_json::from_str(&manifest).unwrap();
+        assert_eq!(manifest["version"], 2);
+        assert_eq!(manifest["format"], "koeta-series");
+    }
+    #[test]
+    fn corrupted_missing_and_cross_type_assets_are_rejected() {
+        let bytes = encode(&with_assets()).unwrap();
+        let corrupted = rewrite(&bytes, |name, data| {
+            if name.starts_with("assets/") {
+                data[0] ^= 1;
+            }
+        });
+        assert!(decode(&corrupted)
+            .unwrap_err()
+            .to_string()
+            .contains("checksum"));
+        for field in ["path", "bytes"] {
+            let changed = rewrite(&bytes, |name, data| {
+                if name == "manifest.json" {
+                    let mut manifest: serde_json::Value = serde_json::from_slice(data).unwrap();
+                    let asset = &mut manifest["episodes"][0]["assets"][0];
+                    asset[field] = if field == "path" {
+                        "audio/0.f32".into()
+                    } else {
+                        999.into()
+                    };
+                    *data = serde_json::to_vec(&manifest).unwrap();
+                }
+            });
+            assert!(decode(&changed).is_err());
+        }
+    }
+    #[test]
+    fn invalid_assets_captions_and_style_do_not_replace_project() {
+        let original = with_assets();
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("episode.koeta");
+        save_atomic(&path, &original).unwrap();
+        let before = fs::read(&path).unwrap();
+        for case in 0..6 {
+            let mut bad = original.clone();
+            let e = &mut bad.episodes[0];
+            match case {
+                0 => {
+                    let clone = e.assets[0].clone();
+                    e.assets.push(clone);
+                }
+                1 => e.assets[0].id = "../unsafe".into(),
+                2 => e.assets[0].kind = "unknown".into(),
+                3 => e.caption_settings.style.font_height = f32::NAN,
+                4 => e.caption_settings.style.bottom_margin = 0.9,
+                _ => e.captions[0].end = e.captions[0].start,
+            }
+            assert!(save_atomic(&path, &bad).is_err());
+            assert_eq!(fs::read(&path).unwrap(), before);
+        }
     }
 }

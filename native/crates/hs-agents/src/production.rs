@@ -102,6 +102,9 @@ pub struct Production {
     pub saved_speech: HashMap<String, hs_project::AudioBinding>,
     /// Rivit, joiden huomautukset (esim. tukematon sulkeohje) käyttäjä on hyväksynyt.
     pub accepted_notices: BTreeSet<String>,
+    pub soundtrack: Vec<hs_edit::Track>,
+    pub caption_settings: hs_subtitle::CaptionSettings,
+    pub caption_overrides: Vec<hs_subtitle::CaptionCue>,
 
     pub plan: Option<ScriptPlan>,
     pub voice_lines: Vec<VoiceLine>,
@@ -137,6 +140,9 @@ impl Production {
             own_audio: HashMap::new(),
             saved_speech: HashMap::new(),
             accepted_notices: BTreeSet::new(),
+            soundtrack: Vec::new(),
+            caption_settings: Default::default(),
+            caption_overrides: Vec::new(),
             plan: None,
             voice_lines: Vec::new(),
             clips: Vec::new(),

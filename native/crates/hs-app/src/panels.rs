@@ -93,6 +93,9 @@ fn start_export(app: &mut StudioApp, request: RenderRequest) {
     // Vienti käyttää mallia suoraan (odottaa puheen valmistumisen), ei käyttöliittymän taustajonoa.
     let voice = ExportVoice {
         fps: Some(app.production.fps),
+        soundtrack: app.production.soundtrack.clone(),
+        caption_settings: app.production.caption_settings.clone(),
+        caption_overrides: app.production.caption_overrides.clone(),
         engine: app.voice.engine.as_ref().map(|bg| bg.inner()),
         cache: app.production.speech_cache.clone(),
         own_audio: app.production.own_audio.clone(),
@@ -146,6 +149,8 @@ fn event_text(kind: &EventKind) -> String {
         EventKind::Phone { view } => format!("Puhelin {view:?}"),
         EventKind::Prop { character, item } => format!("{}esine {}", character.as_ref().map(|c| format!("{c}: ")).unwrap_or_default(), item.as_deref().unwrap_or("pois")),
         EventKind::Camera { hint } => format!("Kuva {hint:?}"),
+        EventKind::Expression {expression,..}=>format!("Ilme {expression:?}"),
+        EventKind::LookAt {target,..}=>format!("Katse {target:?}"),
     }
 }
 
@@ -248,12 +253,15 @@ pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
             ui.selectable_value(&mut app.left_tab, LeftTab::Script, "Käsikirjoitus");
             ui.selectable_value(&mut app.left_tab, LeftTab::Voice, "Ääni");
             ui.selectable_value(&mut app.left_tab, LeftTab::Performance, "Esitys");
+            ui.selectable_value(&mut app.left_tab, LeftTab::Image, "Kuva");
+            ui.selectable_value(&mut app.left_tab, LeftTab::Edit, "Leikkaus");
         });
         ui.separator();
         match app.left_tab {
             LeftTab::Script => script_tab(app, ui),
             LeftTab::Voice => crate::voice_ui::voice_tab(app, ui),
             LeftTab::Performance => crate::voice_ui::performance_tab(app, ui),
+            LeftTab::Image | LeftTab::Edit => { ui.label("Työtila avautuu keskialueelle."); },
         }
     });
 }
@@ -445,7 +453,18 @@ pub fn stage(app: &mut StudioApp, ctx: &egui::Context, frame: &eframe::Frame) {
         let px = [((w * ppp) as u32).min(app.production.width), ((h * ppp) as u32).min(app.production.height)];
         let time = app.time;
         if let Some(id) = app.viewport.draw(ui, frame, &app.production, time, px) {
-            ui.centered_and_justified(|ui| ui.image((id, egui::vec2(w, h))));
+            let response=ui.centered_and_justified(|ui| ui.image((id, egui::vec2(w, h)))).inner;
+            if app.production.caption_settings.enabled {
+                let now=hs_core::Tick::from_seconds(time as f64);
+                if let Some(cue)=hs_agents::captions::cues(&app.production).iter().find(|c|c.start<=now && now<c.end) {
+                    let painter=ui.painter_at(response.rect);
+                    let font=egui::FontId::proportional((response.rect.height()*app.production.caption_settings.style.font_height).max(12.0));
+                    let galley=painter.layout(cue.text.clone(),font,Color32::WHITE,response.rect.width()*0.86);
+                    let pos=egui::pos2(response.rect.center().x-galley.size().x/2.0,response.rect.bottom()-response.rect.height()*app.production.caption_settings.style.bottom_margin-galley.size().y);
+                    painter.rect_filled(egui::Rect::from_min_size(pos-egui::vec2(6.0,3.0),galley.size()+egui::vec2(12.0,6.0)),3.0,Color32::from_black_alpha(210));
+                    painter.galley(pos,galley,Color32::WHITE);
+                }
+            }
         } else {
             ui.centered_and_justified(|ui| ui.label("Korjaa käsikirjoituksen virheet nähdäksesi näyttämön."));
         }
@@ -455,7 +474,7 @@ pub fn stage(app: &mut StudioApp, ctx: &egui::Context, frame: &eframe::Frame) {
 pub fn dialogs(app: &mut StudioApp, ctx: &egui::Context) {
     if app.show_about {
         egui::Window::new("Tietoja").collapsible(false).resizable(false).open(&mut app.show_about).show(ctx, |ui| {
-            ui.heading("Hahmostudio – natiivi");
+            ui.heading("Koeta – natiivi");
             ui.label(format!("Versio {}", env!("CARGO_PKG_VERSION")));
             ui.label("Rust, egui/eframe ja wgpu. Agenttiputki: käsikirjoitus → hahmot → liike → kamera → renderöinti.");
             ui.label("Kaikki käsittely tapahtuu paikallisesti.");

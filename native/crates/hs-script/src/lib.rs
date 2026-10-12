@@ -10,10 +10,13 @@
 //! * `NIMI: repliikki` -puhujaetuliite.
 //! * `[näpyttele puhelinta 3s]` -> [`MotionKind::PhoneTap`].
 //! * `[kuva laaja|puolilähi|lähikuva|insertti|kaksikko|olan yli|alakulma|yläkulma]` -> kameraohje.
+//! * Englanninkieliset tagit viittaavat samoihin domain-tunnisteisiin: esimerkiksi
+//!   `[background living room]`, `[shot over the shoulder]`, `[prop coffee cup]`
+//!   ja `[wave 2s]`. `[expression happy]` ja `[look at Maija]` ovat eksplisiittisiä ohjeita.
 
 use hs_core::{
-    CameraHint, Diagnostic, Direction, EventKind, Fps, MotionKind, PhoneView, Severity,
-    SourceSpan, Tick, Timeline, View,
+    CameraHint, Diagnostic, Direction, EventKind, Expression, Fps, LookTarget, MotionKind,
+    PhoneView, Severity, SourceSpan, Tick, Timeline, View,
 };
 use serde::{Deserialize, Serialize};
 
@@ -26,20 +29,28 @@ pub const MAX_LINE_SECONDS: f64 = 20.0;
 pub const BACKGROUND_ALIASES: &[(&str, &str)] = &[
     ("studio", "studio-v1"),
     ("studio valoisa", "studio-premium-v1"),
+    ("bright studio", "studio-premium-v1"),
     ("olohuone", "apartment-v1"),
+    ("living room", "apartment-v1"),
     ("keittiö", "kitchen-v1"),
     ("kitchen", "kitchen-v1"),
     ("luokka", "classroom-v1"),
     ("koulu", "classroom-v1"),
     ("classroom", "classroom-v1"),
+    ("school", "classroom-v1"),
     ("puisto", "park-day-v1"),
     ("takapiha", "park-day-v1"),
     ("park", "park-day-v1"),
+    ("backyard", "park-day-v1"),
+    ("park day", "park-day-v1"),
     ("katu", "street-day-v1"),
     ("katu päivä", "street-day-v1"),
     ("street", "street-day-v1"),
+    ("street day", "street-day-v1"),
     ("kaupunki ilta", "city-evening-v1"),
+    ("city evening", "city-evening-v1"),
     ("auto moderni", "car-interior-v2"),
+    ("modern car", "car-interior-v2"),
     ("puhelin edestä", "phone-front-v1"),
     ("phone front", "phone-front-v1"),
     ("puhelin sivuviisto", "phone-angle-v1"),
@@ -59,22 +70,28 @@ pub const PROP_ALIASES: &[(&str, &str)] = &[
     ("kuppi", "mug"),
     ("muki", "mug"),
     ("mug", "mug"),
+    ("coffee cup", "mug"),
+    ("cup", "mug"),
     ("pizza", "pizza-box"),
     ("pizzalaatikko", "pizza-box"),
+    ("pizza box", "pizza-box"),
     ("kirja", "book"),
     ("book", "book"),
     ("lahja", "gift"),
     ("lahjapaketti", "gift"),
     ("paketti", "gift"),
     ("gift", "gift"),
+    ("gift box", "gift"),
     ("pallo", "ball"),
     ("ball", "ball"),
     ("kukat", "flowers"),
     ("kukkakimppu", "flowers"),
     ("flowers", "flowers"),
+    ("bouquet", "flowers"),
     ("tölkki", "can"),
     ("limsa", "can"),
     ("can", "can"),
+    ("soda can", "can"),
     ("mikrofoni", "microphone"),
     ("microphone", "microphone"),
 ];
@@ -94,6 +111,10 @@ pub struct Beat {
     /// Esine käteen (`Some(Some(id))`) tai pois (`Some(None)`).
     #[serde(default)]
     pub prop: Option<Option<String>>,
+    #[serde(default)]
+    pub expression: Option<Expression>,
+    #[serde(default)]
+    pub look_at: Option<LookTarget>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -106,7 +127,11 @@ pub struct ScriptPlan {
 impl ScriptPlan {
     /// Lopullinen kokoaminen sallitaan vain, kun virheitä ei ole.
     pub fn is_assemblable(&self) -> bool {
-        !self.beats.is_empty() && !self.diagnostics.iter().any(|d| d.severity == Severity::Error)
+        !self.beats.is_empty()
+            && !self
+                .diagnostics
+                .iter()
+                .any(|d| d.severity == Severity::Error)
     }
 }
 
@@ -123,7 +148,9 @@ fn words(s: &str) -> Vec<String> {
 }
 
 fn has_negation(s: &str) -> bool {
-    words(s).iter().any(|w| matches!(w.as_str(), "ei" | "en" | "älä" | "don't" | "dont" | "not"))
+    words(s)
+        .iter()
+        .any(|w| matches!(w.as_str(), "ei" | "en" | "älä" | "don't" | "dont" | "not"))
 }
 
 /// Tunnistaa liikkeen tekstistä. Kieltosana estää tulkinnan kokonaan.
@@ -132,7 +159,35 @@ pub fn motion_from_text(text: &str) -> Option<MotionKind> {
         return None;
     }
     let t = lower(text);
-    let any = |keys: &[&str]| keys.iter().any(|k| t.contains(k));
+    let tokens = words(text);
+    // Finnish inflection stems remain compatible. English keywords must be
+    // whole words: "brunch", "microwave" and "knowledge" are not actions.
+    let any = |keys: &[&str]| {
+        keys.iter().any(|k| {
+            if matches!(
+                *k,
+                "left"
+                    | "front"
+                    | "forward"
+                    | "texting"
+                    | "tap phone"
+                    | "type on phone"
+                    | "run"
+                    | "walk"
+                    | "wave"
+                    | "jump"
+                    | "crouch"
+                    | "nod"
+                    | "wait"
+                    | "pause"
+            ) {
+                let wanted = words(k);
+                !wanted.is_empty() && tokens.windows(wanted.len()).any(|w| w == wanted)
+            } else {
+                t.contains(k)
+            }
+        })
+    };
     let dir = || {
         if any(&["vasem", "left"]) {
             Direction::Left
@@ -142,7 +197,15 @@ pub fn motion_from_text(text: &str) -> Option<MotionKind> {
             Direction::Right
         }
     };
-    if any(&["näpytt", "näppäil", "tekstaa", "tekstaile", "texting", "tap phone", "type on phone"]) {
+    if any(&[
+        "näpytt",
+        "näppäil",
+        "tekstaa",
+        "tekstaile",
+        "texting",
+        "tap phone",
+        "type on phone",
+    ]) {
         return Some(MotionKind::PhoneTap);
     }
     if any(&["juoks", "juokse", "run"]) {
@@ -179,7 +242,10 @@ pub fn duration_in(tag: &str) -> Option<f64> {
             while i < chars.len() && chars[i].is_ascii_digit() {
                 i += 1;
             }
-            if i + 1 < chars.len() && (chars[i] == '.' || chars[i] == ',') && chars[i + 1].is_ascii_digit() {
+            if i + 1 < chars.len()
+                && (chars[i] == '.' || chars[i] == ',')
+                && chars[i + 1].is_ascii_digit()
+            {
                 i += 1;
                 while i < chars.len() && chars[i].is_ascii_digit() {
                     i += 1;
@@ -212,7 +278,10 @@ fn strip_keyword<'a>(tag: &'a str, keys: &[&str]) -> Option<&'a str> {
             let rest = &tag[k.len()..];
             let rest = rest.trim_start();
             let rest = rest.strip_prefix(':').unwrap_or(rest).trim();
-            if !rest.is_empty() && (tag.len() == k.len() || !tag[k.len()..].starts_with(|c: char| c.is_alphanumeric())) {
+            if !rest.is_empty()
+                && (tag.len() == k.len()
+                    || !tag[k.len()..].starts_with(|c: char| c.is_alphanumeric()))
+            {
                 return Some(rest);
             }
         }
@@ -226,20 +295,61 @@ enum Tag {
     View(View),
     Background(String),
     Camera(CameraHint),
+    Expression(Expression),
+    LookAt(LookTarget),
     Motion(MotionKind, Option<f64>),
 }
 
 fn classify(tag: &str) -> Result<Tag, String> {
     let low = lower(tag);
     let low = low.trim();
+    if let Some(rest) = strip_keyword(tag, &["expression", "ilme"]) {
+        let expression = match lower(rest).as_str() {
+            "neutral" | "neutraali" => Some(Expression::Neutral),
+            "happy" | "iloinen" => Some(Expression::Happy),
+            "angry" | "vihainen" => Some(Expression::Angry),
+            "sad" | "surullinen" => Some(Expression::Sad),
+            "surprised" | "yllättynyt" => Some(Expression::Surprised),
+            "scared" | "peloissaan" => Some(Expression::Scared),
+            _ => None,
+        };
+        return expression
+            .map(Tag::Expression)
+            .ok_or_else(|| format!("Tuntematon ilme: {rest}."));
+    }
+    if let Some(rest) = strip_keyword(tag, &["look at", "katso"]) {
+        if matches!(lower(rest).as_str(), "camera" | "kamera" | "kameraan") {
+            return Ok(Tag::LookAt(LookTarget::Camera));
+        }
+        // Same bounded one-word naming scheme as dialogue speakers. Resolution
+        // to an actual cast member is a downstream preflight responsibility.
+        if rest.chars().count() <= 32
+            && rest.chars().next().is_some_and(char::is_alphabetic)
+            && rest
+                .chars()
+                .all(|c| c.is_alphanumeric() || c == '-' || c == '.')
+        {
+            let canonical = canonical_name(rest);
+            return Ok(Tag::LookAt(LookTarget::Character(canonical)));
+        }
+        return Err(format!(
+            "Virheellinen katseen kohde: {rest}. Käytä hahmon nimeä tai camera."
+        ));
+    }
     // [puhelin edestä] / [esine puhelin pois]
-    let phone_part = low.strip_prefix("esine ").unwrap_or(low);
-    if let Some(rest) = phone_part.strip_prefix("puhelin ") {
+    let phone_part = low
+        .strip_prefix("esine ")
+        .or_else(|| low.strip_prefix("prop "))
+        .unwrap_or(low);
+    if let Some(rest) = phone_part
+        .strip_prefix("puhelin ")
+        .or_else(|| phone_part.strip_prefix("phone "))
+    {
         let v = match rest.trim() {
-            "edestä" => Some(PhoneView::Front),
-            "takaa" => Some(PhoneView::Back),
-            "sivulta" => Some(PhoneView::Side),
-            "pois" => Some(PhoneView::Hidden),
+            "edestä" | "front" => Some(PhoneView::Front),
+            "takaa" | "back" => Some(PhoneView::Back),
+            "sivulta" | "side" => Some(PhoneView::Side),
+            "pois" | "hidden" | "away" | "none" => Some(PhoneView::Hidden),
             _ => None,
         };
         if let Some(v) = v {
@@ -275,7 +385,9 @@ fn classify(tag: &str) -> Result<Tag, String> {
             .iter()
             .find(|(alias, _)| *alias == key)
             .map(|(_, id)| Tag::Background((*id).to_string()))
-            .ok_or_else(|| format!("Tuntematon kuvausympäristö: {rest}. Valitse ohjeessa mainittu nimi."));
+            .ok_or_else(|| {
+                format!("Tuntematon kuvausympäristö: {rest}. Valitse ohjeessa mainittu nimi.")
+            });
     }
     if let Some(rest) = strip_keyword(tag, &["kuva", "shot"]) {
         let hint = match lower(rest).as_str() {
@@ -283,10 +395,17 @@ fn classify(tag: &str) -> Result<Tag, String> {
             "puolilähi" | "puolikuva" | "medium" => Some(CameraHint::Medium),
             "lähikuva" | "lähi" | "close" | "closeup" | "close-up" => Some(CameraHint::CloseUp),
             "insertti" | "insert" => Some(CameraHint::Insert),
-            "kaksikko" | "kaksoiskuva" | "two-shot" | "twoshot" => Some(CameraHint::TwoShot),
-            "olan yli" | "olanyli" | "over-shoulder" | "ots" => Some(CameraHint::OverShoulder),
-            "alakulma" | "sammakko" | "low" | "low-angle" => Some(CameraHint::LowAngle),
-            "yläkulma" | "lintu" | "high" | "high-angle" => Some(CameraHint::HighAngle),
+            "kaksikko" | "kaksoiskuva" | "two-shot" | "twoshot" | "two shot" => {
+                Some(CameraHint::TwoShot)
+            }
+            "olan yli" | "olanyli" | "over-shoulder" | "over the shoulder" | "over shoulder"
+            | "ots" => Some(CameraHint::OverShoulder),
+            "alakulma" | "sammakko" | "low" | "low-angle" | "low angle" => {
+                Some(CameraHint::LowAngle)
+            }
+            "yläkulma" | "lintu" | "high" | "high-angle" | "high angle" => {
+                Some(CameraHint::HighAngle)
+            }
             _ => None,
         };
         return hint
@@ -295,8 +414,16 @@ fn classify(tag: &str) -> Result<Tag, String> {
     }
     match motion_from_text(tag) {
         Some(m) => Ok(Tag::Motion(m, duration_in(tag))),
-        None => Err(format!("Tuntematon liikeohje: [{tag}]. Käytä esimerkiksi [vilkuta 2s].")),
+        None => Err(format!(
+            "Tuntematon liikeohje: [{tag}]. Käytä esimerkiksi [vilkuta 2s]."
+        )),
     }
+}
+
+fn canonical_name(name: &str) -> String {
+    let name = name.to_lowercase();
+    let first = name.chars().next().expect("nonempty validated name");
+    first.to_uppercase().collect::<String>() + &name[first.len_utf8()..]
 }
 
 /// Erottaa `NIMI: repliikki` -puhujan, jos etuliite on yksi sana isolla alkukirjaimella.
@@ -306,13 +433,11 @@ fn split_speaker(spoken: &str) -> (Option<String>, String) {
         let ok = !head.is_empty()
             && head.chars().count() <= 32
             && head.chars().next().is_some_and(|c| c.is_uppercase())
-            && head.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '.');
+            && head
+                .chars()
+                .all(|c| c.is_alphanumeric() || c == '-' || c == '.');
         if ok {
-            let mut name: String = head.to_lowercase();
-            if let Some(first) = name.chars().next() {
-                name = first.to_uppercase().collect::<String>() + &name[first.len_utf8()..];
-            }
-            return (Some(name), rest.trim().to_string());
+            return (Some(canonical_name(head)), rest.trim().to_string());
         }
     }
     (None, spoken.to_string())
@@ -320,13 +445,21 @@ fn split_speaker(spoken: &str) -> (Option<String>, String) {
 
 /// Jäsentää käsikirjoituksen. Ei koskaan kaadu.
 pub fn parse(text: &str) -> ScriptPlan {
-    let mut plan = ScriptPlan { beats: Vec::new(), diagnostics: Vec::new(), seconds: 0.0 };
+    let mut plan = ScriptPlan {
+        beats: Vec::new(),
+        diagnostics: Vec::new(),
+        seconds: 0.0,
+    };
     if text.trim().is_empty() {
-        plan.diagnostics.push(Diagnostic::error(0, "Kirjoita ensin käsikirjoitus."));
+        plan.diagnostics
+            .push(Diagnostic::error(0, "Kirjoita ensin käsikirjoitus."));
         return plan;
     }
     if text.chars().count() > MAX_SCRIPT_CHARS {
-        plan.diagnostics.push(Diagnostic::error(0, "Käsikirjoituksen enimmäispituus on 12 000 merkkiä."));
+        plan.diagnostics.push(Diagnostic::error(
+            0,
+            "Käsikirjoituksen enimmäispituus on 12 000 merkkiä.",
+        ));
         return plan;
     }
     let mut pending_bg: Option<String> = None;
@@ -334,6 +467,8 @@ pub fn parse(text: &str) -> ScriptPlan {
     let mut pending_phone: Option<PhoneView> = None;
     let mut pending_camera: Option<CameraHint> = None;
     let mut pending_prop: Option<Option<String>> = None;
+    let mut pending_expression = None;
+    let mut pending_look_at = None;
     let mut pending_line = 0;
 
     for (index, raw) in text.lines().enumerate() {
@@ -362,11 +497,24 @@ pub fn parse(text: &str) -> ScriptPlan {
         }
         spoken.push_str(rest);
         if broken {
-            plan.diagnostics.push(Diagnostic::error(line_no, "Hakasulku jäi sulkematta; riviä ei tulkittu."));
+            plan.diagnostics.push(Diagnostic::error(
+                line_no,
+                "Hakasulku jäi sulkematta; riviä ei tulkittu.",
+            ));
             continue;
         }
         let spoken = spoken.split_whitespace().collect::<Vec<_>>().join(" ");
 
+        let previous_settings = (
+            pending_bg.clone(),
+            pending_view,
+            pending_phone,
+            pending_camera,
+            pending_prop.clone(),
+            pending_expression,
+            pending_look_at.clone(),
+            pending_line,
+        );
         let mut motion: Option<MotionKind> = None;
         let mut seconds: Option<f64> = None;
         let mut line_ok = true;
@@ -377,9 +525,14 @@ pub fn parse(text: &str) -> ScriptPlan {
                 Ok(Tag::View(v)) => pending_view = Some(v),
                 Ok(Tag::Background(id)) => pending_bg = Some(id),
                 Ok(Tag::Camera(c)) => pending_camera = Some(c),
+                Ok(Tag::Expression(e)) => pending_expression = Some(e),
+                Ok(Tag::LookAt(target)) => pending_look_at = Some(target),
                 Ok(Tag::Motion(m, d)) => {
                     if motion.is_some() {
-                        plan.diagnostics.push(Diagnostic::error(line_no, "Kirjoita eri liikkeet omille riveilleen."));
+                        plan.diagnostics.push(Diagnostic::error(
+                            line_no,
+                            "Kirjoita eri liikkeet omille riveilleen.",
+                        ));
                         line_ok = false;
                     }
                     motion = Some(m);
@@ -393,10 +546,28 @@ pub fn parse(text: &str) -> ScriptPlan {
                 }
             }
         }
-        if !tags.is_empty() && (pending_bg.is_some() || pending_view.is_some() || pending_phone.is_some() || pending_camera.is_some() || pending_prop.is_some()) {
+        if !tags.is_empty()
+            && (pending_bg.is_some()
+                || pending_view.is_some()
+                || pending_phone.is_some()
+                || pending_camera.is_some()
+                || pending_prop.is_some()
+                || pending_expression.is_some()
+                || pending_look_at.is_some())
+        {
             pending_line = line_no;
         }
         if !line_ok {
+            (
+                pending_bg,
+                pending_view,
+                pending_phone,
+                pending_camera,
+                pending_prop,
+                pending_expression,
+                pending_look_at,
+                pending_line,
+            ) = previous_settings;
             continue;
         }
         if spoken.is_empty() && motion.is_none() {
@@ -426,7 +597,20 @@ pub fn parse(text: &str) -> ScriptPlan {
             }
         });
         if !seconds.is_finite() || !(MIN_LINE_SECONDS..=MAX_LINE_SECONDS).contains(&seconds) {
-            plan.diagnostics.push(Diagnostic::error(line_no, "Yhden rivin kesto on 0,5–20 sekuntia."));
+            plan.diagnostics.push(Diagnostic::error(
+                line_no,
+                "Yhden rivin kesto on 0,5–20 sekuntia.",
+            ));
+            (
+                pending_bg,
+                pending_view,
+                pending_phone,
+                pending_camera,
+                pending_prop,
+                pending_expression,
+                pending_look_at,
+                pending_line,
+            ) = previous_settings;
             continue;
         }
         if plan.seconds + seconds > MAX_TOTAL_SECONDS + 1e-9 {
@@ -448,13 +632,33 @@ pub fn parse(text: &str) -> ScriptPlan {
             phone: pending_phone.take(),
             camera: pending_camera.take(),
             prop: pending_prop.take(),
+            expression: pending_expression.take(),
+            look_at: pending_look_at.take(),
         });
     }
-    if pending_bg.is_some() || pending_view.is_some() || pending_phone.is_some() || pending_camera.is_some() || pending_prop.is_some() {
-        plan.diagnostics.push(Diagnostic::error(pending_line, "Lisää kuvakulmaohjeen jälkeen puhetta tai liike."));
+    if pending_bg.is_some()
+        || pending_view.is_some()
+        || pending_phone.is_some()
+        || pending_camera.is_some()
+        || pending_prop.is_some()
+        || pending_expression.is_some()
+        || pending_look_at.is_some()
+    {
+        plan.diagnostics.push(Diagnostic::error(
+            pending_line,
+            "Lisää kuvakulmaohjeen jälkeen puhetta tai liike.",
+        ));
     }
-    if plan.beats.is_empty() && !plan.diagnostics.iter().any(|d| d.severity == Severity::Error) {
-        plan.diagnostics.push(Diagnostic::error(0, "Käsikirjoituksesta ei löytynyt animaation rivejä."));
+    if plan.beats.is_empty()
+        && !plan
+            .diagnostics
+            .iter()
+            .any(|d| d.severity == Severity::Error)
+    {
+        plan.diagnostics.push(Diagnostic::error(
+            0,
+            "Käsikirjoituksesta ei löytynyt animaation rivejä.",
+        ));
     }
     plan
 }
@@ -473,7 +677,10 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
     let mut t = Tick::ZERO;
     let mut backgrounds: Vec<(Tick, String, SourceSpan)> = Vec::new();
     for (i, beat) in plan.beats.iter().enumerate() {
-        let span = SourceSpan { line: beat.line, text: lines.get(beat.line - 1).unwrap_or(&"").trim().to_string() };
+        let span = SourceSpan {
+            line: beat.line,
+            text: lines.get(beat.line - 1).unwrap_or(&"").trim().to_string(),
+        };
         let d = Tick::from_seconds(seconds.get(i).copied().unwrap_or(beat.seconds));
         if let Some(bg) = &beat.background {
             backgrounds.push((t, bg.clone(), span.clone()));
@@ -488,18 +695,69 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
             timeline.push(t, d, EventKind::Camera { hint }, span.clone());
         }
         if let Some(item) = &beat.prop {
-            timeline.push(t, d, EventKind::Prop { character: beat.speaker.clone(), item: item.clone() }, span.clone());
+            timeline.push(
+                t,
+                d,
+                EventKind::Prop {
+                    character: beat.speaker.clone(),
+                    item: item.clone(),
+                },
+                span.clone(),
+            );
+        }
+        if let Some(expression) = beat.expression {
+            timeline.push(
+                t,
+                d,
+                EventKind::Expression {
+                    character: beat.speaker.clone(),
+                    expression,
+                },
+                span.clone(),
+            );
+        }
+        if let Some(target) = &beat.look_at {
+            timeline.push(
+                t,
+                d,
+                EventKind::LookAt {
+                    character: beat.speaker.clone(),
+                    target: target.clone(),
+                },
+                span.clone(),
+            );
         }
         if !beat.text.is_empty() {
-            timeline.push(t, d, EventKind::Dialogue { speaker: beat.speaker.clone(), text: beat.text.clone() }, span.clone());
+            timeline.push(
+                t,
+                d,
+                EventKind::Dialogue {
+                    speaker: beat.speaker.clone(),
+                    text: beat.text.clone(),
+                },
+                span.clone(),
+            );
         }
-        timeline.push(t, d, EventKind::Motion { character: beat.speaker.clone(), motion: beat.motion }, span);
+        timeline.push(
+            t,
+            d,
+            EventKind::Motion {
+                character: beat.speaker.clone(),
+                motion: beat.motion,
+            },
+            span,
+        );
         t += d;
     }
     // Tausta on voimassa seuraavaan taustanvaihtoon tai loppuun asti.
     for (i, (start, id, span)) in backgrounds.iter().enumerate() {
         let end = backgrounds.get(i + 1).map_or(t, |n| n.0);
-        timeline.push(*start, end - *start, EventKind::Background { id: id.clone() }, span.clone());
+        timeline.push(
+            *start,
+            end - *start,
+            EventKind::Background { id: id.clone() },
+            span.clone(),
+        );
     }
     timeline.duration = t;
     timeline
@@ -511,6 +769,208 @@ mod tests {
 
     const EXAMPLE: &str = "[tausta studio]\nHei! Tervetuloa mukaan. [vilkuta 2s]\nKävelen oikealle. [kävele oikealle 3s]\n[tausta auto kuljettaja]\nNyt ollaan autossa. [nyökkää 2s]\n[tausta puhelin edestä]\nNähdään seuraavassa jaksossa! [vilkuta 2s]";
 
+    const ENGLISH_FAMILY: &str = include_str!("../tests/fixtures/english-family.txt");
+
+    #[test]
+    fn explicit_expressions_and_looks_keep_source_character_and_duration() {
+        for (english, finnish, expression) in [
+            ("neutral", "neutraali", Expression::Neutral),
+            ("happy", "iloinen", Expression::Happy),
+            ("angry", "vihainen", Expression::Angry),
+            ("sad", "surullinen", Expression::Sad),
+            ("surprised", "yllättynyt", Expression::Surprised),
+            ("scared", "peloissaan", Expression::Scared),
+        ] {
+            let source = format!("KALLE: Hello. [expression {english}] [look at mAiJa] [wait 3s]");
+            let plan = parse(&source);
+            assert!(plan.is_assemblable(), "{:?}", plan.diagnostics);
+            assert_eq!(plan.beats[0].expression, Some(expression));
+            assert_eq!(
+                plan.beats[0].look_at,
+                Some(LookTarget::Character("Maija".into()))
+            );
+            assert_eq!(
+                parse(&format!("[ilme {finnish}]\n[wait]")).beats[0].expression,
+                Some(expression)
+            );
+            let timeline = to_timeline(&plan, &source, Fps(30));
+            for kind in [
+                EventKind::Expression {
+                    character: Some("Kalle".into()),
+                    expression,
+                },
+                EventKind::LookAt {
+                    character: Some("Kalle".into()),
+                    target: LookTarget::Character("Maija".into()),
+                },
+            ] {
+                let event = timeline.events.iter().find(|e| e.kind == kind).unwrap();
+                assert_eq!(event.start, Tick::ZERO);
+                assert_eq!(event.duration, Tick::from_seconds(3.0));
+                assert_eq!(event.source.line, 1);
+                assert_eq!(event.source.text, source);
+            }
+        }
+        assert_eq!(
+            parse("[look at camera]\n[wait]").beats[0].look_at,
+            Some(LookTarget::Camera)
+        );
+        assert_eq!(
+            parse("[katso kameraan]\n[odota]").beats[0].look_at,
+            Some(LookTarget::Camera)
+        );
+    }
+
+    #[test]
+    fn malformed_look_targets_and_unknown_expressions_are_errors() {
+        for tag in [
+            "expression ecstatic",
+            "look at",
+            "look at 123",
+            "look at Maija and Kalle",
+            "look at ../Kalle",
+        ] {
+            assert!(
+                !parse(&format!("KALLE: Hello. [{tag}]")).is_assemblable(),
+                "{tag}"
+            );
+        }
+        let long = "A".repeat(33);
+        assert!(!parse(&format!("[look at {long}]\n[wait]")).is_assemblable());
+        assert!(!parse("[expression happy]").is_assemblable());
+        assert!(!parse("[look at camera]").is_assemblable());
+        let plan = parse("KALLE: I am happy and look at the camera. [wait]");
+        assert_eq!(plan.beats[0].expression, None);
+        assert_eq!(plan.beats[0].look_at, None);
+    }
+
+    #[test]
+    fn english_family_fixture_maps_supported_cues_without_changing_dialogue() {
+        let plan = parse(ENGLISH_FAMILY);
+        assert!(plan.is_assemblable(), "{:?}", plan.diagnostics);
+        assert_eq!(plan.beats.len(), 5);
+        assert_eq!(plan.beats[0].speaker.as_deref(), Some("Kalle"));
+        assert_eq!(plan.beats[0].text, "Welcome to our first episode!");
+        assert_eq!(plan.beats[0].background.as_deref(), Some("apartment-v1"));
+        assert_eq!(plan.beats[2].prop, Some(Some("mug".into())));
+        assert_eq!(plan.beats[2].camera, Some(CameraHint::OverShoulder));
+        assert_eq!(plan.beats[3].background.as_deref(), Some("kitchen-v1"));
+        assert_eq!(plan.beats[3].prop, Some(None));
+        assert_eq!(plan.beats[3].camera, Some(CameraHint::LowAngle));
+        assert_eq!(plan.beats[4].camera, Some(CameraHint::HighAngle));
+        assert_eq!(plan.beats[4].motion, MotionKind::Walk(Direction::Left));
+        let timeline = to_timeline(&plan, ENGLISH_FAMILY, Fps(30));
+        assert_eq!(
+            timeline.background_at(Tick::from_seconds(7.0)),
+            Some("kitchen-v1")
+        );
+        assert!(timeline.ids_are_unique());
+    }
+
+    #[test]
+    fn english_aliases_reuse_existing_finnish_domain_ids() {
+        for (english, finnish) in [
+            ("living room", "olohuone"),
+            ("bright studio", "studio valoisa"),
+            ("school", "koulu"),
+            ("backyard", "takapiha"),
+            ("street day", "katu päivä"),
+            ("city evening", "kaupunki ilta"),
+            ("modern car", "auto moderni"),
+        ] {
+            let en = parse(&format!("[background {english}]\n[wait 2s]"));
+            let fi = parse(&format!("[tausta {finnish}]\n[odota 2s]"));
+            assert!(en.is_assemblable(), "{english}");
+            assert_eq!(en.beats[0].background, fi.beats[0].background);
+        }
+        for (english, finnish) in [
+            ("coffee cup", "kahvikuppi"),
+            ("pizza box", "pizzalaatikko"),
+            ("gift box", "lahjapaketti"),
+            ("bouquet", "kukkakimppu"),
+            ("soda can", "tölkki"),
+        ] {
+            let en = parse(&format!("[prop {english}]\n[wait]"));
+            let fi = parse(&format!("[esine {finnish}]\n[odota]"));
+            assert!(en.is_assemblable(), "{english}");
+            assert_eq!(en.beats[0].prop, fi.beats[0].prop);
+        }
+        for (word, view) in [
+            ("front", PhoneView::Front),
+            ("back", PhoneView::Back),
+            ("side", PhoneView::Side),
+            ("hidden", PhoneView::Hidden),
+        ] {
+            assert_eq!(
+                parse(&format!("[prop phone {word}]\n[wait]")).beats[0].phone,
+                Some(view)
+            );
+        }
+    }
+
+    #[test]
+    fn english_motion_keywords_do_not_match_inside_unrelated_words() {
+        for word in ["brunch", "runway", "microwave", "knowledge", "awaiting"] {
+            assert_eq!(motion_from_text(word), None, "{word}");
+            assert!(!parse(&format!("[{word}]")).is_assemblable(), "{word}");
+        }
+        assert_eq!(
+            motion_from_text("walk left"),
+            Some(MotionKind::Walk(Direction::Left))
+        );
+        assert_eq!(
+            motion_from_text("juokse vasemmalle"),
+            Some(MotionKind::Run(Direction::Left))
+        );
+        assert_eq!(
+            motion_from_text("kävele suoraan"),
+            Some(MotionKind::Walk(Direction::Front))
+        );
+        assert_eq!(motion_from_text("do not wave"), None);
+    }
+
+    #[test]
+    fn rejected_cues_do_not_leak_scene_settings_into_valid_lines() {
+        for rejected in ["expression puzzled", "wait 25s", "wave][jump"] {
+            let plan = parse(&format!(
+                "[background living room]\n[background kitchen][{rejected}]\nKALLE: Hello. [wait]"
+            ));
+            assert!(!plan.is_assemblable());
+            assert_eq!(plan.beats.len(), 1);
+            assert_eq!(plan.beats[0].background.as_deref(), Some("apartment-v1"));
+            assert!(plan
+                .diagnostics
+                .iter()
+                .any(|d| d.line == 2 && d.severity == Severity::Error));
+        }
+        for tag in [
+            "expression puzzled",
+            "look at",
+            "background spaceship",
+            "prop dragon",
+            "shot orbit",
+        ] {
+            let plan = parse(&format!("KALLE: Hello. [{tag}]"));
+            assert!(!plan.is_assemblable(), "{tag}");
+            assert!(plan.beats.is_empty(), "{tag}");
+        }
+    }
+
+    #[test]
+    fn moving_source_lines_preserves_event_ids_and_updates_source_locations() {
+        let first = to_timeline(&parse(ENGLISH_FAMILY), ENGLISH_FAMILY, Fps(30));
+        let source = format!("\n\n{ENGLISH_FAMILY}");
+        let moved = to_timeline(&parse(&source), &source, Fps(30));
+        assert_eq!(first.events.len(), moved.events.len());
+        for (original, shifted) in first.events.iter().zip(&moved.events) {
+            assert_eq!(original.id, shifted.id);
+            assert_eq!(original.kind, shifted.kind);
+            assert_eq!(original.start, shifted.start);
+            assert_eq!(original.source.text, shifted.source.text);
+            assert_eq!(original.source.line + 2, shifted.source.line);
+        }
+    }
+
     #[test]
     fn parses_the_shipped_example_like_typescript() {
         let plan = parse(EXAMPLE);
@@ -518,7 +978,12 @@ mod tests {
         let motions: Vec<_> = plan.beats.iter().map(|b| b.motion).collect();
         assert_eq!(
             motions,
-            [MotionKind::Wave, MotionKind::Walk(Direction::Right), MotionKind::Nod, MotionKind::Wave]
+            [
+                MotionKind::Wave,
+                MotionKind::Walk(Direction::Right),
+                MotionKind::Nod,
+                MotionKind::Wave
+            ]
         );
         assert_eq!(plan.beats[0].background.as_deref(), Some("studio-v1"));
         assert_eq!(plan.beats[2].background.as_deref(), Some("car-driver-v1"));
@@ -530,7 +995,13 @@ mod tests {
     fn never_guesses_unknown_or_negated_tags() {
         let plan = parse("Hei [lennä kuuhun 2s]\n[älä kävele]");
         assert!(!plan.is_assemblable());
-        assert_eq!(plan.diagnostics.iter().filter(|d| d.severity == Severity::Error).count(), 2);
+        assert_eq!(
+            plan.diagnostics
+                .iter()
+                .filter(|d| d.severity == Severity::Error)
+                .count(),
+            2
+        );
         assert!(plan.beats.is_empty());
         assert_eq!(motion_from_text("en juokse"), None);
         assert_eq!(motion_from_text("don't run"), None);
@@ -561,9 +1032,21 @@ mod tests {
         assert_eq!(props.beats[0].prop, Some(Some("mug".to_string())));
         assert_eq!(props.beats[1].prop, Some(None));
         let bad = parse("PIPSA: Hei! [esine lohikäärme]");
-        assert!(bad.diagnostics.iter().any(|d| d.severity == Severity::Error && d.message.contains("lohikäärme")));
-        for (word, hint) in [("kaksikko", CameraHint::TwoShot), ("olan yli", CameraHint::OverShoulder), ("alakulma", CameraHint::LowAngle), ("yläkulma", CameraHint::HighAngle)] {
-            assert_eq!(parse(&format!("[kuva {word}]\nPIPSA: Hei!")).beats[0].camera, Some(hint), "{word}");
+        assert!(bad
+            .diagnostics
+            .iter()
+            .any(|d| d.severity == Severity::Error && d.message.contains("lohikäärme")));
+        for (word, hint) in [
+            ("kaksikko", CameraHint::TwoShot),
+            ("olan yli", CameraHint::OverShoulder),
+            ("alakulma", CameraHint::LowAngle),
+            ("yläkulma", CameraHint::HighAngle),
+        ] {
+            assert_eq!(
+                parse(&format!("[kuva {word}]\nPIPSA: Hei!")).beats[0].camera,
+                Some(hint),
+                "{word}"
+            );
         }
         assert_eq!(plan.beats[1].phone, Some(PhoneView::Hidden));
         assert_eq!(plan.beats[1].motion, MotionKind::Run(Direction::Left));
@@ -581,8 +1064,14 @@ mod tests {
         let plan = parse(EXAMPLE);
         let tl = to_timeline(&plan, EXAMPLE, Fps(30));
         assert_eq!(tl.frame_count(), 270);
-        assert_eq!(tl.background_at(Tick::from_seconds(6.0)), Some("car-driver-v1"));
-        assert_eq!(tl.background_at(Tick::from_seconds(8.5)), Some("phone-front-v1"));
+        assert_eq!(
+            tl.background_at(Tick::from_seconds(6.0)),
+            Some("car-driver-v1")
+        );
+        assert_eq!(
+            tl.background_at(Tick::from_seconds(8.5)),
+            Some("phone-front-v1")
+        );
         let walk = tl.motion_at(Tick::from_seconds(3.5)).unwrap();
         assert_eq!(walk.0, MotionKind::Walk(Direction::Right));
         assert_eq!(walk.2.source.line, 3);

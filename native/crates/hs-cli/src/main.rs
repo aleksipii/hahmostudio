@@ -34,6 +34,8 @@ struct Args {
     voice: Option<String>,
     text: Option<String>,
     speech: SpeechMode,
+    episode: Option<u32>,
+    no_captions: bool,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -54,6 +56,8 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
         voice: None,
         text: None,
         speech: SpeechMode::Auto,
+        episode: None,
+        no_captions: false,
     };
     let mut it = raw.iter();
     while let Some(x) = it.next() {
@@ -65,6 +69,8 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
                 let (w, h) = s.split_once('x').ok_or("koko muodossa LxK")?;
                 a.size = Some((w.parse().map_err(|_| "leveys")?, h.parse().map_err(|_| "korkeus")?));
             }
+            "--episode" => a.episode=Some(it.next().ok_or("--episode needs number")?.parse().map_err(|_|"invalid episode number")?),
+            "--no-captions"=>a.no_captions=true,
             "--gpu" => a.backend = Backend::Gpu,
             "--cpu" => a.backend = Backend::Cpu,
             "--hahmot" | "--cast" => a.cast = Some(it.next().ok_or("--hahmot vaatii polun")?.into()),
@@ -87,7 +93,12 @@ fn read_script(a: &Args) -> Result<String, String> {
 }
 
 fn production(a: &Args) -> Result<Production, String> {
-    let mut p = Production::new(read_script(a)?);
+    let mut p = if let Some(path)=a.positional.first().filter(|path|path.ends_with(".koeta")) {
+        let series=hs_project::load(std::path::Path::new(path)).map_err(|e|e.to_string())?;
+        let episode=match a.episode { Some(number)=>series.episodes.iter().find(|e|e.number==number).ok_or("Episode not found")?, None=>series.episodes.first().ok_or("Empty series")? };
+        hs_agents::project::restore_checked(episode)?
+    } else {Production::new(read_script(a)?)};
+    if a.no_captions {p.caption_settings.enabled=false;}
     if let Some((w, h)) = a.size {
         p.width = w;
         p.height = h;

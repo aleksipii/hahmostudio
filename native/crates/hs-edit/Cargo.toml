@@ -1,0 +1,10 @@
+[package]
+name = "hs-edit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+hs-core.workspace = true
+hs-lipsync.workspace = true

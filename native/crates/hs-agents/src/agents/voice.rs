@@ -182,7 +182,11 @@ impl StudioAgent for TimingAgent {
             .filter_map(|l| Some(PlacedClip { beat: l.beat, speaker: l.speaker.clone(), start: starts[l.beat], speech: l.speech.clone()? }))
             .collect();
         let total = timeline.duration.seconds() as f32;
-        p.mix = (!p.clips.is_empty()).then(|| Arc::new(mix(&p.clips, total)));
+        let dialogue = mix(&p.clips, total);
+        p.mix = if p.clips.is_empty() && p.soundtrack.is_empty() { None } else {
+            Some(Arc::new(hs_edit::mix(&dialogue, &p.soundtrack, timeline.duration)
+                .map_err(|message| AgentError::Failed { agent: "timing", message })?))
+        };
         let summary = format!(
             "{:.1} s, {} puheleikettä{}",
             total,

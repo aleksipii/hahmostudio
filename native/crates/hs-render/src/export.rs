@@ -5,9 +5,10 @@
 
 use crate::scene::Image;
 use crate::RenderError;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::thread::JoinHandle;
 
 pub const MAX_EXPORT_BYTES: u64 = 128 * 1024 * 1024;
 pub const MAX_PNG_SEQUENCE: u32 = 300;
@@ -20,8 +21,11 @@ pub fn encode_png(img: &Image) -> Result<Vec<u8>, RenderError> {
         enc.set_color(png::ColorType::Rgba);
         enc.set_depth(png::BitDepth::Eight);
         enc.set_source_srgb(png::SrgbRenderingIntent::Perceptual);
-        let mut w = enc.write_header().map_err(|e| RenderError::Export(e.to_string()))?;
-        w.write_image_data(&img.rgba).map_err(|e| RenderError::Export(e.to_string()))?;
+        let mut w = enc
+            .write_header()
+            .map_err(|e| RenderError::Export(e.to_string()))?;
+        w.write_image_data(&img.rgba)
+            .map_err(|e| RenderError::Export(e.to_string()))?;
     }
     Ok(out)
 }
@@ -40,79 +44,416 @@ pub fn find_ffmpeg() -> Option<PathBuf> {
         }
     }
     let path = std::env::var_os("PATH")?;
-    std::env::split_paths(&path).map(|d| d.join(if cfg!(windows) { "ffmpeg.exe" } else { "ffmpeg" })).find(|p| p.is_file())
+    std::env::split_paths(&path)
+        .map(|d| {
+            d.join(if cfg!(windows) {
+                "ffmpeg.exe"
+            } else {
+                "ffmpeg"
+            })
+        })
+        .find(|p| p.is_file())
 }
 
-/// Syöttää RGBA-ruudut FFmpegille, joka koodaa H.264-MP4:n (yuv420p, faststart).
+/// Finds ffprobe next to the selected FFmpeg, or on PATH.
+fn find_ffprobe(ffmpeg: &Path) -> Option<PathBuf> {
+    let name = if cfg!(windows) {
+        "ffprobe.exe"
+    } else {
+        "ffprobe"
+    };
+    if let Some(path) = std::env::var_os("HAHMOSTUDIO_FFPROBE") {
+        let path = PathBuf::from(path);
+        return path.is_file().then_some(path);
+    }
+    if let Some(parent) = ffmpeg.parent() {
+        let path = parent.join(name);
+        if path.is_file() {
+            return Some(path);
+        }
+    }
+    std::env::split_paths(&std::env::var_os("PATH")?)
+        .map(|dir| dir.join(name))
+        .find(|path| path.is_file())
+}
+
+fn export_error(error: impl std::fmt::Display) -> RenderError {
+    RenderError::Export(error.to_string())
+}
+
+/// Streams to a same-directory temporary file. The target is published only
+/// after encoder completion, media validation and a full decode check.
 pub struct Mp4Writer {
-    child: Child,
+    child: Option<Child>,
+    stderr: Option<JoinHandle<Vec<u8>>>,
+    temporary: Option<tempfile::NamedTempFile>,
     path: PathBuf,
+    ffmpeg: PathBuf,
+    ffprobe: PathBuf,
     frames: u32,
-    max_frames: u32,
     width: u32,
     height: u32,
+    has_audio: bool,
+    failed: bool,
 }
 
 impl Mp4Writer {
-    pub fn create(path: &Path, width: u32, height: u32, fps: u32) -> Result<Mp4Writer, RenderError> {
+    pub fn create(
+        path: &Path,
+        width: u32,
+        height: u32,
+        fps: u32,
+    ) -> Result<Mp4Writer, RenderError> {
         Self::create_with_audio(path, width, height, fps, None)
     }
 
-    /// Kuten [`Mp4Writer::create`], mutta liittää mukaan ääniraidan (WAV, AAC 160 kbit/s).
-    pub fn create_with_audio(path: &Path, width: u32, height: u32, fps: u32, audio: Option<&Path>) -> Result<Mp4Writer, RenderError> {
-        if !width.is_multiple_of(2) || !height.is_multiple_of(2) {
-            return Err(RenderError::Export("MP4-koon pitää olla parillinen".into()));
+    /// Audio must contain a decodable audio stream. Both tools are required
+    /// before starting; an old target remains intact on every failure.
+    pub fn create_with_audio(
+        path: &Path,
+        width: u32,
+        height: u32,
+        fps: u32,
+        audio: Option<&Path>,
+    ) -> Result<Mp4Writer, RenderError> {
+        if fps != 30 {
+            return Err(export_error("MP4 export requires exactly 30 fps."));
         }
-        let ffmpeg = find_ffmpeg().ok_or_else(|| RenderError::Export("FFmpegiä ei löytynyt. Asenna se tai aseta HAHMOSTUDIO_FFMPEG.".into()))?;
-        let child = Command::new(ffmpeg)
-            .args(["-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s"])
+        if !(2..=4096).contains(&width)
+            || !(2..=4096).contains(&height)
+            || !width.is_multiple_of(2)
+            || !height.is_multiple_of(2)
+        {
+            return Err(export_error(
+                "MP4 dimensions must be even and between 2 and 4096.",
+            ));
+        }
+        if let Some(audio) = audio {
+            if !audio.is_file() {
+                return Err(export_error("Audio resource is missing."));
+            }
+        }
+        if path.is_dir() || path.is_symlink() {
+            return Err(export_error(
+                "Export target must not be a directory or symbolic link.",
+            ));
+        }
+        let ffmpeg = find_ffmpeg().ok_or_else(|| {
+            export_error("FFmpeg is missing; install it or set HAHMOSTUDIO_FFMPEG.")
+        })?;
+        let ffprobe = find_ffprobe(&ffmpeg).ok_or_else(|| {
+            export_error("ffprobe is missing; install it or set HAHMOSTUDIO_FFPROBE.")
+        })?;
+        let parent = path
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."));
+        let temporary = tempfile::Builder::new()
+            .prefix(".koeta-export-")
+            .suffix(".mp4")
+            .tempfile_in(parent)
+            .map_err(export_error)?;
+        let mut command = Command::new(&ffmpeg);
+        command
+            .args([
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-nostdin",
+                "-y",
+                "-f",
+                "rawvideo",
+                "-pix_fmt",
+                "rgba",
+                "-s",
+            ])
             .arg(format!("{width}x{height}"))
-            .args(["-r", &fps.to_string(), "-i", "-"])
-            .args(match audio {
-                Some(a) => vec!["-i".into(), a.as_os_str().to_owned(), "-map".into(), "0:v".into(), "-map".into(), "1:a".into(), "-c:a".into(), "aac".into(), "-b:a".into(), "160k".into(), "-shortest".into()],
-                None => vec!["-an".into()],
-            } as Vec<std::ffi::OsString>)
-            .args(["-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart"])
-            .arg(path)
+            .args(["-r", "30", "-i", "pipe:0"]);
+        if let Some(audio) = audio {
+            command.arg("-i").arg(audio).args([
+                "-map",
+                "0:v:0",
+                "-map",
+                "1:a:0",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "160k",
+                "-af",
+                "apad",
+                "-shortest",
+            ]);
+        } else {
+            command.arg("-an");
+        }
+        // The video duration remains authoritative; a short audio track must
+        // not truncate the rendered episode.
+        command
+            .args([
+                "-c:v",
+                "libx264",
+                "-preset",
+                "medium",
+                "-crf",
+                "20",
+                "-pix_fmt",
+                "yuv420p",
+                "-movflags",
+                "+faststart",
+                "-t",
+                "60",
+                "-f",
+                "mp4",
+            ])
+            .arg(temporary.path())
             .stdin(Stdio::piped())
             .stdout(Stdio::null())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(|e| RenderError::Export(format!("FFmpegin käynnistys: {e}")))?;
-        Ok(Mp4Writer { child, path: path.to_path_buf(), frames: 0, max_frames: (MAX_SECONDS * fps as f32) as u32, width, height })
+            .stderr(Stdio::piped());
+        let mut child = command.spawn().map_err(export_error)?;
+        let stderr_pipe = match child.stderr.take() {
+            Some(pipe) => pipe,
+            None => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(export_error("FFmpeg stderr pipe is missing."));
+            }
+        };
+        // Read all stderr to avoid a blocked encoder, but retain only a bounded
+        // tail for diagnostics. No unbounded wait_with_output allocation.
+        let stderr = std::thread::Builder::new()
+            .name("koeta-encoder-errors".into())
+            .spawn(move || {
+                let mut pipe = stderr_pipe;
+                let mut retained = Vec::new();
+                let mut buffer = [0_u8; 4096];
+                loop {
+                    match pipe.read(&mut buffer) {
+                        Ok(0) | Err(_) => break,
+                        Ok(count) => {
+                            retained.extend_from_slice(&buffer[..count]);
+                            if retained.len() > 16 * 1024 {
+                                retained.drain(..retained.len() - 16 * 1024);
+                            }
+                        }
+                    }
+                }
+                retained
+            });
+        let stderr = match stderr {
+            Ok(thread) => thread,
+            Err(error) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(export_error(error));
+            }
+        };
+        Ok(Mp4Writer {
+            child: Some(child),
+            stderr: Some(stderr),
+            temporary: Some(temporary),
+            path: path.to_path_buf(),
+            ffmpeg,
+            ffprobe,
+            frames: 0,
+            width,
+            height,
+            has_audio: audio.is_some(),
+            failed: false,
+        })
     }
 
     pub fn push(&mut self, img: &Image) -> Result<(), RenderError> {
-        if (img.width, img.height) != (self.width, self.height) {
-            return Err(RenderError::Export("ruudun koko vaihtui kesken viennin".into()));
+        let result = self.push_inner(img);
+        if result.is_err() {
+            self.failed = true;
         }
-        if self.frames >= self.max_frames {
-            return Err(RenderError::Export("Vienti on enintään 60 sekuntia.".into()));
+        result
+    }
+
+    fn push_inner(&mut self, img: &Image) -> Result<(), RenderError> {
+        if self.failed {
+            return Err(export_error("Export already failed."));
         }
-        self.child.stdin.as_mut().expect("stdin").write_all(&img.rgba).map_err(|e| RenderError::Export(e.to_string()))?;
+        let expected = (self.width as usize)
+            .checked_mul(self.height as usize)
+            .and_then(|pixels| pixels.checked_mul(4))
+            .ok_or_else(|| export_error("Invalid frame size."))?;
+        if (img.width, img.height) != (self.width, self.height) || img.rgba.len() != expected {
+            return Err(export_error(
+                "Frame dimensions or RGBA byte count are invalid.",
+            ));
+        }
+        if self.frames >= 1800 {
+            return Err(export_error("Export is limited to 60 seconds."));
+        }
+        self.child
+            .as_mut()
+            .and_then(|child| child.stdin.as_mut())
+            .ok_or_else(|| export_error("Encoder input is closed."))?
+            .write_all(&img.rgba)
+            .map_err(export_error)?;
         self.frames += 1;
+        if self
+            .temporary
+            .as_ref()
+            .ok_or_else(|| export_error("Temporary export is missing."))?
+            .as_file()
+            .metadata()
+            .map_err(export_error)?
+            .len()
+            > MAX_EXPORT_BYTES
+        {
+            return Err(export_error("Video exceeds 128 MiB."));
+        }
         Ok(())
     }
 
-    /// Sulkee virran, odottaa FFmpegiä ja tarkistaa koon. Palauttaa tiedoston koon.
+    /// Finish, validate the actual encoded file, and atomically replace target.
     pub fn finish(mut self) -> Result<u64, RenderError> {
-        drop(self.child.stdin.take());
-        let out = self.child.wait_with_output().map_err(|e| RenderError::Export(e.to_string()))?;
-        if !out.status.success() {
-            return Err(RenderError::Export(String::from_utf8_lossy(&out.stderr).trim().to_string()));
+        if self.failed || self.frames == 0 {
+            return Err(export_error("Export has no valid completed frames."));
         }
-        let size = std::fs::metadata(&self.path).map_err(|e| RenderError::Export(e.to_string()))?.len();
-        if size > MAX_EXPORT_BYTES {
-            let _ = std::fs::remove_file(&self.path);
-            return Err(RenderError::Export("Video on yli 128 MiB; lyhennä tai pienennä.".into()));
+        let child = self
+            .child
+            .as_mut()
+            .ok_or_else(|| export_error("Encoder is missing."))?;
+        drop(child.stdin.take());
+        let status = child.wait().map_err(export_error)?;
+        self.child.take();
+        let stderr = self
+            .stderr
+            .take()
+            .and_then(|thread| thread.join().ok())
+            .unwrap_or_default();
+        if !status.success() {
+            return Err(export_error(format!(
+                "FFmpeg failed: {}",
+                String::from_utf8_lossy(&stderr).trim()
+            )));
         }
+        let temporary = self
+            .temporary
+            .as_ref()
+            .ok_or_else(|| export_error("Temporary export is missing."))?;
+        let size = temporary.as_file().metadata().map_err(export_error)?.len();
+        if size == 0 || size > MAX_EXPORT_BYTES {
+            return Err(export_error("Video is empty or exceeds 128 MiB."));
+        }
+        self.validate_media(temporary.path())?;
+        temporary.as_file().sync_all().map_err(export_error)?;
+        if self.path.is_dir() || self.path.is_symlink() {
+            return Err(export_error(
+                "Export target changed to a directory or symbolic link.",
+            ));
+        }
+        self.temporary
+            .take()
+            .ok_or_else(|| export_error("Temporary export is missing."))?
+            .persist(&self.path)
+            .map_err(export_error)?;
         Ok(size)
     }
 
-    /// Peruu viennin: lopettaa FFmpegin ja poistaa keskeneräisen tiedoston.
-    pub fn cancel(mut self) {
-        let _ = self.child.kill();
-        let _ = self.child.wait();
-        let _ = std::fs::remove_file(&self.path);
+    fn validate_media(&self, path: &Path) -> Result<(), RenderError> {
+        let output = Command::new(&self.ffprobe)
+            .args([
+                "-v",
+                "error",
+                "-show_entries",
+                "stream=codec_type,codec_name,width,height,r_frame_rate,nb_frames:format=duration",
+                "-of",
+                "json",
+            ])
+            .arg(path)
+            .output()
+            .map_err(export_error)?;
+        if !output.status.success() {
+            return Err(export_error("ffprobe could not validate exported video."));
+        }
+        if output.stdout.len() > 1024 * 1024 {
+            return Err(export_error("ffprobe response is too large."));
+        }
+        let metadata: serde_json::Value =
+            serde_json::from_slice(&output.stdout).map_err(export_error)?;
+        let streams = metadata["streams"]
+            .as_array()
+            .ok_or_else(|| export_error("Export has no streams."))?;
+        let videos: Vec<_> = streams
+            .iter()
+            .filter(|s| s["codec_type"] == "video")
+            .collect();
+        if videos.len() != 1 {
+            return Err(export_error("Export must contain one video stream."));
+        }
+        let video = videos[0];
+        if video["codec_name"] != "h264"
+            || video["width"].as_u64() != Some(self.width as u64)
+            || video["height"].as_u64() != Some(self.height as u64)
+            || video["r_frame_rate"] != "30/1"
+            || video["nb_frames"]
+                .as_str()
+                .and_then(|v| v.parse::<u32>().ok())
+                != Some(self.frames)
+        {
+            return Err(export_error(
+                "Video codec, resolution, fps or frame count failed validation.",
+            ));
+        }
+        let audio: Vec<_> = streams
+            .iter()
+            .filter(|s| s["codec_type"] == "audio")
+            .collect();
+        if (self.has_audio && (audio.len() != 1 || audio[0]["codec_name"] != "aac"))
+            || (!self.has_audio && !audio.is_empty())
+        {
+            return Err(export_error("Exported audio stream failed validation."));
+        }
+        let duration = metadata["format"]["duration"]
+            .as_str()
+            .and_then(|value| value.parse::<f64>().ok())
+            .ok_or_else(|| export_error("Export duration is missing."))?;
+        let expected = self.frames as f64 / 30.0;
+        if !duration.is_finite()
+            || duration <= 0.0
+            || duration > MAX_SECONDS as f64 + 0.001
+            || (duration - expected).abs() > 0.1
+        {
+            return Err(export_error("Export duration failed validation."));
+        }
+        // Decode actual packets, not just metadata, before publishing.
+        let decoded = Command::new(&self.ffmpeg)
+            .args(["-v", "error", "-xerror", "-nostdin", "-i"])
+            .arg(path)
+            .args(["-f", "null", "-"])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .map_err(export_error)?;
+        if !decoded.success() {
+            return Err(export_error(
+                "Export failed full audio/video decode verification.",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Cancel removes only the temporary export; the old target remains intact.
+    pub fn cancel(self) {
+        drop(self);
+    }
+}
+
+impl Drop for Mp4Writer {
+    fn drop(&mut self) {
+        if let Some(mut child) = self.child.take() {
+            drop(child.stdin.take());
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+        if let Some(thread) = self.stderr.take() {
+            let _ = thread.join();
+        }
+        // NamedTempFile deletes the unpublished output automatically.
     }
 }

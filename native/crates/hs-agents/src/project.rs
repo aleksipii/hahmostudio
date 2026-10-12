@@ -40,6 +40,9 @@ pub fn capture(p: &Production, id: String, number: u32, name: String) -> Episode
         fps: p.fps.0,
         width: p.width,
         height: p.height,
+        captions: p.caption_overrides.clone(),
+        caption_settings: p.caption_settings.clone(),
+        assets: Vec::new(),
         accepted_notices: p.accepted_notices.clone(),
         audio,
     }
@@ -53,6 +56,8 @@ pub fn restore(episode: &Episode) -> Production {
     p.width = episode.width;
     p.height = episode.height;
     p.accepted_notices = episode.accepted_notices.clone();
+    p.caption_settings = episode.caption_settings.clone();
+    p.caption_overrides = episode.captions.clone();
     for binding in &episode.audio {
         match binding.source {
             AudioSource::Own => {
@@ -68,4 +73,15 @@ pub fn restore(episode: &Episode) -> Production {
         }
     }
     p
+}
+
+/// Validated restore for file consumers; rejects malformed editing/image workspaces.
+pub fn restore_checked(episode:&Episode)->Result<Production,String> {
+    let mut p=restore(episode);
+    for asset in &episode.assets {match asset.kind.as_str() {
+        "editing"=>p.soundtrack=hs_edit::decode_workspace(&asset.bytes)?,
+        "image"=>{hs_image::Document::decode(&asset.bytes)?;},
+        _=>return Err("Unknown project workspace".into()),
+    }}
+    Ok(p)
 }

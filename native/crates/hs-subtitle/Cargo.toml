@@ -1,0 +1,15 @@
+[package]
+name = "hs-subtitle"
+description = "Portable timed captions, SRT/WebVTT and local raster burn-in"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+hs-core.workspace = true
+hs-render.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+ab_glyph = "0.2"
+epaint_default_fonts = "0.31"

@@ -91,6 +91,24 @@ pub enum TrackKind {
     Environment,
 }
 
+/// Explicit authored emotion; never inferred from dialogue text.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Expression {
+    #[default]
+    Neutral,
+    Happy,
+    Angry,
+    Sad,
+    Surprised,
+    Scared,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum LookTarget {
+    Camera,
+    Character(String),
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum EventKind {
     Dialogue { speaker: Option<String>, text: String },
@@ -101,13 +119,15 @@ pub enum EventKind {
     /// Hahmo ottaa käteensä esineen (`item`) tai laskee sen pois (`None`).
     Prop { character: Option<String>, item: Option<String> },
     Camera { hint: CameraHint },
+    Expression { character: Option<String>, expression: Expression },
+    LookAt { character: Option<String>, target: LookTarget },
 }
 
 impl EventKind {
     pub fn track(&self) -> TrackKind {
         match self {
             EventKind::Dialogue { .. } => TrackKind::Dialogue,
-            EventKind::Motion { .. } | EventKind::CharacterView { .. } | EventKind::Phone { .. } | EventKind::Prop { .. } => {
+            EventKind::Motion { .. } | EventKind::CharacterView { .. } | EventKind::Phone { .. } | EventKind::Prop { .. } | EventKind::Expression { .. } | EventKind::LookAt { .. } => {
                 TrackKind::Motion
             }
             EventKind::Camera { .. } => TrackKind::Camera,
@@ -265,6 +285,12 @@ mod tests {
             EventKind::Motion { character: None, motion: MotionKind::Run(Direction::Left) },
             span(1),
         );
+        t.push(Tick::ZERO, Tick::from_seconds(2.0),
+            EventKind::Expression { character: Some("Kalle".into()), expression: Expression::Happy }, span(1));
+        t.push(Tick::ZERO, Tick::from_seconds(2.0),
+            EventKind::LookAt { character: Some("Kalle".into()), target: LookTarget::Character("Maija".into()) }, span(1));
+        t.push(Tick::from_seconds(2.0), Tick::from_seconds(1.0),
+            EventKind::LookAt { character: Some("Kalle".into()), target: LookTarget::Camera }, span(2));
         let json = serde_json::to_string(&t).unwrap();
         assert_eq!(serde_json::from_str::<Timeline>(&json).unwrap(), t);
     }
