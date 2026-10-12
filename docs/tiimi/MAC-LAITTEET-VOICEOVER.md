@@ -29,3 +29,21 @@ Tila 12.10.2026: fyysisiä laitteita ja VoiceOver-kuuntelua ei ole hyväksytty. 
 Kirjaa jokainen koe erikseen: läpi / epäonnistui / tarkistamatta, odotus, todellinen havainto, paketin tunniste ja laitteen tiedot. Kuva tai ruuduntallenne on vapaaehtoinen; älä julkaise omaa ääntä tai henkilötietoja. Testaaja antaa itse kuunteluhyväksynnän.
 
 Claude: lue TIIMI.md:n viimeinen kirjaus ja agenttien työhaarojen kirjaukset. Jatka tarkistamatta olevista kokeista; älä muuta automaattisia tuloksia laitehyväksynnäksi. Todettu käyttöongelma korjataan ensin erillisessä työhaarassa ja sen jälkeen uusitaan kyseinen koe. Ehdotus: erityisesti tallentimen päivittyvän painikenimen ja portaalin kohdistuksen tarkistus.
+
+## Saavutettavuusagentin lähdeauditointi 12.10.2026
+
+**Koodista todettu:** tallentimen pysäytyspainikkeen näkyvä teksti vaihtuu 100 ms välein. Aiemmin tämä oli myös sen saavutettavuusnimi. Nyt `aria-label` kuvaa vaiheessa käytettävää toimintoa ilman vaihtuvaa sekuntimäärää; näkyvä aika ja `role=status` säilyvät. Tämä poistaa nimeen tulevat ajastinpäivitykset. Se ei todista VoiceOverin kuuntelukäyttäytymistä. Yksikkötesti kattaa kaikkien neljän vaiheiden nimet, renderöintitesti ensimmäisen vaiheen kytkennän. Workflow-diagnostiikkaan lisättiin todellisen tallennuksen aika ennen/jälkeen -väite ja hylkäyksen jälkeinen nimi; näitä uusia GUI-väitteitä ei ajettu tällä haaralla.
+
+**Koodista todettu, käytännön vaikutus tarkistamatta:**
+
+| Kohde | Lähteen toteutus | Seuraava kokeiltava asia |
+|---|---|---|
+| Toimintohaku | `command-palette.tsx`: alkuperäinen fokus talletetaan, input fokusoidaan, cleanup palauttaa fokuksen. Nuolinäppäimet, Enter ja Esc on käsitelty. Ei paikallista Tab-rajausta tai taustan inert-kytkentää. | Tab/Shift+Tab ei saa viedä sulkemattoman modalin taustaan; tarkista myös fokuksen paluu komennon avaamaan uuteen modalin. |
+| Pilvirenderöinnin modal | `cloud-render-dialog.tsx`: dialogielementti saa fokuksen, Esc kuunnellaan documentissa. Ei paikallista fokuksen palautusta tai Tab-rajausta. | Sulje ja tarkista kohdistuksen sijainti, taustan tavoitettavuus sekä toinen päällekkäinen dialogi. Älä kytke pilveä päälle tätä koetta varten. |
+| Rig-ehdotus | `rig-suggest-dialog.tsx`: Sulje käyttää autoFocusia, Esc käsitellään sectionissa. | Tab/Shift+Tab-rajaus ja avaavaan ohjaimeen palautuminen. |
+| Palautuspiste | `recovery-prompt-modal.tsx`: normaalihaaran Jatka käyttää autoFocusia; virhehaarassa sitä ei ole. Pakollista valintaa ei suljeta Escillä. | Palautusvirheen alkuperäinen kohdistus ja pakollisen dialogin taustan estäminen. Escillä sulkemista ei saa lisätä ohittamaan pakollista valintaa. |
+| Pysyvä tallenninportaali | `panel-dock.tsx`: sama host siirretään appendChildilla, cleanup poistaa hostin. Reactin ohjaimia ei luoda uudelleen. | Fokusoitu pysäytyspainike ja näkyvä fokus vaiheenvaihdon jälkeen; hostin pysyvyys yksin ei takaa fokuksen säilymistä. |
+
+**Ehdotus:** todenna edellä nimetyt Tab- ja portaalitapaukset eristetyllä lähde-Electronilla ja vasta sen jälkeen rajaa mahdollinen yhteinen modalin fokuksenhallinta. `aria-modal=true` ei yksin toteuta näppäimistön Tab-rajausta. Näitä rivejä ei lasketa läpäistyiksi GUI-testeiksi tai todennetuiksi VoiceOver-virheiksi.
+
+**Avoimet:** fyysisen mikrofonin ja kameran kokeet, ihmisen VoiceOver-kuuntelu, modalien näppäimistötestit, tallentimen saavutettavuusnimen uudet workflow-väitteet lopullisella lähdebuildillä/paketilla. Käyttöoikeuksia ei muutettu eikä fyysisiä laitteita avattu.
