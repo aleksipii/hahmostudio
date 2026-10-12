@@ -423,3 +423,21 @@ Yhdistetty tuotantolähde: desktop:build/typecheck läpi ja npm test 1404/1404, 
 Avoin agenttityö: palikan GUI4tarkistusta läpi (raahaus jakaa tauon, ilme2s, levytallennus, undo-lähde), mutta Alt-pudotuksen jälkeen ilmoitus Rivi2 on muuttunut: palikkamalli voi olla eri kuin undo-palautettu käsikirjoitus. Tämä on tutkittava, ei valmis hyväksyntä. Kokoro GUI-testi kohdistuksia on korjattu; ei vielä hyväksytty synth→MP4-synkkaa. Aria-label vakaa nyt lähteessä ja render-testeissä; uusia GUIväitteitä ei ajettu integroidulla buildilla vielä.
 
 Mac-agentti odottaa lopullista blockfix/Kokoro-lähdettä ennen yhtä paketointia, resursseja valmiina; levy nyt noin18–19GiB. Uutta pakettia/DMG:tä ei vielä tehty. Fyysiset laitteet/VoiceOver-kuuntelu avoimina. Agentit vievät lisätulokset omille haaroilleen; Claude fetchää ne ennen jatkoa ja lukee viimeisen TIIMI-kirjauksen jokaiselta. Päähaarat pysyvät varmennettuna8f582d5, ei forcepush.
+
+
+## Claude: Mac-paketin esitarkistus Linuxilla — 12.10.2026 (DMG odottaa Macia)
+
+Työhaara `claude/project-thread-lw1y7f`, lähtö `codex/integration-2026-10-12` 19a722c (sisältää Mac-tarkistimen b76095f). Ympäristö: Linux-pilvikontti, Node 22.22.0. Täällä ei ole codesign-, hdiutil-, lipo- eikä ditto-työkaluja, joten oikeaa allekirjoitettua .appia tai DMG:tä EI rakennettu eikä niitä väitetä valmiiksi.
+
+Ajettu ja todettu:
+- `npm ci`, `npm run typecheck`: exit 0.
+- `npm run desktop:build`: exit 0 (vanhat chunk-koko/dynamic-import-varoitukset).
+- `npm test`: 1404 testiä, 1403 läpi, 0 fail, 1 skip: natiivi FFmpeg-dekoodaustesti ohittuu, koska Linuxissa ei ole paketoitua FFmpegia (Macilla ajettava).
+- Paketin tuontisulkeuma (`docs/tiimi/todennus/mac-dmg-20261012/import-closure.mjs`, TypeScriptin preProcessFile): main, kokoro-worker, runtime-smoke, cloud-service ja preloadit → 72 tiedostoa, kaikki paketoitavissa hakemistoissa. Ainoa poikkeus `desktop/cloud-diagnostic.mjs` → `lib/cloud-render/test-fixtures.ts`, jota ei paketoida; koskee vain env-ehdollista pilvitestitilaa, ei normaalia käynnistystä. kokoro-js/@huggingface/transformers ladataan createRequirella resurssien Kokoro-runtimesta, odotetusti.
+- Linux-kuivaharjoitus `linux-cross-package.mjs`: package-mac.mjs:n staging + @electron/packager darwin/arm64 Electron 44.5.1, ilman allekirjoitusta ja natiivi/Kokoro-resursseja. `asar-check.mjs`: main, kokoro-worker, workflow-, block- ja kokoro-export-diagnostiikka, runtime-smoke, dist-desktop/index.html, THIRD_PARTY_NOTICES ja Kokoro-lisenssit tavulleen samat kuin lähde; 0 testitiedostoa, 0 node_modules-tiedostoa; versio 0.36.0. Tämä ei korvaa Macin verify-mac-bundle-ajoa.
+
+Korjattu: `scripts/package-mac.mjs` kopioi kiinteän listan DEVELOPMENT-0.9…0.37; 0.38–0.46, CUTOUT ja E0 puuttuivat paketista. Nyt kaikki `DEVELOPMENT-*.md` luetaan hakemistosta (kuivaharjoituksessa 29 → 40 muistiota). `node --check` läpi.
+
+Huomio, ei muutettu: package.json/CHANGELOG-versio on 0.36.0, joten DMG:n nimi on KOETA-0.36.0-…; versionnosto on käyttäjän päätös ennen julkaisua.
+
+Avoin (Macilla, käyttäjän laitteella): block-drag (543c0f0) ja kokoro-export (d79e9c4) ovat edenneet integraatiohaaran ohi, joten lopullinen paketti tehdään vasta kun ne on yhdistetty. Sitten Macilla lopullisesta SHA:sta: `npm ci && npm run desktop:build`; `electron_config_cache=/Users/Aleksi/Library/Caches/electron node scripts/package-mac.mjs`; `node scripts/verify-mac-bundle.mjs`; `npm run desktop:test:package`; paketoidut workflow/Kokoro-testit (`packaged=true`); `node scripts/package-dmg.mjs`; `node scripts/verify-dmg.mjs release/KOETA-….dmg`. Fyysiset laitteet ja VoiceOver jäävät käyttäjän hyväksyttäviksi.
