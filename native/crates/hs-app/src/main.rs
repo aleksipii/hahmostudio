@@ -2,12 +2,14 @@
 //!
 //! Käynnistys: `hahmostudio [käsikirjoitus.txt]`.
 //! Testikäyttö: `hahmostudio --kuvakaappaus kuva.png [--aika 5.0] [käsikirjoitus.txt]`
-//! piirtää ikkunan, tallentaa kuvakaappauksen ja sulkeutuu.
+//! piirtää ikkunan, tallentaa kuvakaappauksen ja sulkeutuu. `--välilehti ääni|esitys` avaa vasemman paneelin välilehden.
 
 mod app;
+mod camera_ui;
 mod export_job;
 mod panels;
 mod viewport;
+mod voice_ui;
 
 fn main() -> eframe::Result<()> {
     let mut args = std::env::args().skip(1);
@@ -17,6 +19,7 @@ fn main() -> eframe::Result<()> {
             "--kuvakaappaus" | "--screenshot" => options.screenshot = args.next().map(Into::into),
             "--aika" | "--time" => options.time = args.next().and_then(|s| s.parse().ok()),
             "--cpu" => options.force_cpu = true,
+            "--välilehti" | "--tab" => options.tab = args.next(),
             _ => options.script_path = Some(a.into()),
         }
     }

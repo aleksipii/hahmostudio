@@ -71,6 +71,15 @@ pub struct LipClip {
     pub track: Arc<VisemeTrack>,
 }
 
+/// Reaaliaikainen esitys (mikrofoni ja kamera) yhdelle hahmolle esikatselussa.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LiveOverride {
+    pub speaker: String,
+    pub mouth: Option<hs_lipsync::MouthShape>,
+    /// Pään kierto (kääntö, nyökkäys, kallistus) radiaaneina.
+    pub head: Option<[f32; 3]>,
+}
+
 /// Koko tuotannon tila, jota agentit lukevat ja kirjoittavat.
 pub struct Production {
     pub script: String,
@@ -98,6 +107,8 @@ pub struct Production {
     /// Koko jakson ääni 48 kHz mono (esikatselu ja vienti).
     pub mix: Option<Arc<Audio>>,
     pub lipsync: Vec<LipClip>,
+    /// Esitystila: ohittaa valitun hahmon suun ja pään esikatselussa.
+    pub live: Option<LiveOverride>,
     pub timeline: Option<Timeline>,
     pub cast: Vec<CastMember>,
     pub motion: Vec<Arc<PreparedMotion>>,
@@ -128,6 +139,7 @@ impl Production {
             clips: Vec::new(),
             mix: None,
             lipsync: Vec::new(),
+            live: None,
             timeline: None,
             cast: Vec::new(),
             motion: Vec::new(),

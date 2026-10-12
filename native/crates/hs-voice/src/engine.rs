@@ -61,6 +61,73 @@ impl SpeechEngine for TestEngine {
     }
 }
 
+/// Taustasynteesi käyttöliittymälle: `synthesize` ei koskaan odota mallia,
+/// vaan jonottaa pyynnön ja palauttaa [`VoiceError::Pending`]. Valmis puhe
+/// menee suoraan jaettuun välimuistiin, josta seuraava putken ajo löytää sen.
+pub struct BackgroundEngine {
+    inner: Arc<dyn SpeechEngine>,
+    cache: SpeechCache,
+    queued: Arc<Mutex<BTreeSet<String>>>,
+    tx: Mutex<std::sync::mpsc::Sender<(String, SpeechRequest)>>,
+    /// Virheet taustasynteesistä (rivin avain, viesti).
+    pub errors: Arc<Mutex<Vec<(String, String)>>>,
+}
+
+impl BackgroundEngine {
+    /// `notify` kutsutaan taustasäikeestä jokaisen valmiin rivin jälkeen (esim. ruudun päivitys).
+    pub fn new(inner: Arc<dyn SpeechEngine>, cache: SpeechCache, notify: Arc<dyn Fn() + Send + Sync>) -> Self {
+        let (tx, rx) = std::sync::mpsc::channel::<(String, SpeechRequest)>();
+        let queued: Arc<Mutex<BTreeSet<String>>> = Default::default();
+        let errors: Arc<Mutex<Vec<(String, String)>>> = Default::default();
+        let (engine, c, q, errs) = (inner.clone(), cache.clone(), queued.clone(), errors.clone());
+        std::thread::Builder::new()
+            .name("puhesynteesi".into())
+            .spawn(move || {
+                let never = AtomicBool::new(false);
+                for (key, req) in rx {
+                    match engine.synthesize(&req, &never) {
+                        Ok(speech) => {
+                            c.lock().unwrap().insert(key.clone(), Arc::new(speech));
+                        }
+                        Err(e) => errs.lock().unwrap().push((key.clone(), e.to_string())),
+                    }
+                    q.lock().unwrap().remove(&key);
+                    notify();
+                }
+            })
+            .expect("puhesäie");
+        BackgroundEngine { inner, cache, queued, tx: Mutex::new(tx), errors }
+    }
+
+    /// Alla oleva moottori (vienti käyttää sitä suoraan omassa säikeessään).
+    pub fn inner(&self) -> Arc<dyn SpeechEngine> {
+        self.inner.clone()
+    }
+
+    pub fn queue_len(&self) -> usize {
+        self.queued.lock().unwrap().len()
+    }
+}
+
+impl SpeechEngine for BackgroundEngine {
+    fn id(&self) -> &str {
+        self.inner.id()
+    }
+    fn model_version(&self) -> &str {
+        self.inner.model_version()
+    }
+    fn synthesize(&self, r: &SpeechRequest, _cancel: &AtomicBool) -> Result<Speech, VoiceError> {
+        let key = cache_key(&r.text, &r.voice, r.speed, self.inner.model_version());
+        if let Some(s) = self.cache.lock().unwrap().get(&key) {
+            return Ok((**s).clone());
+        }
+        if self.queued.lock().unwrap().insert(key.clone()) {
+            let _ = self.tx.lock().unwrap().send((key, r.clone()));
+        }
+        Err(VoiceError::Pending)
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum LineStatus {
     Synthesized,
@@ -70,6 +137,8 @@ pub enum LineStatus {
     NoVoice,
     /// Puhemallia ei ole asennettu (rivi saa silti tekstistä johdetun huulisynkan).
     NoEngine,
+    /// Puhe syntetisoidaan taustalla; rivi päivittyy, kun se valmistuu.
+    Pending,
     UnsupportedLanguage,
     Empty,
 }
@@ -83,6 +152,7 @@ impl LineStatus {
             LineStatus::NeedsReview => "tarkista",
             LineStatus::NoVoice => "ei ääntä",
             LineStatus::NoEngine => "malli puuttuu",
+            LineStatus::Pending => "tulossa",
             LineStatus::UnsupportedLanguage => "kieli ei tuettu",
             LineStatus::Empty => "tyhjä",
         }
@@ -172,7 +242,12 @@ fn synthesize_one(line: &DialogueLine, o: &SynthesisOptions) -> Result<LineResul
     if let Some(hit) = o.cache.lock().unwrap().get(&key).cloned() {
         return Ok(LineResult { id: line.id.clone(), status: LineStatus::Cached, notices, speech: Some(hit), provenance: Some(provenance) });
     }
-    let speech = o.engine.synthesize(&SpeechRequest { text: spoken.text, voice, speed: spoken.speed }, o.cancel)?;
+    let speech = match o.engine.synthesize(&SpeechRequest { text: spoken.text, voice, speed: spoken.speed }, o.cancel) {
+        Err(VoiceError::Pending) => {
+            return Ok(LineResult { id: line.id.clone(), status: LineStatus::Pending, notices, speech: None, provenance: Some(provenance) })
+        }
+        r => r?,
+    };
     let d = speech.audio.duration();
     if speech.audio.samples.is_empty() || speech.audio.sample_rate < 8000 || !d.is_finite() || d > MAX_SECONDS {
         return Err(VoiceError::Engine("Puhemoottori palautti virheellisen äänen.".into()));
@@ -211,5 +286,24 @@ mod tests {
         assert_eq!(engine.calls.lock().unwrap().len(), 1);
         cancel.store(true, Ordering::Relaxed);
         assert!(matches!(synthesize_lines(&lines(), &o), Err(VoiceError::Cancelled)));
+    }
+
+    #[test]
+    fn background_engine_never_blocks_and_fills_the_cache() {
+        let cache: SpeechCache = Default::default();
+        let (tx, rx) = std::sync::mpsc::channel();
+        let tx = Mutex::new(tx);
+        let bg = BackgroundEngine::new(Arc::new(TestEngine::default()), cache.clone(), Arc::new(move || tx.lock().unwrap().send(()).unwrap()));
+        let cancel = AtomicBool::new(false);
+        let accepted = BTreeSet::new();
+        let voice_for = |_: &str| Some("af_heart".to_string());
+        let own = |_: &str| false;
+        let o = SynthesisOptions { engine: &bg, voice_for: &voice_for, has_own_audio: &own, accepted_notices: &accepted, cache: cache.clone(), cancel: &cancel };
+        let first = synthesize_lines(&lines()[..1], &o).unwrap();
+        assert_eq!(first[0].status, LineStatus::Pending);
+        rx.recv_timeout(std::time::Duration::from_secs(5)).unwrap();
+        assert_eq!(bg.queue_len(), 0);
+        let again = synthesize_lines(&lines()[..1], &o).unwrap();
+        assert_eq!(again[0].status, LineStatus::Cached);
     }
 }

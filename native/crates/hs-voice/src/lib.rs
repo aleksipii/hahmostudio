@@ -14,7 +14,7 @@ pub mod spoken;
 pub mod store;
 pub mod wav;
 
-pub use engine::{DialogueLine, LineResult, LineStatus, Speech, SpeechCache, SpeechEngine, SpeechRequest, TestEngine};
+pub use engine::{BackgroundEngine, DialogueLine, LineResult, LineStatus, Speech, SpeechCache, SpeechEngine, SpeechRequest, TestEngine};
 pub use hs_lipsync::{self as lipsync, MouthShape, Viseme, VisemeTrack};
 pub use wav::Audio;
 
@@ -28,6 +28,9 @@ pub enum VoiceError {
     Model(String),
     #[error("puhesynteesi peruttiin")]
     Cancelled,
+    /// Rivi on jonossa taustasynteesissä ([`engine::BackgroundEngine`]).
+    #[error("puhe on tulossa")]
+    Pending,
     #[error("{0}")]
     Io(#[from] std::io::Error),
 }

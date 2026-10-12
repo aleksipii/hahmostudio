@@ -23,3 +23,7 @@ wgpu.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 rfd.workspace = true
+hs-voice = { workspace = true, features = ["kokoro", "download"] }
+hs-audio.workspace = true
+hs-lipsync.workspace = true
+hs-camera.workspace = true

@@ -1,5 +1,5 @@
-use crate::app::{StudioApp, EXAMPLE};
-use crate::export_job::ExportJob;
+use crate::app::{LeftTab, StudioApp, EXAMPLE};
+use crate::export_job::{ExportJob, ExportVoice};
 use eframe::egui::{self, Color32, RichText, Stroke};
 use hs_agents::agents::cinematography::ShotKind;
 use hs_agents::{Backend, RenderRequest, Slot};
@@ -87,7 +87,14 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
 
 fn start_export(app: &mut StudioApp, request: RenderRequest) {
     let backend = if app.viewport.is_gpu() { Backend::Auto } else { Backend::Cpu };
-    app.export = Some(ExportJob::start(app.script.clone(), app.production.cast_params.clone(), request, backend, (app.production.width, app.production.height)));
+    // Vienti käyttää mallia suoraan (odottaa puheen valmistumisen), ei käyttöliittymän taustajonoa.
+    let voice = ExportVoice {
+        engine: app.voice.engine.as_ref().map(|bg| bg.inner()),
+        cache: app.production.speech_cache.clone(),
+        own_audio: app.production.own_audio.clone(),
+        accepted_notices: app.production.accepted_notices.clone(),
+    };
+    app.export = Some(ExportJob::start(app.script.clone(), app.production.cast_params.clone(), voice, request, backend, (app.production.width, app.production.height)));
     app.status = "Vienti käynnissä…".into();
 }
 
@@ -227,6 +234,22 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
 
 pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
     egui::SidePanel::left("kasikirjoitus").resizable(true).default_width(380.0).min_width(260.0).show(ctx, |ui| {
+        ui.horizontal(|ui| {
+            ui.selectable_value(&mut app.left_tab, LeftTab::Script, "Käsikirjoitus");
+            ui.selectable_value(&mut app.left_tab, LeftTab::Voice, "Ääni");
+            ui.selectable_value(&mut app.left_tab, LeftTab::Performance, "Esitys");
+        });
+        ui.separator();
+        match app.left_tab {
+            LeftTab::Script => script_tab(app, ui),
+            LeftTab::Voice => crate::voice_ui::voice_tab(app, ui),
+            LeftTab::Performance => crate::voice_ui::performance_tab(app, ui),
+        }
+    });
+}
+
+fn script_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
+    {
         ui.heading("Käsikirjoitus");
         ui.label(RichText::new("Puhe tekstinä, ohjeet hakasulkeissa: [vilkuta 2s], [juokse oikealle 2s], [näpyttele puhelinta 3s], [tausta kaupunki ilta], [kuva lähikuva]. Puhuja: NIMI: repliikki.").weak().small());
         ui.add_space(4.0);
@@ -254,7 +277,7 @@ pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
         if let Some(e) = &app.pipeline_error {
             ui.label(RichText::new(e).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)));
         }
-    });
+    }
 }
 
 fn color_row(ui: &mut egui::Ui, label: &str, c: &mut [u8; 3]) -> bool {
@@ -286,6 +309,16 @@ pub fn cast_panel(app: &mut StudioApp, ctx: &egui::Context) {
                 {
                     let p: &mut CharacterParams = &mut app.production.cast_params[idx];
                     ui.add_space(4.0);
+                    let voice_name = |v: &Option<String>| match v {
+                        Some(id) => hs_voice::spoken::VOICES.iter().find(|(i, _)| i == id).map_or(id.clone(), |(_, n)| n.to_string()),
+                        None => "ei ääntä".to_string(),
+                    };
+                    egui::ComboBox::from_label("ääni").selected_text(voice_name(&p.voice)).show_ui(ui, |ui| {
+                        changed |= ui.selectable_value(&mut p.voice, None, "ei ääntä").changed();
+                        for (id, n) in hs_voice::spoken::VOICES {
+                            changed |= ui.selectable_value(&mut p.voice, Some(id.to_string()), *n).changed();
+                        }
+                    });
                     ui.label(RichText::new("Mitat").strong());
                     changed |= ui.add(egui::Slider::new(&mut p.height, 0.8..=2.0).text("pituus (m)")).changed();
                     changed |= ui.add(egui::Slider::new(&mut p.build, 0.7..=1.5).text("vartalo")).changed();

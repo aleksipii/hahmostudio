@@ -19,7 +19,7 @@ pub use agents::{
     render::RustRenderAgent, script_parser::ScriptParserAgent,
     voice::{LipSyncAgent, TimingAgent, VoiceAgent},
 };
-pub use production::{Backend, Production, RenderRequest};
+pub use production::{Backend, LiveOverride, Production, RenderRequest};
 
 use serde::Serialize;
 use std::collections::BTreeSet;

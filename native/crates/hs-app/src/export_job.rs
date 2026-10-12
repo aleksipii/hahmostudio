@@ -8,6 +8,15 @@ use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::mpsc;
 use std::sync::Arc;
 
+/// Puhe vientiin: sama malli, välimuisti ja omat äänitykset kuin studiossa.
+#[derive(Clone, Default)]
+pub struct ExportVoice {
+    pub engine: Option<Arc<dyn hs_voice::SpeechEngine>>,
+    pub cache: hs_voice::SpeechCache,
+    pub own_audio: std::collections::HashMap<String, Arc<hs_voice::Audio>>,
+    pub accepted_notices: std::collections::BTreeSet<String>,
+}
+
 pub struct ExportJob {
     pub done: Arc<AtomicU32>,
     pub total: Arc<AtomicU32>,
@@ -17,7 +26,7 @@ pub struct ExportJob {
 }
 
 impl ExportJob {
-    pub fn start(script: String, cast: Vec<CharacterParams>, request: RenderRequest, backend: Backend, size: (u32, u32)) -> ExportJob {
+    pub fn start(script: String, cast: Vec<CharacterParams>, voice: ExportVoice, request: RenderRequest, backend: Backend, size: (u32, u32)) -> ExportJob {
         let done = Arc::new(AtomicU32::new(0));
         let total = Arc::new(AtomicU32::new(1));
         let cancel = Arc::new(AtomicBool::new(false));
@@ -30,6 +39,10 @@ impl ExportJob {
         std::thread::spawn(move || {
             let mut p = Production::new(script);
             p.cast_params = cast;
+            p.voice_engine = voice.engine;
+            p.speech_cache = voice.cache;
+            p.own_audio = voice.own_audio;
+            p.accepted_notices = voice.accepted_notices;
             p.width = size.0;
             p.height = size.1;
             p.backend = backend;

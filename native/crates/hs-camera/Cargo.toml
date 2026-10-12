@@ -1,0 +1,15 @@
+[package]
+name = "hs-camera"
+description = "Hahmostudio: kamera ja pään seuranta (puhdas Rust, offline)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+default = ["capture"]
+# Kameran kaappaus (nokhwa: AVFoundation macOS:llä, V4L2 Linuxilla, Media Foundation Windowsilla).
+capture = ["dep:nokhwa"]
+
+[dependencies]
+nokhwa = { version = "0.10", features = ["input-native"], optional = true }

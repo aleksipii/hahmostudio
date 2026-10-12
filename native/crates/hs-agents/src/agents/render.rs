@@ -30,8 +30,20 @@ impl FrameBuilder {
         for (member, motion) in p.cast.iter().zip(&p.motion) {
             let mut f = motion.evaluate(tl, t);
             // Äänellinen huulisynkka korvaa tekstistä arvioidun suun.
+            let humanoid = &member.character.humanoid;
             if let Some(shape) = p.mouth_at(&|s| motion.motion.speaks(s), t) {
-                hs_motion::face::apply_mouth(&member.character.humanoid, &mut f.pose, &shape);
+                hs_motion::face::apply_mouth(humanoid, &mut f.pose, &shape);
+            }
+            if let Some(live) = p.live.as_ref().filter(|l| member.character.params.name.eq_ignore_ascii_case(&l.speaker)) {
+                if let Some(shape) = &live.mouth {
+                    hs_motion::face::apply_mouth(humanoid, &mut f.pose, shape);
+                }
+                if let Some([yaw, pitch, roll]) = live.head {
+                    // Kierto jaetaan kaulalle ja päälle, jotta liike näyttää luonnolliselta.
+                    let q = glam::Quat::from_euler(glam::EulerRot::YXZ, yaw * 0.65, pitch * 0.7, roll * 0.7);
+                    f.pose.local[humanoid.neck] = glam::Quat::from_euler(glam::EulerRot::YXZ, yaw * 0.35, pitch * 0.3, roll * 0.3) * f.pose.local[humanoid.neck];
+                    f.pose.local[humanoid.head] = q * f.pose.local[humanoid.head];
+                }
             }
             let skeleton = &member.character.humanoid.skeleton;
             let shadow_floor = if env_id == "studio-v1" { [0x3c, 0x52, 0x66] } else { floor };

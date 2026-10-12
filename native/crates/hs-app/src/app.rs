@@ -1,6 +1,8 @@
 use crate::export_job::ExportJob;
 use crate::panels;
 use crate::viewport::Viewport;
+use crate::camera_ui::CameraState;
+use crate::voice_ui::VoiceState;
 use eframe::egui;
 use hs_agents::{AgentRun, Pipeline, Production, Slot};
 use hs_character::CharacterParams;
@@ -15,6 +17,7 @@ pub struct LaunchOptions {
     pub screenshot: Option<PathBuf>,
     pub time: Option<f32>,
     pub force_cpu: bool,
+    pub tab: Option<String>,
 }
 
 pub struct StudioApp {
@@ -34,8 +37,19 @@ pub struct StudioApp {
     pub status: String,
     pub show_about: bool,
     pub legacy: Option<LegacyProject>,
+    pub voice: VoiceState,
+    pub camera: CameraState,
+    pub left_tab: LeftTab,
     screenshot: Option<PathBuf>,
     screenshot_frames: u32,
+}
+
+/// Vasemman paneelin välilehti.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum LeftTab {
+    Script,
+    Voice,
+    Performance,
 }
 
 /// Avattu vanha `.hahmo`-projekti (2D-leikehahmo) esikatselua varten.
@@ -74,6 +88,8 @@ impl StudioApp {
         production.width = 1080;
         production.height = 1920;
         let viewport = Viewport::new(cc, options.force_cpu);
+        let voice = VoiceState::new(&cc.egui_ctx, options.screenshot.is_some());
+        production.own_audio = voice.load_recordings().into_iter().collect();
         let mut app = StudioApp {
             production,
             pipeline: Pipeline::default(),
@@ -91,6 +107,13 @@ impl StudioApp {
             status: String::new(),
             show_about: false,
             legacy: None,
+            voice,
+            camera: CameraState::default(),
+            left_tab: match options.tab.as_deref() {
+                Some("ääni" | "voice") => LeftTab::Voice,
+                Some("esitys" | "performance") => LeftTab::Performance,
+                _ => LeftTab::Script,
+            },
             screenshot: options.screenshot,
             screenshot_frames: 0,
         };
@@ -225,7 +248,8 @@ impl eframe::App for StudioApp {
                 ctx.request_repaint_after(Duration::from_millis(60));
             }
         }
-        if self.playing {
+        crate::voice_ui::update(self, ctx);
+        if self.playing && !crate::voice_ui::has_player(self) {
             let dt = ctx.input(|i| i.stable_dt).min(0.1);
             self.time += dt;
             let d = self.duration();
