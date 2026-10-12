@@ -1,6 +1,5 @@
 {
-  "ok": false,
-  "error": "Timeout: Alt together",
+  "ok": true,
   "packaged": false,
   "checks": [
     {
@@ -93,46 +92,184 @@
     {
       "name": "undo restores exact script",
       "ok": true
+    },
+    {
+      "name": "undo restores block model with the script",
+      "ok": true,
+      "detail": {
+        "blocks": [
+          {
+            "kind": "block block--ilme is-selected",
+            "title": "Pipsa hymyilee.",
+            "aria": "PIPSA · Ilme: Iloinen · alkaa 0 s · kesto 0 s",
+            "left": "0px"
+          },
+          {
+            "kind": "block block--tauko",
+            "title": "Pipsa odottaa 5 s.",
+            "aria": "PIPSA · Tauko: Tauko · alkaa 0 s · kesto 5 s",
+            "left": "0px"
+          },
+          {
+            "kind": "block block--repliikki",
+            "title": "“This is an English dialogue for a block timing test.”",
+            "aria": "PIPSA · Repliikki: This is an English dialogue for a block timing test. · alkaa 5 s · kesto 3,57 s",
+            "left": "240px"
+          },
+          {
+            "kind": "block block--liike",
+            "title": "Pipsa vilkuttaa 2 s.",
+            "aria": "PIPSA · Liike: Vilkutus · alkaa 8,57 s · kesto 2 s",
+            "left": "411.429px"
+          },
+          {
+            "kind": "block block--kamera is-derived",
+            "title": "Johdettu palikka (automaattinen kuva tai tehoste)",
+            "aria": "kamera · Kamera: Laaja · alkaa 0 s · kesto 0 s",
+            "left": "0px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Alt pointer drop adds Samalla to dialogue",
+      "ok": true,
+      "detail": {
+        "source": "Pipsa odottaa 5 s.\n\nPIPSA:\n“This is an English dialogue for a block timing test.”\nSamalla Pipsa hymyilee.\n\nPipsa vilkuttaa 2 s.\n\n\n\n\n\n\n\n\n\n\n",
+        "blocks": [
+          {
+            "kind": "block block--tauko",
+            "title": "Pipsa odottaa 5 s.",
+            "aria": "PIPSA · Tauko: Tauko · alkaa 0 s · kesto 5 s",
+            "left": "0px"
+          },
+          {
+            "kind": "block block--repliikki",
+            "title": "“This is an English dialogue for a block timing test.”",
+            "aria": "PIPSA · Repliikki: This is an English dialogue for a block timing test. · alkaa 5 s · kesto 3,57 s",
+            "left": "240px"
+          },
+          {
+            "kind": "block block--ilme",
+            "title": "Samalla Pipsa hymyilee.",
+            "aria": "PIPSA · Ilme: Iloinen · alkaa 5 s · kesto 0 s",
+            "left": "240px"
+          },
+          {
+            "kind": "block block--liike",
+            "title": "Pipsa vilkuttaa 2 s.",
+            "aria": "PIPSA · Liike: Vilkutus · alkaa 8,57 s · kesto 2 s",
+            "left": "411.429px"
+          },
+          {
+            "kind": "block block--kamera is-derived",
+            "title": "Johdettu palikka (automaattinen kuva tai tehoste)",
+            "aria": "kamera · Kamera: Laaja · alkaa 0 s · kesto 0 s",
+            "left": "0px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "expression and dialogue start together",
+      "ok": true
+    },
+    {
+      "name": "Alt drop is persisted",
+      "ok": true
+    },
+    {
+      "name": "undo restores exact script after Alt",
+      "ok": true
+    },
+    {
+      "name": "undo after Alt restores block model",
+      "ok": true,
+      "detail": {
+        "blocks": [
+          {
+            "kind": "block block--ilme is-selected",
+            "title": "Pipsa hymyilee.",
+            "aria": "PIPSA · Ilme: Iloinen · alkaa 0 s · kesto 0 s",
+            "left": "0px"
+          },
+          {
+            "kind": "block block--tauko",
+            "title": "Pipsa odottaa 5 s.",
+            "aria": "PIPSA · Tauko: Tauko · alkaa 0 s · kesto 5 s",
+            "left": "0px"
+          },
+          {
+            "kind": "block block--repliikki",
+            "title": "“This is an English dialogue for a block timing test.”",
+            "aria": "PIPSA · Repliikki: This is an English dialogue for a block timing test. · alkaa 5 s · kesto 3,57 s",
+            "left": "240px"
+          },
+          {
+            "kind": "block block--liike",
+            "title": "Pipsa vilkuttaa 2 s.",
+            "aria": "PIPSA · Liike: Vilkutus · alkaa 8,57 s · kesto 2 s",
+            "left": "411.429px"
+          },
+          {
+            "kind": "block block--kamera is-derived",
+            "title": "Johdettu palikka (automaattinen kuva tai tehoste)",
+            "aria": "kamera · Kamera: Laaja · alkaa 0 s · kesto 0 s",
+            "left": "0px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "redo restores exact Samalla source",
+      "ok": true
+    },
+    {
+      "name": "redo restores together block model",
+      "ok": true,
+      "detail": {
+        "blocks": [
+          {
+            "kind": "block block--tauko",
+            "title": "Pipsa odottaa 5 s.",
+            "aria": "PIPSA · Tauko: Tauko · alkaa 0 s · kesto 5 s",
+            "left": "0px"
+          },
+          {
+            "kind": "block block--repliikki",
+            "title": "“This is an English dialogue for a block timing test.”",
+            "aria": "PIPSA · Repliikki: This is an English dialogue for a block timing test. · alkaa 5 s · kesto 3,57 s",
+            "left": "240px"
+          },
+          {
+            "kind": "block block--ilme",
+            "title": "Samalla Pipsa hymyilee.",
+            "aria": "PIPSA · Ilme: Iloinen · alkaa 5 s · kesto 0 s",
+            "left": "240px"
+          },
+          {
+            "kind": "block block--liike",
+            "title": "Pipsa vilkuttaa 2 s.",
+            "aria": "PIPSA · Liike: Vilkutus · alkaa 8,57 s · kesto 2 s",
+            "left": "411.429px"
+          },
+          {
+            "kind": "block block--kamera is-derived",
+            "title": "Johdettu palikka (automaattinen kuva tai tehoste)",
+            "aria": "kamera · Kamera: Laaja · alkaa 0 s · kesto 0 s",
+            "left": "0px"
+          }
+        ]
+      }
+    },
+    {
+      "name": "no renderer console errors",
+      "ok": true,
+      "detail": []
     }
   ],
   "errors": [],
-  "state": [
-    {
-      "kind": "block block--tauko",
-      "title": "Pipsa odottaa 2 s.",
-      "aria": "PIPSA · Tauko: Tauko · alkaa 0 s · kesto 2 s",
-      "left": "0px"
-    },
-    {
-      "kind": "block block--ilme is-selected",
-      "title": "Pipsa hymyilee.",
-      "aria": "PIPSA · Ilme: Iloinen · alkaa 2 s · kesto 0 s",
-      "left": "96px"
-    },
-    {
-      "kind": "block block--tauko",
-      "title": "Pipsa odottaa 3 s.",
-      "aria": "PIPSA · Tauko: Tauko · alkaa 2 s · kesto 3 s",
-      "left": "96px"
-    },
-    {
-      "kind": "block block--repliikki",
-      "title": "“This is an English dialogue for a block timing test.”",
-      "aria": "PIPSA · Repliikki: This is an English dialogue for a block timing test. · alkaa 5 s · kesto 3,57 s",
-      "left": "240px"
-    },
-    {
-      "kind": "block block--liike",
-      "title": "Pipsa vilkuttaa 2 s.",
-      "aria": "PIPSA · Liike: Vilkutus · alkaa 8,57 s · kesto 2 s",
-      "left": "411.429px"
-    },
-    {
-      "kind": "block block--kamera is-derived",
-      "title": "Johdettu palikka (automaattinen kuva tai tehoste)",
-      "aria": "kamera · Kamera: Laaja · alkaa 0 s · kesto 0 s",
-      "left": "0px"
-    }
-  ],
-  "source": "Pipsa hymyilee.\nPipsa odottaa 5 s.\n\nPIPSA:\n“This is an English dialogue for a block timing test.”\n\nPipsa vilkuttaa 2 s.\n\n\n\n\n\n\n\n\n\n\n"
+  "physicalDevices": false,
+  "voiceOver": false,
+  "input": "Chromium CDP mouse input, real pointer capture and React handlers"
 }

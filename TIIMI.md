@@ -366,3 +366,25 @@ Claude jatkaa: varmista node_modules, dist-desktop ja .private-runtime saatavill
 Korjatulla rivikohtaisella fixturellä npm run desktop:test:blocks: **4 tarkistusta läpi** (ennen-editointia lähde/snapshot, aito pointerdrag jakaa 5 s tauon 2+3 s ja ilme alku2s, pysyvä tallennus, undo tarkka lähde). **Alt-vaihe epäonnistui**: undo palautti source-kentän ja recovery-snapshotin lähdetekstin, mutta palikkaeditorin model jäi siirretyksi (ilme alku2s ja rivi2). Seuraava Alt-drag ilmoitti “Rivi 2 on muuttunut palikan lukemisen jälkeen”. block-failed.png ja JSON source/blocks ovat todennus. Ei hyväksyttyä Alt-drop/redo-tulosta. Tuotantokoodia ei vielä muutettu.
 
 Claude jatkaa nyt tämän ristiriidan selvityksestä: tutki persistProductionDraft/commitSource-persistMutation ja historia-baseline components/editor.tsx sekä projectEpoch/update/text effects components/presentation-panel.tsx. Vertaa undo-snapshotin scene.presentationSource ja presentationDraft.events/original, älä pelkkää lähdettä. Testiä täydennettävä vaatimaan palikka-alkuaikojen palautus ennen Alt-dragia. Älä väljennä tarkistusta tai yhdistä päähaaroihin ennen korjauksen uusinta-ajoa.
+
+
+## Claude → Codex/Claude: palikkaeditorin raahaus ja Alt-pudotus korjattu — 12.10.2026
+
+Työhaara `claude/project-thread-zgcm7k`; lähtö main `8f582d5` + yhdistetty `codex/block-drag-2026-10-12` (`543c0f0`). Ei yhdistetty mainiin eikä hahmostudio1.0:aan; haaroja ei poistettu.
+
+Tehty:
+- Juurisyy 1, Codexin havaitsema undo-ristiriita: `components/presentation-panel.tsx`:n bindings-synkronointiefekti ajettiin samassa commitissa kuin projectEpoch-efekti ja palautti vanhalla sulkeumalla kumotun mallin. Korjattu funktionaalisella `setModel(current=>…)`-päivityksellä.
+- Juurisyy 2: aikajanan natiivi dragstart katkaisi pointer-raahauksen, ja `onDrop` muutti tyhjän datan kirjaston palikaksi 0 (Vilkuta). `components/block-timeline.tsx`: natiivi dragstart estetään aikajanalla, pudotus hyväksyy vain olemassa olevan kirjastoindeksin.
+- `desktop/block-diagnostic.mjs`: tiukennettu, ei väljennetty. Undo/Alt-undo/redo vaativat nyt myös palikkamallin aikojen palautuksen; virheraportissa pysyvä lähde ja tilailmoitukset.
+
+Testattu (Linux-pilvi, Node 22, Electron 44.5.1, Xvfb):
+- `npm run typecheck` läpi; `npm run desktop:build` läpi.
+- `npm test`: 1402 testiä, 1401 läpi, 0 virhettä, 1 ohitus (natiivi-FFmpeg puuttuu ympäristöstä).
+- Palikkatesti (`HAHMOSTUDIO_BLOCK_ACCEPTANCE=1 … electron . --workflow-gui-test --no-sandbox`, sama kuin `npm run desktop:test:blocks` Macilla): **13/13 läpi**, ok=true, ei konsolivirheitä. Raahaus jakaa tauon 2+3 s, ilme 2 s, pysyvä tallennus, undo palauttaa lähteen ja palikat, Alt-pudotus lisää `Samalla`-rivin ja ilme alkaa repliikin kanssa 5 s, undo/redo palauttavat tarkan lähteen ja palikat.
+- Tavallinen workflow-testi samalla buildilla: ok=true.
+- Negatiiviset kontrollit: kumpikin korjaus erikseen poistettuna testi epäonnistuu.
+- Aineisto ja komennot: `docs/tiimi/todennus/block-20261012/README.md` (Clauden osio).
+
+Avoimet hyväksynnät: macOS-lähdeajo ja paketoitu .app (`npm run desktop:test:blocks` ja `-- --packaged`), fyysinen hiiri/ohjauslevy, VoiceOver. Testaamatta: usean palikan raahaus, reunasta venytys, pointercancel, kirjaston HTML-drag/drop ja näppäimistöpolut.
+
+Seuraava konkreettinen työ: integraatiohaaraan yhdistäminen yhdessä Kokoro- ja Mac-agenttien töiden kanssa, sitten `npm run desktop:test:blocks` Macilla ennen paketointia. Omistetut tiedostot: components/block-timeline.tsx (drop/dragstart), components/presentation-panel.tsx (bindings-efekti), desktop/block-diagnostic.mjs, docs/tiimi/todennus/block-20261012/. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin mittaria ei esitetä Clauden kiintiönä.

@@ -1,0 +1,13 @@
+PASS source and durable snapshot agree before edits
+PASS pointer drag splits pause and moves expression to 2 seconds
+PASS drag is persisted atomically
+PASS undo restores exact script
+PASS undo restores block model with the script
+PASS Alt pointer drop adds Samalla to dialogue
+PASS expression and dialogue start together
+PASS Alt drop is persisted
+PASS undo restores exact script after Alt
+PASS undo after Alt restores block model
+PASS redo restores exact Samalla source
+PASS redo restores together block model
+PASS no renderer console errors
