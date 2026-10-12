@@ -508,3 +508,27 @@ Avoimet hyväksynnät (käyttäjän laitteella): `docs/tiimi/LAITEHYVAKSYNTA-TAR
 Seuraava konkreettinen työ: Mac-agentti rakentaa paketin tämän haaran lähteestä ja ajaa `npm run desktop:test:workflow` (kaksi uutta nimiväitettä). Sen jälkeen käyttäjä käy tarkistuslistan läpi ja kirjaa tulokset. Kun automaattiset ja käyttäjän tulokset ovat läpi, tämä haara yhdistetään testattuna kokonaisuutena main- ja hahmostudio1.0-haaroihin.
 
 Tiedostot: components/{use-dialog-focus.ts,command-palette.tsx,cloud-render-dialog.tsx,rig-suggest-dialog.tsx,recovery-prompt-modal.tsx,panel-dock.tsx,dialogue-recorder.tsx,editor.tsx,presentation-panel.tsx}, lib/dialog-focus{.ts,.test.ts}, docs/tiimi/{MAC-LAITTEET-VOICEOVER.md,LAITEHYVAKSYNTA-TARKISTUSLISTA.md}, docs/tiimi/todennus/devices-20261012/.
+
+
+## Claude: neljän agenttihaaran yhdistys, testaus ja päähaarat — 12.10.2026
+
+Työhaara `claude/project-thread-2guizx`. Pohja `claude/project-thread-lw1y7f` (Mac-esitarkistus, sisältää `codex/integration-2026-10-12` 19a722c), siihen yhdistetty `claude/project-thread-zgcm7k` (palikkaraahaus/Alt, 318010e), `claude/project-thread-t7q5ab` (Kokoro-vientisynkka, 78220bc) ja `claude/project-thread-02q2wy` (laite/VoiceOver-korjaukset, eb15cbf). Ainoat konfliktit olivat TIIMI.md:n peräkkäisiä kirjauksia; kaikki kirjaukset säilytetty. `components/presentation-panel.tsx` yhdistyi automaattisesti, molemmat muutokset (funktionaalinen bindings-efekti ja aria-hidden) mukana. Versio pysyy 0.36.0.
+
+Testattu yhdistetystä lähteestä (Linux-pilvi, Node 22.22.0, Electron 44.5.1, Xvfb). Lokit `docs/tiimi/todennus/integration-20261012/claude-*`:
+- `npm ci`, `npm run typecheck`, `npm run desktop:build`, `npm run build:private`: exit 0.
+- `npm test`: 1406 testiä, 1405 läpi, 0 fail, 1 ohitus (natiivi FFmpeg-dekoodaus, ei paketoitua FFmpegia Linuxissa).
+- Palikkatesti `xvfb-run -a env HAHMOSTUDIO_TEST_DATA_DIR=$(mktemp -d) HAHMOSTUDIO_BLOCK_ACCEPTANCE=1 HAHMOSTUDIO_WORKFLOW_OUTPUT=… node_modules/.bin/electron . --workflow-gui-test --no-sandbox`: block-report 13/13 ok=true, workflow-report ok=true.
+- Workflow-testi `HAHMOSTUDIO_ELECTRON_NO_SANDBOX=1 xvfb-run -a -s "-screen 0 1600x1000x24" node scripts/desktop-workflow-test.mjs`: 24/24 ok=true, mukana laite-agentin kaksi uutta tallentimen nimiväitettä (nimi vakaa ajan muuttuessa, peruutus palauttaa idle-nimen).
+- Kokoro-vienti sijaismoottorilla (`node scripts/kokoro-standin-runtime.mjs`, sitten README:n komento `docs/tiimi/todennus/kokoro-export-20261012/cloud/README.md`): kokoro-export-report ok=true, standinEngine=true, realInference=false. Aitoa Kokoro-mallia ei ajettu.
+- Selainkoe `docs/tiimi/todennus/devices-20261012/selain-nappaimisto.mjs` (npm run dev, Playwright 1.56.1 Chromium, valemikrofoni): 35 läpi, 0 epäonnistui, ei sivuvirheitä.
+- Huom: Electron-binäärin lataus vaati kontissa `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt node node_modules/electron/install.js`.
+
+Yhdistetty fast-forwardina samaan committiin `main`- ja `hahmostudio1.0`-haaroihin ilman force-pushia. Muut haarat poistettu sen jälkeen, kun jokaisen todettiin sisältyvän päähaaraan (`git merge-base --is-ancestor`).
+
+Avoimet hyväksynnät (käyttäjän Macilla, ei tehty pilvessä):
+- DMG lopullisesta main-SHA:sta: `git pull && npm ci && npm run desktop:build`; `electron_config_cache=/Users/Aleksi/Library/Caches/electron node scripts/package-mac.mjs`; `node scripts/verify-mac-bundle.mjs`; `npm run desktop:test:package`; `npm run desktop:test:blocks -- --packaged`; paketoitu workflow/Kokoro (`packaged=true`); `node scripts/package-dmg.mjs`; `node scripts/verify-dmg.mjs release/KOETA-0.36.0-….dmg`.
+- Aito Kokoro af_heart -synteesi ja MP4-vienti Macilla (`HAHMOSTUDIO_KOKORO_MODEL_DATA='/Users/Aleksi/Library/Application Support/hahmostudio' HAHMOSTUDIO_KOKORO_EXPORT_ACCEPTANCE=1 npm run desktop:test:workflow`), ihmisen kuuntelu ja silmämääräinen huulisynkka.
+- `npm run desktop:test:blocks` macOS-lähteestä, fyysinen hiiri/ohjauslevy.
+- Fyysinen mikrofoni, kamera ja VoiceOver: `docs/tiimi/LAITEHYVAKSYNTA-TARKISTUSLISTA.md` (12 kohtaa).
+
+Seuraava konkreettinen työ: DMG:n rakentaminen ja yllä olevat laitehyväksynnät käyttäjän Macilla. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
