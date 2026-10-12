@@ -346,6 +346,7 @@ impl PreparedMotion {
             }
         }
 
+        pose.translate[h.jaw].y = -mouth_open * h.head_height * 0.07;
         if crouch > 0.0 {
             pose.translate[h.pelvis].y -= crouch * leg * 0.5;
         }

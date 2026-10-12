@@ -110,6 +110,8 @@ pub struct Humanoid {
     pub neck: usize,
     pub head: usize,
     pub head_height: f32,
+    /// Leuka: suun alahuuli seuraa tätä (suun avautuminen siirtää sitä alas).
+    pub jaw: usize,
     pub hair: Vec<usize>,
     pub hem_front: usize,
     pub hem_back: usize,
@@ -134,6 +136,7 @@ impl Humanoid {
         let neck = s.add("neck", Some(chest), Vec3::new(0.0, torso * 0.35, 0.0));
         let head = s.add("head", Some(neck), Vec3::new(0.0, neck_len, 0.0));
 
+        let jaw = s.add("jaw", Some(head), Vec3::new(0.0, head_h * 0.26, head_h * 0.36));
         let mut hair = Vec::new();
         if p.hair_length > 0.01 {
             let h0 = s.add("hair0", Some(head), Vec3::new(0.0, head_h * 0.72, -head_h * 0.42));
@@ -225,6 +228,7 @@ impl Humanoid {
             neck,
             head,
             head_height: head_h,
+            jaw,
             hair,
             hem_front,
             hem_back,

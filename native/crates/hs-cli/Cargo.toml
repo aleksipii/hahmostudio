@@ -1,0 +1,5 @@
+[package]
+name = "hs-cli"
+version.workspace = true
+edition.workspace = true
+publish = false

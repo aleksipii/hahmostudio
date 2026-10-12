@@ -1,0 +1,5 @@
+[package]
+name = "hs-hahmo"
+version.workspace = true
+edition.workspace = true
+publish = false

@@ -1,0 +1,22 @@
+[package]
+name = "hs-render"
+description = "Hahmostudio: GPU (wgpu) ja CPU -renderöinti samalla varjostusmallilla sekä headless-vienti"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+default = ["gpu"]
+gpu = ["dep:wgpu", "dep:pollster"]
+
+[dependencies]
+hs-core.workspace = true
+hs-motion.workspace = true
+hs-character.workspace = true
+glam.workspace = true
+bytemuck.workspace = true
+png.workspace = true
+thiserror.workspace = true
+wgpu = { workspace = true, optional = true }
+pollster = { workspace = true, optional = true }
