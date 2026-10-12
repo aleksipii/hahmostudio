@@ -1,5 +1,20 @@
 [package]
 name = "hs-cli"
+description = "Hahmostudion komentorivi: headless-renderöinti, tarkistus ja suorituskykymittaus"
 version.workspace = true
 edition.workspace = true
-publish = false
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "hahmostudio-cli"
+path = "src/main.rs"
+
+[dependencies]
+hs-core.workspace = true
+hs-script.workspace = true
+hs-character.workspace = true
+hs-render.workspace = true
+hs-hahmo.workspace = true
+hs-agents.workspace = true
+serde_json.workspace = true

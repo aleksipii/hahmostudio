@@ -1,0 +1,272 @@
+//! Automaattinen kuvaus: kuvakoot, leikkaukset, kameran ajot ja kolmipistevalaistus.
+//!
+//! Säännöt (deterministiset):
+//! * Liikkuva hahmo kuvataan laajana ja kamera seuraa (tracking), muut liikkeet kokokuvana.
+//! * Repliikki puolilähikuvana; peräkkäiset repliikit vaihtelevat kuvakokoa ja kulmaa
+//!   (30 asteen sääntö), jotta ei synny hyppyleikkausta.
+//! * Näpyttely: ensin puolilähi, sitten insertti puhelimeen.
+//! * Kamera pysyy aina toiminta-akselin samalla puolella (180 asteen sääntö).
+//! * Alle 1 s otokset yhdistetään edelliseen; staattisissa otoksissa hidas sisäänajo.
+//! * Valot sijoitetaan kameran suhteen: avain 45° vasemmalla ylhäällä, täyte oikealla, takavalo vastapäätä.
+
+use crate::{AgentError, AgentReport, Production, Slot, StudioAgent};
+use glam::{Quat, Vec3};
+use hs_core::{CameraHint, EventKind, MotionKind, Timeline};
+use hs_motion::procedural::PreparedMotion;
+use hs_render::{Camera, Light, Lights};
+use serde::Serialize;
+use std::sync::Arc;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ShotKind {
+    Wide,
+    Full,
+    Medium,
+    CloseUp,
+    Insert,
+}
+
+impl ShotKind {
+    pub fn finnish(self) -> &'static str {
+        match self {
+            ShotKind::Wide => "Laaja",
+            ShotKind::Full => "Kokokuva",
+            ShotKind::Medium => "Puolilähi",
+            ShotKind::CloseUp => "Lähikuva",
+            ShotKind::Insert => "Insertti",
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Shot {
+    pub start: f32,
+    pub end: f32,
+    pub kind: ShotKind,
+    pub subject: usize,
+    /// Kameran atsimuuttipoikkeama (radiaaneina) etusuunnasta.
+    pub angle: f32,
+    pub tracking: bool,
+}
+
+pub struct CameraTrack {
+    pub shots: Vec<Shot>,
+    motion: Vec<Arc<PreparedMotion>>,
+    heights: Vec<f32>,
+    head_heights: Vec<f32>,
+    backgrounds: Vec<(f32, String)>,
+    timeline: Timeline,
+    pub fov_y: f32,
+}
+
+const MIN_SHOT: f32 = 1.0;
+
+fn smoothstep(x: f32) -> f32 {
+    let x = x.clamp(0.0, 1.0);
+    x * x * (3.0 - 2.0 * x)
+}
+
+impl CameraTrack {
+    pub fn plan(tl: &Timeline, motion: Vec<Arc<PreparedMotion>>, heights: Vec<f32>, head_heights: Vec<f32>, names: &[String]) -> CameraTrack {
+        let subject_of = |name: Option<&String>| name.and_then(|n| names.iter().position(|x| x.eq_ignore_ascii_case(n))).unwrap_or(0);
+        let mut beats: Vec<&hs_core::TimelineEvent> = tl.events.iter().filter(|e| matches!(e.kind, EventKind::Motion { .. })).collect();
+        beats.sort_by_key(|e| e.start);
+        let mut shots: Vec<Shot> = Vec::new();
+        let mut dialogue_run = 0;
+        for e in beats {
+            let EventKind::Motion { motion: mk, character } = &e.kind else { continue };
+            let (start, end) = (e.start.seconds() as f32, e.end().seconds() as f32);
+            let hint = tl.events.iter().find_map(|c| match c.kind {
+                EventKind::Camera { hint } if c.start == e.start => Some(hint),
+                _ => None,
+            });
+            let speaker = tl.events.iter().find_map(|d| match &d.kind {
+                EventKind::Dialogue { speaker, .. } if d.start == e.start => Some(speaker.clone()),
+                _ => None,
+            });
+            let subject = subject_of(character.as_ref().or(speaker.as_ref().and_then(|s| s.as_ref())));
+            let mut push = |kind: ShotKind, s: f32, t: f32, tracking: bool| shots.push(Shot { start: s, end: t, kind, subject, angle: 0.0, tracking });
+            match hint {
+                Some(CameraHint::Wide) => push(ShotKind::Wide, start, end, mk.is_locomotion()),
+                Some(CameraHint::Medium) => push(ShotKind::Medium, start, end, mk.is_locomotion()),
+                Some(CameraHint::CloseUp) => push(ShotKind::CloseUp, start, end, mk.is_locomotion()),
+                Some(CameraHint::Insert) => push(ShotKind::Insert, start, end, false),
+                None => match mk {
+                    MotionKind::Walk(_) | MotionKind::Run(_) => push(ShotKind::Wide, start, end, true),
+                    MotionKind::Jump | MotionKind::Crouch | MotionKind::Wave => push(ShotKind::Full, start, end, false),
+                    MotionKind::Nod => push(ShotKind::CloseUp, start, end, false),
+                    MotionKind::PhoneTap => {
+                        if end - start >= 1.6 {
+                            let split = start + (end - start) * 0.35;
+                            push(ShotKind::Medium, start, split, false);
+                            push(ShotKind::Insert, split, end, false);
+                        } else {
+                            push(ShotKind::Insert, start, end, false);
+                        }
+                    }
+                    MotionKind::Wait => {
+                        dialogue_run += 1;
+                        let kind = if speaker.is_some() && dialogue_run % 2 == 0 { ShotKind::CloseUp } else { ShotKind::Medium };
+                        push(kind, start, end, false);
+                    }
+                },
+            }
+            if !matches!(mk, MotionKind::Wait) {
+                dialogue_run = 0;
+            }
+        }
+        // Yhdistä saman kuvan peräkkäiset otokset ja liian lyhyet otokset.
+        let mut merged: Vec<Shot> = Vec::new();
+        for s in shots {
+            if let Some(last) = merged.last_mut() {
+                let same = last.kind == s.kind && last.subject == s.subject && last.tracking == s.tracking;
+                if same || s.end - s.start < MIN_SHOT {
+                    last.end = s.end;
+                    last.tracking |= s.tracking;
+                    continue;
+                }
+            }
+            merged.push(s);
+        }
+        // 30 asteen sääntö: vaihtele kulmaa otoksesta toiseen.
+        for (i, s) in merged.iter_mut().enumerate() {
+            s.angle = match s.kind {
+                ShotKind::Insert => 0.0,
+                _ => [0.0f32, 0.32, -0.3][i % 3],
+            };
+        }
+        let backgrounds = tl
+            .events
+            .iter()
+            .filter_map(|e| match &e.kind {
+                EventKind::Background { id } => Some((e.start.seconds() as f32, id.clone())),
+                _ => None,
+            })
+            .collect();
+        CameraTrack { shots: merged, motion, heights, head_heights, backgrounds, timeline: tl.clone(), fov_y: 38.0 }
+    }
+
+    pub fn shot_at(&self, t: f32) -> Option<&Shot> {
+        self.shots.iter().find(|s| t >= s.start && t < s.end).or(self.shots.last())
+    }
+
+    pub fn background_at(&self, t: f32) -> &str {
+        self.backgrounds.iter().filter(|(s, _)| *s <= t).max_by(|a, b| a.0.total_cmp(&b.0)).map_or("studio-v1", |(_, id)| id.as_str())
+    }
+
+    /// Pehmennetty juuren paikka (painotettu keskiarvo ±0,4 s) seurantaa varten.
+    fn smooth_root(&self, subject: usize, t: f32) -> Vec3 {
+        let Some(m) = self.motion.get(subject) else { return Vec3::ZERO };
+        let mut acc = Vec3::ZERO;
+        let mut wsum = 0.0;
+        for k in -8..=8 {
+            let dt = k as f32 * 0.05;
+            let w = (-(dt * dt) / (2.0 * 0.18 * 0.18)).exp();
+            let (p, _) = m.root_at(t + dt);
+            acc += Vec3::new(p.x, 0.0, p.z) * w;
+            wsum += w;
+        }
+        acc / wsum
+    }
+
+    pub fn camera_at(&self, t: f32, aspect: f32) -> (Camera, Lights, ShotKind) {
+        let Some(shot) = self.shot_at(t) else {
+            return (Camera { eye: Vec3::new(0.0, 1.0, 4.0), target: Vec3::new(0.0, 0.7, 0.0), fov_y: self.fov_y }, Lights::default(), ShotKind::Wide);
+        };
+        let s = shot.subject.min(self.heights.len().saturating_sub(1));
+        let h = self.heights.get(s).copied().unwrap_or(1.2);
+        let head = self.head_heights.get(s).copied().unwrap_or(0.2);
+        let anchor = if shot.tracking { self.smooth_root(s, t) } else { self.smooth_root(s, shot.start + 0.4) };
+        let jump = self.motion.get(s).map_or(0.0, |m| m.root_at(t).0.y);
+        let (_, yaw) = self.motion.get(s).map_or((Vec3::ZERO, 0.0), |m| m.root_at(t));
+        // Rajattava korkeus F, kohdepisteen korkeus ja kameran korotus.
+        let (frame_h, target_y, elevation): (f32, f32, f32) = match shot.kind {
+            ShotKind::Wide => {
+                let spread = self.motion.iter().map(|m| m.root_at(t).0.x).fold(f32::MIN, f32::max) - self.motion.iter().map(|m| m.root_at(t).0.x).fold(f32::MAX, f32::min);
+                (h * 1.7 + spread / aspect.max(0.3) * 0.6, h * 0.55, 0.14)
+            }
+            ShotKind::Full => (h / 0.72, h * 0.52 + jump * 0.5, 0.08),
+            ShotKind::Medium => (h * 0.62, h * 0.70, 0.05),
+            ShotKind::CloseUp => (head * 2.6, h - head * 0.5, 0.02),
+            ShotKind::Insert => (0.42, h * 0.56, 0.62),
+        };
+        let mut target = Vec3::new(anchor.x, target_y, anchor.z);
+        if shot.kind == ShotKind::Insert {
+            // Insertti olan yli puhelimen ruutuun (leikkauskuva; 180 asteen sääntö ei koske sitä).
+            let sample = shot.start + (shot.end - shot.start) * 0.3;
+            if let Some(phone) = self.motion.get(s).and_then(|m| m.evaluate(&self.timeline, sample).props.phone) {
+                let normal = phone.transform.rot * Vec3::Z;
+                let progress = ((t - shot.start) / (shot.end - shot.start).max(1e-3)).clamp(0.0, 1.0);
+                let dist = 0.36 * (1.0 - 0.1 * smoothstep(progress));
+                let eye = phone.transform.pos + (Quat::from_rotation_y(-0.65) * normal) * dist + Vec3::Y * 0.05;
+                let camera = Camera { eye, target: phone.transform.pos, fov_y: self.fov_y };
+                return (camera, self.lights(yaw + std::f32::consts::PI, self.background_at(t)), shot.kind);
+            }
+            target += Quat::from_rotation_y(yaw) * Vec3::new(0.0, 0.0, h * 0.2);
+        }
+        let fov = self.fov_y.to_radians();
+        let mut distance = frame_h / (2.0 * (fov * 0.5).tan());
+        let progress = ((t - shot.start) / (shot.end - shot.start).max(1e-3)).clamp(0.0, 1.0);
+        if !shot.tracking {
+            distance *= 1.0 - 0.07 * smoothstep(progress); // hidas sisäänajo
+        }
+        // 180 asteen sääntö: kamera aina +Z-puolella.
+        let azimuth = shot.angle.clamp(-1.2, 1.2);
+        let dir = Vec3::new(azimuth.sin() * elevation.cos(), elevation.sin(), azimuth.cos() * elevation.cos()).normalize();
+        let eye = target + dir * distance;
+        let camera = Camera { eye, target, fov_y: self.fov_y };
+        (camera, self.lights(azimuth, self.background_at(t)), shot.kind)
+    }
+
+    /// Kolmipistevalaistus kameran suunnan mukaan; sävy ympäristön mukaan.
+    pub fn lights(&self, camera_azimuth: f32, env: &str) -> Lights {
+        let from = |az: f32, el: f32| -> Vec3 {
+            let a = camera_azimuth + az;
+            -Vec3::new(a.sin() * el.cos(), el.sin(), a.cos() * el.cos()).normalize()
+        };
+        let (key, fill, rim, ambient) = match env {
+            "city-evening-v1" => (Vec3::new(0.85, 0.62, 0.45), Vec3::new(0.16, 0.18, 0.32), Vec3::new(0.45, 0.55, 1.0), Vec3::new(0.26, 0.24, 0.36)),
+            "apartment-v1" | "studio-premium-v1" => (Vec3::new(0.78, 0.7, 0.6), Vec3::new(0.26, 0.26, 0.3), Vec3::new(0.55, 0.5, 0.45), Vec3::splat(0.34)),
+            id if id.starts_with("car") => (Vec3::new(0.75, 0.75, 0.78), Vec3::new(0.3, 0.32, 0.36), Vec3::new(0.6, 0.65, 0.7), Vec3::splat(0.33)),
+            _ => (Vec3::splat(0.75), Vec3::splat(0.25), Vec3::splat(0.5), Vec3::splat(0.32)),
+        };
+        Lights {
+            key: Light { dir: from(0.78, 0.7), color: key },
+            fill: Light { dir: from(-0.9, 0.25), color: fill },
+            rim: Light { dir: from(std::f32::consts::PI + 0.35, 0.6), color: rim },
+            ambient,
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct CinematographyAgent;
+
+impl StudioAgent for CinematographyAgent {
+    fn id(&self) -> &'static str {
+        "cinematography"
+    }
+    fn name(&self) -> &'static str {
+        "Kamera ja valot"
+    }
+    fn reads(&self) -> &'static [Slot] {
+        &[Slot::Motion]
+    }
+    fn writes(&self) -> &'static [Slot] {
+        &[Slot::Camera]
+    }
+    fn run(&mut self, p: &mut Production) -> Result<AgentReport, AgentError> {
+        let tl = p.timeline.as_ref().ok_or(AgentError::Missing { agent: "cinematography", slot: Slot::Timeline })?;
+        let names: Vec<String> = p.cast.iter().map(|c| c.character.params.name.clone()).collect();
+        let heights = p.cast.iter().map(|c| c.character.humanoid.proportions.height).collect();
+        let heads = p.cast.iter().map(|c| c.character.humanoid.head_height).collect();
+        let track = CameraTrack::plan(tl, p.motion.clone(), heights, heads, &names);
+        let summary = format!(
+            "{} otosta: {}",
+            track.shots.len(),
+            track.shots.iter().map(|s| s.kind.finnish()).collect::<Vec<_>>().join(" · ")
+        );
+        p.camera = Some(Arc::new(track));
+        Ok(AgentReport { summary })
+    }
+}

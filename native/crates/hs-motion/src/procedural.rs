@@ -207,6 +207,16 @@ impl PreparedMotion {
         PathSample { pos: a.pos.lerp(b.pos, f), yaw: a.yaw + diff * f }
     }
 
+    /// Juuren paikka (maassa, y = hypyn korkeus) ja suunta hetkellä `t`.
+    pub fn root_at(&self, t: f32) -> (Vec3, f32) {
+        let p = self.path_at(t);
+        (p.pos, p.yaw)
+    }
+
+    pub fn events(&self) -> &[TimelineEvent] {
+        &self.events
+    }
+
     fn velocity(&self, t: f32) -> Vec3 {
         const H: f32 = 1.0 / 120.0;
         (self.path_at(t + H).pos - self.path_at(t - H).pos) / (2.0 * H)

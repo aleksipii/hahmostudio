@@ -1,5 +1,14 @@
 [package]
 name = "hs-hahmo"
+description = "Hahmostudio: .hahmo-projektien (v1–v5) luku ja 2D-leikehahmojen renderöinti natiivisti"
 version.workspace = true
 edition.workspace = true
-publish = false
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+zip.workspace = true
+tiny-skia.workspace = true

@@ -43,7 +43,7 @@ impl GaitParams {
     pub fn walk() -> Self {
         GaitParams {
             frequency: 1.0 / 1.1,
-            stride: 1.35,
+            stride: 1.2,
             duty: 0.62,
             bounce: 0.025,
             lift: 0.12,
@@ -59,9 +59,9 @@ impl GaitParams {
     pub fn run() -> Self {
         GaitParams {
             frequency: 1.0 / 0.62,
-            stride: 2.3,
-            duty: 0.36,
-            bounce: 0.05,
+            stride: 1.9,
+            duty: 0.33,
+            bounce: 0.035,
             lift: 0.30,
             lean: 0.16,
             arm_swing: 0.85,
@@ -107,7 +107,14 @@ fn pelvis_drop(h: &Humanoid, p: &GaitParams) -> f32 {
     let limb = leg.thigh_len + leg.shin_len;
     let half = p.stride * h.pelvis_height() * p.duty * 0.5;
     let reach = (limb * limb - half * half).max(0.0).sqrt();
-    (limb - reach) + limb * (0.015 + p.bounce * 0.8)
+    // Kanta- ja varvasrullaus nostaa nilkkaa tukivaiheen päissä, joten lantion ei tarvitse laskea yhtä paljon.
+    let roll = heel_toe_raise(h, 1.0);
+    ((limb - reach) - roll).max(0.0) + limb * (0.012 + p.bounce * 0.5)
+}
+
+/// Nilkan nousu tukivaiheen päissä (0 keskellä, `edge` = 1 päissä).
+fn heel_toe_raise(h: &Humanoid, edge: f32) -> f32 {
+    h.leg(Side::Left).foot_len * 0.32 * edge * edge
 }
 
 /// Syklin näyte vaiheessa `phase` (0..1, kiertää).
@@ -125,14 +132,15 @@ pub fn sample(h: &Humanoid, p: &GaitParams, phase: f32) -> GaitSample {
         let lp = (phase + if side == Side::Right { 0.5 } else { 0.0 }).rem_euclid(1.0);
         if lp < p.duty {
             let u = lp / p.duty;
-            ankle_target[i] = Vec3::new(x, leg.ankle_height, s * (0.5 - u));
+            let edge = (u - 0.5).abs() * 2.0;
+            ankle_target[i] = Vec3::new(x, leg.ankle_height + heel_toe_raise(h, edge), s * (0.5 - u));
             // Kantaisku alussa, varvasponnistus lopussa.
             foot_pitch[i] = 0.25 * (1.0 - smoothstep(u * 5.0)) - 0.35 * smoothstep((u - 0.75) * 4.0);
             planted[i] = true;
         } else {
             let v = (lp - p.duty) / (1.0 - p.duty);
             let lift = p.lift * leg_len * (PI * v).sin();
-            ankle_target[i] = Vec3::new(x, leg.ankle_height + lift, s * (-0.5 + smoothstep(v)));
+            ankle_target[i] = Vec3::new(x, leg.ankle_height + heel_toe_raise(h, 1.0) + lift, s * (-0.5 + smoothstep(v)));
             foot_pitch[i] = -0.35 * (1.0 - smoothstep(v * 3.0)) + 0.2 * smoothstep((v - 0.6) * 3.0);
         }
     }
@@ -213,7 +221,8 @@ mod tests {
                 let g = sample(&h, &params, t * params.frequency);
                 let world = Vec3::new(0.0, 0.0, speed * t) + g.ankle_target[0];
                 if let (Some((true, prev)), true) = (last, g.planted[0]) {
-                    max_slip = max_slip.max((world - prev).length());
+                    // Vaakasuora liukuma; pystysuunnassa nilkka saa nousta kanta-varvasrullauksessa.
+                    max_slip = max_slip.max(Vec3::new(world.x - prev.x, 0.0, world.z - prev.z).length());
                 }
                 last = Some((g.planted[0], world));
             }
