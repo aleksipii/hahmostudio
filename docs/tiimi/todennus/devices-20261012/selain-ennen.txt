@@ -1,0 +1,53 @@
+INFO tab order first 40 stops ["Projekti","Käsikirjoitus ja kohtauksiin jako · ⌥1","Hahmot, kuvausympäristöt ja esineet rooleihin · ⌥2","Kuvakortit ja järjestys · ⌥3","Valitun kuvan liike, ilme, kamera ja ääni · ⌥4","Aikajana, esikatselu, jaksot ja vienti · ⌥5","Työpaja","Hae toimintoa (⌘K)","Vie…","Kirjasto","Käsikirjoitus","Jaksot","Kirjaston leveys","Hahmo — raahaa tai siirrä nuolinäppäimillä","Hahmo — raahaa tai siirrä nuolinäppäimillä","Hahmo — raahaa tai siirrä nuolinäppäimillä","Hahmo — raahaa tai siirrä nuolinäppäimillä","Hahmo — raahaa tai siirrä nuolinäppäimillä","Hahmo — raahaa tai siirrä nuolinäppäimillä","Hahm
+PASS every tab stop has visible focus ring []
+PASS every tab stop has accessible name []
+PASS no tab stop off-screen []
+INFO phase buttons expose current step [{"t":"1Tarina","cur":null,"pressed":"false","sel":null},{"t":"2Roolitus","cur":null,"pressed":"false","sel":null},{"t":"3Storyboard","cur":null,"pressed":"false","sel":null},{"t":"4Kuvaus","cur":null,"pressed":"false","sel":null},{"t":"5Leikkaus","cur":"page","pressed":"true","sel":null},{"t":"Työpaja","cur":null,"pressed":"false","sel":null}]
+PASS Toimintohaku (painike): initial focus inside dialog {"tag":"INPUT","role":"combobox","name":"Hae toimintoa, työvaihetta tai paneelia…","ring":true,"visible":true,"inDialog":true}
+PASS Toimintohaku (painike): Esc closes (focus where it landed) {"before":1,"after":0}
+PASS Toimintohaku (painike): focus returns to opener {"opener":"Hae toimintoa (⌘K)","now":"Hae toimintoa (⌘K)"}
+FAIL Toimintohaku (painike): Tab stays inside dialog (25 presses) ["BODY","Projekti","Käsikirjoitus ja kohtauksiin jako · ⌥1","Hahmot, kuvausympäristöt ja esineet rooleihin · ⌥2","Kuvakortit ja järjestys · ⌥3"]
+FAIL Toimintohaku (painike): Esc closes after focus escaped to background {"before":1,"after":1}
+FAIL Toimintohaku (painike): Shift+Tab stays inside dialog ["Tekoäly: paikallinen","AIKA / SEKUNTIA0.0 s1.0 s2.0 s3.0 s4.0 s5.0 s","Aikajanan ruutu","Lisää ⋯","KohtausValitse…"]
+PASS Toimintohaku (Ctrl+K): initial focus inside dialog {"tag":"INPUT","role":"combobox","name":"Hae toimintoa, työvaihetta tai paneelia…","ring":true,"visible":true,"inDialog":true}
+PASS Toimintohaku (Ctrl+K): Esc closes (focus where it landed) {"before":1,"after":0}
+PASS Toimintohaku (Ctrl+K): focus returns to opener {"opener":"Vie… (fokus ennen Ctrl+K)","now":"Vie…"}
+FAIL Toimintohaku (Ctrl+K): Tab stays inside dialog (25 presses) ["BODY","Projekti","Käsikirjoitus ja kohtauksiin jako · ⌥1","Hahmot, kuvausympäristöt ja esineet rooleihin · ⌥2","Kuvakortit ja järjestys · ⌥3"]
+FAIL Toimintohaku (Ctrl+K): Esc closes after focus escaped to background {"before":1,"after":1}
+FAIL Toimintohaku (Ctrl+K): Shift+Tab stays inside dialog ["Tekoäly: paikallinen","AIKA / SEKUNTIA0.0 s1.0 s2.0 s3.0 s4.0 s5.0 s","Aikajanan ruutu","Lisää ⋯","KohtausValitse…"]
+PASS Asetukset…: initial focus inside dialog {"tag":"BUTTON","role":null,"name":"Sulje","ring":true,"visible":true,"inDialog":true}
+PASS Asetukset…: Esc closes (focus where it landed) {"before":1,"after":0}
+FAIL Asetukset…: focus returns to opener {"opener":"Projekti-valikko","now":"BODY"}
+FAIL Asetukset…: Tab stays inside dialog (25 presses) ["Tekoäly: paikallinen","BODY","Projekti","Käsikirjoitus ja kohtauksiin jako · ⌥1","Hahmot, kuvausympäristöt ja esineet rooleihin · ⌥2"]
+FAIL Asetukset…: Esc closes after focus escaped to background {"before":1,"after":1}
+FAIL Asetukset…: Shift+Tab stays inside dialog ["AIKA / SEKUNTIA0.0 s1.0 s2.0 s3.0 s4.0 s5.0 s","Aikajanan ruutu","Lisää ⋯","KohtausValitse…","Aikajanan zoom"]
+PASS Käyttöohje: initial focus inside dialog {"tag":"BUTTON","role":null,"name":"Sulje käyttöohje","ring":true,"visible":true,"inDialog":true}
+PASS Käyttöohje: Esc closes (focus where it landed) {"before":1,"after":0}
+PASS Käyttöohje: focus returns to opener {"opener":"Projekti-valikko","now":"Projekti"}
+PASS Käyttöohje: Tab stays inside dialog (25 presses) []
+PASS Käyttöohje: Shift+Tab stays inside dialog []
+FAIL Vie video…: dialog opened {"first":{"tag":"BODY"},"base":0,"n":0}
+FAIL Tekoäly…: dialog opened {"first":{"tag":"SUMMARY","role":null,"name":"Projekti","ring":true,"visible":true,"inDialog":false},"base":0,"n":0}
+INFO axe start (Tarina, tyhjä) [{"id":"color-contrast","impact":"serious","n":14,"ex":[".s2-search > kbd :: Element has insufficient color contrast of 2.87 (foreground color: #5e5e6b, background color: #141418, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-meta :: Element has insufficient color contrast of 2.99 (foreground color: #5e5e6b, background color: #0f0f12, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",".inspector-section:nth-child(10) > .inspector-title :: Element has insufficient color contrast of 2.99 (foreground color: #5e5e6b, background
+INFO axe vaihe script [{"id":"color-contrast","impact":"serious","n":14,"ex":[".s2-search > kbd :: Element has insufficient color contrast of 2.87 (foreground color: #5e5e6b, background color: #141418, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-next > span :: Element has insufficient color contrast of 2.17 (foreground color: #ffffff, background color: #66b9e8, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1","button[title=\"Dialogi ja leikkaukset\"] > .script-mode-sublabel :: Element has insufficient color contrast of 2.73 (foreground color:
+INFO axe vaihe characters [{"id":"color-contrast","impact":"serious","n":9,"ex":[".s2-search > kbd :: Element has insufficient color contrast of 2.87 (foreground color: #5e5e6b, background color: #141418, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-next > span :: Element has insufficient color contrast of 2.17 (foreground color: #ffffff, background color: #66b9e8, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1","div:nth-child(1) > .eyebrow:nth-child(1) :: Element has insufficient color contrast of 2.99 (foreground color: #5e5e6b, background colo
+INFO axe vaihe storyboard [{"id":"color-contrast","impact":"serious","n":6,"ex":[".s2-search > kbd :: Element has insufficient color contrast of 2.87 (foreground color: #5e5e6b, background color: #141418, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-next > span :: Element has insufficient color contrast of 2.17 (foreground color: #ffffff, background color: #66b9e8, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-meta :: Element has insufficient color contrast of 2.99 (foreground color: #5e5e6b, background color: #0f0f12, font size: 8.3pt (11
+INFO axe vaihe shot [{"id":"aria-prohibited-attr","impact":"serious","n":1,"ex":[".script-safe-guide :: aria-label attribute cannot be used on a div with no valid role attribute."]},{"id":"color-contrast","impact":"serious","n":7,"ex":[".s2-search > kbd :: Element has insufficient color contrast of 2.87 (foreground color: #5e5e6b, background color: #141418, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-next > span :: Element has insufficient color contrast of 2.17 (foreground color: #ffffff, background color: #66b9e8, font size: 9.8pt (13px), font weight: normal). Expected 
+INFO axe vaihe timeline [{"id":"aria-prohibited-attr","impact":"serious","n":1,"ex":[".script-safe-guide :: aria-label attribute cannot be used on a div with no valid role attribute."]},{"id":"color-contrast","impact":"serious","n":14,"ex":[".s2-search > kbd :: Element has insufficient color contrast of 2.87 (foreground color: #5e5e6b, background color: #141418, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-meta :: Element has insufficient color contrast of 2.99 (foreground color: #5e5e6b, background color: #0f0f12, font size: 8.3pt (11px), font weight: normal). Expected contra
+INFO axe vaihe workshop [{"id":"color-contrast","impact":"serious","n":9,"ex":[".s2-search > kbd :: Element has insufficient color contrast of 2.87 (foreground color: #5e5e6b, background color: #141418, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",".s2-next > span :: Element has insufficient color contrast of 2.17 (foreground color: #ffffff, background color: #66b9e8, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",".layer-container > .panel-heading > h2 :: Element has insufficient color contrast of 2.99 (foreground color: #5e5e6b, background color:
+FAIL Vie video… (jakso ladattu): dialog opened {"tag":"BODY"}
+FAIL Tekoäly… (jakso ladattu): dialog opened {"tag":"SUMMARY","role":null,"name":"Projekti","ring":true,"visible":true,"inDialog":false}
+FAIL Vie… (yläpalkki, jakso ladattu): dialog opened {"tag":"BUTTON","role":null,"name":"Vie…","ring":true,"visible":true,"inDialog":false}
+PASS Alt+6 opens Työpaja "kilsat-frame s2 phase-workshop studio kilsat-app web-shell workspace-character"
+PASS keyboard Enter starts recording (fake mic)
+PASS recording name stable while visible time changes {"n1":{"l":"Lopeta ja käytä repliikki","t":"Lopeta ja käytä repliikki · 0.0 s"},"n2":{"l":"Lopeta ja käytä repliikki","t":"Lopeta ja käytä repliikki · 0.4 s"}}
+FAIL focus stays on stop button after start {"tag":"BODY"}
+FAIL Tab reaches Hylkää äänitys {"tag":"SUMMARY","role":null,"name":"Jakson ohjaussuunnitelma · vaatimusten tarkistus","ring":true,"visible":true,"inDialog":false}
+PASS recording continues through Alt+1..6 phase switches [{"d":2,"focus":"BODY","recording":true},{"d":3,"focus":"BODY","recording":true},{"d":4,"focus":"BODY","recording":true},{"d":5,"focus":"BODY","recording":true},{"d":6,"focus":"BODY","recording":true},{"d":1,"focus":"BODY","recording":true}]
+FAIL focus kept on stop button through phase switches ["BODY","BODY","BODY","BODY","BODY","BODY"]
+PASS Hylkää via keyboard cancels and announces
+FAIL focus after cancel (Hylkää-painike poistuu) {"tag":"BODY"}
+FAIL keyboard commit "Äänitä repliikki omalla äänellä"
+FAIL focus after commit {"tag":"BODY"}
+INFO device status line "Kamera: poisMikrofoni: repliikin tallennusNäppäimet: käytössäTekoäly: paikallinenTallennus pysäytetty"
+PASS page errors []

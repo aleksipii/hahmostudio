@@ -488,3 +488,23 @@ Ei testattu: aito Kokoro-malli (Hugging Face estetty kontissa), Macin ffmpeg 8.1
 Seuraava konkreettinen työ omalla Macilla: `npm run desktop:build` tästä haarasta, sitten `HAHMOSTUDIO_KOKORO_MODEL_DATA='/Users/Aleksi/Library/Application Support/hahmostudio' HAHMOSTUDIO_KOKORO_EXPORT_ACCEPTANCE=1 HAHMOSTUDIO_WORKFLOW_OUTPUT=/private/tmp/koeta-kokoro-export npm run desktop:test:workflow` (ilman STANDIN/NO_SANDBOX), tarkista `realInference:true` ja `ok:true`; sama `--packaged`-ajona uudesta paketista. Sen jälkeen käyttäjä katsoo ja kuuntelee MP4:n.
 
 Omistetut tiedostot: desktop/encoder.mjs (-t), desktop/encoder.test.mjs, desktop/kokoro-export-diagnostic.mjs, scripts/desktop-workflow-test.mjs (no-sandbox-rivi), scripts/kokoro-standin-*. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä; Codexin mittaria ei käytetty.
+
+## Claude → Codex/Claude: laitteet ja VoiceOver, automaattiset tarkistukset 12.10.2026
+
+Työhaara `claude/project-thread-02q2wy`, pohjana `codex/devices-voiceover-2026-10-12` @ `aca2f3a` (fast-forward). Ei yhdistetty mainiin eikä hahmostudio1.0:aan, haaroja ei poistettu.
+
+Tehty: selaimen näppäimistö- ja fokuskoe Chromiumilla ja valemikrofonilla. Löytyi kolme todellista ongelmaa: toimintohaun ja Asetusten Tab karkasi taustalle, Asetukset ei palauttanut kohdistusta, ja äänityksen alkaessa kohdistus katosi (`PanelDock` siirtää isännän), samoin hylkäyksen ja liittämisen jälkeen. Korjattu yhteisellä `useDialogFocus`-koukulla (`lib/dialog-focus.ts` + testi, `components/use-dialog-focus.ts`), `PanelDock`-kohdistuksen palautuksella ja `DialogueRecorder`-kohdistuksen palautuksella. Esikatselun turva-alueen kehys `aria-hidden`. Tarkemmin `docs/tiimi/MAC-LAITTEET-VOICEOVER.md` loppu.
+
+Testattu:
+- `npm run typecheck`: exit 0.
+- `npm test`: 1405 testiä, 1404 läpi, 1 ohitus (natiivi FFmpeg puuttuu kontista).
+- `npm run build:private`: exit 0.
+- Selainkoe `docs/tiimi/todennus/devices-20261012/selain-nappaimisto.mjs`: ennen 22 läpi / 21 epäonnistui, jälkeen 35 läpi / 0 epäonnistui (`selain-ennen.txt`, `selain-jalkeen.txt`).
+
+Ei testattu: Electron-workflow-diagnostiikka (Linux-kontissa ei Mac-Electronia), vienti-ikkunan näppäimistö Mac-sovelluksessa, VoiceOver, fyysiset laitteet. axe-core: heikko kontrasti 6–14 kohdassa per vaihe, tietoiset värit, ei muutettu.
+
+Avoimet hyväksynnät (käyttäjän laitteella): `docs/tiimi/LAITEHYVAKSYNTA-TARKISTUSLISTA.md`, 12 kohtaa: mikrofoni, kamera, VoiceOver ja näppäimistö.
+
+Seuraava konkreettinen työ: Mac-agentti rakentaa paketin tämän haaran lähteestä ja ajaa `npm run desktop:test:workflow` (kaksi uutta nimiväitettä). Sen jälkeen käyttäjä käy tarkistuslistan läpi ja kirjaa tulokset. Kun automaattiset ja käyttäjän tulokset ovat läpi, tämä haara yhdistetään testattuna kokonaisuutena main- ja hahmostudio1.0-haaroihin.
+
+Tiedostot: components/{use-dialog-focus.ts,command-palette.tsx,cloud-render-dialog.tsx,rig-suggest-dialog.tsx,recovery-prompt-modal.tsx,panel-dock.tsx,dialogue-recorder.tsx,editor.tsx,presentation-panel.tsx}, lib/dialog-focus{.ts,.test.ts}, docs/tiimi/{MAC-LAITTEET-VOICEOVER.md,LAITEHYVAKSYNTA-TARKISTUSLISTA.md}, docs/tiimi/todennus/devices-20261012/.

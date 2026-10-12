@@ -47,3 +47,26 @@ Claude: lue TIIMI.md:n viimeinen kirjaus ja agenttien työhaarojen kirjaukset. J
 **Ehdotus:** todenna edellä nimetyt Tab- ja portaalitapaukset eristetyllä lähde-Electronilla ja vasta sen jälkeen rajaa mahdollinen yhteinen modalin fokuksenhallinta. `aria-modal=true` ei yksin toteuta näppäimistön Tab-rajausta. Näitä rivejä ei lasketa läpäistyiksi GUI-testeiksi tai todennetuiksi VoiceOver-virheiksi.
 
 **Avoimet:** fyysisen mikrofonin ja kameran kokeet, ihmisen VoiceOver-kuuntelu, modalien näppäimistötestit, tallentimen saavutettavuusnimen uudet workflow-väitteet lopullisella lähdebuildillä/paketilla. Käyttöoikeuksia ei muutettu eikä fyysisiä laitteita avattu.
+
+## Claude 12.10.2026: selaimen näppäimistö- ja fokuskoe sekä korjaukset
+
+Työhaara `claude/project-thread-02q2wy` (sisältää `codex/devices-voiceover-2026-10-12` @ `aca2f3a`). Ajettu Linux-kontissa Chromiumilla Vite-kehityspalvelinta vasten. Mikrofonina Chromiumin valelaite (`--use-fake-device-for-media-stream`). Tämä ei ole VoiceOver-koe eikä fyysisen laitteen koe.
+
+**Todettu ennen korjausta (selain-ennen.txt, 22 läpi / 21 epäonnistui):**
+- Toimintohaku: Tab ja Shift+Tab vievät kohdistuksen taustalle. Kun kohdistus on poistunut kentästä, Esc ei enää sulje hakua.
+- Asetukset: Tab karkaa taustalle. Esc sulkee, mutta kohdistus putoaa sivun runkoon eikä palaa Projekti-valikkoon.
+- Äänitys: kun äänitys alkaa, tallennintyökalut siirtyvät pysyvään isäntään (`PanelDock`) ja kohdistus katoaa runkoon. Näppäimistön tai VoiceOverin käyttäjä menettää paikkansa juuri, kun pysäytystä tarvitaan. Sama tapahtuu hylkäyksen ja liittämisen jälkeen.
+- Käyttöohje toimi jo oikein (vertailukohta).
+
+**Korjattu:**
+- `lib/dialog-focus.ts` + testi ja `components/use-dialog-focus.ts`: yhteinen Tab-rajaus päällimmäiselle `aria-modal`-ikkunalle, alkukohdistus tarvittaessa ensimmäiseen ohjaimeen ja paluu avaajaan (tai suljetun valikon otsikkoon). Käytössä: toimintohaku, Asetukset, pilvirenderöinti, nivelehdotus ja palautuspiste (palautuspisteeseen ei lisätty Esc-sulkemista).
+- Toimintohaku: Esc sulkee koko ikkunasta, ei vain hakukentästä.
+- `PanelDock`: isännän siirron aiheuttama kohdistuksen menetys palautetaan samaan ohjaimeen.
+- `DialogueRecorder`: hylkäyksen ja liittämisen jälkeen kohdistus palaa äänityspainikkeeseen, jos se oli tallentimessa.
+- Esikatselun koristeellinen turva-alueen kehys on `aria-hidden` (axe: kielletty aria-label div-elementissä).
+
+**Korjauksen jälkeen (selain-jalkeen.txt, 35 läpi / 0 epäonnistui):** 40 ensimmäistä Tab-pysäkkiä näkyvällä kohdistusrenkaalla ja nimellä; toimintohaku (painike ja Ctrl+K) ja Asetukset: alkukohdistus, Tab/Shift+Tab rajaus, Esc, paluu avaajaan; äänitys Enterillä, vakaa saavutettavuusnimi, kohdistus säilyy aloituksessa ja kuudessa ⌥-vaiheenvaihdossa, Hylkää näppäimistöllä, liittäminen ja status-ilmoitus. Verkkoversiossa vienti-ikkuna ei ole modaali (vain Mac-sovelluksessa), ja Tekoäly avaa paneelin; niitä ei testattu tässä.
+
+**Ei korjattu, päätös käyttäjälle tai UI-agentille:** axe-core löytää jokaisesta vaiheesta 6–14 heikon kontrastin tekstiä (esim. `#5e5e6b` tummalla, 2,9:1; Seuraava-painikkeen valkoinen teksti vaaleansinisellä, 2,2:1). Ne ovat tietoisia minimalismin värejä, joten niitä ei muutettu tässä.
+
+**Avoinna edelleen:** fyysinen mikrofoni ja kamera, ihmisen VoiceOver-kuuntelu, Electron-workflow-diagnostiikan kaksi uutta nimiväitettä integroidulla buildillä, vienti-ikkunan näppäimistökoe Mac-sovelluksessa. Käyttäjän lyhyt lista: `docs/tiimi/LAITEHYVAKSYNTA-TARKISTUSLISTA.md`.

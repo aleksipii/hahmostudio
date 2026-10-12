@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import type { RecoverySnapshot } from '../lib/studio/recovery';
+import { useDialogFocus } from './use-dialog-focus';
 
 /** Pakollinen valinta käynnistyksen palautuspisteestä — ei alareunan banneria. */
 export default function RecoveryPromptModal({
@@ -18,11 +20,14 @@ export default function RecoveryPromptModal({
   onDiscard: () => void;
   onClearCorrupt: () => void;
 }) {
+  const dialog = useRef<HTMLElement>(null);
+  useDialogFocus(dialog, !!(snapshot || error));
   if (!snapshot && !error) return null;
 
   return (
     <div className="modal-backdrop recovery-modal-backdrop" role="presentation">
       <section
+        ref={dialog}
         className="help-modal recovery-prompt-modal"
         role="dialog"
         aria-modal="true"
