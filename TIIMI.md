@@ -1060,3 +1060,70 @@ Seuraavat erilliset toteutukset: sivuaskelten oikea tukijalkalogiikka, portaat
 Halausta/kättelyä/yhteistä kantamista ei merkitä tuetuksi ilman kahden hahmon
 kontaktisopimusta. Täydellinen virheettömyys tai yleinen mocap-laatu ei ole luvattu.
 Mac/Metal/laitteet ja aito Kokoro ovat edelleen aiempien handoffien mukaan avoinna.
+
+## Codex: 2 000 valmista liikevariaatiota ja glTF-aineisto — 13.10.2026
+
+Työkalu Codex, haara work, toteutuscommit
+`c0b483b7c802e97e4277bcc9f9f8cbc1e84a6d4d`, pohja main `30e9471`.
+Käyttäjän "2000 tuhatta" tulkittiin alussa selvästi 2 000 variaatioksi,
+ei kahdeksi miljoonaksi tai 2 000 uudeksi perustoiminnoksi.
+
+Valmis:
+- 20 reseptiä: 18 jo toteutettua perusliikettä +2 oikeaa kahden liikkeen sarjaa.
+  Neljä sarjan hahmoa ×25 kestoa (1,0–3,4 s / vaihe) =2 000 yksilöllistä klippiä.
+- hs-agents motion_library sisältää vakaat tunnisteet, tunnetun katalogin,
+  lähteen säilyttävän append_checked-sopimuksen, CRLF/koko/jakson kestorajat.
+- Natiivin käsikirjoitusvalitsin: hahmo/liike/kesto/haku, esikatselu ja hyväksyntä,
+  koko lähteen vanhenemissuoja; ei itsestään kirjoitettua toimintoa tai repliikkiä.
+- hs-agents motion_assets vie glTF2-verkot/normaalit/värit/jointpainot,
+  nivelhierarkian ja inverse-bind-matriisit sekä oikeat nivel/root-avainruudut30Hz.
+  500 animaatiota per hahmo; 4 glTF+bin-paria ja catalog.json.
+  Luusidonnan nollapainojen indeksit ja buffer targetit korjattu Khronos-tarkistuksen
+  perusteella. Vakionivelkanavat tiivistetään ilman vaihtelevien näytteiden häviötä.
+- CLI motion-assets -o <uusi kansio>, motion-catalog JSON. Ei audio/mallilatausta.
+  Vanhoja kohdekansioita ei ylikirjoiteta. Aineisto sisältää vakiohahmot eikä
+  käyttäjän ääniä/projekteja. NativeMOTION-ASSETS.md kuvaa käyttöä ja rajoja.
+
+Omistus: katalogi/CLI/integraatio/ohjeet pääagentti; glTF-aliagentti
+hs-agents/{src/motion_assets.rs,tests/motion_assets.rs}; UI-aliagentti
+hs-app/{motion_assets_ui.rs,script_assist_ui.rs}. Claude-moottoriin ja
+projektiformaatteihin ei koskettu. Toteutuscommitin11tiedostoa ovat yhteinen valmiustila.
+
+Tarkistukset (Linux):
+- cargo test --locked --workspace -j4:232 läpi,0 fail,1 ohitettu aito Kokoro,
+  exit0 /tmp/koeta-assets-workspace-tests.log. Myöhempien glTF-yhteensopivuus-
+  korjausten jälkeen 2 exporter+3 katalogitestiä läpi /tmp/koeta-assets-final-tests.log.
+- cargo build --locked -p hs-app -p hs-cli -j4:exit0 viimeiselle lähteelle.
+- cargo clippy --locked --workspace --all-targets -j4:exit0 varoituksin, mukana
+  uuden exporter-helperin argumenttimäärä/chunk-tyylit (ei piilotettu),
+  /tmp/koeta-assets-final-clippy.log.
+- 2 000 ainutlaatuista ID:tä ja käsikirjoitusta syntaksitestissä;20×4 pohja/hahmo-
+  yhdistelmää aidossa tuotantoputkessa. Exporter-testit vertaavat binäärisiä
+  avainruutuarvoja oikeaan nativePoseen, myös loppupisteen; luupainojen sidonta-
+  asento säilyy, vanhat kohteet/virheelliset reseptit hylätään.
+- Koko 2 000-klipin aineisto oikeasti generoitu (ei pelkkä manifesti):
+  /workspace/koeta-motion-assets-2000, noin168MiB; binary_bytes102983152,
+  4 hahmoa,500 animaatiota kussakin glTF:ssä.
+- Khronos gltf-validator2.0.0-dev.3.10 (TLS-varmennettu npm asennus vain /tmp,
+  ei repodependency): KAIKKI4 glTF+bin-paria, rajoittamaton issues-tarkistus,
+  errors0,warnings0,infos0,truncatedfalse. /tmp/koeta-gltf-validation-final.log.
+  Ensimmäinen testipaketti korjattiin ja generoitiin uudelleen; sen ainoat
+  huomautukset olivat BUFFER_VIEW_TARGET_MISSING ja ACCESSOR_JOINTS_USED_ZERO_WEIGHT.
+- Oikea Xvfb/lavapipe GUI: valitsin/haku/esikatselu eivät muuttaneet lähdettä;
+  hyväksytty KalleTaputus1s lisäsi vain loppurivin,15s→16s/450→480ruutua,
+  vanhat rivit/aikajana säilyivät. /tmp/koeta-assets-{picker,preview,accepted}.png.
+- Valmis ZIP /workspace/koeta-motion-assets-2000.zip,22203244tavua,15tiedostoa,
+  CRC-verifiointi läpi, README+4validatorraporttia+sha256manifesti mukana.
+  ZIP SHA256 4aac85a17a9f87472a7d155fffd0b4dc802bee68b20dbb2794256b26e95664db.
+  Aineiston binäärejä ei lisätty Gitiin; koodi generoi samat tunnetut klipit.
+- git diff --check läpi; quota unavailable, prosenttia ei päätelty.
+
+Rajat / seuraava tehtävä:
+Valitsin käyttää alkuperäisiä reseptejä nykyiselle sarjahahmolle, ei ulkoisesti
+muokattujen glTF-avainruutujen takaisin tuontia. GlTF:n PBR-varjostus poikkeaa
+native-ääriviivoista, ei yleistä retargetointia/in-place-mocap/seamless-loop-lupausta.
+Blenderissä/Macilla importointi tai fyysinen katselmointi ei ole ajettu.
+Puhelin/tuoli jätetty aineistosta pois, koska ne tarvitsevat esinekontaktit.
+2 000 variaatiota ei toteuta ovia, portaita, luovutusta tai kahden hahmon kontakteja.
+Seuraava oma kokonaisuus on esine/kahvakontakti tai glTF-retargetointi/takaisin tuonti.
+Aito Kokoro, kuuntelu ja Mac-laitetestit ovat edelleen aiemman handoffin mukaan auki.
