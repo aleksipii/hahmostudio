@@ -1527,3 +1527,55 @@ olemassa olevaa puhetta; puuttuva puhe tarkistetaan uudelleen tuotannon jälkeen
 Oikea Mac/Kokoro/Metal/laitteet/Finder/notarisoitu DMG ja release-mittaukset
 yhä avoinna. Seuraava visuaalinen vaihe: lähderivin kestosäädin samalla
 äänen ensisijaisuussopimuksella; kontaktien lisätoiminnot erillinen domain-työ.
+
+
+## Codex handoff — 13.10.2026: aikajanan keston raahaus
+
+Haara work; lähtöcommit main 0ae864b497ad31f5832fc70625828adfdb707acb.
+Julkaisucommit otsikolla `Add checked timeline duration resizing`.
+Etä-main haettu ja sama ennen julkaisua.
+
+Codexin omistamat muutokset:
+- hs-script/src/{lib,english}.rs: tuetun englannin/FI-liike- tai kontaktiohjeen
+  keston muutos samalla jäsentimellä, säilyttää komennon kielen, dialogin,
+  suunnan, kontaktikohteen ja muut tagit. Implisiittiselle puhe/taukoriville
+  lisätään [wait Ns]. Virheellinen muutos hylätään; ei sanaston arvauksia.
+- hs-agents/src/timing_edit.rs, agents/voice.rs ja tests/timing_edit.rs:
+  duration-preflight samalla kandidaattituotannolla ja tallennetulla puheella
+  kuin siirtoraahaus. Todellinen ääni + jaettu0.3sTAIL on vähimmäisraja;
+  lyhennys sen alle hylätään eikä ääntä nopeuteta/leikata. Saman hahmon
+  päällekkäisyys ja kontaktiristiriidat tarkistetaan myös pidennyksessä.
+- hs-app/src/{panels,timeline_ui}.rs: kortin10px loppureuna muokkaa kestoa,
+  muu kortti edelleen alkuaikaa. Valkoinen reunamerkki, keltainen luonnos,
+  ruutuun napsahtaminen ja sama Hyväksy/Peruuta/recheck/Undo-polku.
+  Aikajanan lopussa2s tyhjää muokkaustilaa (enintään60s), toistopää ei
+  siirry varsinainen keston ulkopuolelle tyhjää aluetta napsautettaessa.
+- EPISODE-WORKFLOW/PARALLEL-CONTACTS/PARITEETTI päivitetty.
+
+Todennus Linuxissa:
+- cargo test --locked --workspace -j4:270läpi,0fail,1ohitettu(aitoKokoro),exit0
+  /tmp/koeta-resize-workspace.log.
+- Kohdennettu hs-agents timing_edit5,hs-script34 sekä hs-agents lib19 läpi
+  /tmp/koeta-resize-targeted.log. Uudet resize-testit säilyttävät repliikin
+  näytteet/keyn, hylkäävät4s omaa ääntä lyhyemmän2s rivin (min4.3s) ja
+  seuraavan saman hahmon kirjoitetun alun päälle ulottuvan pidennyksen.
+  Englanti, FI, luonnollinen tuettu EN-ohje, implicit-wait ja kontaktit testattu.
+- build hs-app/hs-cli ja clippy workspace/all-targets exit0; olemassa olevia
+  varoituksia, /tmp/koeta-resize-final-build.log ja /tmp/koeta-resize-clippy.log.
+- Xvfb :103/lavapipe: oikea loppureunan raahaus Maijan nyökkäys3s->4s,
+  luonnos, hyväksytty lähde [nod 4.000000s], aikajanan puhe/liike4s ja
+  kameran päivitys; CtrlZ palautti3s. Kuvat
+  /tmp/koeta-resize-{before,preview,accepted,undo}.png.
+- GUI-ristiriita: Kallen vilkutus3s->4s osuu3s kirjoitettuun seuraavaan
+  nyökkäykseen. Modal ilmoittaa rivin2, Hyväksy disabled, lähde ennallaan;
+  /tmp/koeta-resize-conflict.png. Omistetut GUI/Xvfb-prosessit pysäytetty.
+- Quota unavailable; prosenttia ei päätelty. git diff --check läpi.
+
+Rajat/jatko:
+Muutos koskee koko lähderivin kirjoitettua kestoa; puhe-/liikeraidat eivät
+ole itsenäisiä. Tavalliset rajat0.5–20s ja kontaktit1–20s säilyvät.
+Puuttuvan puheen ajoitus tarkistetaan tuotannon jälkeen. Oikea Kokoro, Mac,
+Metal/laitteet/Finder/DMG sekä release-mittaukset edelleen hyväksymättä.
+Seuraava kehityskokonaisuus: suunnittele puheen ja liikkeen erillinen
+ajoitussopimus lähderivi/repliikki-ID:t sekä muuttumaton ääni säilyttäen;
+kontaktien uudet ovet/portaat/pudotus ovat erillisiä toteutuksia.

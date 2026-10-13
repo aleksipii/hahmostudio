@@ -267,7 +267,7 @@ pub fn normalize_tag(tag: &str) -> Result<Option<String>, String> {
     )))
 }
 
-fn take_duration(rest: &str, original: &str) -> Result<(String, Option<f64>), String> {
+pub(super) fn take_duration(rest: &str, original: &str) -> Result<(String, Option<f64>), String> {
     let mut parts: Vec<&str> = rest.split_whitespace().collect();
     let Some(last) = parts.last().copied() else {
         return Ok((String::new(), None));

@@ -190,7 +190,8 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
             }
         });
         let Some(tl) = app.production.timeline.clone() else { return };
-        let duration = tl.duration.seconds().max(0.1) as f32;
+        let episode_duration = tl.duration.seconds().max(0.1) as f32;
+        let duration = (episode_duration + 2.0).min(60.0);
         type Clip = (f32, f32, String, Color32, Option<usize>);
         let rows: Vec<(String, Vec<Clip>)> = {
             let mut rows = Vec::new();
@@ -269,25 +270,29 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                     if hit.drag_started() {
                         app.select_line(line); app.playing = false;
                         let pointer_start = ctx.input(|input| input.pointer.press_origin()).map_or(r.left(), |p| p.x);
-                        app.workflow.timeline_drag = Some(crate::timeline_ui::Drag { line, source: app.script.clone(), original_start: *a, pointer_start, seconds: *a });
+                        let resize = pointer_start >= r.right() - 10.0;
+                        let original_duration = *b - *a;
+                        app.workflow.timeline_drag = Some(crate::timeline_ui::Drag { resize, original_duration, line, source: app.script.clone(), original_start: *a, pointer_start, seconds: if resize {original_duration} else {*a} });
                     }
                     if hit.dragged() || hit.drag_stopped() {
                         clip_handled = true;
                         if let Some(drag) = app.workflow.timeline_drag.as_mut().filter(|drag| drag.line == line) {
                             if let Some(pos) = ctx.input(|input| input.pointer.latest_pos()) {
-                                let time = drag.original_start + (pos.x - drag.pointer_start) / lane.width() * duration;
+                                let time = if drag.resize {drag.original_duration} else {drag.original_start} + (pos.x - drag.pointer_start) / lane.width() * duration;
                                 let fps = app.production.fps.0.max(1) as f32;
-                                drag.seconds = ((time.max(0.0) * fps).round() / fps).min(59.5);
-                                app.time = drag.seconds;
+                                drag.seconds = ((time.max(if drag.resize {0.5} else {0.0}) * fps).round() / fps).min(if drag.resize {20.0} else {59.5});
+                                app.time = (if drag.resize {drag.original_start + drag.seconds} else {drag.seconds}).min(episode_duration);
                             }
                         }
                         if hit.drag_stopped() { dropped = app.workflow.timeline_drag.take(); }
                     }
-                    hit.on_hover_text("Raahaa koko toimintorivin aloitusaikaa. Pudotus näyttää tarkistetun luonnoksen; hyväksy tai peruuta.");
+                    hit.on_hover_text("Raahaa korttia siirtääksesi alkuaikaa tai sen oikeaa reunaa muuttaaksesi kestoa. Pudotus näyttää tarkistetun luonnoksen.");
                 }
                 painter.rect_filled(r, 4.0, *color);
+                if line.is_some() {painter.line_segment([egui::pos2(r.right()-4.0,r.top()+3.0),egui::pos2(r.right()-4.0,r.bottom()-3.0)],Stroke::new(1.0_f32, Color32::WHITE));}
                 if let Some(drag) = app.workflow.timeline_drag.as_ref().filter(|drag| Some(drag.line) == *line) {
-                    let ghost = r.translate(egui::vec2((drag.seconds - *a) / duration * lane.width(), 0.0));
+                    let mut ghost = r;
+                    if drag.resize {ghost.max.x = x_of(*a + drag.seconds);} else {ghost = r.translate(egui::vec2((drag.seconds - *a) / duration * lane.width(), 0.0));}
                     painter.rect_stroke(ghost, 4.0, Stroke::new(2.0_f32, ACCENT), egui::StrokeKind::Inside);
                     painter.text(ghost.left_top(), egui::Align2::LEFT_BOTTOM, format!("{:.3} s", drag.seconds), egui::FontId::proportional(12.0), ACCENT);
                 }
@@ -303,7 +308,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
         painter.line_segment([egui::pos2(x, rect.top() + 12.0), egui::pos2(x, rect.bottom())], Stroke::new(2.0_f32, ACCENT));
         if let Some(pos) = response.interact_pointer_pos() {
             if !clip_handled && app.workflow.timeline_drag.is_none() && (response.dragged() || response.clicked()) {
-                app.time = ((pos.x - lane.left()) / lane.width() * duration).clamp(0.0, duration);
+                app.time = ((pos.x - lane.left()) / lane.width() * duration).clamp(0.0, episode_duration);
                 app.playing = false;
                 let index = ((pos.y - lane.top()) / row_h).max(0.0) as usize;
                 let actor = rows.get(index).and_then(|(name, _)| name.strip_prefix("Puhe · ").or_else(|| name.strip_prefix("Liike · ")));

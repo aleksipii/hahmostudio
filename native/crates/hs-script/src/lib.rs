@@ -1421,3 +1421,49 @@ pub fn scheduled_starts(plan: &ScriptPlan, seconds: &[f64]) -> Result<Vec<f64>, 
     }
     Ok(starts)
 }
+
+
+/// Rewrite only the duration of a supported motion/contact on a single source row.
+pub fn with_line_duration(row: &str, seconds: f64) -> Result<String, String> {
+    if row.contains(['\n', '\r']) || !seconds.is_finite() || !(MIN_LINE_SECONDS..=MAX_LINE_SECONDS).contains(&seconds) {
+        return Err("Rivin kesto on 0,5–20 sekuntia.".into());
+    }
+    let original = parse(row);
+    if !original.is_assemblable() || original.beats.len() != 1 { return Err("Valitse kelvollinen toimintorivi.".into()); }
+    let mut offset = 0;
+    let mut replacement = None;
+    while let Some(relative) = row[offset..].find('[') {
+        let start = offset + relative;
+        let end = start + row[start..].find(']').ok_or("Ohjeen sulkeva hakasulku puuttuu")? + 1;
+        let tag = &row[start + 1..end - 1];
+        if matches!(classify(tag), Ok(Tag::Motion(..) | Tag::Contact(..))) {
+            let (command, _) = english::take_duration(tag, tag)?;
+            replacement = Some((start, end, format!("[{command} {seconds:.6}s]")));
+        }
+        offset = end;
+    }
+    let next = if let Some((start, end, tag)) = replacement { format!("{}{tag}{}", &row[..start], &row[end..]) } else { format!("{row} [wait {seconds:.6}s]") };
+    let checked = parse(&next);
+    if !checked.is_assemblable() || checked.beats.len() != 1 || checked.beats[0].motion != original.beats[0].motion || checked.beats[0].text != original.beats[0].text || checked.beats[0].contact != original.beats[0].contact {
+        return Err("Keston muutos ei säilytä tuettua toimintoa. Kontaktin vähimmäiskesto on 1 sekunti.".into());
+    }
+    Ok(next)
+}
+
+#[cfg(test)]
+mod duration_edit_tests {
+    #[test]
+    fn rewrite_preserves_english_finnish_contact_and_dialogue() {
+        for row in ["KALLE: Hello. [wave 2s] [at 1s]", "MAIJA: Héllo. [walking to the left for 2 seconds]", "KALLE: Hei. [nyökkää 2s]", "KALLE: [give cup to Maija 2s]", "KALLE: [pick up cup 2s]", "KALLE: Hello."] {
+            let next = super::with_line_duration(row, 3.0).unwrap();
+            let before = super::parse(row); let after = super::parse(&next);
+            assert_eq!(before.beats[0].text, after.beats[0].text);
+            assert_eq!(before.beats[0].motion, after.beats[0].motion);
+            assert_eq!(before.beats[0].contact, after.beats[0].contact);
+            assert_eq!(after.beats[0].seconds, 3.0);
+        }
+        for seconds in [f64::NAN, 0.1, 21.0] { assert!(super::with_line_duration("KALLE: [wave 2s]", seconds).is_err()); }
+        assert!(super::with_line_duration("KALLE: [give cup to Maija 2s]", 0.5).is_err());
+        assert!(super::with_line_duration("[camera wide]", 3.0).is_err());
+    }
+}

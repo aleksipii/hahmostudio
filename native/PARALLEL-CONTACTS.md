@@ -18,9 +18,18 @@ kamerasääntöjä ja kontakteja eikä käynnistä uutta synteesiä. Virhe estä
 
 Hyväksyntä tarkistaa tilanteen uudelleen. ⌘Z/⌘⇧Z (Linux Ctrl) palauttaa ajoituksen.
 Myöhemmät rivit ilman `[at]`-ohjetta voivat siirtyä, koska niiden alku riippuu
-aiempien rivien loppumisesta. Raahaus ei vaihda puhujaa, muuta kestoa tai erottele
-puhetta ja liikettä itsenäisiksi lähderaidoksi. Kamera- ja taustaraidat ovat tässä
-lukutilassa; puuttuva puhe tarvitsee uuden ajoitustarkistuksen tuotannon jälkeen.
+aiempien rivien loppumisesta. Raahaus ei vaihda puhujaa tai erottele puhetta ja liikettä itsenäisiksi lähderaidoksi.
+
+**Keston muutos:** raahaa puhe- tai liikekortin oikeaa reunaa (valkoinen merkki).
+Keltainen kehys näyttää ehdotetun keston; pudotuksessa tarkistetaan ja hyväksytään
+koko rivin muutos. Englannin/FI-liikeohje ja kontaktin kohde säilyvät; vain
+kesto vaihtuu. Jos rivillä ei ole liikeohjetta, lisätään `[wait ...]`.
+Tavallinen kesto on 0.5–20 s, kontaktin vähimmäiskesto 1 s. Tallennettu puhe
+ja sen 0.3 s hengähdys ovat vähimmäisraja: niitä lyhyempi muutos estetään,
+eikä ääntä leikata tai nopeuteta. Pidennys voi siirtää myöhempiä oletusajoituksia
+ja kirjoitettuun `[at]`-alkuun osuva saman hahmon ristiriita estää hyväksynnän.
+Aikajanan lopussa on enintään kaksi sekuntia tyhjää muokkaustilaa pidennykseen;
+jakson varsinainen kesto säilyy erillisenä. Kamera- ja taustaraidat ovat lukutilassa; puuttuva puhe tarvitsee uuden ajoitustarkistuksen tuotannon jälkeen.
 
 Kamera on yhteinen. Samanaikaiset kirjoitetut kameraohjeet ovat ristiriita.
 Kirjoitettu kuvakulma voittaa automaattisen ehdotuksen. Muuten yhtäaikaiset

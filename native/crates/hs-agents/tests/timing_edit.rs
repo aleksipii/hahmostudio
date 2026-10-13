@@ -67,3 +67,52 @@ fn handoff_cannot_move_before_pickup() {
     assert!(hs_agents::timing_edit::checked_retime(&p, source, 6, 3.0).is_ok());
     assert_eq!(p.script, source);
 }
+
+#[test]
+fn resize_retains_speech_and_updates_action_duration() {
+    let source = "KALLE: Hello. [at 0s] [wave 3s]";
+    let mut p = Production::new(source);
+    p.voice_engine = Some(std::sync::Arc::new(hs_voice::TestEngine::default()));
+    Pipeline::default().run(&mut p).unwrap();
+    let speech = p.voice_lines[0]
+        .speech
+        .as_ref()
+        .unwrap()
+        .audio
+        .samples
+        .clone();
+    let key = p.voice_lines[0].key.clone();
+    let next = hs_agents::timing_edit::checked_duration(&p, source, 1, 4.0).unwrap();
+    assert!(next.contains("[wave 4.000000s]"));
+    assert_eq!(p.script, source);
+    p.script = next;
+    p.voice_engine = None;
+    Pipeline::default().run(&mut p).unwrap();
+    assert_eq!(p.plan.as_ref().unwrap().beats[0].seconds, 4.0);
+    assert_eq!(p.voice_lines[0].key, key);
+    assert_eq!(
+        p.voice_lines[0].speech.as_ref().unwrap().audio.samples,
+        speech
+    );
+    assert_eq!(p.beat_times[0], (0.0, 4.0));
+}
+
+#[test]
+fn resize_cannot_truncate_own_recording_or_cross_next_actor_action() {
+    let source = "KALLE: Recorded line. [at 0s] [wait 5s]\nKALLE: [at 5s] [nod 2s]";
+    let mut p = Production::new(source);
+    Pipeline::default().run(&mut p).unwrap();
+    p.own_audio.insert(
+        p.voice_lines[0].key.clone(),
+        std::sync::Arc::new(hs_lipsync::Audio {
+            samples: vec![0.05; 48000 * 4],
+            sample_rate: 48000,
+        }),
+    );
+    Pipeline::default().run(&mut p).unwrap();
+    let error = hs_agents::timing_edit::checked_duration(&p, source, 1, 2.0).unwrap_err();
+    assert!(error.contains("4.300"), "{error}");
+    assert!(hs_agents::timing_edit::checked_duration(&p, source, 1, 6.0).is_err());
+    assert!(hs_agents::timing_edit::checked_duration(&p, source, 1, 4.5).is_ok());
+    assert_eq!(p.script, source);
+}

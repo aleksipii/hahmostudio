@@ -155,7 +155,7 @@ fn saved_matches(p: &Production, line: &DialogueLine, binding: &hs_project::Audi
 /// Mix-raidan näytetaajuus.
 pub const MIX_RATE: u32 = 48_000;
 /// Hengähdys puheen jälkeen ennen seuraavaa riviä.
-const TAIL: f64 = 0.3;
+pub(crate) const TAIL: f64 = 0.3;
 
 /// Rakentaa aikajanan rivien kestoista ja puheesta, sijoittaa leikkeet ja miksaa ne.
 #[derive(Default)]
