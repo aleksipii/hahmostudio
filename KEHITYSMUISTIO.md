@@ -1,3 +1,5 @@
+> Historiallinen selain-/Electron-dokumentti. Nykyinen Rust-sovellus: juuren README.md ja AGENTS.md. Vanhoja npm- tai Electron-komentoja ei enää käytetä.
+
 # Hahmostudion kehitysmuistio
 
 ## 3.10.2026 — Ensimmäinen pikaanimointipaketti

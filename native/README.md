@@ -13,11 +13,11 @@ kehitystyökalu. Kokoro-mallia ja generoituja liikeaineistoja ei pakata sovelluk
 malli ladataan käyttäjän luvalla. MP4-vienti tarvitsee nyt FFmpegin ja FFproben.
 Mac-paketin julkaisuesteet ja hyväksyntä: [DMG-tarkistuslista](packaging/RELEASE-CHECKLIST.md).
 
-Puhdas Rust-työtila, johon Hahmostudio siirretään Electronista. Rakenne ottaa
+Repositorion ainoa sovellus on tämä Rust-työtila. Rakenne ottaa
 mallia Storytold-ekosysteemistä (esim. FilmCraft): kerroksittaiset cratet, joista
 alimmat eivät riipu käyttöliittymästä tai käyttöjärjestelmästä, yksi
 käyttöliittymäcrate päällä, ja renderöinnin GPU- ja CPU-polut testataan toisiaan
-vasten. Siirron tila ja Electronin poiston ehdot: [PARITEETTI.md](PARITEETTI.md).
+vasten. Jäljellä olevat ominaisuuspuutteet: [PARITEETTI.md](PARITEETTI.md).
 
 ```
 hs-core       aikapohja (tikit), aikajana, diagnostiikka         ← ei riippuvuuksia UI:hin/OS:ään
@@ -168,7 +168,8 @@ Puhe näissä työnkulkutesteissä on **TestEngine-simulaatiota**.
 Pilviympäristön välityspalvelin estää Hugging Face -mallilatauksen (403).
 Aito Kokoro, kuuntelu, Mac/Metal/paketoitu käynnistys, fyysinen kamera ja
 mikrofoni sekä VoiceOver ovat edelleen hyväksyntätehtäviä.
-Electronia ei poisteta ennen [pariteettilistan](PARITEETTI.md) hyväksyntää.
+Electron ja selainversio poistettiin käyttäjän päätöksellä 13.10.2026.
+[Pariteettilista](PARITEETTI.md) säilyttää vielä toteuttamattomat ominaisuudet.
 
 
 **Aiempi Clauden Koeta-sarjakansio:** Tiedosto → Tuo aiempi Koeta-sarjakansio

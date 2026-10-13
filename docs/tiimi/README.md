@@ -1,3 +1,5 @@
+> Historiallinen selain-/Electron-dokumentti. Nykyinen Rust-sovellus: juuren README.md ja AGENTS.md. Vanhoja npm- tai Electron-komentoja ei enää käytetä.
+
 # Tiimin promptit ja työjärjestys
 
 Kaikki kymmenen promptia sisältävät yhteiset rajat ja oman tehtävän, tiedostot, tuotokset sekä hyväksymiskriteerit. Ne on laadittu käyttäjän liitteistä ja koodin tarkistetusta nykytilasta. Työ alkaa TIIMI.md:n nykytilasta. Roolit ovat vastuita. Käyttäjän pyynnöstä rinnakkainen asiantuntijatyö on käynnistetty 8.10.2026; agentit työskentelevät rajatuilla tiedostoalueilla ja QA sekä lopputarkastus seuraavat toteutusta.

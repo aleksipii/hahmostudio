@@ -4,7 +4,7 @@ from io import BytesIO
 import struct
 from PIL import Image, ImageDraw
 root=Path(__file__).resolve().parent.parent
-logo=Image.open(root/'desktop/assets/koeta-logo-source.jpg').convert('RGBA')
+logo=Image.open(root/'native/packaging/icons/koeta-logo-source.jpg').convert('RGBA')
 BLUE=logo.getpixel((5,5))
 S=4096  # supersampled canvas; macOS icon grid: 824/1024 tile, ~22.5% corner radius
 def tile(size):
@@ -23,12 +23,12 @@ cache={};chunks=[]
 for kind,size in representations:
  payload=cache.setdefault(size,png(tile(size)));chunks.append(kind+struct.pack('>I',len(payload)+8)+payload)
 body=b''.join(chunks)
-(root/'desktop/assets/Hahmostudio.icns').write_bytes(b'icns'+struct.pack('>I',len(body)+8)+body)
-iconset=root/'desktop/assets/Hahmostudio.iconset'
+(root/'native/packaging/icons/Hahmostudio.icns').write_bytes(b'icns'+struct.pack('>I',len(body)+8)+body)
+iconset=root/'native/packaging/icons/Hahmostudio.iconset'
 for base in (16,32,128,256,512):
  for ratio in (1,2):
   (iconset/f"icon_{base}x{base}{'@2x' if ratio==2 else ''}.png").write_bytes(cache.get(base*ratio) or png(tile(base*ratio)))
-(root/'desktop/assets/app-icon.png').write_bytes(png(tile(1024)))
+(root/'native/packaging/icons/app-icon.png').write_bytes(png(tile(1024)))
 (root/'public/branding').mkdir(parents=True,exist_ok=True)
 (root/'public/branding/koeta.png').write_bytes(png(tile(256)))
 (root/'public/favicon.png').write_bytes(png(tile(64)))

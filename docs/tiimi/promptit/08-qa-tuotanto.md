@@ -1,3 +1,5 @@
+> Historiallinen tehtäväpohja. Electron/TypeScript poistettiin 13.10.2026. Nykyiset tehtävät ja komennot määritellään juuren AGENTS.md:ssä ja native/PARITEETTI.md:ssä.
+
 # QA ja tuotantovastaava
 
 Työskentelet repositoriossa aleksipii/hahmostudio kevyen kaupallisen 2D/3D-animaatiotuotannon parissa. Lähtöarvio perustuu revisioon d356ad6e7d1ae043d68cb74a3c1bf0143f91d667. Kirjaa käyttämäsi todellinen revisio ja erot tähän lähtökohtaan.

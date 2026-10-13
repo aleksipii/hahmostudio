@@ -1416,3 +1416,65 @@ törmäysratkaisin; ovet, portaat, pudotus ja mielivaltaiset ulkoiset riggit avo
 Mac-release CPU/RAM/energia/koko mittaamatta.
 Seuraava konkreettinen tehtävä: julkaise CDN-asetus, suorita aito Kokoro-pilotti;
 Macilla build/paketointi ja Finder-kaksoisklikkaus molemmilla käynnistystavoilla.
+
+
+## Codex handoff — 13.10.2026: vain Rust-sovellus
+
+Omistajan nimenomainen pyyntö: poista Electron ja kaikki siihen liittyvä;
+vastauksessa rajaus vahvistettu myös React/TypeScript-selainversion ja
+Node-palvelimen poistoksi. Vanhan PARITEETTI.md:n ennen-poistoa-portti kumottu
+käyttäjän päätöksellä. Puuttuvia ominaisuuksia ei merkitä valmiiksi.
+
+Haara work, lähtöcommit main 3b275e6accb1997c69a680d794f2ea1d1077dcd9.
+Julkaisucommit otsikolla `Remove Electron and web application; keep Rust studio`.
+Etä-main haettu ja tarkistettu samaksi ennen julkaisua.
+
+Codexin omistama työ:
+- Poistettu desktop/components/lib/server/styles/tests/cloud vanhan sovelluksen
+  lähteet, selain-/Electron-testit, IPC/preload/workers ja vanha runtime/paketointi.
+- Poistettu package.json/lock, TS/Vite-konfiguraatio, root HTML/CSS/TS-entryt,
+  npm-käynnistys-/paketointi-/runtime-/web-testityökalut sekä dokumentaation
+  suoritettavat selain-/Electron-fixturet. node_modules ja generoidut vanhat
+  selainbuildit sekä MediaPipe-vision-cache poistettu; private-storage, käyttäjän
+  äänet/projektit ja toimitettu public/library/schemas säilytetty.
+- desktop/assets siirretty native/packaging/icons: ICNS, alkuperäinen logo,
+  iconset ja PNG:t tavutasolla ennallaan. create-app-icon.py päivitetty.
+- README/SOVELLUSKUVAUS/CURSOR/AGENTS ja native README/PARITEETTI päivitetty
+  Rust-only-työnkulkuun. AGENTS:n vanha sisältö säilytetty historiallisena
+  docs/AGENTS-LEGACY-20261013.md:ssä; historialliset promptit merkitty.
+- Kaynnista.command käynnistää cargo run --locked --release -p hs-app.
+- .github/workflows/ci.yml korvaa npm-CI:n Rust test/build/clippy/Python-
+  paketointitesteillä Linux/Mac-matriisissa; vanha pages.yml poistettu.
+  Workflow YAML parsittu; GitHub/Mac-ajon tuloksia ei vielä ole.
+- Standalone Codex quota -mjs ja sen testit säilytetty AGENTS-ohjeen vuoksi;
+  ei Node-riippuvuutta sovelluksen käännöksessä tai ajossa. Historialliset
+  lisenssit/aineistojen alkuperätiedot säilytetty ja npm-luettelon tila merkitty.
+- Pilviasetusten install_script/start_skill-luonnos päivitetty Rust-onlyksi,
+  vanhat npm-ci/build ja webpalvelimen käynnistys poistettu. Verkkosääntöjä tai
+  salaisuuksia ei muutettu. Save confirmed/requires_publish; julkaisu on erillinen.
+
+Todennus Linuxissa poistojen jälkeen:
+- cargo test --locked --manifest-path native/Cargo.toml --workspace -j4:
+  263läpi,0fail,1ohitettu(aitoKokoro),exit0 /tmp/koeta-rust-only-tests.log.
+- cargo build --locked --manifest-path native/Cargo.toml -p hs-app -p hs-cli
+  -j4:exit0 /tmp/koeta-rust-only-build.log. Native-cratejen ja Cargo.lockin
+  diff tyhjä: sovelluksen Rust-logiikkaa ei muutettu tässä poisto-commitissa.
+- python3 -m unittest discover -s native/packaging/tests:10läpi,exit0
+  /tmp/koeta-rust-only-packaging.log. Apple-komennot fixturejä, ei notarisaatio.
+- native/target/debug/hahmostudio-cli tarkista native/examples/object-handoff.en.txt:
+  exit0 /tmp/koeta-rust-only-cli.log.
+- Xvfb :101 / lavapipe käynnistys oikealla natiivisovelluksella, screenshot
+  /tmp/koeta-rust-only-gui.png katsottu: käsikirjoitus, hahmot, kamerakuva,
+  luovutus ja hahmokohtaiset aikajanat näkyvät poistetuista tiedostoista riippumatta.
+- Kuvakkeiden sisältö verrattu Gitin 3b275e6-versioon: identtinen.
+  CI YAML parsittu ja kaksi OS-kohdetta tarkistettu. git diff --check läpi.
+- node --test scripts/codex-quota-status.test.mjs:4läpi,exit0.
+  quota-status edelleen unavailable; prosenttia ei päätelty.
+
+Ominaisuuspuutteet / seuraava työ: native/PARITEETTI.md päivitetty. Ensimmäisenä
+aito Kokoro ja oikean Macin koko pilotti sekä DMG/Finder/laitteet/VoiceOver.
+Vapaa raitaraahaus, vanhan .sarja-tuonti/.hahmo-kirjoitus, PSD:n täydet maskit/
+sekoitukset, rig-/avainruutueditori, kommentit/tehtävät/hyväksynnät/lukitukset
+ja pilvirenderöinti puuttuvat/osittaisia. Kontaktien ovet/portaat/pudotus/fysiikka
+puuttuvat; nosto/luovutus ja [at]-päällekkäisyys jo toteutettu.
+Poisto ei ole väite ominaisuuspariteetista tai mitatusta release-keveydestä.

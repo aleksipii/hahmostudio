@@ -1,3 +1,5 @@
+> Historiallinen selain-/Electron-riippuvuusluettelo. Nämä npm-paketit eivät enää kuulu sovellukseen 13.10.2026 lähtien. Nykyiset Rust-riippuvuudet on lukittu native/Cargo.lock-tiedostoon; mediajakelun lisenssiohjeet ovat native/packaging/README.md:ssä. Säilytettyjen aineistojen aiemmat alkuperätiedot säilyvät alla.
+
 # Third-party components
 
 MediaPipe Tasks Vision 0.10.32 by Google uses the Apache License 2.0. Its license is included in licenses/mediapipe-LICENSE.txt. Face Landmarker model: https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker

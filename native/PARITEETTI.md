@@ -1,20 +1,21 @@
 # Pariteettilista: Electron/TypeScript → natiivi Rust
 
-Tämä lista ratkaisee, milloin Electron, `package.json`, `node_modules` ja web-asetukset
-voidaan poistaa. **Poisto tehdään vasta, kun jokainen "Pakollinen ennen poistoa"
--rivi on tilassa ✅ ja todennettu oikealla laitteella.** Poisto tehdään omana
-committinaan. Tila päivitetään aina, kun natiiviversio etenee.
+Käyttäjän päätös 13.10.2026: Electron, React/TypeScript-sovellus ja Node-palvelin
+poistettiin ennen täyttä ominaisuuspariteettia. Tämä on jäljellä olevien puutteiden
+kehityslista, **ei poiston lupa- tai hyväksyntäportti**. Vanhojen TS-polkujen
+viittaukset tarkoittavat Git-historiaa (viimeinen versio `3b275e6`), eivät
+nykyisen repositorion tiedostoja. Poisto ei merkitse puuttuvia ominaisuuksia valmiiksi.
 
 Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi natiivissa
 
-## Pakollinen ennen Electronin poistoa
+## Jäljellä olevat ominaisuuspuutteet
 
 | Alue | Nykyinen toteutus (TS) | Natiivi (Rust) | Tila |
 | --- | --- | --- | --- |
 | Käsikirjoituksen perussäännöt | `lib/screenplay.ts` | `hs-script` (samat tagit, rajat, ei arvauksia) | ✅ |
 | Laaja käsikirjoitustunnistin (FI/EN, ilmeet, katseet, kuvakoot, kameraliikkeet, sanasto) | `lib/script-recognizer*.ts`, `lib/episode/`, `script-grammar.ts` | `hs-script`: tarkat EN/FI-tagit, ilmeet ja katseet | 🟡 ei koko TS-sanastoa |
-| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | `hs-edit::script`, `hs-app::blocks_ui`: lähderivien muokkaus/järjestys | 🟡 vapaa ajoitus ja raahaus puuttuvat |
-| Jaksorakentaja ja korjausehdotukset | `lib/episode-builder.ts`, `review-suggestions.ts` | — | ❌ |
+| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | `hs-edit::script`, `hs-app::blocks_ui`: lähderivien muokkaus/järjestys | 🟡 lähderivien raahaus ja [at]-päällekkäisyys toteutettu; vapaa raitaraahaus/Alt-pudotus puuttuu |
+| Jaksorakentaja ja korjausehdotukset | `lib/episode-builder.ts`, `review-suggestions.ts` | `hs-script` diagnostiikka, `hs-app::script_assist_ui` ohje-ehdotukset | 🟡 rajatun ohjekielen ehdotukset; vanha jaksorakentaja puuttuu |
 | `.hahmo` v1–v5 luku | `lib/project-file.ts` | `hs-hahmo` (perusrakenne, kuvat, rig, raidat) | 🟡 |
 | `.hahmo` kirjoitus, resurssimanifesti, tarkistussummat, historia | `lib/project-file.ts`, `lib/studio/` | — | ❌ |
 | `.sarja`-jaksot | `lib/series-archive.ts` | `hs-project`: erillinen natiivi `.koeta` tallentaa useita jaksoja ja ääniresursseja | 🟡 vanhan `.sarja`-muodon tuonti puuttuu |
@@ -32,7 +33,7 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | Palautus: autosave, revisiot, keskeytetty renderöinti | `desktop/`, `lib/studio/recovery*.ts` | `hs-project::recovery`: kaksi autosavea, nimetyt revisiot, palautus kopiona | 🟡 renderöintityön palautus puuttuu |
 | Pilvirenderöinti (opt-in, nollakustannus) | `lib/cloud-render/`, `desktop/cloud-*.mjs` | — | ❌ |
 | Tuotantonäkymät: kommentit, tehtävät, työjono, CSV | `lib/studio/` | — | ❌ |
-| Saavutettavuus: näppäimistö, VoiceOver | React-komponentit | egui (AccessKit mahdollinen) | ❌ ei todennettu |
+| Saavutettavuus: näppäimistö, VoiceOver | React-komponentit | egui; nykyisessä eframe-featurelistassa AccessKit ei käytössä | ❌ VoiceOver puuttuu/todentamatta |
 | Mac-paketointi (DMG, arm64/x64) | `scripts/package-*.mjs` | `native/scripts/package-macos.py`: .app, valinnainen codesign/DMG | 🟡 Linux-fixturet testattu; oikea Mac avoin |
 
 ## Natiivissa jo nyt (uutta tai korvaavaa)
@@ -83,3 +84,22 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 polttaa tekstitykset renderöityihin ruutuihin ja tuottaa SRT/VTT:n.
 MP4-työnkulku on testattu oikealla FFmpegillä, simuloiduilla puheäänillä.
 Tästä ei seuraa aitoa Kokoro-, Mac- tai Adobe-pariteettihyväksyntää.
+
+
+## Suositeltu etenemisjärjestys (13.10.2026)
+
+1. **Julkaisun hyväksyntä:** aito Kokoro, kokonainen pilotti, Mac/Metal/laitteet,
+   Finder sekä allekirjoitettu/notarisoitu itsenäinen DMG. Mittaa release-koko,
+   CPU/RAM/energia; Linux-testit eivät korvaa näitä.
+2. **Visuaalinen ajoitus:** vapaa raitojen raahaus, päällekkäisten toimintojen
+   selkeä muokkaus ja rivivirheen tarkka paikannus. `[at]` ja erilliset hahmoradat
+   ovat jo toteutettuja.
+3. **Kontaktien laatu:** nosto/luovutus on jo toteutettu käsi-IK:lla ja
+   otetarkistuksilla; ovet, portaat, pudotus ja törmäysratkaisu ovat avoimia.
+4. **Vanhojen aineistojen yhteensopivuus:** `.sarja`-tuonti, `.hahmo`-täysi
+   luku/kirjoitus/historia sekä laajempi PSD. Lähdeaineistoja ei poistettu.
+5. **Tuotannon työkalut:** avainruutu-/rigieditori, kommentit, tehtävät,
+   hyväksynnät/lukitukset ja saavutettavuus. Lisää pilvirenderöinti vain erillisenä
+   käyttäjän valitsemana paikallisesta perustyönkulusta riippumattomana toimintona.
+
+Poistettuja ominaisuuksia ei korvattu tekaistuilla Rust-vastineilla.

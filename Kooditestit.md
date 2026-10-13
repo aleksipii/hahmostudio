@@ -1,3 +1,5 @@
+> Historiallinen selain-/Electron-dokumentti. Nykyinen Rust-sovellus: juuren README.md ja AGENTS.md. Vanhoja npm- tai Electron-komentoja ei enää käytetä.
+
 # Hahmostudion kooditestit · 3.10.2026
 
 - 53/53 testiä läpäisi, ei ohitettuja testejä.

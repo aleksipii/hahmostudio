@@ -11,7 +11,7 @@ dist-private/
 public/vision/
 .private-runtime/
 
-# Desktop build products; never include owner state in packaging
+# Historical build products; do not commit owner state
 dist-desktop/
 release/
 
@@ -27,9 +27,13 @@ release/
 
 .cutout-kids-build/
 
-# Team verification output and dependency symlink
+# Historical team verification output
 dist-team-preview/
 node_modules
 
 # Native Rust workspace build output
 native/target/
+
+# Python packaging and icon helper caches
+__pycache__/
+*.pyc

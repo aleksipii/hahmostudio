@@ -1,23 +1,40 @@
-name: CI
+name: Native Rust CI
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: ci-${{ github.ref }}
+  group: native-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: native
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build:private
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native
+      - name: Linux system dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libasound2-dev libudev-dev libclang-dev libxkbcommon-dev libegl1-mesa-dev ffmpeg
+      - name: Mac media tools
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+      - run: cargo test --locked --workspace -j4
+      - run: cargo build --locked -p hs-app -p hs-cli -j4
+      - run: cargo clippy --locked --workspace --all-targets -j4
+      - run: python3 -m unittest discover -s packaging/tests

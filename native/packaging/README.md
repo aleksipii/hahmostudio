@@ -79,3 +79,10 @@ Finder Apple-event delivery is implemented with a bounded queue and project repl
 Run `python3 scripts/check-finder-cross.py` after installing the Apple Rust target
 for an isolated Cocoa bridge type check. Fresh-start and running-app Finder
 delivery still require real Mac tests; this check does not build the full Mac app.
+
+## Retained app branding
+
+The existing ICNS, iconset and original logo are retained in
+`native/packaging/icons/` after removal of the Electron shell. Pass
+`--icon native/packaging/icons/Hahmostudio.icns` when packaging from the repository root.
+The optional `scripts/create-app-icon.py` tool needs Pillow only for regeneration.
