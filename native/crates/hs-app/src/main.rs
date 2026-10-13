@@ -18,6 +18,9 @@ mod motion_assets_ui;
 mod motion_plugin_ui;
 mod viewport;
 mod voice_ui;
+mod workflow_ui;
+mod session_history;
+mod library_ui;
 
 fn main() -> eframe::Result<()> {
     let mut args = std::env::args().skip(1);

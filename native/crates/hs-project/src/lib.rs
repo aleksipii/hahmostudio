@@ -3,6 +3,7 @@
 //! speech provenance. [`save_atomic`] verifies a complete temporary archive
 //! before replacing its target. This is not a power-loss durability guarantee.
 pub mod recovery;
+pub mod library;
 
 use hs_character::CharacterParams;
 use hs_subtitle::{CaptionCue, CaptionSettings};
@@ -236,7 +237,7 @@ fn validate(series: &Series) -> Result<(), ProjectError> {
         for asset in &e.assets {
             if !id_valid(&asset.id)
                 || !asset_ids.insert(&asset.id)
-                || !matches!(asset.kind.as_str(), "image" | "editing" | "recordings")
+                || !matches!(asset.kind.as_str(), "image" | "editing" | "recordings" | "library")
                 || !asset_kinds.insert(&asset.kind)
                 || asset.bytes.len() > MAX_BYTES
             {

@@ -10,12 +10,12 @@ sovelluksen toimivuutta toisella koneella.
 
 | Kohde | Nykytila | Konkreettinen seuraava tehtävä |
 | --- | --- | --- |
-| Itsenäinen MP4-vienti | FFmpeg/FFprobe etsitään ympäristömuuttujista tai PATHista | Valitse ja lisensoi toimitettavat Mac-binäärit, pakkaa tarvittavat kirjastot ja toteuta haku appin resursseista. Tarkista koodekit ja vienti Macissa ilman Homebrewta. |
+| Itsenäinen MP4-vienti | Paketoija voi ottaa FFmpeg/FFprobe-binäärit ja lisenssin; runtime hakee app-resursseista | Valitse ja lisensoi toimitettavat Mac-binäärit, joilla on vain järjestelmäkirjastoriippuvuuksia. Tarkista koodekit ja vienti Macissa ilman Homebrewta. |
 | Finderin projektiavaukset | `.koeta`-assosiaatio Info.plistissä; CLI-polku luetaan | Toteuta macOS:n tiedostonavaustapahtumien käsittely myös jo käynnissä olevalle sovellukselle; suojaa tallentamattomat muutokset ja testaa kaksoisklikkaus. |
-| Luotettu jakelu | Valinnainen codesign ja strict verify | Toteuta hardened runtime, tarvittavat kamera-/mikrofonioikeudet, Developer ID -allekirjoitus, notarisaatio ja staple. Nykyinen allekirjoitusvalinta ei tee näitä kaikkia. |
+| Luotettu jakelu | Hardened runtime, oikeudet ja valinnainen notarisaatio/staple toteutettu; vain Linux-mock-testi | Testaa Developer ID -allekirjoitus, notarisaatio ja staple oikeilla Mac-työkaluilla ja avaimilla. |
 | Kohdearkkitehtuuri | Apple Silicon oletus, Intel erillisenä targetina | Rakenna ja testaa tuetut arkkitehtuurit macOS SDK:lla. Päätä erilliset paketit tai universal-jakelu. |
-| Sovelluksen metadata | Nimi, tunniste ja käyttöoikeuskuvaukset olemassa | Lisää oma `.icns`-kuvake ja todellisuudessa tuettu macOS:n minimiversio; varmista versiointi ja lisenssit. |
-| Asennuskokemus | DMG tehdään app-hakemistosta | Tee jakelukuva, jossa sovellus ja Applications-oikotie; testaa kopiointi, ensimmäinen käynnistys ja päivitys. |
+| Sovelluksen metadata | Nimi, tunniste, käyttöoikeudet sekä valinnainen kuvake/minimiversio | Toimita oma `.icns`-kuvake ja todenna konfiguroitu macOS:n minimiversio; varmista versiointi ja lisenssit. |
+| Asennuskokemus | Asennushakemisto sisältää appin ja Applications-oikotien | Testaa jakelukuvan kopiointi, ensimmäinen käynnistys ja päivitys. |
 | Laitteet ja puhe | Linux-testit; oikea Kokoro-lataus ollut proxy-403:n takana | Testaa oikea Kokoro-synteesi ja kuuntelu, kamera ja mikrofoni oikeassa Macissa. |
 
 Pidä mallipainot, käyttäjän äänet ja projektit sovellusdatassa, erillään

@@ -12,6 +12,8 @@ Koeta on paikallinen työpöytäsovellus englanninkielisten animaatiojaksojen te
 
 Käsikirjoitus on rajattu ohjekieli: tuntemattomat tai toteuttamattomat toiminnot ilmoitetaan virheinä. Sovellus ei tulkitse mitä tahansa proosaa täydelliseksi animaatioksi. Ulkoisten luurankojen yleinen retargetointi ja esimerkiksi esineen luovutus, ovien avaaminen ja halauskontaktit tarvitsevat vielä toteutusta. Kuva- ja leikkaustyökalut eivät kata Photoshopin tai ammattivideoeditorin kaikkia ominaisuuksia.
 
+Tuotantonäkymä, kohtausrivit, sarjakirjasto ja pilotti: [jakso-opas](native/EPISODE-WORKFLOW.md).
+
 ## Natiivin sovelluksen käynnistys
 
 ```sh

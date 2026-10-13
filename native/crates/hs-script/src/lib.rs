@@ -310,6 +310,16 @@ enum Tag {
     Motion(MotionKind, Option<f64>),
 }
 
+/// Exact supported command category for source-backed editor replacement.
+/// Unrecognized input remains unrecognized; dialogue is never classified here.
+pub fn command_category(tag: &str) -> Option<&'static str> {
+    match classify(tag).ok()? {
+        Tag::Phone(_) => Some("phone"), Tag::Prop(_) => Some("prop"), Tag::View(_) => Some("view"),
+        Tag::Background(_) => Some("background"), Tag::Camera(_) => Some("camera"),
+        Tag::Expression(_) => Some("expression"), Tag::LookAt(_) => Some("look"), Tag::Motion(..) => Some("motion"),
+    }
+}
+
 fn classify(tag: &str) -> Result<Tag, String> {
     match english::normalize_tag(tag)? {
         Some(canonical) => classify_canonical(&canonical),

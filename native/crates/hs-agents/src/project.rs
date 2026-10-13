@@ -81,6 +81,7 @@ pub fn restore_checked(episode:&Episode)->Result<Production,String> {
     for asset in &episode.assets {match asset.kind.as_str() {
         "editing"=>p.soundtrack=hs_edit::decode_workspace(&asset.bytes)?,
         "image"=>{hs_image::Document::decode(&asset.bytes)?;},
+        "library"=>{validate_library(&asset.bytes)?;},
         "recordings"=>p.recorded_lines=crate::recording::decode(&asset.bytes)?,
         _=>return Err("Unknown project workspace".into()),
     }}
@@ -126,4 +127,16 @@ pub fn load_series(path: &std::path::Path) -> Result<hs_project::Series,String> 
     // Apply portable bounds before publishing imported data to the application.
     hs_project::encode(&series).map_err(|e|e.to_string())?;
     Ok(series)
+}
+
+/// Validate portable presets with the same profiles and grammar as production.
+pub fn validate_library(bytes: &[u8]) -> Result<hs_project::library::SeriesLibrary, String> {
+    let library = hs_project::library::SeriesLibrary::decode(bytes)?;
+    for c in &library.cast { crate::audit::validate_profile(c)?; }
+    for w in &library.worlds {
+        if !hs_script::parse(&format!("{}\nKALLE: [wait 1s]", w.source)).is_assemblable() {
+            return Err("Maailmapohja sisältää tuntemattoman tai virheellisen ohjeen".into());
+        }
+    }
+    Ok(library)
 }

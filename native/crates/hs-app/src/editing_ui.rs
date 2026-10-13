@@ -5,6 +5,7 @@ use hs_edit::Track;
 #[derive(Default)]
 pub struct EditingState {
     pub tracks: Vec<Track>,
+    pub revision: u64,
     pub error: Option<String>,
 }
 impl EditingState {

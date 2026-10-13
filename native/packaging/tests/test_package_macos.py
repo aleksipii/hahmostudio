@@ -63,6 +63,46 @@ class BundleTests(unittest.TestCase):
                 package.assemble(self.binary, self.app, "0.1.0", signing_identity="Test")
         self.assertFalse(self.app.exists())
 
+    def test_bundled_tools_and_license_are_portable(self):
+        license_file = self.root / "LICENSE.txt"
+        license_file.write_text("Test fixture license")
+        package.assemble(self.binary, self.app, "0.1.0", ffmpeg=self.binary,
+                         ffprobe=self.binary, tool_license=license_file)
+        tools = self.app / "Contents/Resources/tools"
+        self.assertTrue(os.access(tools / "ffmpeg", os.X_OK))
+        self.assertEqual((tools / "ffprobe").read_bytes(), self.binary.read_bytes())
+        self.assertEqual((tools / "LICENSE.txt").read_text(), "Test fixture license")
+
+    def test_incomplete_media_tools_leave_no_app(self):
+        with self.assertRaises(ValueError):
+            package.assemble(self.binary, self.app, "0.1.0", ffmpeg=self.binary)
+        self.assertFalse(self.app.exists())
+
+    def test_notarization_requires_mac_identity(self):
+        with self.assertRaises(ValueError):
+            package.assemble(self.binary, self.app, "0.1.0", notary_profile="fixture")
+        self.assertFalse(self.app.exists())
+
+    def test_signed_notarized_installer_sequence(self):
+        calls = []
+        def fake_run(*args):
+            calls.append(args)
+            if args[:2] == ("hdiutil", "create"):
+                folder = Path(args[args.index("-srcfolder") + 1])
+                self.assertTrue((folder / "Applications").is_symlink())
+                self.assertTrue((folder / self.app.name).is_dir())
+                Path(args[-1]).write_bytes(b"fixture image")
+            if "--entitlements" in args:
+                with Path(args[args.index("--entitlements") + 1]).open("rb") as f:
+                    self.assertTrue(plistlib.load(f)["com.apple.security.device.audio-input"])
+        dmg = self.root / "Koeta.dmg"
+        with patch.object(package.sys, "platform", "darwin"), patch.object(package, "run", side_effect=fake_run):
+            package.assemble(self.binary, self.app, "0.1.0", signing_identity="fixture", dmg=dmg, notary_profile="fixture-profile")
+        self.assertTrue(dmg.is_file())
+        self.assertEqual(sum("notarytool" in a and "submit" in a for a in calls), 2)
+        self.assertEqual(sum("stapler" in a and "validate" in a for a in calls), 2)
+        self.assertTrue(any("--options" in a and "runtime" in a for a in calls))
+
     def test_non_executable_rejected(self):
         self.binary.chmod(0o600)
         with self.assertRaises(ValueError):

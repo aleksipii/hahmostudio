@@ -9,6 +9,9 @@ pub enum LineEdit {
     Delete,
     Replace(String),
     PauseAfter,
+    MoveTo(usize),
+    MoveSceneTo(usize),
+    PauseBefore(f32),
 }
 fn split(text: &str) -> Vec<&str> {
     text.split_inclusive('\n').collect()
@@ -29,6 +32,44 @@ pub fn rewrite(text: &str, index: usize, expected: &str, edit: LineEdit) -> Resu
     }
     let ending = if line.ends_with("\r\n") { "\r\n" } else { "\n" };
     match edit {
+        LineEdit::MoveSceneTo(target) => {
+            if target >= lines.len() { return Err("Kohderiviä ei enää ole".into()); }
+            let start_of = |index: usize| {
+                let mut start = index;
+                while start > 0 {
+                    let tag = body(&lines[start - 1]).trim().to_lowercase();
+                    if ["[camera ", "[shot ", "[kuva "].iter().any(|prefix| tag.starts_with(prefix)) {
+                        start -= 1;
+                    } else { break; }
+                }
+                start
+            };
+            let start = start_of(index);
+            let destination = if target > index { target + 1 } else { start_of(target) };
+            if destination < start || destination > index + 1 {
+                let count = index + 1 - start;
+                let moved: Vec<_> = lines.drain(start..=index).collect();
+                let destination = if destination > start { destination - count } else { destination };
+                lines.splice(destination..destination, moved);
+            }
+        }
+        LineEdit::MoveTo(target) => {
+            if target >= lines.len() { return Err("Kohderiviä ei enää ole".into()); }
+            let moved = lines.remove(index);
+            lines.insert(target, moved);
+        }
+        LineEdit::PauseBefore(seconds) => {
+            if !seconds.is_finite() || !(0.05..=60.0).contains(&seconds) {
+                return Err("Tauon keston on oltava 0.05–60 sekuntia".into());
+            }
+            let mut start = index;
+            while start > 0 {
+                let tag = body(&lines[start - 1]).trim().to_lowercase();
+                if ["[camera ", "[shot ", "[kuva "].iter().any(|prefix| tag.starts_with(prefix)) { start -= 1; }
+                else { break; }
+            }
+            lines.insert(start, format!("[wait {seconds:.3}s]{ending}"));
+        }
         LineEdit::Up => {
             if index == 0 {
                 return Err("Rivi on jo ensimmäinen".into());
@@ -190,5 +231,27 @@ mod tests {
         }
         assert!(h.apply(&current, "17".into()).is_err());
         assert_eq!(h.undo(), Some("15".into()));
+    }
+}
+
+#[cfg(test)]
+mod visual_edit_tests {
+    use super::*;
+    #[test]
+    fn drag_reorder_preserves_crlf_and_unterminated_lines() {
+        let source = "KALLE: First.\r\nMAIJA: Second.\r\nKALLE: Last.";
+        let next = rewrite(source, 2, "KALLE: Last.", LineEdit::MoveTo(0)).unwrap();
+        assert_eq!(line_texts(&next), vec!["KALLE: Last.", "KALLE: First.", "MAIJA: Second."]);
+        assert!(next.contains("\r\n"));
+        assert!(rewrite(source, 2, "Changed", LineEdit::MoveTo(0)).is_err());
+        assert!(rewrite(source, 0, "KALLE: First.", LineEdit::MoveTo(9)).is_err());
+    }
+    #[test]
+    fn authored_delay_preserves_dialogue_and_rejects_invalid_time() {
+        let source = "KALLE: Hello. [nod 1s]";
+        assert_eq!(rewrite(source, 0, source, LineEdit::PauseBefore(1.5)).unwrap(), format!("[wait 1.500s]\n{source}"));
+        for seconds in [f32::NAN, f32::INFINITY, -1.0, 0.0, 61.0] {
+            assert!(rewrite(source, 0, source, LineEdit::PauseBefore(seconds)).is_err());
+        }
     }
 }

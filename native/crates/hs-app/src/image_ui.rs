@@ -31,6 +31,7 @@ pub struct ImageWorkspace {
     shift: [i32; 2],
     job: Option<Job>,
     texture_dirty: bool,
+    pub revision: u64,
 }
 impl Default for ImageWorkspace {
     fn default() -> Self {
@@ -51,6 +52,7 @@ impl Default for ImageWorkspace {
             shift: [0, 0],
             job: None,
             texture_dirty: true,
+            revision: 0,
         }
     }
 }
@@ -60,6 +62,11 @@ impl ImageWorkspace {
     }
     pub fn update(&mut self) {
         self.poll();
+    }
+    pub fn document(&self) -> &Document { &self.document }
+    pub fn restore_document(&mut self, document: Document, revision: u64) {
+        self.document = document; self.revision = revision; self.history.clear();
+        self.selected = 0; self.texture = None; self.stroke = false; self.draft_id = 0;
     }
     pub fn snapshot(&self) -> Result<Vec<u8>, String> {
         if self.job.is_some() {
@@ -73,6 +80,7 @@ impl ImageWorkspace {
         }
         let d = Document::decode(bytes)?;
         self.document = d;
+        self.revision = self.revision.wrapping_add(1);
         self.history.clear();
         self.selected = 0;
         self.texture = None;
@@ -83,7 +91,7 @@ impl ImageWorkspace {
     fn checkpoint(&mut self) -> bool {
         match self.history.checkpoint(&self.document) {
             Ok(()) => {
-                self.texture_dirty = true;
+                self.texture_dirty = true; self.revision = self.revision.wrapping_add(1);
                 true
             }
             Err(e) => {
@@ -266,14 +274,14 @@ impl ImageWorkspace {
                 if let Err(e) = self.history.undo(&mut self.document) {
                     self.message = e;
                 }
-                self.texture_dirty = true;
+                self.texture_dirty = true; self.revision = self.revision.wrapping_add(1);
                 self.draft_id = 0;
             }
             if ui.button("Tee uudelleen").clicked() {
                 if let Err(e) = self.history.redo(&mut self.document) {
                     self.message = e;
                 }
-                self.texture_dirty = true;
+                self.texture_dirty = true; self.revision = self.revision.wrapping_add(1);
                 self.draft_id = 0;
             }
             if ui.button("Tyhjennä vain kumoushistoria").clicked() {
@@ -447,7 +455,7 @@ impl ImageWorkspace {
                     self.document
                         .paint(self.selected, x, y, self.radius, self.color, self.erase);
                 }
-                self.texture_dirty = true;
+                self.texture_dirty = true; self.revision = self.revision.wrapping_add(1);
                 ui.ctx().request_repaint();
             }
         }

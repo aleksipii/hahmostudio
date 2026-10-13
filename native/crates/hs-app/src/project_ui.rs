@@ -94,6 +94,9 @@ impl StudioApp {
             ProjectAsset{id:"image-workspace".into(),kind:"image".into(),bytes:self.image.snapshot()?},
             ProjectAsset{id:"editing-workspace".into(),kind:"editing".into(),bytes:hs_edit::encode_workspace(&self.editing.tracks)?},
         ]);
+        let bytes = self.library.encode()?;
+        for e in &mut self.project.series.episodes { e.assets.retain(|a| a.kind != "library"); e.assets.push(ProjectAsset { id: "series-library".into(), kind: "library".into(), bytes: bytes.clone() }); }
+        snapshot.assets.push(ProjectAsset { id: "series-library".into(), kind: "library".into(), bytes });
         self.project.series.episodes[self.project.selected] = snapshot;
         Ok(())
     }
@@ -101,10 +104,12 @@ impl StudioApp {
         let episode=&self.project.series.episodes[index];
         let mut image=crate::image_ui::ImageWorkspace::default();
         let mut editing=crate::editing_ui::EditingState::default();
+        let mut library=crate::library_ui::SeriesLibrary::default();
         for asset in &episode.assets {
             let result=match asset.kind.as_str() {
                 "image" => image.restore(&asset.bytes),
                 "editing" => hs_edit::decode_workspace(&asset.bytes).map(|tracks| editing.tracks=tracks),
+                "library" => hs_agents::project::validate_library(&asset.bytes).map(|v| library=v),
                 "recordings"=>Ok(()),
                 _ => Err("Tuntematon työtilaresurssi".into()),
             };
@@ -114,7 +119,7 @@ impl StudioApp {
         production.soundtrack=editing.tracks.clone();
         self.playing=false;
         self.voice.attach_project(&mut production,ctx);
-        self.production=production;self.image=image;self.editing=editing;
+        self.production=production;self.image=image;self.editing=editing;self.library=library;self.workflow.line=None;self.history=Default::default();
         self.script=self.production.script.clone();self.script_path=None;self.dirty_since=None;self.legacy=None;
         self.time=0.0;self.selected_cast=0;self.project.selected=index;self.blocks=Default::default();self.script_assist=Default::default();
         self.pipeline=hs_agents::Pipeline::default();self.run_pipeline();
@@ -243,8 +248,9 @@ pub fn menu(app: &mut StudioApp, ui: &mut egui::Ui) {
             p.width = app.production.width;
             p.height = app.production.height;
             p.fps = app.production.fps;
-            let episode: Episode =
+            let mut episode: Episode =
                 hs_agents::project::capture(&p, fresh_id(), number, format!("Jakso {number}"));
+            if let Ok(bytes) = app.library.encode() { episode.assets.push(ProjectAsset { id: "series-library".into(), kind: "library".into(), bytes }); }
             app.project.series.episodes.push(episode);
             app.activate_episode(app.project.series.episodes.len() - 1, &ctx);
             ui.close_menu();
@@ -386,6 +392,7 @@ fn validate_workspaces(series:&Series)->Result<(),String> {
         match a.kind.as_str() {
             "image"=>{hs_image::Document::decode(&a.bytes)?;},
             "editing"=>{hs_edit::decode_workspace(&a.bytes)?;},
+            "library"=>{hs_agents::project::validate_library(&a.bytes)?;},
             "recordings"=>{hs_agents::recording::decode(&a.bytes)?;},
             _=>return Err("Tuntematon työtilaresurssi".into()),
         }

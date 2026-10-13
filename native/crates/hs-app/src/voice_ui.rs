@@ -49,20 +49,13 @@ pub struct VoiceState {
 }
 
 impl VoiceState {
-    pub fn new(ctx: &egui::Context, screenshot: bool) -> Self {
+    pub fn new(_ctx: &egui::Context, _screenshot: bool) -> Self {
         let store = ModelStore::default_data_dir().map(ModelStore::new);
         let status = store.as_ref().map(|s| s.status(false)).unwrap_or(StoreStatus { installed: false, bytes: 0, error: None });
         let recordings_dir = ModelStore::default_data_dir().map(|d| d.join("aanitykset"));
         // Kuvakaappaustilassa (testit) ei avata äänilaitteita.
-        let (player, player_error) = if screenshot {
-            (None, None)
-        } else {
-            match Player::new() {
-                Ok(p) => (Some(p), None),
-                Err(e) => (None, Some(e)),
-            }
-        };
-        let mut v = VoiceState {
+        let (player, player_error) = (None, None);
+        VoiceState {
             store,
             status,
             engine: None,
@@ -79,11 +72,7 @@ impl VoiceState {
             ready: Arc::new(AtomicBool::new(false)),
             mix_ptr: 0,
             recordings_dir,
-        };
-        if v.status.installed && !screenshot {
-            v.start_loading(ctx);
         }
-        v
     }
 
     /// Rebind the installed engine to a fresh project's cache, without opening new devices.
@@ -146,6 +135,10 @@ impl VoiceState {
 
 /// Kutsutaan joka ruudulla ennen paneeleja.
 pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
+    if app.playing && app.production.mix.is_some() && app.voice.player.is_none()
+        && app.voice.player_error.is_none() && !app.screenshot_mode() {
+        match Player::new() { Ok(player) => app.voice.player = Some(player), Err(e) => app.voice.player_error = Some(e) }
+    }
     // Mallin avaus valmistui.
     if let Some(rx) = &app.voice.loading {
         if let Ok(result) = rx.try_recv() {
@@ -290,6 +283,10 @@ fn status_color(s: LineStatus) -> Color32 {
 /// Ääni-välilehti: malli ja rivit.
 pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
     ui.heading("Puhe (Kokoro, offline)");
+    if app.voice.status.installed && app.voice.engine.is_none() && app.voice.loading.is_none() {
+        ui.label("Kokoro on asennettu. Malli avataan muistiin vain pyynnöstä.");
+        if ui.button("Ota Kokoro käyttöön").clicked() { app.voice.start_loading(ui.ctx()); }
+    }
     let ctx = ui.ctx().clone();
     if let Some(d) = &app.voice.download {
         let (file, got, total) = d.progress.lock().unwrap().clone();
@@ -317,9 +314,9 @@ pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
         }
     } else {
         if app.production.voice_lines.iter().any(|l| l.speech.is_some()) {
-            ui.label("Puhemallia ei ole asennettu. Projektin tallennetut puheet ja omat äänet ovat käytössä; uusi synteesi tarvitsee Kokoron.");
+            ui.label("Kokoro ei ole käytössä. Projektin tallennetut puheet ja omat äänet ovat käytössä; uusi synteesi tarvitsee Kokoron.");
         } else {
-            ui.label("Puhemallia ei ole asennettu. Suut liikkuvat silti tekstin mukaan, ja voit äänittää rivit itse.");
+            ui.label("Kokoro ei ole käytössä. Suut liikkuvat silti tekstin mukaan, ja voit äänittää rivit itse.");
         }
         ui.horizontal(|ui| {
             if ui.add_enabled(app.voice.store.is_some(), egui::Button::new("Lataa Kokoro…")).clicked() {

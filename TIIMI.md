@@ -1255,3 +1255,93 @@ Avoin ja seuraava konkreettinen työ:
    oikealla Macilla. Linux debug-binäärin kokoa ei käytetty julkaisulupauksena.
 Electron säilyy pariteettiehtojen mukaisesti. Kokoro-mallia ei ladattu tässä
 tehtävässä; aiempi proxy-403 ja todellinen synteesihyväksyntä edelleen auki.
+
+## 13.10.2026 Codex — jakson tuotantotyönkulun toteutus
+
+Lähtöhaara work, HEAD/remote main e47020eb3a564e45e293939e709275322db075e3.
+Fetch tehty ennen muutoksia ja integraation lopussa; uusia Clauden muutoksia
+mainissa ei ollut. Työkalu Codex; alla olevat tiedostot omistettu tässä tehtävässä.
+Tämän handoffin sisältävä tarkistettu commit julkaistaan mainiin aiemman
+valtuutuksen mukaan, ei force-pushia. Ei muutoksia Electroniin tai mallipainoihin.
+
+Toteutettu:
+- hs-app/src/{workflow_ui,app,panels,production_ui}.rs: tuotannon tekniset vaiheet
+  ja seuraava tehtävä; aikajanan/virheen/kohtausrivin valinta avaa lähderivin
+  inspectorin. Luonnoksen hyväksyntä säilyttää muut rivit. Ohjevalinta korvaa
+  saman kategoriansa ohjeen; puhetekstin sanoja ja tuntemattomia tageja ei poisteta.
+  Kameran korvaus poistaa vain edeltävän puhtaan kameraohjerivin, ei repliikkiä.
+  Esikatselun 50/75/100% resoluutio ei muuta vientikokoa.
+- hs-edit/src/script.rs: tarkistettu rivisiirto, kohtausrivin/kamerakorttien
+  raahaus sekä tauko ennen riviä/kamerakorttia. Vanhentunut lähde, virheelliset
+  indeksit ja NaN/negatiivinen/yli60s tauko hylätään. Ei vapaata päällekkäisajoitusta.
+- hs-app/src/{session_history,image_ui,editing_ui}.rs: yhteinen istunnon kumous
+  lähteelle, hahmoille, kuvalle, sarjakirjastolle, musiikkiraidoille ja tekstitys/
+  vientiasetuksille. Kuvan/äänen suuret tilat jaetaan Arc-viitteillä muuttumattomina.
+  16tilaa/128MiB, vanhimman tilan poistosta ilmoitetaan; ei kanneta historiaa
+  projektinvaihdon yli. Tekstikenttien luonnoksille oma tekstikumous. Puheäänityksen
+  korvaushistoria ei kuulu tähän toteutukseen, eikä tätä kuvata disk-backed WAL:ksi.
+- hs-app/src/{library_ui,project_ui}.rs, hs-project/src/{library,lib}.rs,
+  hs-agents/src/project.rs: pysyvä sarjan hahmo/ääni/asuprofiili- ja maailmakirjasto
+  uutena tarkistettuna library-resurssina. Nykyisen jakson käyttö on eksplisiittinen;
+  vanhoja jaksojen hahmoja ei automaattisesti muuteta. Sarjan jokainen tallennettu
+  jakso kantaa samaa kirjastoa. Aiemmat projektit lukukelpoisia; vanhemmat appit
+  eivät tunne uutta resurssilajia. Profiili ja ohjeet tarkistetaan consumerissa.
+- hs-app/src/voice_ui.rs: malli muistiin vain Ota Kokoro käyttöön -pyynnöstä;
+  äänentoistolaite avataan ensimmäistä tarvittavaa toistoa varten. Kamera/
+  mikrofoni eivät sulkeudu välilehden vaihdossa. hs-voice-moottoria ei muutettu.
+- hs-motion/src/procedural.rs, hs-agents/src/agents/render.rs: pehmeät puhe-eleet
+  vapaalle kädelle, kirjoitettu toiminto/puhelin/esine etusijalla, puhepäälle
+  häivytys ja katseelle pehmeä alku/loppu. Kirjoitetun katseen päälle ei lisätä
+  automaattista vartalokäännöstä. Käden sormille ote pidettävästä esineestä.
+  Tämä ei ole pöydältä nostamisen/luovutuksen kontaktisimulaatio.
+- hs-script/src/lib.rs: tarkka ohjekategoria editorille samasta luokittimesta.
+- hs-render/src/export.rs: appin Contents/Resources/tools-mediatyökalujen haku.
+- scripts/package-macos.py + packaging tests/docs: FFmpeg/FFprobe+lisenssin
+  toimitus, Mac-arkkitehtuurien ja järjestelmäkirjastojen tarkistus, kuvake/minimiOS,
+  nested-tool signing/hardened runtime/entitlements, valinnainen notarisaatio/staple
+  appille ja DMG:lle, Applications-oikotie. Olemassaolevia app/DMG-kohteita säilytetään.
+- examples/pilot-episode.en.txt, EPISODE-WORKFLOW.md, README:t: 24s neljän repliikin
+  kahden hahmon pilotti sekä käyttöohje ja rajat. main.rs rekisteröi uudet UI-moduulit.
+
+Todennus Linuxissa:
+- cargo test --locked --workspace -j4:247 läpi,0fail,1ohitettu(aito Kokoro),exit0,
+  /tmp/koeta-workflow-workspace-final-tests.log. Tämän jälkeen editorin viimeistely
+  ja lisätestit tarkistettu kohdennetusti; ei väitetä koko250testin viimeistä ajoa.
+- hs-app/hs-script/hs-edit --lib --bins:8+33+14 läpi,exit0,
+  /tmp/koeta-workflow-editor-choice-final-tests.log. hs-app viimeistely myös
+  /tmp/koeta-workflow-app-last-tests.log.
+- episode_workflow:2 läpi,exit0 /tmp/koeta-pilot-final-tests.log: sarjakirjasto,
+  puheen täsmällinen säilyminen ilman moottoria, tekstitykset sekä kamerakortti-
+  repliikkiryhmän siirto. conversation_motion:1läpi, puhe-ele väistää esinettä/
+  kirjoitettua liikettä ja alkaa ilman hyppyä. Gaze-testillä jatkuvat päätepisteet.
+- hs-render bundled_tool_tests:1läpi,exit0 /tmp/koeta-bundled-tool-tests.log:
+  app-resurssihaku ilman PATHia, puuttuva työkalu ja polun traversal hylätään.
+- Python-paketointi:10läpi. Apple-komennot mockataan Linuxissa; tästä ei seuraa
+  oikeaa Mach-O-/allekirjoitus-/notarisaatio-/Gatekeeper-hyväksyntää.
+- Build hs-app+hs-cli exit0 ja clippy workspace/all-targets exit0; nykyisten muiden
+  moduulien varoituksia. /tmp/koeta-workflow-build-last.log,
+  /tmp/koeta-workflow-clippy-last.log. Viimeinen pieni historiakorjaus myös tarkistettu:
+  hs-app8läpi, build exit0, clippy exit0;
+  /tmp/koeta-workflow-checkpoint-{tests,build,clippy}.log.
+- Oikea FFmpeg CPU-vienti viimeisen animaatiokorjauksen jälkeen:24s/720ruutua,
+  160x90,H.264+AAC+mov_text /tmp/koeta-workflow-pilot-final.mp4,exit0, FFprobe
+  vahvisti raidat ja24.000s. /tmp/koeta-workflow-pilot-final-render.log. Puhe on
+  eksplisiittinen TestEngine-fixture, ei kuunneltu Kokoro.
+- Xvfb/lavapipe-GUI: pilotin käynnistys, inspector ja laatutaso, katsekorjauksen
+  Maijan kasvot näkyvissä7.66s. Hahmon muutos+CtrlZ palautti näyttämön pikselit
+  täsmälleen alkuun. Oikea rivin raahaus siirsi Maijan viimeisen repliikin ensin,
+  kamerakortti mukana; CtrlZ palautti lähteen ja neljä otosta. Kuvat
+  /tmp/koeta-workflow-{start,inspector,cast-edited,cast-undo,dragged,drag-undo}.png
+  ja /tmp/koeta-workflow-final-{gaze,editor}.png. Omistetut GUI/Xvfb-prosessit pysäytetty.
+- Quota unavailable; prosenttia ei päätelty. git diff --check läpi.
+
+Avoin hyväksyntä / jatko:
+Oikea Mac/Metal/kamera/mikrofoni/Kokoro-kuuntelu sekä luotetulla FFmpeg-jakelulla
+puhtaan Macin MP4 ja Developer ID/notarisaatio vaativat puuttuvan Mac-ympäristön
+ja omistajan avaimet/profiilin. Finder Apple-event delivery on vielä toteuttamatta;
+CLI-polku ja assosiaatiometatiedot eivät todista Finder-kaksoisklikkausta.
+Mac release RAM/CPU/energia/koko mittaamatta. Vapaasti päällekkäiset raida-ajot,
+esineen nosto/luovutus/ovet/portaat ja uusi fysikaalinen kontaktieditori jäävät
+jatkokehitykseen; nykyistä taukoajoitusta/otetta ei nimetä näiden vastineeksi.
+Seuraava Mac-tehtävä: build paketoijan uusilla media/sign/notary-parametreilla,
+aja jakso-opas oikealla Kokorolla ja kirjaa laite sekä tarkka commit.

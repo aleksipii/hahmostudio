@@ -22,6 +22,9 @@ pub struct LaunchOptions {
 
 pub struct StudioApp {
     pub project: crate::project_ui::ProjectState,
+    pub library: crate::library_ui::SeriesLibrary,
+    pub history: crate::session_history::SessionHistory,
+    pub workflow: crate::workflow_ui::WorkflowState,
     pub image: crate::image_ui::ImageWorkspace,
     pub editing: crate::editing_ui::EditingState,
     pub blocks: crate::blocks_ui::BlocksState,
@@ -102,6 +105,9 @@ impl StudioApp {
         let project = crate::project_ui::ProjectState::new(&production);
         let mut app = StudioApp {
             project,
+            library: Default::default(),
+            history: Default::default(),
+            workflow: crate::workflow_ui::WorkflowState { preview_scale: 0.75, ..Default::default() },
             image: Default::default(),
             editing: Default::default(),
             blocks: Default::default(),
@@ -138,6 +144,7 @@ impl StudioApp {
         app.run_pipeline();
         if let Some(path) = series_path { app.script_path = None; app.open_series(path, &cc.egui_ctx); }
         else if !app.screenshot_mode() {app.scan_recovery(&cc.egui_ctx);}
+        app.observe_edits();
         app
     }
 
@@ -304,11 +311,14 @@ impl eframe::App for StudioApp {
             }
         }
 
+        if !ctx.wants_keyboard_input() && ctx.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::Z)) { self.undo_edit(false); }
+        if !ctx.wants_keyboard_input() && ctx.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND | egui::Modifiers::SHIFT, egui::Key::Z)) { self.undo_edit(true); }
         panels::menu_bar(self, ctx);
+        crate::workflow_ui::overview(self, ctx);
         panels::status_bar(self, ctx);
         panels::timeline(self, ctx);
         panels::script_panel(self, ctx);
-        panels::cast_panel(self, ctx);
+        if self.workflow.line.is_some() { crate::workflow_ui::inspector(self, ctx); } else { panels::cast_panel(self, ctx); }
         if self.left_tab == LeftTab::Image {
             egui::CentralPanel::default().show(ctx, |ui| self.image.ui(ui));
         } else if self.left_tab == LeftTab::Export {
@@ -320,6 +330,7 @@ impl eframe::App for StudioApp {
         if let Some(next)=self.script_assist.preview(ctx,&self.script,&self.production) {
             self.script=next;self.script_changed();
         }
+        if self.dirty_since.is_none() && !ctx.input(|i| i.pointer.any_down()) && !self.image.is_busy() { self.observe_edits(); }
         self.handle_screenshot(ctx);
     }
 }

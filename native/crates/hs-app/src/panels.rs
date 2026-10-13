@@ -68,6 +68,11 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
+            ui.menu_button("Muokkaa", |ui| {
+                if ui.add_enabled(app.history.can_undo(), egui::Button::new("Kumoa ⌘Z")).clicked() { app.undo_edit(false); ui.close_menu(); }
+                if ui.add_enabled(app.history.can_redo(), egui::Button::new("Tee uudelleen ⌘⇧Z")).clicked() { app.undo_edit(true); ui.close_menu(); }
+                if ui.button("Tyhjennä yhteinen kumoushistoria").clicked() { app.history = Default::default(); app.observe_edits(); ui.close_menu(); }
+            });
             ui.menu_button("Toisto", |ui| {
                 if ui.button(if app.playing { "Pysäytä (välilyönti)" } else { "Toista (välilyönti)" }).clicked() {
                     app.playing = !app.playing;
@@ -249,6 +254,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
             if response.dragged() || response.clicked() {
                 app.time = ((pos.x - lane.left()) / lane.width() * duration).clamp(0.0, duration);
                 app.playing = false;
+                if let Some(row) = hs_agents::audit::inspect(&app.production).rows.iter().find(|r| r.start_seconds <= app.time as f64 && (app.time as f64) < r.end_seconds) { let time = app.time; app.select_line(row.line); app.time = time; }
             }
         }
     });
@@ -298,7 +304,7 @@ fn script_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
             egui::ScrollArea::vertical().id_salt("huomautukset").max_height(140.0).show(ui, |ui| {
                 for d in errors {
                     let color = if d.severity == Severity::Error { Color32::from_rgb(0xe0, 0x6c, 0x5a) } else { Color32::from_rgb(0xd8, 0xa8, 0x3a) };
-                    ui.label(RichText::new(format!("Rivi {}: {}", d.line, d.message)).color(color));
+                    if ui.button(RichText::new(format!("Rivi {}: {}", d.line, d.message)).color(color)).clicked() { app.select_line(d.line); }
                 }
             });
         }
@@ -461,6 +467,7 @@ pub fn stage(app: &mut StudioApp, ctx: &egui::Context, frame: &eframe::Frame) {
             }
             return;
         }
+        let ppp = ppp * app.workflow.preview_scale.clamp(0.25, 1.0);
         let px = [((w * ppp) as u32).min(app.production.width), ((h * ppp) as u32).min(app.production.height)];
         let time = app.time;
         if let Some(id) = app.viewport.draw(ui, frame, &app.production, time, px) {

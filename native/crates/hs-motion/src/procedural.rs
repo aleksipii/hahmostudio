@@ -496,8 +496,17 @@ impl PreparedMotion {
                     if let Some(track) = self.mouths.get(&e.id) {
                         mouth = track.shape_at(tau);
                     }
+                    let held = timeline.events.iter().filter(|e| e.start.seconds() as f32 <= t)
+                        .filter_map(|e| match &e.kind { EventKind::Prop { character, item } if m.speaks(character) => Some((e.start, item)), _ => None })
+                        .max_by_key(|(start, _)| *start).is_some_and(|(_, item)| item.is_some());
+                    if phone.is_none() && !held && matches!(motion, None | Some(MotionKind::Wait)) {
+                        let w = ramp(tau, e.duration.seconds() as f32, 0.3);
+                        let arm = h.arm(Side::Right);
+                        pose.local[arm.upper] = Quat::from_rotation_x(-0.12 * w) * pose.local[arm.upper];
+                        pose.local[arm.fore] = Quat::from_rotation_x(-0.16 * w * (0.5 + 0.5 * (TAU * 0.7 * tau).sin())) * pose.local[arm.fore];
+                    }
                     pose.local[h.head] =
-                        Quat::from_rotation_x(0.035 * (TAU * 1.3 * t).sin()) * pose.local[h.head];
+                        Quat::from_rotation_x(0.035 * ramp(tau, e.duration.seconds() as f32, 0.25) * (TAU * 1.3 * tau).sin()) * pose.local[h.head];
                 }
             }
         }

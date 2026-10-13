@@ -35,6 +35,11 @@ hs-cli        hahmostudio-cli (headless)
 hs-app        hahmostudio (egui/eframe-työpöytäsovellus)
 ```
 
+## Jakson tuotantotyönkulku
+
+[Jakso-opas](EPISODE-WORKFLOW.md) kuvaa tuotantonäkymän, valittavat kohtausrivit,
+raahauksen, kumoamisen, sarjakirjaston ja 24 sekunnin englanninkielisen pilotin.
+
 ## Agenttiputki
 
 | Agentti | Lukee | Kirjoittaa | Tehtävä |

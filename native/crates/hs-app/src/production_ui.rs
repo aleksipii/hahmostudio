@@ -5,10 +5,14 @@ use hs_core::Tick;
 pub fn show(app: &mut StudioApp, ctx: &egui::Context) {
     egui::CentralPanel::default().show(ctx, |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
+            crate::library_ui::show(app, ui);
+            crate::workflow_ui::scenes(app, ui);
+            ui.separator();
             if let Some(next)=app.blocks.ui(ui,&app.script) {app.script=next;app.script_changed();}
             ui.separator();
             let duration = Tick::from_seconds(app.duration() as f64);
             if app.editing.ui(ui, duration) {
+                app.editing.revision = app.editing.revision.wrapping_add(1);
                 app.production.soundtrack = app.editing.tracks.clone();
                 app.pipeline.mark_dirty(hs_agents::Slot::Audio);
                 app.run_pipeline();
@@ -81,6 +85,7 @@ pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
         let current=app.production.script==app.script;
         if !current {ui.label("Käsikirjoituksen uusi versio odottaa tarkistusta.");}
         for diagnostic in proof.diagnostics.iter().filter(|d|d.severity!=hs_core::Severity::Info) {
+            if ui.button(format!("Näytä rivi {}", diagnostic.line)).clicked() { app.select_line(diagnostic.line); }
             ui.colored_label(if diagnostic.severity==hs_core::Severity::Error{egui::Color32::LIGHT_RED}else{egui::Color32::YELLOW},format!("Rivi {}: {}",diagnostic.line,diagnostic.message));
         }
         egui::CollapsingHeader::new("Toteutuvan animaation tarkistus").show(ui,|ui| {

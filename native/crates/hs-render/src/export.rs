@@ -43,6 +43,9 @@ pub fn find_ffmpeg() -> Option<PathBuf> {
             return Some(p);
         }
     }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(path) = bundled_tool(&executable, "ffmpeg") { return Some(path); }
+    }
     let path = std::env::var_os("PATH")?;
     std::env::split_paths(&path)
         .map(|d| {
@@ -53,6 +56,16 @@ pub fn find_ffmpeg() -> Option<PathBuf> {
             })
         })
         .find(|p| p.is_file())
+}
+
+/// Resolve only the conventional macOS app layout; never use the working directory.
+pub fn bundled_tool(executable: &Path, name: &str) -> Option<PathBuf> {
+    if !matches!(name, "ffmpeg" | "ffprobe") { return None; }
+    let macos = executable.parent()?;
+    let contents = macos.parent()?;
+    if macos.file_name()? != "MacOS" || contents.file_name()? != "Contents" { return None; }
+    let path = contents.join("Resources").join("tools").join(name);
+    path.is_file().then_some(path)
 }
 
 /// Finds ffprobe next to the selected FFmpeg, or on PATH.
@@ -594,5 +607,23 @@ impl Drop for Mp4Writer {
             let _ = thread.join();
         }
         // NamedTempFile deletes the unpublished output automatically.
+    }
+}
+
+#[cfg(test)]
+mod bundled_tool_tests {
+    use super::*;
+    #[test]
+    fn resolves_app_media_tools_without_path_or_working_directory() {
+        let temp = tempfile::tempdir().unwrap();
+        let contents = temp.path().join("Koeta.app/Contents");
+        let tools = contents.join("Resources/tools");
+        std::fs::create_dir_all(&tools).unwrap();
+        std::fs::write(tools.join("ffmpeg"), b"fixture").unwrap();
+        let executable = contents.join("MacOS/hs-app");
+        assert_eq!(bundled_tool(&executable, "ffmpeg"), Some(tools.join("ffmpeg")));
+        assert!(bundled_tool(&executable, "ffprobe").is_none());
+        assert!(bundled_tool(&executable, "../../file").is_none());
+        assert!(bundled_tool(&temp.path().join("hs-app"), "ffmpeg").is_none());
     }
 }

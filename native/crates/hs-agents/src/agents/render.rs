@@ -14,6 +14,13 @@ use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
+/// Deterministic ease at both ends of authored gaze, including short cues.
+pub fn gaze_weight(time: f32, start: f32, end: f32) -> f32 {
+    let blend = ((end - start) * 0.5).min(0.25).max(0.001);
+    let smooth = |x: f32| { let x = x.clamp(0.0, 1.0); x * x * (3.0 - 2.0 * x) };
+    smooth((time - start) / blend) * smooth((end - time) / blend)
+}
+
 /// Rakentaa ruudun kohtauksen tuotannon tilasta. Lavasteverkot pidetään välimuistissa.
 #[derive(Default)]
 pub struct FrameBuilder {
@@ -52,11 +59,15 @@ impl FrameBuilder {
                             _=>false,
                         });
                         let seated = p.motion[a].chair_at(t).is_some();
+                        let authored_look = tl.events_at(p.fps.frame_to_tick(frame)).any(|event| match &event.kind {
+                            EventKind::LookAt { character, .. } => match character { Some(name) => name.eq_ignore_ascii_case(&p.cast[a].character.params.name), None => p.cast[a].lead },
+                            _ => false,
+                        });
                         let authored_turn = tl.events.iter().any(|event| match &event.kind {
                             EventKind::Motion { character, motion: hs_core::MotionKind::TurnLeft | hs_core::MotionKind::TurnRight | hs_core::MotionKind::WalkBackward } => match character { Some(name) => name.eq_ignore_ascii_case(&p.cast[a].character.params.name), None => p.cast[a].lead },
                             _ => false,
                         });
-                        let still = !authored_turn && !seated && !authored_view && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
+                        let still = !authored_turn && !seated && !authored_view && !authored_look && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
                         let dx = fb.root.x - fa.root.x;
                         if still && dx.abs() > 0.05 {
                             turns[a] = dx.signum() * 0.5 * ease;
@@ -103,8 +114,9 @@ impl FrameBuilder {
                         if let Some(destination)=destination {
                             let from=f.root+Vec3::Y*member.character.params.height*0.9;
                             let local=f.pose.root_rot.inverse()*(destination-from);
-                            let yaw=local.x.atan2(local.z).clamp(-0.7,0.7);
-                            let pitch=(-local.y).atan2(local.x.hypot(local.z)).clamp(-0.45,0.45);
+                            let weight = gaze_weight(t, event.start.seconds() as f32, event.end().seconds() as f32);
+                            let yaw=local.x.atan2(local.z).clamp(-0.7,0.7) * weight;
+                            let pitch=(-local.y).atan2(local.x.hypot(local.z)).clamp(-0.45,0.45) * weight;
                             f.pose.local[humanoid.head]=glam::Quat::from_euler(glam::EulerRot::YXZ,yaw,pitch,0.0)*f.pose.local[humanoid.head];
                         }
                     }
@@ -116,7 +128,6 @@ impl FrameBuilder {
             let scale = 1.0 / (1.0 + f.root.y * 2.5);
             items.push(DrawItem::rigid(Arc::new(props::contact_shadow(Vec3::new(f.root.x, 0.0, f.root.z), member.character.humanoid.proportions.height * 0.22 * scale, shadow_floor))));
             if let Some(chair) = motion.chair_at(t) { items.push(DrawItem::rigid(Arc::new(props::chair(&chair)))); }
-            let skin = skeleton.skin_matrices(&f.pose);
             // Esine oikeassa kädessä: viimeisin [esine ...] -ohje tälle hahmolle.
             let lead = std::ptr::eq(member, &p.cast[0]);
             let item = tl
@@ -135,6 +146,8 @@ impl FrameBuilder {
                 })
                 .max_by_key(|(start, _)| *start)
                 .and_then(|(_, item)| item.clone());
+            if item.is_some() { hs_motion::hands::curl_fingers(humanoid, &mut f.pose, Side::Right, 0.65); }
+            let skin = skeleton.skin_matrices(&f.pose);
             if let Some(id) = item {
                 let arm = humanoid.arm(Side::Right);
                 let key = (Arc::as_ptr(&member.character) as usize, id.clone());
@@ -318,6 +331,15 @@ impl StudioAgent for RustRenderAgent {
 #[cfg(test)]
 mod cache_tests {
     use super::*;
+    #[test]
+    fn gaze_has_continuous_endpoints_and_a_full_hold() {
+        assert_eq!(gaze_weight(1.0, 1.0, 3.0), 0.0);
+        assert_eq!(gaze_weight(3.0, 1.0, 3.0), 0.0);
+        assert_eq!(gaze_weight(2.0, 1.0, 3.0), 1.0);
+        assert!(gaze_weight(1.001, 1.0, 3.0) < 0.001);
+        assert!(gaze_weight(2.999, 1.0, 3.0) < 0.001);
+        for i in 0..101 { assert!((0.0..=1.0).contains(&gaze_weight(i as f32 / 100.0, 0.0, 0.1))); }
+    }
 
     #[test]
     fn held_meshes_are_released_between_character_rebuilds() {
