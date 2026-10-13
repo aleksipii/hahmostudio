@@ -10,6 +10,13 @@ pub struct CommandExample {
 }
 
 pub const COMMANDS: &[CommandExample] = &[
+    CommandExample {example:"walk backward 2s",description:"Walk backward while retaining facing direction"},
+    CommandExample {example:"turn left 2s",description:"Turn 90 degrees left and retain direction"},
+    CommandExample {example:"turn right 2s",description:"Turn 90 degrees right and retain direction"},
+    CommandExample {example:"point forward 2s",description:"Point ahead with the right hand"},
+    CommandExample {example:"shrug shoulders 2s",description:"Shrug with both hands"},
+    CommandExample {example:"shake head 2s",description:"Shake head to indicate no"},
+    CommandExample {example:"clap hands 2s",description:"Clap both hands"},
     CommandExample { example: "sit on chair 2s", description: "Sit on the actor-associated chair and remain seated" },
     CommandExample { example: "stand up 2s", description: "Rise from the actor-associated chair" },
     CommandExample {
@@ -185,6 +192,11 @@ pub fn normalize_tag(tag: &str) -> Result<Option<String>, String> {
     }
     let action = match first {
         "walk" | "walking" => "kävele",
+        "turn" | "turning" => "käänny",
+        "point" | "pointing" => "osoita eteen",
+        "shrug" | "shrugging" => "kohauta olkapäitä",
+        "shake" | "shaking" => "pudista päätä",
+        "clap" | "clapping" => "taputa",
         "run" | "running" => "juokse",
         "wave" | "waving" => "vilkuta",
         "jump" | "jumping" => "hyppää",
@@ -195,7 +207,7 @@ pub fn normalize_tag(tag: &str) -> Result<Option<String>, String> {
         "sit" | "sitting" => "istu tuolille",
         "stand" | "standing" => "nouse tuolilta",
         // Recognized English commands outside the rendered domain stay errors.
-        "open" | "close" | "fly" | "dance" | "turn" => {
+        "open" | "close" | "fly" | "dance" => {
             return Err(error(tag))
         }
         _ => return Ok(None),
@@ -207,9 +219,15 @@ pub fn normalize_tag(tag: &str) -> Result<Option<String>, String> {
             "left" | "to the left" | "to left" | "toward left" | "towards left" => " vasemmalle",
             "right" | "to the right" | "to right" | "toward right" | "towards right" => " oikealle",
             "front" | "forward" | "forwards" | "straight ahead" | "to the front" => " suoraan",
+            "backward" | "backwards" if action == "kävele" => " taaksepäin",
             // Direction is required; never silently choose right or a target.
             _ => return Err(error(tag)),
         },
+        "käänny" => match rest.as_str() { "left" => " vasemmalle", "right" => " oikealle", _ => return Err(error(tag)) },
+        "osoita eteen" => { if rest != "forward" {return Err(error(tag));} "" },
+        "kohauta olkapäitä" => { if !matches!(rest.as_str(), "" | "shoulders") {return Err(error(tag));} "" },
+        "pudista päätä" => { if rest != "head" {return Err(error(tag));} "" },
+        "taputa" => { if !matches!(rest.as_str(), "" | "hands") {return Err(error(tag));} "" },
         "istu tuolille" => {
             if !matches!(rest.as_str(), "on chair" | "on the chair") { return Err(error(tag)); }
             ""
@@ -330,7 +348,7 @@ mod tests {
         for cue in [
             "walk",
             "running",
-            "walk backward",
+            "run backward",
             "walk left and right",
             "walk left quickly",
             "run to Maija",

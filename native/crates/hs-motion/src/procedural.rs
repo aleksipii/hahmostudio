@@ -7,6 +7,7 @@
 //! puhelimen näpyttely sekä hiusten ja vaatteiden toisioliike.
 
 use crate::gait::{self, GaitParams};
+use crate::gestures;
 use crate::hands::{self, PhoneSpec, PhoneState, TapParams};
 use crate::humanoid::{Humanoid, Side};
 use crate::ik;
@@ -107,7 +108,10 @@ fn jump_profile(p: f32, height: f32) -> (f32, f32) {
         (0.0, smoothstep(p / 0.25))
     } else if p < 0.75 {
         let u = (p - 0.25) / 0.5;
-        (height * 4.0 * u * (1.0 - u), (1.0 - smoothstep(u * 4.0)) * 0.5)
+        (
+            height * 4.0 * u * (1.0 - u),
+            (1.0 - smoothstep(u * 4.0)) * 0.5,
+        )
     } else {
         let u = (p - 0.75) / 0.25;
         (0.0, (1.0 - u) * smoothstep(u * 6.0) * 0.9)
@@ -132,7 +136,9 @@ impl ProceduralMotion {
 
     fn applies(&self, e: &TimelineEvent) -> bool {
         match &e.kind {
-            EventKind::Motion { character, .. } | EventKind::CharacterView { character, .. } | EventKind::Phone { character, .. } => match (character, &self.name) {
+            EventKind::Motion { character, .. }
+            | EventKind::CharacterView { character, .. }
+            | EventKind::Phone { character, .. } => match (character, &self.name) {
                 (None, _) => self.lead,
                 (Some(c), Some(n)) => c.eq_ignore_ascii_case(n),
                 (Some(_), None) => self.lead,
@@ -143,8 +149,21 @@ impl ProceduralMotion {
 
     /// Laskee juuren radan kerran koko aikajanalle.
     pub fn prepare(self, timeline: &Timeline) -> PreparedMotion {
-        let events: Vec<TimelineEvent> = timeline.events.iter().filter(|e| self.applies(e)).cloned().collect();
-        let has_chair = events.iter().any(|e| matches!(e.kind, EventKind::Motion { motion: MotionKind::Sit, .. }));
+        let events: Vec<TimelineEvent> = timeline
+            .events
+            .iter()
+            .filter(|e| self.applies(e))
+            .cloned()
+            .collect();
+        let has_chair = events.iter().any(|e| {
+            matches!(
+                e.kind,
+                EventKind::Motion {
+                    motion: MotionKind::Sit,
+                    ..
+                }
+            )
+        });
         let duration = timeline.duration.seconds() as f32;
         let n = (duration * PATH_HZ).ceil() as usize + 2;
         let leg = self.humanoid.pelvis_height();
@@ -152,12 +171,15 @@ impl ProceduralMotion {
         let mut pos = self.start;
         let mut yaw = 0.0f32;
         let dt = 1.0 / PATH_HZ;
+        let mut turned = false;
+        let mut turn_starts = std::collections::HashMap::new();
         for k in 0..n {
             let t = k as f32 * dt;
             let mut velocity = Vec3::ZERO;
             // Chair contact preserves authored orientation through Sit/Stand and idle.
-            let mut target_yaw = if has_chair { yaw } else { 0.0 };
+            let mut target_yaw = if has_chair || turned { yaw } else { 0.0 };
             let mut jump_y = 0.0;
+            let mut authored_turn = None;
             for e in &events {
                 let (s, d) = (e.start.seconds() as f32, e.duration.seconds() as f32);
                 if t < s || t >= s + d {
@@ -165,7 +187,10 @@ impl ProceduralMotion {
                 }
                 let tau = t - s;
                 match &e.kind {
-                    EventKind::Motion { motion: MotionKind::Walk(dir), .. } => {
+                    EventKind::Motion {
+                        motion: MotionKind::Walk(dir),
+                        ..
+                    } => {
                         target_yaw = yaw_of(*dir);
                         let w = ramp(tau, d, 0.35);
                         velocity = Quat::from_rotation_y(yaw) * Vec3::Z * self.walk.speed(leg) * w;
@@ -173,7 +198,34 @@ impl ProceduralMotion {
                             velocity *= 0.35;
                         }
                     }
-                    EventKind::Motion { motion: MotionKind::Run(dir), .. } => {
+                    EventKind::Motion {
+                        motion: MotionKind::WalkBackward,
+                        ..
+                    } => {
+                        turned = true;
+                        target_yaw = yaw;
+                        velocity = -(Quat::from_rotation_y(yaw) * Vec3::Z)
+                            * self.walk.speed(leg)
+                            * ramp(tau, d, 0.35);
+                    }
+                    EventKind::Motion {
+                        motion: mk @ (MotionKind::TurnLeft | MotionKind::TurnRight),
+                        ..
+                    } => {
+                        let start = *turn_starts.entry(e.id).or_insert(yaw);
+                        let sign = if *mk == MotionKind::TurnLeft {
+                            -1.0
+                        } else {
+                            1.0
+                        };
+                        // Finish at the endpoint of the authored interval, not the speech scene.
+                        authored_turn = Some(start + sign * FRAC_PI_2 * smoothstep((tau + dt) / d));
+                        turned = true;
+                    }
+                    EventKind::Motion {
+                        motion: MotionKind::Run(dir),
+                        ..
+                    } => {
                         target_yaw = yaw_of(*dir);
                         let w = ramp(tau, d, 0.3);
                         velocity = Quat::from_rotation_y(yaw) * Vec3::Z * self.run.speed(leg) * w;
@@ -181,7 +233,10 @@ impl ProceduralMotion {
                             velocity *= 0.35;
                         }
                     }
-                    EventKind::Motion { motion: MotionKind::Jump, .. } => {
+                    EventKind::Motion {
+                        motion: MotionKind::Jump,
+                        ..
+                    } => {
                         jump_y = jump_profile(tau / d.max(1e-3), leg * 0.35).0;
                     }
                     EventKind::CharacterView { view, .. } => target_yaw = view_yaw(*view),
@@ -190,20 +245,32 @@ impl ProceduralMotion {
             }
             // Kriittisesti vaimennettu kääntyminen kohti tavoitesuuntaa.
             let diff = (target_yaw - yaw + PI).rem_euclid(TAU) - PI;
-            yaw += diff * (1.0 - (-dt * 9.0).exp());
+            yaw = authored_turn.unwrap_or(yaw + diff * (1.0 - (-dt * 9.0).exp()));
             pos += velocity * dt;
-            path.push(PathSample { pos: Vec3::new(pos.x, jump_y, pos.z), yaw });
+            path.push(PathSample {
+                pos: Vec3::new(pos.x, jump_y, pos.z),
+                yaw,
+            });
         }
         let mut mouths = std::collections::HashMap::new();
         for e in &timeline.events {
             if let EventKind::Dialogue { speaker, text } = &e.kind {
                 if self.speaks(speaker) {
                     let d = e.duration.seconds() as f32;
-                    mouths.insert(e.id, hs_lipsync::from_text_timed(text, speech_length(text, d)));
+                    mouths.insert(
+                        e.id,
+                        hs_lipsync::from_text_timed(text, speech_length(text, d)),
+                    );
                 }
             }
         }
-        PreparedMotion { motion: self, events, mouths, path, duration }
+        PreparedMotion {
+            motion: self,
+            events,
+            mouths,
+            path,
+            duration,
+        }
     }
 
     /// Onko repliikki tämän hahmon? Nimetön repliikki kuuluu päähenkilölle.
@@ -218,7 +285,11 @@ impl ProceduralMotion {
 
 /// Puheen kesto tekstistä (noin 4,5 tavua sekunnissa), enintään repliikin pituus.
 pub fn speech_length(text: &str, duration: f32) -> f32 {
-    let syllables = text.chars().filter(|c| "aeiouyäöåAEIOUYÄÖÅ".contains(*c)).count().max(1) as f32;
+    let syllables = text
+        .chars()
+        .filter(|c| "aeiouyäöåAEIOUYÄÖÅ".contains(*c))
+        .count()
+        .max(1) as f32;
     (syllables / 4.5).min(duration)
 }
 
@@ -234,7 +305,10 @@ impl PreparedMotion {
         let f = x - i as f32;
         let (a, b) = (self.path[i], self.path[j]);
         let diff = (b.yaw - a.yaw + PI).rem_euclid(TAU) - PI;
-        PathSample { pos: a.pos.lerp(b.pos, f), yaw: a.yaw + diff * f }
+        PathSample {
+            pos: a.pos.lerp(b.pos, f),
+            yaw: a.yaw + diff * f,
+        }
     }
 
     /// Juuren paikka (maassa, y = hypyn korkeus) ja suunta hetkellä `t`.
@@ -278,7 +352,8 @@ impl PreparedMotion {
         let breath = (TAU * 0.27 * t).sin();
         pose.local[h.chest] = Quat::from_rotation_x(-0.025 * breath);
         pose.translate[h.pelvis].x = 0.006 * (TAU * 0.11 * t).sin();
-        pose.local[h.neck] = Quat::from_rotation_y(0.05 * (TAU * 0.07 * t).sin()) * Quat::from_rotation_x(0.02 * (TAU * 0.19 * t).sin());
+        pose.local[h.neck] = Quat::from_rotation_y(0.05 * (TAU * 0.07 * t).sin())
+            * Quat::from_rotation_x(0.02 * (TAU * 0.19 * t).sin());
         for side in Side::BOTH {
             let arm = h.arm(side);
             pose.local[arm.upper] = Quat::from_rotation_z(side.sign() * 0.09);
@@ -301,22 +376,69 @@ impl PreparedMotion {
                 EventKind::Motion { motion: mk, .. } => {
                     motion = Some(*mk);
                     match mk {
-                        MotionKind::Walk(_) | MotionKind::Run(_) => {
-                            let params = if matches!(mk, MotionKind::Run(_)) { &m.run } else { &m.walk };
-                            let g = gait::sample(h, params, tau * params.frequency);
+                        MotionKind::Walk(_) | MotionKind::Run(_) | MotionKind::WalkBackward => {
+                            let params = if matches!(mk, MotionKind::Run(_)) {
+                                &m.run
+                            } else {
+                                &m.walk
+                            };
+                            let mut g = gait::sample(h, params, tau * params.frequency);
+                            if *mk == MotionKind::WalkBackward {
+                                gait::reverse(&mut g);
+                            }
                             gait_sample = Some((g, ramp(tau, d, 0.35)));
                             feet_grounded = false;
                         }
                         MotionKind::Wave => {
                             let arm = h.arm(Side::Left);
                             let env = (PI * p).sin().powi(2);
-                            pose.local[arm.upper] = Quat::from_rotation_z(0.09 + 2.45 * env) * Quat::from_rotation_x(-0.25 * env);
-                            pose.local[arm.fore] = Quat::from_rotation_z((0.45 * (tau * TAU * 2.0).sin() + 0.3) * env) * Quat::from_rotation_x(-0.3 * env);
+                            pose.local[arm.upper] = Quat::from_rotation_z(0.09 + 2.45 * env)
+                                * Quat::from_rotation_x(-0.25 * env);
+                            pose.local[arm.fore] =
+                                Quat::from_rotation_z((0.45 * (tau * TAU * 2.0).sin() + 0.3) * env)
+                                    * Quat::from_rotation_x(-0.3 * env);
                             hands::curl_fingers(h, &mut pose, Side::Left, 0.22 * (1.0 - env));
                         }
+                        MotionKind::PointForward => {
+                            let env = (PI * p).sin().powi(2);
+                            let arm = h.arm(Side::Right);
+                            pose.local[arm.upper] = Quat::from_rotation_x(-FRAC_PI_2 * env);
+                            pose.local[arm.fore] = Quat::from_rotation_x(-0.08 * env);
+                            hands::curl_fingers(h, &mut pose, Side::Right, 0.8 * env);
+                            for joint in arm.fingers[1].joints {
+                                pose.local[joint] = Quat::IDENTITY;
+                            }
+                        }
+                        MotionKind::Shrug => {
+                            let env = (PI * p).sin().powi(2);
+                            for side in Side::BOTH {
+                                let arm = h.arm(side);
+                                pose.translate[arm.clavicle].y +=
+                                    h.proportions.height * 0.035 * env;
+                                pose.local[arm.upper] =
+                                    Quat::from_rotation_z(side.sign() * 0.42 * env);
+                                pose.local[arm.fore] = Quat::from_rotation_x(-1.35 * env);
+                                let current = sk.world(&pose)[arm.hand].rot;
+                                let up =
+                                    pose.root_rot * Quat::from_rotation_z(-side.sign() * FRAC_PI_2);
+                                sk.set_world_rotation(&mut pose, arm.hand, current.slerp(up, env));
+                                hands::curl_fingers(h, &mut pose, side, 0.1);
+                            }
+                        }
+                        MotionKind::ShakeHead => {
+                            pose.local[h.head] = Quat::from_rotation_y(
+                                0.36 * (TAU * 2.0 * p).sin() * (PI * p).sin().powi(2),
+                            );
+                        }
+                        MotionKind::Clap => {
+                            gestures::clap(h, &mut pose, p);
+                        }
+                        MotionKind::TurnLeft | MotionKind::TurnRight => {}
                         MotionKind::Nod => {
                             let env = (PI * p).sin().powi(2);
-                            pose.local[h.head] = Quat::from_rotation_x((0.21 * (tau * 3.0 * PI).sin()).max(-0.05) * env);
+                            pose.local[h.head] = Quat::from_rotation_x(
+                                (0.21 * (tau * 3.0 * PI).sin()).max(-0.05) * env,
+                            );
                         }
                         MotionKind::Crouch => {
                             let env = (PI * p).sin().powi(2);
@@ -324,7 +446,8 @@ impl PreparedMotion {
                             pose.local[h.spine] = Quat::from_rotation_x(0.35 * env);
                             for side in Side::BOTH {
                                 let arm = h.arm(side);
-                                pose.local[arm.upper] = Quat::from_rotation_x(-0.6 * env) * pose.local[arm.upper];
+                                pose.local[arm.upper] =
+                                    Quat::from_rotation_x(-0.6 * env) * pose.local[arm.upper];
                             }
                         }
                         MotionKind::Jump => {
@@ -334,7 +457,8 @@ impl PreparedMotion {
                             for side in Side::BOTH {
                                 let arm = h.arm(side);
                                 let up = if airborne { 2.2 } else { -0.5 * squash };
-                                pose.local[arm.upper] = Quat::from_rotation_x(-up * w) * Quat::from_rotation_z(side.sign() * 0.25);
+                                pose.local[arm.upper] = Quat::from_rotation_x(-up * w)
+                                    * Quat::from_rotation_z(side.sign() * 0.25);
                             }
                             if airborne {
                                 feet_grounded = false;
@@ -372,7 +496,8 @@ impl PreparedMotion {
                     if let Some(track) = self.mouths.get(&e.id) {
                         mouth = track.shape_at(tau);
                     }
-                    pose.local[h.head] = Quat::from_rotation_x(0.035 * (TAU * 1.3 * t).sin()) * pose.local[h.head];
+                    pose.local[h.head] =
+                        Quat::from_rotation_x(0.035 * (TAU * 1.3 * t).sin()) * pose.local[h.head];
                 }
             }
         }
@@ -393,7 +518,13 @@ impl PreparedMotion {
             let world = sk.world(&pose);
             for side in Side::BOTH {
                 let l = h.leg(side);
-                let target = pose.root_pos + pose.root_rot * Vec3::new(side.sign() * h.proportions.hip_width * 0.5, l.ankle_height, 0.0);
+                let target = pose.root_pos
+                    + pose.root_rot
+                        * Vec3::new(
+                            side.sign() * h.proportions.hip_width * 0.5,
+                            l.ankle_height,
+                            0.0,
+                        );
                 let pole = world[l.shin].pos + pose.root_rot * Vec3::Z;
                 ik::two_bone(sk, &mut pose, l.thigh, l.shin, l.foot, target, pole);
                 let flat = pose.root_rot;
@@ -426,9 +557,12 @@ impl PreparedMotion {
         let bounce = gait_sample.map_or(0.0, |(g, w)| g.pelvis_offset.y * w);
         if let [h0, h1] = h.hair[..] {
             // Kiihdytys eteen heilauttaa hiuksia taakse; sivuttain kallistaa.
-            pose.local[h0] = Quat::from_rotation_x(0.08 + (-hair.z * 0.06).clamp(-0.9, 0.9) + bounce * 2.0)
-                * Quat::from_rotation_z((hair.x * 0.05).clamp(-0.6, 0.6));
-            pose.local[h1] = Quat::from_rotation_x((-hair.z * 0.04).clamp(-0.7, 0.7) + 0.1 * (TAU * 0.5 * t).sin() * 0.2);
+            pose.local[h0] =
+                Quat::from_rotation_x(0.08 + (-hair.z * 0.06).clamp(-0.9, 0.9) + bounce * 2.0)
+                    * Quat::from_rotation_z((hair.x * 0.05).clamp(-0.6, 0.6));
+            pose.local[h1] = Quat::from_rotation_x(
+                (-hair.z * 0.04).clamp(-0.7, 0.7) + 0.1 * (TAU * 0.5 * t).sin() * 0.2,
+            );
         }
         let swing = gait_sample.map_or(0.0, |(g, w)| g.arm_pitch[0] * w * 0.15);
         pose.local[h.hem_front] = Quat::from_rotation_x((-cloth.z * 0.05 + swing).clamp(-0.6, 0.6));
@@ -461,8 +595,14 @@ mod tests {
             tl.push(
                 Tick::from_seconds(*s),
                 Tick::from_seconds(*d),
-                EventKind::Motion { character: None, motion: *m },
-                SourceSpan { line: 1, text: String::new() },
+                EventKind::Motion {
+                    character: None,
+                    motion: *m,
+                },
+                SourceSpan {
+                    line: 1,
+                    text: String::new(),
+                },
             );
         }
         tl
@@ -470,25 +610,38 @@ mod tests {
 
     #[test]
     fn walking_right_travels_right_and_turns() {
-        let tl = timeline(&[(0.0, 3.0, MotionKind::Walk(Direction::Right)), (3.0, 1.0, MotionKind::Wait)]);
+        let tl = timeline(&[
+            (0.0, 3.0, MotionKind::Walk(Direction::Right)),
+            (3.0, 1.0, MotionKind::Wait),
+        ]);
         let m = ProceduralMotion::new(Humanoid::new(Proportions::default())).prepare(&tl);
         let mid = m.evaluate(&tl, 1.5);
         assert!(mid.root.x > 0.3, "kulki {}", mid.root.x);
         assert!((mid.yaw - FRAC_PI_2).abs() < 0.05);
         let end = m.evaluate(&tl, 3.9);
-        assert!(end.yaw.abs() < 0.2, "kääntyy takaisin katsojaan: {}", end.yaw);
+        assert!(
+            end.yaw.abs() < 0.2,
+            "kääntyy takaisin katsojaan: {}",
+            end.yaw
+        );
     }
 
     #[test]
     fn feet_stay_on_ground_when_standing_and_hair_reacts_to_stop() {
-        let tl = timeline(&[(0.0, 2.0, MotionKind::Run(Direction::Left)), (2.0, 2.0, MotionKind::Wait)]);
+        let tl = timeline(&[
+            (0.0, 2.0, MotionKind::Run(Direction::Left)),
+            (2.0, 2.0, MotionKind::Wait),
+        ]);
         let m = ProceduralMotion::new(Humanoid::new(Proportions::default())).prepare(&tl);
         let h = &m.motion.humanoid;
         let f = m.evaluate(&tl, 3.5);
         let w = h.skeleton.world(&f.pose);
         for side in Side::BOTH {
             let ankle = w[h.leg(side).foot].pos.y;
-            assert!((ankle - h.leg(side).ankle_height).abs() < 2e-3, "nilkka {ankle}");
+            assert!(
+                (ankle - h.leg(side).ankle_height).abs() < 2e-3,
+                "nilkka {ankle}"
+            );
         }
         let hair_still = m.evaluate(&tl, 1.0).pose.local[h.hair[0]];
         let hair_after_stop = m.evaluate(&tl, 2.1).pose.local[h.hair[0]];
@@ -497,7 +650,10 @@ mod tests {
 
     #[test]
     fn jump_leaves_ground_and_phone_appears_for_tapping() {
-        let tl = timeline(&[(0.0, 1.2, MotionKind::Jump), (1.2, 3.0, MotionKind::PhoneTap)]);
+        let tl = timeline(&[
+            (0.0, 1.2, MotionKind::Jump),
+            (1.2, 3.0, MotionKind::PhoneTap),
+        ]);
         let m = ProceduralMotion::new(Humanoid::new(Proportions::default())).prepare(&tl);
         assert!(m.evaluate(&tl, 0.6).root.y > 0.1);
         assert!(m.evaluate(&tl, 0.6).props.phone.is_none());
@@ -508,7 +664,10 @@ mod tests {
 
     #[test]
     fn evaluation_is_order_independent() {
-        let tl = timeline(&[(0.0, 2.0, MotionKind::Walk(Direction::Left)), (2.0, 2.0, MotionKind::Wave)]);
+        let tl = timeline(&[
+            (0.0, 2.0, MotionKind::Walk(Direction::Left)),
+            (2.0, 2.0, MotionKind::Wave),
+        ]);
         let m = ProceduralMotion::new(Humanoid::new(Proportions::default())).prepare(&tl);
         let a = m.evaluate(&tl, 2.7).pose;
         let _ = m.evaluate(&tl, 0.3);

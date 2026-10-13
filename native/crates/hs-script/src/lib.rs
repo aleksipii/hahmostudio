@@ -320,6 +320,21 @@ fn classify(tag: &str) -> Result<Tag, String> {
 fn classify_canonical(tag: &str) -> Result<Tag, String> {
     let low = lower(tag);
     let low = low.trim();
+    for (prefix, command, motion) in [
+        ("kävele taaksepäin", "walk backward", MotionKind::WalkBackward),
+        ("käänny vasemmalle", "turn left", MotionKind::TurnLeft),
+        ("käänny oikealle", "turn right", MotionKind::TurnRight),
+        ("osoita eteen", "point forward", MotionKind::PointForward),
+        ("kohauta olkapäitä", "shrug shoulders", MotionKind::Shrug),
+        ("pudista päätä", "shake head", MotionKind::ShakeHead),
+        ("taputa", "clap hands", MotionKind::Clap),
+    ] {
+        if let Some(rest) = low.strip_prefix(prefix) {
+            if !rest.is_empty() && !rest.starts_with(' ') { return Err("Tuntematon liikeohje.".into()); }
+            let canonical = english::normalize_tag(&format!("{command}{rest}"))?.ok_or("Tuntematon liikeohje.")?;
+            return Ok(Tag::Motion(motion, duration_in(&canonical)));
+        }
+    }
     for (prefix, command, motion) in [("istu tuolille", "sit on chair", MotionKind::Sit), ("nouse tuolilta", "stand up", MotionKind::Stand)] {
         if let Some(rest) = low.strip_prefix(prefix) {
             if !rest.is_empty() && !rest.starts_with(' ') { return Err("Tuntematon tuolikontakti.".into()); }
@@ -1271,5 +1286,34 @@ mod chair_grammar_tests {
             assert!(!parse(&format!("KALLE: [{tag}]")).is_assemblable(), "{tag}");
         }
         assert_eq!(parse("KALLE: Please sit on the chair.").beats[0].motion, MotionKind::Wait);
+    }
+}
+
+#[cfg(test)]
+mod movement_library_grammar {
+    use super::*;
+    #[test]
+    fn new_motion_corpus_is_explicit_and_strict() {
+        for (tag, kind) in [
+            ("walking backwards 2s", MotionKind::WalkBackward),
+            ("turning left for 2 seconds", MotionKind::TurnLeft),
+            ("turn right 1s", MotionKind::TurnRight),
+            ("pointing forward 2s", MotionKind::PointForward),
+            ("shrugging shoulders 2s", MotionKind::Shrug),
+            ("shaking head 2s", MotionKind::ShakeHead),
+            ("clapping hands 2s", MotionKind::Clap),
+            ("kävele taaksepäin 2s", MotionKind::WalkBackward),
+            ("taputa 2s", MotionKind::Clap),
+        ] {
+            let p=parse(&format!("KALLE: [{tag}]"));
+            assert!(p.is_assemblable(), "{tag}: {:?}",p.diagnostics);
+            assert_eq!(p.beats[0].motion,kind);
+        }
+        for tag in ["turn", "turn left 180 degrees", "point at Maija", "shake hands", "shrug sadly", "clap while jumping", "walk backward quickly", "run backward", "clap 0s"] {
+            assert!(!parse(&format!("KALLE: [{tag}]")).is_assemblable(), "{tag}");
+        }
+        for text in ["Please turn left.", "I clap my hands.", "Walk backward, please."] {
+            assert_eq!(parse(&format!("KALLE: {text}")).beats[0].motion, MotionKind::Wait);
+        }
     }
 }

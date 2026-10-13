@@ -133,21 +133,34 @@ pub fn sample(h: &Humanoid, p: &GaitParams, phase: f32) -> GaitSample {
         if lp < p.duty {
             let u = lp / p.duty;
             let edge = (u - 0.5).abs() * 2.0;
-            ankle_target[i] = Vec3::new(x, leg.ankle_height + heel_toe_raise(h, edge), s * (0.5 - u));
+            ankle_target[i] =
+                Vec3::new(x, leg.ankle_height + heel_toe_raise(h, edge), s * (0.5 - u));
             // Kantaisku alussa, varvasponnistus lopussa.
-            foot_pitch[i] = 0.25 * (1.0 - smoothstep(u * 5.0)) - 0.35 * smoothstep((u - 0.75) * 4.0);
+            foot_pitch[i] =
+                0.25 * (1.0 - smoothstep(u * 5.0)) - 0.35 * smoothstep((u - 0.75) * 4.0);
             planted[i] = true;
         } else {
             let v = (lp - p.duty) / (1.0 - p.duty);
             let lift = p.lift * leg_len * (PI * v).sin();
-            ankle_target[i] = Vec3::new(x, leg.ankle_height + heel_toe_raise(h, 1.0) + lift, s * (-0.5 + smoothstep(v)));
+            ankle_target[i] = Vec3::new(
+                x,
+                leg.ankle_height + heel_toe_raise(h, 1.0) + lift,
+                s * (-0.5 + smoothstep(v)),
+            );
             foot_pitch[i] = -0.35 * (1.0 - smoothstep(v * 3.0)) + 0.2 * smoothstep((v - 0.6) * 3.0);
         }
     }
     let drop = pelvis_drop(h, p);
     // Kävelyssä lantio korkeimmillaan keskituessa, juoksussa matalimmillaan (jousto).
     let wave = (2.0 * TAU * (phase - p.duty * 0.5)).cos();
-    let bounce = p.bounce * leg_len * 0.5 * if p.duty > 0.5 { wave - 1.0 } else { -wave - 1.0 };
+    let bounce = p.bounce
+        * leg_len
+        * 0.5
+        * if p.duty > 0.5 {
+            wave - 1.0
+        } else {
+            -wave - 1.0
+        };
     let sway = 0.012 * leg_len * (TAU * phase).sin() * (p.duty - 0.3).max(0.0) * 2.0;
     let swing = (TAU * phase).cos();
     GaitSample {
@@ -166,21 +179,42 @@ pub fn sample(h: &Humanoid, p: &GaitParams, phase: f32) -> GaitSample {
     }
 }
 
+/// Reverse locomotion while retaining forward-facing feet and knee poles.
+/// A planted foot travels forward locally to cancel backward root translation.
+pub fn reverse(g: &mut GaitSample) {
+    for i in 0..2 {
+        g.ankle_target[i].z = -g.ankle_target[i].z;
+        g.foot_pitch[i] = -g.foot_pitch[i];
+        g.arm_pitch[i] = -g.arm_pitch[i];
+    }
+    g.lean = -g.lean;
+    g.pelvis_yaw = -g.pelvis_yaw;
+    g.chest_yaw = -g.chest_yaw;
+}
+
 /// Kirjoittaa syklin asentoon. `root` on maa lantion alla (paikka ja kierto maailmassa).
 pub fn apply(h: &Humanoid, pose: &mut Pose, g: &GaitSample, weight: f32) {
     let w = weight.clamp(0.0, 1.0);
     let sk = &h.skeleton;
     pose.translate[h.pelvis] += g.pelvis_offset * w;
-    pose.local[h.pelvis] = Quat::from_rotation_y(g.pelvis_yaw * w) * Quat::from_rotation_z(g.pelvis_roll * w) * pose.local[h.pelvis];
+    pose.local[h.pelvis] = Quat::from_rotation_y(g.pelvis_yaw * w)
+        * Quat::from_rotation_z(g.pelvis_roll * w)
+        * pose.local[h.pelvis];
     pose.local[h.spine] = Quat::from_rotation_x(g.lean * w * 0.6) * pose.local[h.spine];
-    pose.local[h.chest] = Quat::from_rotation_y((g.chest_yaw - g.pelvis_yaw) * w) * Quat::from_rotation_x(g.lean * w * 0.4) * pose.local[h.chest];
+    pose.local[h.chest] = Quat::from_rotation_y((g.chest_yaw - g.pelvis_yaw) * w)
+        * Quat::from_rotation_x(g.lean * w * 0.4)
+        * pose.local[h.chest];
     // Pää pysyy suunnassa: kumoa vartalon kierto ja kallistus.
-    pose.local[h.neck] = Quat::from_rotation_y(-g.chest_yaw * w * 0.7) * Quat::from_rotation_x(-g.lean * w * 0.8) * pose.local[h.neck];
+    pose.local[h.neck] = Quat::from_rotation_y(-g.chest_yaw * w * 0.7)
+        * Quat::from_rotation_x(-g.lean * w * 0.8)
+        * pose.local[h.neck];
     for side in Side::BOTH {
         let i = side as usize;
         let arm = h.arm(side);
         // Kädet roikkuvat hieman sivulle, heiluvat ja kyynärpää koukistuu eteen.
-        pose.local[arm.upper] = Quat::from_rotation_x(g.arm_pitch[i] * w) * Quat::from_rotation_z(side.sign() * 0.08 * w) * pose.local[arm.upper];
+        pose.local[arm.upper] = Quat::from_rotation_x(g.arm_pitch[i] * w)
+            * Quat::from_rotation_z(side.sign() * 0.08 * w)
+            * pose.local[arm.upper];
         let elbow = g.elbow + 0.25 * g.elbow * (-g.arm_pitch[i]).max(0.0);
         pose.local[arm.fore] = Quat::from_rotation_x(-elbow * w) * pose.local[arm.fore];
         crate::hands::curl_fingers(h, pose, side, g.fist * w);
@@ -191,14 +225,22 @@ pub fn apply(h: &Humanoid, pose: &mut Pose, g: &GaitSample, weight: f32) {
     for side in Side::BOTH {
         let i = side as usize;
         let leg = h.leg(side);
-        let rest_target = Vec3::new(side.sign() * h.proportions.hip_width * 0.5, leg.ankle_height, 0.0);
+        let rest_target = Vec3::new(
+            side.sign() * h.proportions.hip_width * 0.5,
+            leg.ankle_height,
+            0.0,
+        );
         let local_target = rest_target.lerp(g.ankle_target[i], w);
         let target = root_pos + root_rot * local_target;
         let knee = world[leg.shin].pos;
         let pole = knee + root_rot * Vec3::new(0.0, 0.0, 1.0);
         ik::two_bone(sk, pose, leg.thigh, leg.shin, leg.foot, target, pole);
         // Jalkaterä maan suuntaiseksi + kanta/varvas-kallistus.
-        sk.set_world_rotation(pose, leg.foot, root_rot * Quat::from_rotation_x(-g.foot_pitch[i] * w));
+        sk.set_world_rotation(
+            pose,
+            leg.foot,
+            root_rot * Quat::from_rotation_x(-g.foot_pitch[i] * w),
+        );
     }
 }
 
@@ -222,7 +264,8 @@ mod tests {
                 let world = Vec3::new(0.0, 0.0, speed * t) + g.ankle_target[0];
                 if let (Some((true, prev)), true) = (last, g.planted[0]) {
                     // Vaakasuora liukuma; pystysuunnassa nilkka saa nousta kanta-varvasrullauksessa.
-                    max_slip = max_slip.max(Vec3::new(world.x - prev.x, 0.0, world.z - prev.z).length());
+                    max_slip =
+                        max_slip.max(Vec3::new(world.x - prev.x, 0.0, world.z - prev.z).length());
                 }
                 last = Some((g.planted[0], world));
             }

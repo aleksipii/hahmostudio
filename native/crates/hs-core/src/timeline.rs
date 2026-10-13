@@ -45,11 +45,18 @@ pub enum MotionKind {
     Sit,
     /// Rise from the actor-associated chair.
     Stand,
+    WalkBackward,
+    TurnLeft,
+    TurnRight,
+    PointForward,
+    Shrug,
+    ShakeHead,
+    Clap,
 }
 
 impl MotionKind {
     pub fn is_locomotion(self) -> bool {
-        matches!(self, MotionKind::Walk(_) | MotionKind::Run(_))
+        matches!(self, MotionKind::Walk(_) | MotionKind::Run(_) | MotionKind::WalkBackward)
     }
     pub fn finnish_name(self) -> &'static str {
         match self {
@@ -67,6 +74,13 @@ impl MotionKind {
             MotionKind::PhoneTap => "Puhelimen näpyttely",
             MotionKind::Sit => "Istuminen tuolille",
             MotionKind::Stand => "Nouseminen tuolilta",
+            MotionKind::WalkBackward => "Kävely taaksepäin",
+            MotionKind::TurnLeft => "Kääntyminen vasemmalle",
+            MotionKind::TurnRight => "Kääntyminen oikealle",
+            MotionKind::PointForward => "Osoittaminen eteen",
+            MotionKind::Shrug => "Olankohautus",
+            MotionKind::ShakeHead => "Pään pudistus",
+            MotionKind::Clap => "Taputus",
         }
     }
 }

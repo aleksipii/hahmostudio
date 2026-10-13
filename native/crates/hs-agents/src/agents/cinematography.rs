@@ -123,9 +123,9 @@ impl CameraTrack {
                 Some(CameraHint::LowAngle) => push(ShotKind::LowAngle, start, end, mk.is_locomotion()),
                 Some(CameraHint::HighAngle) => push(ShotKind::HighAngle, start, end, mk.is_locomotion()),
                 None => match mk {
-                    MotionKind::Walk(_) | MotionKind::Run(_) => push(ShotKind::Wide, start, end, true),
-                    MotionKind::Sit | MotionKind::Stand | MotionKind::Jump | MotionKind::Crouch | MotionKind::Wave => push(ShotKind::Full, start, end, false),
-                    MotionKind::Nod => push(ShotKind::CloseUp, start, end, false),
+                    MotionKind::WalkBackward | MotionKind::Walk(_) | MotionKind::Run(_) => push(ShotKind::Wide, start, end, true),
+                    MotionKind::TurnLeft | MotionKind::TurnRight | MotionKind::PointForward | MotionKind::Shrug | MotionKind::Clap | MotionKind::Sit | MotionKind::Stand | MotionKind::Jump | MotionKind::Crouch | MotionKind::Wave => push(ShotKind::Full, start, end, false),
+                    MotionKind::Nod | MotionKind::ShakeHead => push(ShotKind::CloseUp, start, end, false),
                     MotionKind::PhoneTap => {
                         if end - start >= 1.6 {
                             let split = start + (end - start) * 0.35;

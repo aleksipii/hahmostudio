@@ -47,7 +47,11 @@ impl FrameBuilder {
                             _=>false,
                         });
                         let seated = p.motion[a].chair_at(t).is_some();
-                        let still = !seated && !authored_view && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
+                        let authored_turn = tl.events.iter().any(|event| match &event.kind {
+                            EventKind::Motion { character, motion: hs_core::MotionKind::TurnLeft | hs_core::MotionKind::TurnRight | hs_core::MotionKind::WalkBackward } => match character { Some(name) => name.eq_ignore_ascii_case(&p.cast[a].character.params.name), None => p.cast[a].lead },
+                            _ => false,
+                        });
+                        let still = !authored_turn && !seated && !authored_view && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
                         let dx = fb.root.x - fa.root.x;
                         if still && dx.abs() > 0.05 {
                             turns[a] = dx.signum() * 0.5 * ease;

@@ -15,6 +15,7 @@
 pub mod expression;
 pub mod face;
 pub mod gait;
+pub mod gestures;
 pub mod hands;
 pub mod humanoid;
 pub mod ik;

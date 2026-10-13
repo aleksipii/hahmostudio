@@ -15,6 +15,12 @@ moniosainen komento tai tuntematon muunnin antaa virheen.
 | Toiminta | Esimerkkejä |
 | --- | --- |
 | Kävely | `[walk left 2s]`, `[walking to the left for 2 seconds]`, `[walk straight ahead 2s]` |
+| Kävely taakse | `[walk backward 2s]`, `[walking backwards 2s]` (säilyttää suunnan) |
+| Kääntyminen | `[turn left 2s]`, `[turn right 2s]` (suhteellinen 90°) |
+| Osoittaminen | `[point forward 2s]` (oikea käsi, hahmon eteen) |
+| Olankohautus | `[shrug shoulders 2s]` |
+| Pään pudistus | `[shake head 2s]` |
+| Taputus | `[clap hands 2s]` |
 | Juoksu | `[run right 3s]`, `[running to the right for 3 seconds]` |
 | Vilkutus | `[wave hello 2s]`, `[waving goodbye 2s]` |
 | Hyppy | `[jump 1.2s]`, `[jumping for 1.2 seconds]` |
@@ -70,3 +76,21 @@ Toteutus: `hs-script::english` (komentosäännöt/luettelo),
 `script_assist_ui`. Ei pilvipalvelua, kielimallia tai käsikirjoituksen suorittamista.
 
 Esimerkki: [english-reviewed.txt](examples/english-reviewed.txt).
+
+## Liikekirjaston ensimmäinen laajennus
+
+Kääntyminen on suhteellinen 90 asteen liike, ei maailman suuntaan tehty hyppy.
+Uusi suunta säilyy liikkeen päätyttyä. Takaperin kävely kulkee hahmon nykyistä
+suuntaa vasten ja käyttää omaa käänteistä askelsykliä. `point forward` tarkoittaa
+hahmon paikallista etusuuntaa, ei arvatun henkilön/esineen kohdistamista.
+Kääntymiseen ja takaperin kävelyyn ei lisätä samanaikaista `view`-ohjetta.
+
+Osoittaminen, olankohautus ja taputus tarvitsevat nykyisessä toteutuksessa
+vapaat kädet: poista kädessä oleva esine (`prop none`) ja piilota puhelin
+(`phone hidden`). Nouse tuolilta ennen uusia liikkeitä. Pään pudistus on
+animoitu kieltoele; se ei muuta repliikkiä tai sen merkitystä.
+
+Esimerkki: [english-movements.txt](examples/english-movements.txt).
+Tämä on seitsemän toteutetun liikkeen erä. Sivuaskeleet, portaat, oven avaaminen,
+esineiden nouto/luovutus, kättely ja halaus eivät vielä kuulu tuettuun kieleen.
+Niitä ei korvata samankaltaisella liikkeellä.

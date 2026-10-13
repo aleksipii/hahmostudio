@@ -233,6 +233,9 @@ pub fn inspect(p: &Production) -> Report {
         {
             report.diagnostics.push(Diagnostic::error(beat.line,"Nimeä repliikin tai toiminnan hahmo: NAME: teksti [ohje]. Kohdetta ei valita arvaamalla."));
         }
+        if beat.view.is_some() && matches!(beat.motion, MotionKind::TurnLeft | MotionKind::TurnRight | MotionKind::WalkBackward) {
+            report.diagnostics.push(Diagnostic::error(beat.line, "Anna kääntyminen tai takaperin kävely ilman samanaikaista view-ohjetta. Suunta voidaan asettaa edeltävällä erillisellä rivillä."));
+        }
         if let (Some(view), MotionKind::Walk(direction) | MotionKind::Run(direction)) =
             (beat.view, beat.motion)
         {
@@ -402,6 +405,22 @@ pub fn inspect(p: &Production) -> Report {
                 }
             }
         }
+        if beat.motion == MotionKind::Clap {
+            if let Some(motion) = actor.as_ref().and_then(|name| p.cast.iter().position(|c| c.character.params.name.eq_ignore_ascii_case(name))).and_then(|i| p.motion.get(i)) {
+                let pose = motion.evaluate(timeline, (event.start.seconds() + event.duration.seconds()*0.5) as f32).pose;
+                let h = &motion.motion.humanoid;
+                let world = h.skeleton.world(&pose);
+                let surfaces = hs_motion::Side::BOTH.map(|side| {
+                    let arm = h.arm(side);
+                    let hand = world[arm.hand];
+                    hand.pos + hand.rot * glam::Vec3::new(-side.sign()*arm.hand_len*0.11, -arm.hand_len*0.24, 0.0)
+                });
+                let gap = surfaces[0].distance(surfaces[1]);
+                if !gap.is_finite() || gap > 0.004 {
+                    report.diagnostics.push(Diagnostic::error(beat.line,"Taputuksen kädet eivät kohtaa tämän hahmon mittasuhteilla. Kontaktia ei korvata pelkällä käsien heiluttelulla."));
+                }
+            }
+        }
         let start = event.start.seconds();
         let end = timeline
             .events
@@ -434,6 +453,9 @@ pub fn inspect(p: &Production) -> Report {
             })
             .and_then(|index| p.motion.get(index))
             .is_some_and(|motion| motion.evaluate(timeline, sample).props.phone.is_some());
+        if matches!(beat.motion, MotionKind::Clap | MotionKind::Shrug | MotionKind::PointForward) && (prop.is_some() || phone_visible) {
+            report.diagnostics.push(Diagnostic::error(beat.line, "Tämä käsiele tarvitsee vapaat kädet. Poista kädessä oleva esine ja piilota puhelin ensin."));
+        }
         for (name, held) in &props {
             if held.is_some()
                 && p.cast
