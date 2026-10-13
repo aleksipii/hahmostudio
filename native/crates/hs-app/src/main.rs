@@ -13,6 +13,7 @@ mod image_ui;
 mod editing_ui;
 mod production_ui;
 mod blocks_ui;
+mod script_assist_ui;
 mod viewport;
 mod voice_ui;
 

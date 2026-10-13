@@ -20,6 +20,8 @@ use hs_core::{
 };
 use serde::{Deserialize, Serialize};
 
+pub mod english;
+
 pub const MAX_SCRIPT_CHARS: usize = 12_000;
 pub const MAX_TOTAL_SECONDS: f64 = 60.0;
 pub const MIN_LINE_SECONDS: f64 = 0.5;
@@ -155,6 +157,14 @@ fn has_negation(s: &str) -> bool {
 
 /// Tunnistaa liikkeen tekstistä. Kieltosana estää tulkinnan kokonaan.
 pub fn motion_from_text(text: &str) -> Option<MotionKind> {
+    recognize_motion(text, true)
+}
+
+fn motion_from_finnish_text(text: &str) -> Option<MotionKind> {
+    recognize_motion(text, false)
+}
+
+fn recognize_motion(text: &str, english: bool) -> Option<MotionKind> {
     if has_negation(text) {
         return None;
     }
@@ -182,7 +192,7 @@ pub fn motion_from_text(text: &str) -> Option<MotionKind> {
                     | "pause"
             ) {
                 let wanted = words(k);
-                !wanted.is_empty() && tokens.windows(wanted.len()).any(|w| w == wanted)
+                english && !wanted.is_empty() && tokens.windows(wanted.len()).any(|w| w == wanted)
             } else {
                 t.contains(k)
             }
@@ -301,6 +311,13 @@ enum Tag {
 }
 
 fn classify(tag: &str) -> Result<Tag, String> {
+    match english::normalize_tag(tag)? {
+        Some(canonical) => classify_canonical(&canonical),
+        None => classify_canonical(tag),
+    }
+}
+
+fn classify_canonical(tag: &str) -> Result<Tag, String> {
     let low = lower(tag);
     let low = low.trim();
     if let Some(rest) = strip_keyword(tag, &["expression", "ilme"]) {
@@ -412,7 +429,7 @@ fn classify(tag: &str) -> Result<Tag, String> {
             .map(Tag::Camera)
             .ok_or_else(|| format!("Tuntematon kuvaohje: [{tag}]. Käytä laaja, puolilähi, lähikuva, insertti, kaksikko, olan yli, alakulma tai yläkulma."));
     }
-    match motion_from_text(tag) {
+    match motion_from_finnish_text(tag) {
         Some(m) => Ok(Tag::Motion(m, duration_in(tag))),
         None => Err(format!(
             "Tuntematon liikeohje: [{tag}]. Käytä esimerkiksi [vilkuta 2s]."
@@ -574,7 +591,7 @@ pub fn parse(text: &str) -> ScriptPlan {
             continue;
         }
         let (speaker, spoken) = split_speaker(&spoken);
-        let motion = match motion.or_else(|| motion_from_text(&spoken)) {
+        let motion = match motion.or_else(|| motion_from_finnish_text(&spoken)) {
             Some(m) => m,
             None => {
                 if !spoken.is_empty() {
@@ -770,6 +787,29 @@ mod tests {
     const EXAMPLE: &str = "[tausta studio]\nHei! Tervetuloa mukaan. [vilkuta 2s]\nKävelen oikealle. [kävele oikealle 3s]\n[tausta auto kuljettaja]\nNyt ollaan autossa. [nyökkää 2s]\n[tausta puhelin edestä]\nNähdään seuraavassa jaksossa! [vilkuta 2s]";
 
     const ENGLISH_FAMILY: &str = include_str!("../tests/fixtures/english-family.txt");
+
+    #[test]
+    fn english_dialogue_is_never_automatically_interpreted_as_action() {
+        for spoken in [
+            "I love to walk.",
+            "We run the studio.",
+            "Wave goodbye to those old ideas.",
+            "I cannot wait.",
+        ] {
+            let plan = parse(&format!("KALLE: {spoken}"));
+            assert!(plan.is_assemblable());
+            assert_eq!(plan.beats[0].text, spoken);
+            assert_eq!(plan.beats[0].motion, MotionKind::Wait);
+        }
+        let explicit = parse("KALLE: I love to walk. [walk left 2s]");
+        assert_eq!(explicit.beats[0].text, "I love to walk.");
+        assert_eq!(explicit.beats[0].motion, MotionKind::Walk(Direction::Left));
+        // Existing Finnish legacy prose recognition remains compatible.
+        assert_eq!(
+            parse("Kävelen vasemmalle.").beats[0].motion,
+            MotionKind::Walk(Direction::Left)
+        );
+    }
 
     #[test]
     fn explicit_expressions_and_looks_keep_source_character_and_duration() {
@@ -1078,3 +1118,5 @@ mod tests {
         assert!(tl.ids_are_unique());
     }
 }
+
+pub mod assist;

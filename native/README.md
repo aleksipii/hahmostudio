@@ -164,3 +164,14 @@ Valmis englanninkielinen käsikirjoituspohja:
 Avaa se Käsikirjoitus-välilehdelle, valitse Kallelle ja Maijalle eri Kokoro-äänet
 ja tallenna ensimmäinen jakso sarjaprojektiin. Tämä on tekstipohja, ei väite
 valmiista tai kuunnellusta Kokoro-jaksosta.
+
+## Englanninkielinen ohjekieli ja editorin apu
+
+Käsikirjoitus-välilehden ohjehaku täydentää tuettuja tageja ja näyttää
+rivikohtaiset virheet, tulkintatarpeen ja puhetilan. Ehdotus näkyy ensin
+esikatseluna ja muuttaa lähdetekstiä vasta **Hyväksy muutos** -painikkeella.
+Esimerkiksi `[walking to the left for 2 seconds]`, `[camera close up]` ja
+`[emotion cheerful]` ovat tuettuja muotoja. Englanninkielisen puheen sana
+`walk` ei enää itsessään käynnistä liikettä. Englanninkielisessä kävely-/juoksu-
+ohjeessa suunta annetaan nimenomaisesti; FI-tunnistus säilyy.
+Ohjeet ja rajat: [ENGLISH-COMMANDS.md](ENGLISH-COMMANDS.md).

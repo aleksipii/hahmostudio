@@ -15,6 +15,7 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                 crate::project_ui::menu(app, ui);
                 ui.separator();
                 if ui.button("Uusi käsikirjoitus").clicked() {
+                    app.script_assist=Default::default();
                     app.script = EXAMPLE.into();
                     app.script_path = None;
                     app.legacy = None;
@@ -276,20 +277,22 @@ pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
 fn script_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
     {
         ui.heading("Käsikirjoitus");
-        ui.label(RichText::new("Puhe tekstinä, ohjeet hakasulkeissa: [vilkuta 2s], [juokse oikealle 2s], [näpyttele puhelinta 3s], [tausta keittiö|luokka|puisto|katu|olohuone|kaupunki ilta], [kuva laaja|kaksikko|olan yli|lähikuva|alakulma|yläkulma], [esine kahvikuppi|pizza|kirja|lahja|pallo|kukat|tölkki|mikrofoni|pois]. Puhuja: NIMI: repliikki. Sarjan perhe: KALLE, MAIJA, EETU, RONJA.").weak().small());
+        ui.label(RichText::new("Englanninkielinen puhe: NAME: dialogue. Ohjeet hakasulkeissa: [walk left 2s], [wave hello], [camera close up], [emotion cheerful]. Ohjehaku ja rivitarkistus ovat editorin alla.").weak().small());
         ui.add_space(4.0);
         let errors: Vec<_> = app.production.diagnostics.iter().filter(|d| d.severity != Severity::Info).cloned().collect();
-        let editor_h = (ui.available_height() - 40.0 - errors.len().min(6) as f32 * 22.0).max(160.0);
+        let editor_h = (ui.available_height() - 315.0).max(130.0);
         egui::ScrollArea::vertical().max_height(editor_h).show(ui, |ui| {
             let edit = egui::TextEdit::multiline(&mut app.script).code_editor().desired_width(f32::INFINITY).desired_rows(18).lock_focus(true);
-            if ui.add(edit).changed() {
-                app.script_changed();
+            let output=edit.show(ui);
+            if output.response.has_focus() {
+                if let Some(range)=output.cursor_range {app.script_assist.cursor(&app.script,range.primary.ccursor.index);}
             }
+            if output.response.changed() {app.script_changed();}
         });
         ui.separator();
         if errors.is_empty() {
             if let Some(plan) = &app.production.plan {
-                ui.label(RichText::new(format!("{} riviä, {:.1} s – valmis vietäväksi", plan.beats.len(), plan.seconds)).color(Color32::from_rgb(0x5d, 0xa8, 0x6c)));
+                ui.label(RichText::new(format!("{} repliikki-/toimintariviä, {:.1} s · ohjetarkistus valmis", plan.beats.len(), plan.seconds)).color(Color32::from_rgb(0x5d, 0xa8, 0x6c)));
             }
         } else {
             egui::ScrollArea::vertical().id_salt("huomautukset").max_height(140.0).show(ui, |ui| {
@@ -299,6 +302,7 @@ fn script_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
                 }
             });
         }
+        app.script_assist.ui(ui,&app.script,&app.production);
         if let Some(e) = &app.pipeline_error {
             ui.label(RichText::new(e).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)));
         }

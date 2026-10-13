@@ -116,7 +116,7 @@ impl StudioApp {
         self.voice.attach_project(&mut production,ctx);
         self.production=production;self.image=image;self.editing=editing;
         self.script=self.production.script.clone();self.script_path=None;self.dirty_since=None;self.legacy=None;
-        self.time=0.0;self.selected_cast=0;self.project.selected=index;self.blocks=Default::default();
+        self.time=0.0;self.selected_cast=0;self.project.selected=index;self.blocks=Default::default();self.script_assist=Default::default();
         self.pipeline=hs_agents::Pipeline::default();self.run_pipeline();
     }
     pub fn scan_recovery(&mut self,ctx:&egui::Context) {

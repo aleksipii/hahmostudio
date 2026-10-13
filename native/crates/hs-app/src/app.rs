@@ -25,6 +25,7 @@ pub struct StudioApp {
     pub image: crate::image_ui::ImageWorkspace,
     pub editing: crate::editing_ui::EditingState,
     pub blocks: crate::blocks_ui::BlocksState,
+    pub script_assist: crate::script_assist_ui::ScriptAssistState,
     pub production: Production,
     pub pipeline: Pipeline,
     pub script: String,
@@ -104,6 +105,7 @@ impl StudioApp {
             image: Default::default(),
             editing: Default::default(),
             blocks: Default::default(),
+            script_assist: Default::default(),
             production,
             pipeline: Pipeline::default(),
             script,
@@ -189,6 +191,7 @@ impl StudioApp {
     pub fn open_script(&mut self, path: PathBuf) {
         match std::fs::read_to_string(&path) {
             Ok(s) => {
+                self.script_assist=Default::default();
                 self.script = s;
                 self.status = format!("Avattu {}", path.display());
                 self.script_path = Some(path);
@@ -314,6 +317,9 @@ impl eframe::App for StudioApp {
             crate::production_ui::show(self, ctx);
         } else { panels::stage(self, ctx, frame); }
         panels::dialogs(self, ctx);
+        if let Some(next)=self.script_assist.preview(ctx,&self.script) {
+            self.script=next;self.script_changed();
+        }
         self.handle_screenshot(ctx);
     }
 }
