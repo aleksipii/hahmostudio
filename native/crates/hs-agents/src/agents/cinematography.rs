@@ -101,10 +101,12 @@ impl CameraTrack {
         };
         for e in beats {
             let EventKind::Motion { motion: mk, character } = &e.kind else { continue };
-            let scene_end=tl.events.iter().filter(|event|event.start==e.start && event.source.line==e.source.line && !matches!(event.kind,EventKind::Background{..})).map(|event|event.end()).max().unwrap_or(e.end());
-            let (start, end) = (e.start.seconds() as f32, scene_end.seconds() as f32);
+            let row_events: Vec<_> = tl.events.iter().filter(|event| event.source.line==e.source.line && !matches!(event.kind,EventKind::Background{..} | EventKind::WorldObject{..})).collect();
+            let scene_start=row_events.iter().map(|event|event.start).min().unwrap_or(e.start);
+            let scene_end=row_events.iter().map(|event|event.end()).max().unwrap_or(e.end());
+            let (start, end) = (scene_start.seconds() as f32, scene_end.seconds() as f32);
             let hint = tl.events.iter().find_map(|c| match c.kind {
-                EventKind::Camera { hint } if c.start == e.start && c.source.line == e.source.line => Some(hint),
+                EventKind::Camera { hint } if c.source.line == e.source.line => Some(hint),
                 _ => None,
             });
             let speaker = tl.events.iter().find_map(|d| match &d.kind {

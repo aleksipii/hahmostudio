@@ -67,6 +67,7 @@ pub fn inspector(app: &mut StudioApp, ctx: &egui::Context) {
         if ui.button("Näytä hahmosäätimet").clicked() { app.workflow.line = None; }
         if let Some(row) = hs_agents::audit::inspect(&app.production).rows.into_iter().find(|r| r.line == line) {
             ui.label(format!("{} · {:.2}–{:.2} s", row.actor.as_deref().unwrap_or("Kohtaus"), row.start_seconds, row.end_seconds));
+            ui.label(format!("Liikkeen aika {:.3}–{:.3}s", row.motion_start_seconds, row.motion_end_seconds));
             ui.label(format!("Liike: {} · {:.2} s", row.motion, row.motion_seconds));
             ui.label(format!("Tausta: {}", row.background));
             ui.label(format!("Esine: {}", row.prop.as_deref().unwrap_or("ei")));

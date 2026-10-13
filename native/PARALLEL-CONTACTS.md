@@ -1,43 +1,61 @@
 # Päällekkäinen ajoitus ja esinekontaktit
 
-## Ajoitus
+## Puheen ja liikkeen erillinen ajoitus
 
-`[at 1s]` samalla rivillä määrää absoluuttisen aloitusajan sekunteina.
-Ilman sitä rivi alkaa edellisten rivien viimeisen päättymisen jälkeen.
-Puheen todellinen kesto voi pidentää riviä; puhetta ei nopeuteta.
-Eri nimetyt hahmot voivat puhua ja liikkua samanaikaisesti. Saman hahmon
-päällekkäiset rivit, nimettömät päällekkäisyydet ja 60 sekunnin ylitys estävät viennin.
-Inspectorin aloitusaikasäädin kirjoittaa saman ohjeen hyväksyttäväksi luonnokseen.
-Aikajana näyttää hahmokohtaiset puhe- ja liikeradat. Raahaa puhe- tai liikekorttia
-vaakasuunnassa: koko lähderivin puhe ja liike siirtyvät yhdessä. Aloitus napsahtaa
-lähimpään ruutuun. Keltainen kehys näyttää luonnoksen. Pudotus avaa tarkistuksen;
-**Hyväksy ajoitus** kirjoittaa `[at ...]`-ohjeen, **Peruuta** säilyttää lähteen.
-Escape peruu käynnissä olevan raahauksen. Tarkistus käyttää jo tallennettua puhetta,
-kamerasääntöjä ja kontakteja eikä käynnistä uutta synteesiä. Virhe estää hyväksynnän;
-**Näytä virherivi** valitsee lähderivin ja sen nykyisen aikajanakohdan.
+`[at 2s]` ajoittaa repliikin/rivin oletusikkunan absoluuttiseen aikaan.
+Ilman sitä rivi alkaa aiempien rivien viimeisen päättymisen jälkeen.
+Tallennettu puhe ja 0.3 s hengähdys voivat pidentää ikkunaa; ääntä ei leikata
+ja synteesin nopeutta ei muuteta editorin aikarajan vuoksi.
 
-Hyväksyntä tarkistaa tilanteen uudelleen. ⌘Z/⌘⇧Z (Linux Ctrl) palauttaa ajoituksen.
-Myöhemmät rivit ilman `[at]`-ohjetta voivat siirtyä, koska niiden alku riippuu
-aiempien rivien loppumisesta. Raahaus ei vaihda puhujaa tai erottele puhetta ja liikettä itsenäisiksi lähderaidoksi.
+Liikkeellä voi olla oma absoluuttinen alku ja kesto:
 
-**Keston muutos:** raahaa puhe- tai liikekortin oikeaa reunaa (valkoinen merkki).
-Keltainen kehys näyttää ehdotetun keston; pudotuksessa tarkistetaan ja hyväksytään
-koko rivin muutos. Englannin/FI-liikeohje ja kontaktin kohde säilyvät; vain
-kesto vaihtuu. Jos rivillä ei ole liikeohjetta, lisätään `[wait ...]`.
-Tavallinen kesto on 0.5–20 s, kontaktin vähimmäiskesto 1 s. Tallennettu puhe
-ja sen 0.3 s hengähdys ovat vähimmäisraja: niitä lyhyempi muutos estetään,
-eikä ääntä leikata tai nopeuteta. Pidennys voi siirtää myöhempiä oletusajoituksia
-ja kirjoitettuun `[at]`-alkuun osuva saman hahmon ristiriita estää hyväksynnän.
+```text
+KALLE: Hello there. [at 0s] [wave 3s] [motion at 1s] [motion duration 1s]
+```
+
+Repliikin ikkuna alkaa 0s ja sen oletuskesto on 3s. Vilkutus tapahtuu 1–2s.
+Ilman uusia ohjeita vanha liike alkaa repliikin kanssa ja käyttää alkuperäistä
+kestoa. Liike voi alkaa ennen puhetta tai sen jälkeen. Jakso ja seuraavan
+implisiittisen rivin alku lasketaan molempien raitojen viimeisestä lopusta.
+
+- **Puheradan kortti:** vaakaraahaus muuttaa vain repliikin alkua, oikean
+  reunamerkin raahaus sen oletuskestoa. Nykyinen liike ankkuroidaan omilla
+  ohjeilla, joten se säilyy myös vanhan projektin ensimmäisessä editissä.
+- **Liikeradan kortti:** raahaus muuttaa vain `[motion at]`-alkua; oikea reuna
+  muuttaa `[motion duration]`-kestoa. Puheen alku, näytteet, huulisynkka ja
+  tekstitykset säilyvät. Liike voi olla puhetta lyhyempi.
+- Keltainen kehys näyttää muokattavan raidan luonnoksen. Pudotus avaa
+  tarkistuksen; **Hyväksy ajoitus** kirjoittaa lähdetekstin, **Peruuta** säilyttää
+  sen. Escape peruu aktiivisen raahauksen. ⌘Z/⌘⇧Z (Linux Ctrl) palauttaa hyväksynnän.
+
+Tarkistus käyttää nykyisiä tallennettuja ääniä, hahmoja, kameraa ja kontakteja,
+eikä käynnistä synteesiä. Hyväksynnässä tilanne tarkistetaan uudelleen.
+**Näytä virherivi** valitsee ilmoitetun lähderivin ja sen nykyisen aikajanakohdan.
+Inspector näyttää liikkeen alku- ja loppuajan erikseen rivin ikkunasta.
+Ajoituksen muutos ei järjestä hahmoja uudelleen näyttämöllä: tallennettujen
+profiilien järjestys säilytetään, ja uudessa projektissa käytetään lähderivien järjestystä.
+
+Kestot ovat 0.5–20s; esinekontaktit ja istuminen/nouseminen vähintään 1s.
+Saman hahmon eri rivit eivät saa limittyä koko niiden varaamalla aikavälillä:
+tämä on konservatiivinen ristiriitasääntö, ei yleinen päällekkäisten
+saman hahmon toimintojen yhdistäjä. Enimmäispituus on 60s. Puuttuvan puheen
+todellinen ajoitus tarkistetaan vasta sen tuotannon jälkeen.
+
+Rivin yhteiset hahmo-, esine- ja kamera-asetukset ovat voimassa aikaisemmasta
+liike-/puhetapahtumasta molempien loppuun. Ensimmäisen rivin alkutausta on
+käytössä hetkestä0; myöhemmät taustavaihdot seuraavat rivin ensimmäistä tapahtumaa.
+Kamera on yhteinen: ristiriitaiset yhtäaikaiset kirjoitetut ohjeet estetään,
+ja kirjoitettu kuvakulma voittaa automaattisen ehdotuksen.
+
+MP4/SRT yhdistää päällekkäiset repliikit puhujanimineen yhteen ajoitettuun
+tekstipakettiin. Projektin alkuperäisiä repliikkejä ei muuteta.
 Aikajanan lopussa on enintään kaksi sekuntia tyhjää muokkaustilaa pidennykseen;
-jakson varsinainen kesto säilyy erillisenä. Kamera- ja taustaraidat ovat lukutilassa; puuttuva puhe tarvitsee uuden ajoitustarkistuksen tuotannon jälkeen.
+jakson kesto säilyy erillisenä. Kamera-/taustaraidat ovat lukutilassa.
+Ilmeet ja katseet näkyvät inspectorissa ja esikatselussa; ne eivät peitä
+varsinaisia liikeradan kortteja.
 
-Kamera on yhteinen. Samanaikaiset kirjoitetut kameraohjeet ovat ristiriita.
-Kirjoitettu kuvakulma voittaa automaattisen ehdotuksen. Muuten yhtäaikaiset
-hahmot saavat yhteisen kuvakulman. MP4:n tekstitys yhdistää päällekkäiset
-repliikit puhujanimineen yhteen ajoitettuun tekstipakettiin. Projektin alkuperäisiä
-repliikkejä tai niiden ajoituksia ei muuteta.
-
-Esimerkki: [parallel-dialogue.en.txt](examples/parallel-dialogue.en.txt).
+Esimerkit: [independent-motion.en.txt](examples/independent-motion.en.txt)
+ja [parallel-dialogue.en.txt](examples/parallel-dialogue.en.txt).
 
 ## Esineen nosto ja luovutus
 

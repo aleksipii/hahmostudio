@@ -109,6 +109,10 @@ pub struct Beat {
     #[serde(default)]
     pub at: Option<f64>,
     #[serde(default)]
+    pub motion_at: Option<f64>,
+    #[serde(default)]
+    pub motion_seconds: Option<f64>,
+    #[serde(default)]
     pub object: Option<hs_core::WorldObject>,
     #[serde(default)]
     pub contact: Option<hs_core::ObjectContact>,
@@ -307,6 +311,8 @@ fn strip_keyword<'a>(tag: &'a str, keys: &[&str]) -> Option<&'a str> {
 
 enum Tag {
     At(f64),
+    MotionAt(f64),
+    MotionSeconds(f64),
     Object(hs_core::WorldObject),
     Contact(hs_core::ObjectContact, f64),
     Phone(PhoneView),
@@ -324,6 +330,7 @@ enum Tag {
 pub fn command_category(tag: &str) -> Option<&'static str> {
     match classify(tag).ok()? {
         Tag::At(_) => Some("timing"),
+        Tag::MotionAt(_) | Tag::MotionSeconds(_) => Some("motion-timing"),
         Tag::Object(_) => Some("object"), Tag::Contact(..) => Some("motion"),
         Tag::Phone(_) => Some("phone"), Tag::Prop(_) => Some("prop"), Tag::View(_) => Some("view"),
         Tag::Background(_) => Some("background"), Tag::Camera(_) => Some("camera"),
@@ -333,6 +340,13 @@ pub fn command_category(tag: &str) -> Option<&'static str> {
 
 fn classify(tag: &str) -> Result<Tag, String> {
     let lower = tag.trim().to_lowercase();
+    for (prefix, duration) in [("motion at ", false), ("motion duration ", true)] {
+        if let Some(value) = lower.strip_prefix(prefix) {
+            let seconds = value.strip_suffix('s').ok_or("Anna liikkeen ajoitus sekunteina")?.trim().parse::<f64>().map_err(|_| "Virheellinen liikkeen ajoitus")?;
+            if !seconds.is_finite() || (duration && !(0.5..=20.0).contains(&seconds)) || (!duration && !(0.0..60.0).contains(&seconds)) {return Err("Liikkeen alku on 0–60s ja kesto 0.5–20s".into());}
+            return Ok(if duration {Tag::MotionSeconds(seconds)} else {Tag::MotionAt(seconds)});
+        }
+    }
     let identifier = |s: &str| !s.is_empty() && s.len() <= 32 && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_');
     if lower.starts_with("object ") {
         let words: Vec<_> = lower.split_whitespace().collect();
@@ -637,6 +651,8 @@ pub fn parse(text: &str) -> ScriptPlan {
         );
         let mut contact = None;
         let mut at = None;
+        let mut motion_at = None;
+        let mut motion_seconds = None;
         let mut motion: Option<MotionKind> = None;
         let mut seconds: Option<f64> = None;
         let mut line_ok = true;
@@ -648,6 +664,8 @@ pub fn parse(text: &str) -> ScriptPlan {
                     else { contact = Some(action); motion = Some(MotionKind::Wait); seconds = Some(duration); Ok(()) }
                 }
                 Ok(Tag::At(time)) => set_pending_once(&mut at, time, "alkuaika"),
+                Ok(Tag::MotionAt(time)) => set_pending_once(&mut motion_at, time, "liikkeen alkuaika"),
+                Ok(Tag::MotionSeconds(time)) => set_pending_once(&mut motion_seconds, time, "liikkeen kesto"),
                 Ok(Tag::Phone(v)) => set_pending_once(&mut pending_phone, v, "puhelin"),
                 Ok(Tag::Prop(p)) => set_pending_once(&mut pending_prop, p, "esine"),
                 Ok(Tag::View(v)) => set_pending_once(&mut pending_view, v, "hahmosuunta"),
@@ -682,7 +700,7 @@ pub fn parse(text: &str) -> ScriptPlan {
         {
             pending_line = line_no;
         }
-        if at.is_some() && spoken.is_empty() && motion.is_none() {
+        if (at.is_some() || motion_at.is_some() || motion_seconds.is_some()) && spoken.is_empty() && motion.is_none() {
             plan.diagnostics.push(Diagnostic::error(line_no, "Kirjoita alkuaika samalle riville repliikin tai liikkeen kanssa."));
             line_ok = false;
         }
@@ -744,14 +762,22 @@ pub fn parse(text: &str) -> ScriptPlan {
             ) = previous_settings;
             continue;
         }
-        if at.unwrap_or(plan.seconds) + seconds > MAX_TOTAL_SECONDS + 1e-9 {
+        let voice_start = at.unwrap_or(plan.seconds);
+        let action_start = motion_at.unwrap_or(voice_start);
+        let action_duration = motion_seconds.unwrap_or(seconds);
+        if (contact.is_some() || matches!(motion, MotionKind::Sit | MotionKind::Stand)) && action_duration < 1.0 {
+            plan.diagnostics.push(Diagnostic::error(line_no, "Kontaktin ja istumis-/nousemisliikkeen vähimmäiskesto on 1s."));
+            (pending_object,pending_bg,pending_view,pending_phone,pending_camera,pending_prop,pending_expression,pending_look_at,pending_line) = previous_settings;
+            continue;
+        }
+        if (voice_start + seconds).max(action_start + action_duration) > MAX_TOTAL_SECONDS + 1e-9 {
             plan.diagnostics.push(Diagnostic::error(
                 line_no,
                 "Lyhytanimaatio voi kestää enintään 60 sekuntia. Rivi ja sitä seuraavat jätettiin pois.",
             ));
             break;
         }
-        plan.seconds = plan.seconds.max(at.unwrap_or(plan.seconds) + seconds);
+        plan.seconds = plan.seconds.max((voice_start + seconds).max(action_start + action_duration));
         plan.beats.push(Beat {
             line: line_no,
             speaker,
@@ -759,6 +785,8 @@ pub fn parse(text: &str) -> ScriptPlan {
             motion,
             seconds,
             at,
+            motion_at,
+            motion_seconds,
             contact,
             object: pending_object.take(),
             background: pending_bg.take(),
@@ -818,24 +846,28 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
             text: lines.get(beat.line - 1).unwrap_or(&"").trim().to_string(),
         };
         let d = Tick::from_seconds(seconds.get(i).copied().unwrap_or(beat.seconds));
-        if let Some(object) = &beat.object { timeline.push(t, Tick::ZERO, hs_core::EventKind::WorldObject { object: object.clone() }, span.clone()); }
-        if let Some(contact) = &beat.contact { timeline.push(t, d.min(Tick::from_seconds(beat.seconds)), hs_core::EventKind::ObjectContact { character: beat.speaker.clone(), contact: contact.clone() }, span.clone()); }
+        let mt = beat.motion_at.map(Tick::from_seconds).unwrap_or(t);
+        let md = Tick::from_seconds(beat.motion_seconds.unwrap_or(beat.seconds));
+        let state_start = t.min(mt);
+        let state_duration = (t + d).max(mt + md) - state_start;
+        if let Some(object) = &beat.object { timeline.push(state_start, Tick::ZERO, hs_core::EventKind::WorldObject { object: object.clone() }, span.clone()); }
+        if let Some(contact) = &beat.contact { timeline.push(mt, md, hs_core::EventKind::ObjectContact { character: beat.speaker.clone(), contact: contact.clone() }, span.clone()); }
         if let Some(bg) = &beat.background {
-            backgrounds.push((t, bg.clone(), span.clone()));
+            backgrounds.push((if i==0 {Tick::ZERO} else {state_start}, bg.clone(), span.clone()));
         }
         if let Some(view) = beat.view {
-            timeline.push(t, d, EventKind::CharacterView { view, character:beat.speaker.clone() }, span.clone());
+            timeline.push(state_start, state_duration, EventKind::CharacterView { view, character:beat.speaker.clone() }, span.clone());
         }
         if let Some(view) = beat.phone.or_else(|| (beat.motion==MotionKind::PhoneTap).then_some(PhoneView::Front)) {
-            timeline.push(t, d, EventKind::Phone { view, character:beat.speaker.clone() }, span.clone());
+            timeline.push(state_start, state_duration, EventKind::Phone { view, character:beat.speaker.clone() }, span.clone());
         }
         if let Some(hint) = beat.camera {
-            timeline.push(t, d, EventKind::Camera { hint }, span.clone());
+            timeline.push(state_start, state_duration, EventKind::Camera { hint }, span.clone());
         }
         if let Some(item) = &beat.prop {
             timeline.push(
-                t,
-                d,
+                state_start,
+                state_duration,
                 EventKind::Prop {
                     character: beat.speaker.clone(),
                     item: item.clone(),
@@ -845,8 +877,8 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
         }
         if let Some(expression) = beat.expression {
             timeline.push(
-                t,
-                d,
+                state_start,
+                state_duration,
                 EventKind::Expression {
                     character: beat.speaker.clone(),
                     expression,
@@ -856,8 +888,8 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
         }
         if let Some(target) = &beat.look_at {
             timeline.push(
-                t,
-                d,
+                state_start,
+                state_duration,
                 EventKind::LookAt {
                     character: beat.speaker.clone(),
                     target: target.clone(),
@@ -877,15 +909,15 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
             );
         }
         timeline.push(
-            t,
-            d.min(Tick::from_seconds(beat.seconds)),
+            mt,
+            md,
             EventKind::Motion {
                 character: beat.speaker.clone(),
                 motion: beat.motion,
             },
             span,
         );
-        t = (t + d).max(previous_end);
+        t = (t + d).max(mt + md).max(previous_end);
     }
     backgrounds.sort_by_key(|b| b.0);
     // Tausta on voimassa seuraavaan taustanvaihtoon tai loppuun asti.
@@ -1399,25 +1431,27 @@ mod movement_library_grammar {
 
 /// Starts in authored row order; implicit rows follow the latest occupied end.
 pub fn scheduled_starts(plan: &ScriptPlan, seconds: &[f64]) -> Result<Vec<f64>, String> {
-    let mut end: f64 = 0.0; let mut starts = Vec::new();
+    let mut end: f64 = 0.0; let mut starts = Vec::new(); let mut occupied_starts = Vec::new(); let mut ends = Vec::new();
     for (i, beat) in plan.beats.iter().enumerate() {
         let duration = seconds.get(i).copied().unwrap_or(beat.seconds);
         let start = beat.at.unwrap_or(end);
-        if !duration.is_finite() || duration < 0.5 || !start.is_finite() || start < 0.0 || start + duration > 60.0 {
-            return Err(format!("Rivi {}: todellinen ajoitus ylittää 60 sekunnin rajan", beat.line));
+        let motion_start = beat.motion_at.unwrap_or(start);
+        let motion_duration = beat.motion_seconds.unwrap_or(beat.seconds);
+        let occupied_start = start.min(motion_start);
+        let occupied_end = (start + duration).max(motion_start + motion_duration);
+        if !duration.is_finite() || duration < 0.5 || !start.is_finite() || start < 0.0 || !motion_start.is_finite() || motion_start < 0.0 || !motion_duration.is_finite() || !(0.5..=20.0).contains(&motion_duration) || occupied_end > 60.0 {
+            return Err(format!("Rivi {}: todellinen liike-/puheajoitus ei ole kelvollinen tai ylittää 60 sekunnin rajan", beat.line));
         }
         for (j, previous) in plan.beats[..i].iter().enumerate() {
-            let overlaps = start < starts[j] + seconds.get(j).copied().unwrap_or(previous.seconds) && starts[j] < start + duration;
+            let overlaps = occupied_start < ends[j] && occupied_starts[j] < occupied_end;
             if overlaps && previous.camera.is_some() && beat.camera.is_some() {
                 return Err(format!("Rivi {}: samanaikaiset kuvakulmaohjeet ovat ristiriidassa", beat.line));
             }
-
-            if (previous.speaker.is_none() || beat.speaker.is_none() || previous.speaker.as_ref().map(|s| s.to_lowercase()) == beat.speaker.as_ref().map(|s| s.to_lowercase()))
-                && start < starts[j] + seconds.get(j).copied().unwrap_or(previous.seconds) && starts[j] < start + duration {
+            if overlaps && (previous.speaker.is_none() || beat.speaker.is_none() || previous.speaker.as_ref().map(|s| s.to_lowercase()) == beat.speaker.as_ref().map(|s| s.to_lowercase())) {
                 return Err(format!("Rivi {}: saman hahmon rivit {} ja {} menevät päällekkäin", beat.line, previous.line, beat.line));
             }
         }
-        starts.push(start); end = end.max(start + duration);
+        starts.push(start); occupied_starts.push(occupied_start); ends.push(occupied_end); end = end.max(occupied_end);
     }
     Ok(starts)
 }
@@ -1465,5 +1499,40 @@ mod duration_edit_tests {
         for seconds in [f64::NAN, 0.1, 21.0] { assert!(super::with_line_duration("KALLE: [wave 2s]", seconds).is_err()); }
         assert!(super::with_line_duration("KALLE: [give cup to Maija 2s]", 0.5).is_err());
         assert!(super::with_line_duration("[camera wide]", 3.0).is_err());
+    }
+}
+
+
+/// Preserve row content and edit only independent motion timing overrides.
+pub fn with_motion_timing(row: &str, start: f64, seconds: f64) -> Result<String, String> {
+    if row.contains(['\n','\r']) {return Err("Muokkaa vain yhtä riviä".into());}
+    let mut next = String::new(); let mut copied = 0; let mut offset = 0; let mut has_start=false; let mut has_duration=false;
+    while let Some(relative) = row[offset..].find('[') {
+        let begin = offset + relative; let end = begin + row[begin..].find(']').ok_or("Sulkeva hakasulku puuttuu")? + 1;
+        let replacement = match classify(&row[begin+1..end-1]) {
+            Ok(Tag::MotionAt(_)) => {has_start=true;Some(format!("[motion at {start:.6}s]"))},
+            Ok(Tag::MotionSeconds(_)) => {has_duration=true;Some(format!("[motion duration {seconds:.6}s]"))},
+            _=>None,
+        };
+        if let Some(tag)=replacement {next.push_str(&row[copied..begin]);next.push_str(&tag);copied=end;}
+        offset=end;
+    }
+    next.push_str(&row[copied..]);
+    if !has_start {next.push_str(&format!(" [motion at {start:.6}s]"));}
+    if !has_duration {next.push_str(&format!(" [motion duration {seconds:.6}s]"));}
+    let plan = parse(&next); if !plan.is_assemblable() || plan.beats.len()!=1 {return Err("Liikkeen erillinen ajoitus ei ole kelvollinen".into());}
+    Ok(next)
+}
+
+#[cfg(test)]
+mod motion_timing_tests {
+    #[test]
+    fn independent_motion_rules_are_strict() {
+        for source in ["KALLE: [wave 1s] [motion duration NaNs]", "[motion at 2s]", "KALLE: [pick up cup 2s] [motion duration 0.5s]", "KALLE: [sit on chair 2s] [motion duration 0.5s]", "KALLE: [wave 2s] [motion at 1s] [motion at 2s]"] {
+            assert!(!super::parse(source).is_assemblable(),"{source}");
+        }
+        let plan=super::parse("KALLE: Hi. [wave 3s] [motion at 4s] [motion duration 1s]\nMAIJA: Bye. [wait 1s]");
+        assert!(plan.is_assemblable());
+        assert_eq!(super::scheduled_starts(&plan,&[3.0,1.0]).unwrap(),vec![0.0,5.0]);
     }
 }

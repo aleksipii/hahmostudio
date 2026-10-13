@@ -28,7 +28,7 @@ pub fn checked_retime(
         original,
         hs_edit::script::LineEdit::StartAt(seconds),
     )?;
-    check_candidate(p, next)
+    check_candidate(p, pin_motion(p, line, next)?)
 }
 
 fn check_candidate(p: &Production, next: String) -> Result<String, String> {
@@ -91,5 +91,88 @@ pub fn checked_duration(
         original,
         hs_edit::script::LineEdit::Replace(replacement),
     )?;
+    check_candidate(p, pin_motion(p, line, next)?)
+}
+
+fn checked_motion(
+    p: &Production,
+    expected: &str,
+    line: usize,
+    start: Option<f64>,
+    duration: Option<f64>,
+) -> Result<String, String> {
+    if p.script != expected {
+        return Err("Käsikirjoitus muuttui: raahaa uudelleen".into());
+    }
+    let plan = p.plan.as_ref().ok_or("Suunnitelma puuttuu")?;
+    let index = plan
+        .beats
+        .iter()
+        .position(|beat| beat.line == line)
+        .ok_or("Toimintorivi puuttuu")?;
+    let beat = &plan.beats[index];
+    let voice_start = p
+        .beat_times
+        .get(index)
+        .ok_or("Todellinen ajoitus puuttuu")?
+        .0 as f64;
+    let start = start.unwrap_or(beat.motion_at.unwrap_or(voice_start));
+    let duration = duration.unwrap_or(beat.motion_seconds.unwrap_or(beat.seconds));
+    let row = hs_edit::script::line_texts(expected)
+        .get(line - 1)
+        .copied()
+        .ok_or("Rivi puuttuu")?;
+    let replacement = hs_script::with_motion_timing(row, start, duration)?;
+    let next = hs_edit::script::rewrite(
+        expected,
+        line - 1,
+        row,
+        hs_edit::script::LineEdit::Replace(replacement),
+    )?;
     check_candidate(p, next)
+}
+pub fn checked_motion_start(
+    p: &Production,
+    expected: &str,
+    line: usize,
+    seconds: f64,
+) -> Result<String, String> {
+    checked_motion(p, expected, line, Some(seconds), None)
+}
+pub fn checked_motion_duration(
+    p: &Production,
+    expected: &str,
+    line: usize,
+    seconds: f64,
+) -> Result<String, String> {
+    checked_motion(p, expected, line, None, Some(seconds))
+}
+
+/// Freeze the current motion before editing the speech window, including legacy coupled rows.
+fn pin_motion(p: &Production, line: usize, source: String) -> Result<String, String> {
+    let plan = p.plan.as_ref().ok_or("Suunnitelma puuttuu")?;
+    let index = plan
+        .beats
+        .iter()
+        .position(|beat| beat.line == line)
+        .ok_or("Rivi puuttuu")?;
+    let beat = &plan.beats[index];
+    let start = beat.motion_at.unwrap_or(
+        p.beat_times
+            .get(index)
+            .ok_or("Todellinen ajoitus puuttuu")?
+            .0 as f64,
+    );
+    let duration = beat.motion_seconds.unwrap_or(beat.seconds);
+    let row = hs_edit::script::line_texts(&source)
+        .get(line - 1)
+        .copied()
+        .ok_or("Rivi puuttuu")?;
+    let next = hs_script::with_motion_timing(row, start, duration)?;
+    hs_edit::script::rewrite(
+        &source,
+        line - 1,
+        row,
+        hs_edit::script::LineEdit::Replace(next),
+    )
 }

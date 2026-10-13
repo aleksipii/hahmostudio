@@ -207,7 +207,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                         let items = tl.on_track(track).filter(|e| match &e.kind {
                             EventKind::Dialogue { speaker, .. } | EventKind::Motion { character: speaker, .. }
                             | EventKind::ObjectContact { character: speaker, .. }
-                            | EventKind::LookAt { character: speaker, .. } | EventKind::Expression { character: speaker, .. } =>
+                            =>
                                 speaker.as_ref().map_or(index == 0, |s| s.eq_ignore_ascii_case(name)),
                             _ => false,
                         }).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. }) || !tl.events.iter().any(|other| other.start == e.start && other.source.line == e.source.line && matches!(other.kind, EventKind::ObjectContact { .. }))).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color, Some(e.source.line))).collect();
@@ -266,13 +266,13 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                 let r = egui::Rect::from_min_max(egui::pos2(x_of(*a) + 1.0, y + 3.0), egui::pos2(x_of(*b) - 1.0, y + row_h - 3.0));
                 if let Some(line) = line.filter(|_| can_edit) {
                     let hit = ui.interact(r, ui.id().with(("timing-clip", i, clip_index)), egui::Sense::click_and_drag());
-                    if hit.clicked() { app.select_line(line); clip_handled = true; }
+                    if hit.clicked() { app.select_line(line); app.time = *a; clip_handled = true; }
                     if hit.drag_started() {
                         app.select_line(line); app.playing = false;
                         let pointer_start = ctx.input(|input| input.pointer.press_origin()).map_or(r.left(), |p| p.x);
                         let resize = pointer_start >= r.right() - 10.0;
                         let original_duration = *b - *a;
-                        app.workflow.timeline_drag = Some(crate::timeline_ui::Drag { resize, original_duration, line, source: app.script.clone(), original_start: *a, pointer_start, seconds: if resize {original_duration} else {*a} });
+                        app.workflow.timeline_drag = Some(crate::timeline_ui::Drag { motion: name.starts_with("Liike · "), resize, original_duration, line, source: app.script.clone(), original_start: *a, pointer_start, seconds: if resize {original_duration} else {*a} });
                     }
                     if hit.dragged() || hit.drag_stopped() {
                         clip_handled = true;
@@ -286,11 +286,11 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                         }
                         if hit.drag_stopped() { dropped = app.workflow.timeline_drag.take(); }
                     }
-                    hit.on_hover_text("Raahaa korttia siirtääksesi alkuaikaa tai sen oikeaa reunaa muuttaaksesi kestoa. Pudotus näyttää tarkistetun luonnoksen.");
+                    hit.on_hover_text("Liikerata muuttaa vain liikettä; puherata repliikin ajoitusta. Raahaa korttia tai keston oikeaa reunaa. Pudotus näyttää tarkistetun luonnoksen.");
                 }
                 painter.rect_filled(r, 4.0, *color);
                 if line.is_some() {painter.line_segment([egui::pos2(r.right()-4.0,r.top()+3.0),egui::pos2(r.right()-4.0,r.bottom()-3.0)],Stroke::new(1.0_f32, Color32::WHITE));}
-                if let Some(drag) = app.workflow.timeline_drag.as_ref().filter(|drag| Some(drag.line) == *line) {
+                if let Some(drag) = app.workflow.timeline_drag.as_ref().filter(|drag| Some(drag.line) == *line && (drag.motion == name.starts_with("Liike · "))) {
                     let mut ghost = r;
                     if drag.resize {ghost.max.x = x_of(*a + drag.seconds);} else {ghost = r.translate(egui::vec2((drag.seconds - *a) / duration * lane.width(), 0.0));}
                     painter.rect_stroke(ghost, 4.0, Stroke::new(2.0_f32, ACCENT), egui::StrokeKind::Inside);

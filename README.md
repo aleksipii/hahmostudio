@@ -13,7 +13,7 @@ vanhan lähdekoodin; toimitetut hahmo-, tausta- ja esimerkkiaineistot säilyvät
 
 - Parametriset 3D-hahmot, sääntöpohjaiset liikkeet, lavasteet, esineet ja kuvakulmat.
 - Paikallinen Kokoro-puhe ja pysyvät hahmoäänet; oma äänitys tai tuotu ääni on ensisijainen.
-- Äänen kestoon sidotut repliikit ja huulisynkka, hahmokohtainen päällekkäinen ajoitus,
+- Äänen kestoon sidotut repliikit ja huulisynkka, hahmokohtainen päällekkäinen ajoitus, puheen ja liikkeen erilliset alut/kestot,
   tarkistettu esineen nosto ja luovutus.
 - `.koeta`-sarjaprojektit ääniresursseineen, autosave/palautus, sarjan hahmo- ja maailmakirjasto.
 - Mikrofoni-/kameraesitystyökalut, kuva- ja tasoeditori, rajattu PSD-tuonti,

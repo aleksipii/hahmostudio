@@ -3,6 +3,7 @@ use crate::app::StudioApp;
 use eframe::egui;
 
 pub struct Drag {
+    pub motion: bool,
     pub resize: bool,
     pub original_duration: f32,
     pub line: usize,
@@ -12,6 +13,7 @@ pub struct Drag {
     pub seconds: f32,
 }
 pub struct Pending {
+    pub motion: bool,
     pub resize: bool,
     pub line: usize,
     pub source: String,
@@ -20,10 +22,11 @@ pub struct Pending {
 }
 impl StudioApp {
     pub fn preview_retime(&mut self, drag: Drag) {
-        let check = if drag.resize {
-            hs_agents::timing_edit::checked_duration
-        } else {
-            hs_agents::timing_edit::checked_retime
+        let check = match (drag.motion, drag.resize) {
+            (true, true) => hs_agents::timing_edit::checked_motion_duration,
+            (true, false) => hs_agents::timing_edit::checked_motion_start,
+            (false, true) => hs_agents::timing_edit::checked_duration,
+            (false, false) => hs_agents::timing_edit::checked_retime,
         };
         let result = check(
             &self.production,
@@ -32,6 +35,7 @@ impl StudioApp {
             drag.seconds as f64,
         );
         self.workflow.pending_timing = Some(Pending {
+            motion: drag.motion,
             resize: drag.resize,
             line: drag.line,
             source: drag.source,
@@ -48,7 +52,7 @@ pub fn confirmation(app: &mut StudioApp, ctx: &egui::Context) {
     egui::Modal::new(egui::Id::new("timeline-retime")).show(ctx, |ui| {
         ui.set_max_width(560.0);
         ui.heading(format!("Rivin {} ajoitusluonnos", pending.line));
-        ui.label(format!("Uusi {} {:.3} s. Muutos koskee koko toimintoriviä. Puhetta ei nopeuteta tai leikata. Myöhemmät oletusajoitukset voivat muuttua.", if pending.resize {"kesto"} else {"alkuaika"}, pending.seconds));
+        ui.label(format!("Uusi {} {:.3} s. Muutos koskee {}. Puhetta ei nopeuteta tai leikata. Myöhemmät oletusajoitukset voivat muuttua.", if pending.resize {"kesto"} else {"alkuaika"}, pending.seconds, if pending.motion {"vain liikettä; puheen alkuaika ja ääni säilyvät"} else {"vain repliikkiä; liikkeen alkuaika ja kesto säilyvät"}));
         if app.script != pending.source {
             pending.result = Err("Käsikirjoitus muuttui: peruuta ja raahaa uudelleen.".into());
         }
@@ -63,7 +67,12 @@ pub fn confirmation(app: &mut StudioApp, ctx: &egui::Context) {
             if ui.button("Peruuta").clicked() { keep = false; }
             if ui.add_enabled(pending.result.is_ok(), egui::Button::new("Hyväksy ajoitus")).clicked() {
                 // Recheck audio/cast/contacts that may have changed while the dialog was open.
-                let check = if pending.resize { hs_agents::timing_edit::checked_duration } else { hs_agents::timing_edit::checked_retime };
+                let check = match (pending.motion,pending.resize) {
+                    (true,true)=>hs_agents::timing_edit::checked_motion_duration,
+                    (true,false)=>hs_agents::timing_edit::checked_motion_start,
+                    (false,true)=>hs_agents::timing_edit::checked_duration,
+                    (false,false)=>hs_agents::timing_edit::checked_retime,
+                };
                 pending.result = check(&app.production, &pending.source, pending.line, pending.seconds);
                 if let Ok(source) = &pending.result {
                     app.script = source.clone(); app.script_changed(); app.workflow.line = None;

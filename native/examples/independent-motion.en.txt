@@ -1,0 +1,4 @@
+[background living room]
+[camera two shot]
+KALLE: Hello there. [at 0s] [wave 3s] [motion at 1s] [motion duration 1s]
+MAIJA: Welcome home. [at 0s] [nod 3s] [motion at 0.5s] [motion duration 0.5s]

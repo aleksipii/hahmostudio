@@ -1579,3 +1579,80 @@ Metal/laitteet/Finder/DMG sekä release-mittaukset edelleen hyväksymättä.
 Seuraava kehityskokonaisuus: suunnittele puheen ja liikkeen erillinen
 ajoitussopimus lähderivi/repliikki-ID:t sekä muuttumaton ääni säilyttäen;
 kontaktien uudet ovet/portaat/pudotus ovat erillisiä toteutuksia.
+
+
+## Codex handoff — 13.10.2026: erilliset puhe- ja liikeajat
+
+Haara work; lähtöcommit main e93ceff68eceaa41ce4e12b1423cbf1ec55d6ca0.
+Julkaisucommit otsikolla `Separate speech and motion timing without changing retained audio`.
+Etä-main haettu ja sama ennen julkaisua.
+
+Codexin omistamat muutokset:
+- hs-script/src/lib.rs: serde-default motion_at/motion_seconds, tarkat
+  [motion at Ns]/[motion duration Ns]-ohjeet ja source-backed muokkain.
+  Puheen alku/oletusikkuna ja liikkeen alku/kesto erillisiä. Liike voi alkaa
+  ennen puhetta tai sen jälkeen. Seuraava oletusrivi odottaa molempien loppua.
+  Samalle hahmolle konservatiivinen min(start)–max(end)-varaus; eri rivien
+  yleistä päällekkäisten toimintojen yhdistämistä ei ole toteutettu.
+- Timeline: Dialogue puheikkunassa, Motion/ObjectContact omissa ajoissa.
+  Rivin yhteiset view/prop/phone/expression/look/camera-asetukset aikaisemmasta
+  tapahtumasta molempien loppuun. Ensimmäisen rivin alkutausta alkaa0s,
+  myöhemmät taustavaihdot rivin ensimmäisestä tapahtumasta. Rajat60s,
+  tavalliset liikkeet0.5–20s, kontaktit/istuminen/nouseminen vähintään1s.
+- hs-agents timing_edit: puheen editissä nykyinen liike ankkuroidaan omilla
+  ajoitusohjeilla, myös vanhan rivin ensimmäisessä muokkauksessa. Liike-editti
+  ei muuta repliikkiä, ääntä, huulisynkkaa tai tekstityksiä. Tallennettu puhe
+  edelleen voice-duration-vähimmäisraja; liike voi olla sitä lyhyempi.
+- hs-agents cinematography/audit: kamera kattaa molemmat ajat ja kirjoitettu
+  kameraohje säilyy vaikka liike ja puhe alkavat eri aikaan; audit raportoi
+  erillisen liikeajan.
+- hs-agents character_mesh: GUI löysi aikamuutoksen aiheuttaman cast-järjestyksen
+  vaihdon. Korjattu lähderivijärjestykseen; kaikkien profiilien ollessa mukana
+  säilytetään tallennettu profiilijärjestys. Hahmojen paikat/lead/ulkonäkö ja
+  muuttumaton mesh-Arc säilyvät ajoituksen muutoksessa ja uudelleenavauksessa.
+- hs-app panels/timeline_ui/workflow_ui: valittu rata määrää muokataanko
+  puhetta vai liikettä. Vain kyseisen raidan keltainen luonnos; vanha
+  tarkistus/Hyväksy/Peruuta/recheck/Undo-polku. Ilme/katse ei peitä liikeradan
+  varsinaisia toimintokortteja; liikkeen alku/loppu näkyy inspectorissa.
+- README, EPISODE-WORKFLOW, PARALLEL-CONTACTS, PARITEETTI ja uusi
+  examples/independent-motion.en.txt päivitetty. Puhemoottorin koodia ei muutettu.
+
+Todennus Linuxissa:
+- Lopullinen cargo test --locked --workspace -j4:277läpi,0fail,1ohitettu
+  (aitoKokoro),exit0 /tmp/koeta-independent-workspace-final.log.
+- Lopullinen build hs-app/hs-cli ja clippy workspace/all-targets exit0,
+  /tmp/koeta-independent-{build,clippy}-final.log. Olemassa olevia varoituksia.
+- timing_edit11testiä: puhe/key/näytteet/tekstitykset säilyvät motion-editissä,
+  omalla4s äänellä liikkeen0.5s kesto sallittu, sama-actor/60s ristiriidat,
+  puhetta aiempi liike ja valmis tausta/kamera, projektin avaaminen,
+  castin paikat/profiilit/mesh-Arc sekä tallennettu profiilijärjestys säilyvät.
+  Jäsennin35testiä: tuntematon/NaN/duplikaatti/standalone timing ja
+  liian lyhyet kontaktit/istuminen hylätään.
+- Xvfb :104/lavapipe oikea GUI: Kallen motion0->1s, puhe0–3s ennallaan;
+  motion-kesto3->1s, puhe edelleen0–3s; puheradan alku0->2s, motion1–2s
+  ennallaan. Modalit näyttävät oikean kohteen/tagit ja hyväksyntä muuttaa vain
+  valitun raidan. CtrlZ palauttaa. Kuvat /tmp/koeta-split-motion-{preview,accepted}.png,
+  /tmp/koeta-split-duration-{preview,accepted}.png,
+  /tmp/koeta-split-speech-{preview,accepted,undo}.png.
+- Lopullisen cast/taustakorjauksen GUI-screenshot 2s,
+  /tmp/koeta-independent-final-gui.png: puherataKalle2–5s ja liike1–2s,
+  vakaa cast-järjestys ja alkuperäiset hahmoprofiilit. Omistetut prosessit pysäytetty.
+- Oikea FFmpeg CPU-vienti independent-motion-esimerkistä:3s,90ruutua,160x90,
+  H.264+AAC+mov_text /tmp/koeta-independent.mp4,exit0, FFprobe3.000s.
+  Takaisin luettu SRT sisältää molemmat puheet alkuaikana0s vaikka liikkeet
+  alkavat1s ja0.5s. Puhe on eksplisiittinen TestEngine; ei Kokoro-kuuntelu.
+- Väliaikaiset käännökset epäonnistuivat levyn täyttymiseen, ei sovellustestiin.
+  Omia vanhoja ELF-käännösvälimuisteja ja incremental-cache poistettiin
+  ilman käynnissä olevia cargoja; käyttäjän aineistot/mallit/projektit säilyivät.
+  Lopullinen koko testisarja/build/clippy onnistui vapautetulla levyllä.
+- git diff --check läpi. Quota unavailable; prosenttia ei päätelty.
+
+Rajat/jatko:
+Yksi tuettu liike ja yksi repliikki lähderivillä. Saman hahmon eri rivien
+varausvälit eivät saa limittyä; useiden toimintojen kerrostus/ryhmäeditit
+puuttuvat. Kamera-/taustaraidat eivät ole itsenäisesti raahattavia.
+Aito Kokoro, Mac/Metal/laitteet/Finder/notarisoitu DMG ja release-mittaukset
+yhä avoinna; CDN-asetuksen runtime-julkaisu odottaa aiemman handoffin mukaan.
+Seuraava domain-kokonaisuus: kontaktien laskeminen/pudotus ja esteiden
+mittaaminen ennen ovien/portaiden lisäämistä; tarvitaan oikeat toiminto- ja
+omistajuussäännöt sekä renderöinnin kontaktimittaukset.

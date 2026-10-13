@@ -15,7 +15,9 @@ pub struct CharacterMeshAgent {
 pub fn cast_names(p: &Production) -> Vec<String> {
     let mut names: Vec<String> = Vec::new();
     if let Some(tl) = &p.timeline {
-        for e in &tl.events {
+        let mut events:Vec<_>=tl.events.iter().collect();
+        events.sort_by_key(|event|event.source.line);
+        for e in events {
             let n = match &e.kind {
                 EventKind::Dialogue { speaker: Some(s), .. } => Some(s),
                 EventKind::Motion { character: Some(c), .. } | EventKind::Expression {character:Some(c),..} | EventKind::LookAt {character:Some(c),..} => Some(c),
@@ -27,6 +29,10 @@ pub fn cast_names(p: &Production) -> Vec<String> {
                 }
             }
         }
+    }
+    // Portable projects retain cast profiles in their established stage order.
+    if names.iter().all(|name|p.cast_params.iter().any(|profile|profile.name.eq_ignore_ascii_case(name))) {
+        names.sort_by_key(|name|p.cast_params.iter().position(|profile|profile.name.eq_ignore_ascii_case(name)));
     }
     names
 }
