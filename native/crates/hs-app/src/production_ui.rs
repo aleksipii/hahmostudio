@@ -5,7 +5,6 @@ use hs_core::Tick;
 pub fn show(app: &mut StudioApp, ctx: &egui::Context) {
     egui::CentralPanel::default().show(ctx, |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.heading("Käsikirjoituksen palikat");
             if let Some(next)=app.blocks.ui(ui,&app.script) {app.script=next;app.script_changed();}
             ui.separator();
             let duration = Tick::from_seconds(app.duration() as f64);

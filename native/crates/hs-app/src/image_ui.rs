@@ -411,13 +411,15 @@ impl ImageWorkspace {
             self.texture_dirty = false;
         }
         let t = self.texture.as_ref().unwrap();
-        let scale = (ui.available_width() / self.document.width as f32).min(1.0);
+        let scale = (ui.available_width() / self.document.width as f32)
+            .min(ui.available_height().max(1.0) / self.document.height as f32).min(1.0);
         let size = egui::vec2(
             self.document.width as f32 * scale,
             self.document.height as f32 * scale,
         );
         let response = ui.add(
             egui::Image::new(t)
+                .bg_fill(egui::Color32::from_gray(60))
                 .fit_to_exact_size(size)
                 .sense(egui::Sense::click_and_drag()),
         );

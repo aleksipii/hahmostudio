@@ -680,3 +680,17 @@ Handoff Codexille / UI:lle (ei muutettu, sovittava):
 Seuraava konkreettinen työ: yllä oleva aito synteesi ja kuuntelu Macilla, sitten oman äänityksen pysyvä rivitunniste yhdessä Codexin kanssa.
 
 Tiedostot: `native/crates/hs-voice/src/{engine,spoken,kokoro}.rs`, `TIIMI.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
+
+## Claude: Kokoro mainiin ja sarjan tallennus natiiviin — 12.10.2026
+
+Työhaara `claude/project-thread-g6u2lj`. PR #20 (Kokoro-äänet, välimuisti, taustasynteesin virheet) yhdistetty mainiin (`34094b0`), CI vihreä, ei ristiriitoja.
+
+Tehty: uusi crate `native/crates/hs-project` (Vaihe B): sarja on kansio `<Sarja>.koeta/` (`sarja.json`, `jaksot/<id>/jakso.json`, omat äänitykset `aanet/`, tuotettu puhe `puhe/`). Hahmot ja Kokoro-äänivalinnat, käsikirjoitus, hyväksytyt huomautukset, omat äänitykset ja tuotettu puhe (merkitty synteettiseksi, välimuistiavaimella) säilyvät sulkemisen yli. Tiedostot nimetään sisällön tiivisteellä eikä olemassa olevaa korvata; JSON kirjoitetaan atomisesti; avattaessa SHA-256 ja polut tarkistetaan, vioittunut ääni ohitetaan varoituksella. Uudelleenavauksen jälkeen muuttumatonta riviä ei syntetisoida uudelleen, vain muuttunut rivi tai ääni. Oma ääni voittaa. Studioon Sarja-valikko (uusi sarja, avaa, tallenna Ctrl+S, uusi jakso, jaksonvaihto).
+
+Rajapintamuutos (jaettu hs-agents): `VoiceLine.provenance: Option<Provenance>` (välimuistiavain, ääni, nopeus, malliversio); `VoiceLine` viety `hs_agents`-juureen. Codexin omistamia tiedostoja ei muutettu.
+
+Testattu (Linux-pilvi, Rust 1.97, `WGPU_BACKEND=vulkan`, simuloitu TestEngine): `cd native && cargo test --workspace` 78 läpi, 1 ohitettu (aito Kokoro-malli); `cargo clippy --workspace --all-targets` 0 varoitusta. Uusia hs-project-testejä 6 (tallennus→uudelleenavaus ilman uudelleensynteesiä, osittainen uudelleensynteesi, oma ääni, peukaloitu/karkaava ääni, hylättävät muodot, kansion siirto). Kontissa tarvittiin `apt-get install libasound2-dev mesa-vulkan-drivers libxkbcommon-x11-0 ffmpeg xvfb`.
+
+Ei tehty / ei todennettu: aito Kokoro-synteesi ja kuuntelu (malli puuttuu, Hugging Face estetty), Sarja-valikon GUI-klikkaus (käännös ja logiikkatestit vain, ei näyttötestiä), Mac, mikrofoni, kamera. Natiivi ei lue vanhoja `.sarja`-arkistoja.
+
+Seuraava konkreettinen työ: Macilla `hahmostudio-cli ääni lataa` ja kuuntelu; sitten englanninkieliset tekstitykset ja niiden MP4-vienti (Vaihe C), automaattitallennus ja palautus. Tiedostot: `native/crates/hs-project/**`, `native/crates/hs-app/src/{project_ui,app,panels,main}.rs`, `native/crates/hs-agents/src/{production,lib}.rs`, `agents/voice.rs`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
