@@ -835,3 +835,59 @@ dokumentaation; vientialiagentti päivitti vain `hs-render/src/export.rs` ja
 `tests/export_safety.rs`. Claude-moottoritiedostoihin ei koskettu.
 Seuraava konkreettinen hyväksyntä on aito Kokoro ja kuuntelu Macilla sekä
 Mac-paketin/kameran/mikrofonin testaus; proxy403-estettä ei ole kiertämällä ohitettu.
+
+## Codex: laajempi EN-ohjekieli, ehdotukset ja rivitarkistus — 13.10.2026
+
+Työkalu Codex, haara `work`, toteutuscommit
+`09b883ea59a7caf3bb5df71cecd427e6031c5b8a`, pohja remote main `70ff5da`.
+Käyttäjä valitsi seuraavaksi laajemman testatun englanninkielisen ohjekielen,
+editorin ehdotukset ja rivikohtaisen tarkistuksen. Main-push-valtuutus säilyy.
+
+Tehty:
+- `hs-script::english`: testatut taivutusmuodot ja luonnolliset täsmämuodot
+  nykyisille liikkeille, kamera/ilme/katse-aliakset ja yhteinen komentoluettelo.
+  Esim. `[walking to the left for 2 seconds]`, `[camera close up]`,
+  `[emotion cheerful]`. Kävely/juoksu tarvitsee EN-suunnan. Tuntematonta
+  suuntaa, muunninta tai toteuttamatonta toimintaa ei valita arvaamalla.
+- Korjattu EN-puhetekstin liikevuoto: `KALLE: I love to walk.` on puhetta,
+  ei automaattinen kävely. Englannin liikkeet ovat eksplisiittisissä tageissa;
+  alkuperäinen FI-tunnistus säilyi. Lähdeteksti ja tapahtumatunnisteet säilyvät
+  semanttisesti vastaavilla ohjemuodoilla.
+- `hs-script::assist`: rivitarkistus, keskeneräisen/virheellisen tagin
+  ehdotukset ja rajattujen erillisten ohjelauseiden tulkintaesikatselu.
+  Puhujan repliikkiä ei ehdoteta korvattavaksi toiminnaksi. Tuntemattomasta
+  pitkästä kuvauksesta ei keksitä animaatiota. Ei kielimallia/pilvipalvelua.
+- Ehdotus muuttaa vain yhden rivin vasta hyväksynnällä. Vanha ehdotus hylätään
+  koko käsikirjoituksen muututtua; CRLF ja Unicode säilyvät. Koko-/rivimuutosrajat
+  tarkistetaan myös hyväksymishetkellä. Liian pitkä ehdotus ei piilota kaikkien
+  rivien tarkistuksia. Sulkematon mutta muuten validi tagi täydentyy oikein.
+- Natiivin Käsikirjoitus-välilehti: ohjehaku, kohdistimen/valitun rivin ehdotukset,
+  rivitarkistus ja puhetilat, Nykyinen/Ehdotettu-esikatselu sekä Hyväksy/Peruuta.
+  Projektin/jakson ja käsikirjoitustiedoston vaihto nollaa esikatselun.
+- Ohje `native/ENGLISH-COMMANDS.md`, testattu pohja `english-reviewed.txt`.
+
+Tarkistukset (Linux, ei aitoa Kokoroa tai laitteita):
+- `cargo test --locked --workspace -j4`: 176 läpi, 0 fail, 1 ohitettu (aito
+  Kokoro), prosessin exit 0; `/tmp/koeta-language-tests.log`.
+- Viimeisen yksirivisen hyväksynnän suojauksen jälkeen
+  `cargo test --locked -p hs-script -j4`: 25 läpi, exit 0.
+- `cargo clippy --locked -p hs-script --all-targets -j4 -- -D warnings`:
+  exit 0, ei varoituksia. hs-app clippy exit 0, riippuvuuksien aiemmat varoitukset.
+- `cargo build --locked -p hs-app -p hs-cli -j4`: exit 0 viimeiselle lähteelle.
+- CLI check english-reviewed.txt: exit 0.
+- Oikea Linux-GUI Xvfb/lavapipe: tulkintaehdotus ei muuttanut lähdettä ennen
+  hyväksyntää; hyväksytty bare walk -rivi sai vain hakasulkeet. Keskeneräinen
+  `[wa` täydentyi `[wave hello 2s]`:ksi, repliikki ja muut rivit säilyivät,
+  virhe poistui ja Maijan vilkutus ilmestyi aikajanalle. Rivien puuttuva malli
+  näkyi tarkistuksessa. Esikatselut/kuvat `/tmp/koeta-language/`.
+- Riippumaton katselmointi: sulkemattoman validin tagin ja kokorajalla katoavan
+  rivitarkistuksen virheet korjattu ja regressiot testattu. `git diff --check` läpi.
+- Kiintiö ei saatavilla; prosenttia ei päätelty.
+
+Omistus: EN-aliagentti `hs-script/src/{lib,english}.rs`; Codex-pääagentti
+assist-domain, script_assist_ui ja app/panels/project_ui/main-liitännät sekä
+esimerkki/dokumentaatio. Katselmointialiagentti vain luki. Claude-puhemoottoria,
+ääniresursseja ja tallennusmuotoa ei muutettu. Seuraava itsenäinen laajennus on
+käyttäjän todellisista käsikirjoituksista koottu ohjekorpus ja sille tuetut
+lisätoiminnot; kaikkien englannin sanojen yleistä ymmärtämistä ei väitetä.
+Aidon Kokoron/Macin hyväksyntäesteet säilyvät edellisten handoffien mukaan.
