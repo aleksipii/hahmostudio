@@ -17,7 +17,8 @@ liikkeiden ja kuvauksen taiteellinen hyväksyntä tehdään itse esikatselusta.
 5. Raahaa Leikkaus-työtilassa rivi toisen päälle järjestääksesi jaksoa. Myös
    välittömästi edeltävät kameraohjerivit siirtyvät mukana. Muut lähderivit
    säilyvät. Lisää tauko ennen riviä, kun haluat siirtää sitä myöhemmäksi.
-   Tässä ei vielä ole vapaasti päällekkäin ajoitettavia animaatioraitoja.
+   Inspectorin aloitusaika tai `[at 1s]` ajoittaa eri hahmojen rivit päällekkäin.
+   Saman hahmon ristiriitaiset toiminnot estetään; katso [ajoitus- ja kontaktiohje](PARALLEL-CONTACTS.md).
 6. Muokkaa sarjan hahmo-/maailmakirjastoa Leikkaus-työtilassa. Hahmon tallennus
    säilyttää myös äänen, mitat, asun ja tyylin. Pohjan käyttö muuttaa nykyistä
    jaksoa. Kirjasto tallentuu sarjan jaksoihin yhteisenä `library`-resurssina,
@@ -35,7 +36,8 @@ liikkeiden ja kuvauksen taiteellinen hyväksyntä tehdään itse esikatselusta.
 8. Inspectorin Kevyt/Normaali/Tarkka valitsee esikatseluresoluution. Vientikoko
    säilyy erillisenä. Katse ja puheen pienet eleet häivytetään; käsissä oleva
    esine tai kirjoitettu liike estää automaattisen puhe-eleen. Esineelle lisätään
-   oikean käden sormien ote. Tämä ei mallinna pöydältä nostamista tai luovutusta.
+   oikean käden sormien ote. Uudet `[pick up ...]` ja `[give ...]` käyttävät
+   erillistä tarkistettua käsi-IK:ta ja maailmassa sijoitettua esinettä.
 9. Tallenna `.koeta`, sulje ja avaa uudelleen. Tarkista tallennettujen äänien
    säilyminen ilman uudelleensynteesiä. Tarkista tekstitykset ja vie MP4.
 
@@ -47,7 +49,7 @@ koeviennin resoluutio 160×90. Tämä testiääni ei ole kuunneltu Kokoro-syntee
 Mac/Metal, fyysiset laitteet, oikea Kokoro-kuuntelu ja allekirjoitetun paketin
 käyttö puhtaalla Macilla odottavat oikeaa testiympäristöä.
 
-Täydellinen kontaktieditori, esineen nosto/luovutus, ovet, portaat sekä yleinen
+Täydellinen kontaktieditori, ovet, portaat sekä yleinen
 ulkoisten luurankojen retargetointi tarvitsevat vielä uusia domain-toimintoja
 ja kontaktimittauksia. Nykyiset istumis- ja jalkakontaktitestit säilytetään.
 Mac-julkaisu: [packaging/README.md](packaging/README.md).

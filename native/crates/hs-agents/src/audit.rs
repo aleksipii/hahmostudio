@@ -23,6 +23,7 @@ pub struct Row {
     pub shots: Vec<String>,
     pub authored_camera: bool,
     pub chair_contact: Option<String>,
+    pub object_contact: Option<String>,
 }
 #[derive(Clone, Debug, Serialize)]
 pub struct Report {
@@ -83,6 +84,9 @@ pub fn inspect(p: &Production) -> Report {
             .push(Diagnostic::error(0, "Todellinen ajoitus puuttuu."));
         return report;
     };
+    if timeline.events.iter().any(|e| matches!(e.kind, EventKind::WorldObject { .. } | EventKind::ObjectContact { .. })) && !p.contacts.as_ref().is_some_and(|plan| plan.matches(p)) {
+        report.diagnostics.push(Diagnostic::error(0, "Tarkistettu esinekontaktisuunnitelma puuttuu tai on vanhentunut."));
+    }
     let durations = crate::agents::voice::timed_seconds(&fresh, &p.voice_lines);
     let expected = hs_script::to_timeline_with(&fresh, &p.script, p.fps, &durations);
     if expected.events != timeline.events
@@ -496,7 +500,7 @@ pub fn inspect(p: &Production) -> Report {
                 .to_string(),
             actor: beat.speaker.clone(),
             dialogue: beat.text.clone(),
-            motion: beat.motion.finnish_name().into(),
+            motion: p.contacts.as_ref().and_then(|plan|plan.summary(beat.line)).unwrap_or_else(||beat.motion.finnish_name().into()),
             motion_seconds: event.duration.seconds(),
             background: background.clone(),
             prop,
@@ -511,6 +515,7 @@ pub fn inspect(p: &Production) -> Report {
             end_seconds: end,
             shots,
             authored_camera: beat.camera.is_some(),
+            object_contact: p.contacts.as_ref().and_then(|plan|plan.summary(beat.line)),
             chair_contact,
         });
     }

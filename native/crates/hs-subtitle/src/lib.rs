@@ -112,9 +112,9 @@ fn plain_text(text: &str) -> String {
         .join("\n")
 }
 pub fn to_srt(cues: &[CaptionCue]) -> Result<String, SubtitleError> {
-    validate_cues(cues)?;
+    let cues=single_track_cues(cues)?;
     let mut out = String::new();
-    for (i, cue) in sorted(cues).iter().enumerate() {
+    for (i, cue) in sorted(&cues).iter().enumerate() {
         out.push_str(&format!(
             "{}\n{} --> {}\n{}\n\n",
             i + 1,
@@ -192,8 +192,10 @@ pub fn burn_captions(
     let scaled = font.as_scaled(scale);
     let max_width = image.width as f32 * 0.84;
     let mut lines: Vec<(String, f32)> = Vec::new();
+    let overlap=active.len()>1;
     for cue in active {
-        for paragraph in cue.text.lines() {
+        let display=if overlap {cue.speaker.as_ref().map_or_else(||cue.text.clone(),|name|format!("{name}: {}",cue.text))}else{cue.text.clone()};
+        for paragraph in display.lines() {
             let mut line = String::new();
             let mut width = 0.;
             for word in paragraph.split_whitespace() {
@@ -339,5 +341,35 @@ mod tests {
             burn_captions(&mut image, c.start, &[c], &CaptionSettings::default()),
             Err(SubtitleError::InvalidImage)
         ));
+    }
+}
+
+/// Flatten simultaneous speakers into one subtitle packet without losing text.
+/// Original project cues and their identifiers remain unchanged.
+pub fn single_track_cues(cues: &[CaptionCue]) -> Result<Vec<CaptionCue>, SubtitleError> {
+    validate_cues(cues)?;
+    let mut points: Vec<_>=cues.iter().flat_map(|c|[c.start,c.end]).collect();
+    points.sort();points.dedup();
+    let ordered=sorted(cues);let mut result=Vec::new();
+    for span in points.windows(2) {
+        let active: Vec<_>=ordered.iter().filter(|c|c.start<span[1]&&span[0]<c.end).collect();
+        if active.is_empty(){continue;}
+        let text=if active.len()==1 {active[0].text.clone()}else {active.iter().map(|c|match &c.speaker {Some(name)=>format!("{name}: {}",c.text),None=>c.text.clone()}).collect::<Vec<_>>().join("\n")};
+        result.push(CaptionCue{id:format!("mux-{}",result.len()),start:span[0],end:span[1],text,speaker:None});
+    }
+    validate_cues(&result)?;Ok(result)
+}
+#[cfg(test)]
+mod parallel_caption_tests {
+    use super::*;
+    #[test]
+    fn one_track_retains_both_speakers_at_overlap() {
+        let cue=|id:&str,name:&str,start:f64,end:f64,text:&str|CaptionCue{id:id.into(),speaker:Some(name.into()),start:Tick::from_seconds(start),end:Tick::from_seconds(end),text:text.into()};
+        let original=vec![cue("a","Kalle",0.0,2.0,"Hello."),cue("b","Maija",1.0,3.0,"Yes.")];
+        let combined=single_track_cues(&original).unwrap();
+        assert_eq!(combined.len(),3);assert_eq!(combined[1].text,"Kalle: Hello.\nMaija: Yes.");
+        assert_eq!(combined[1].start,Tick::from_seconds(1.0));
+        assert!(combined.windows(2).all(|p|p[0].end<=p[1].start));
+        assert_eq!(original[0].text,"Hello.");assert!(to_srt(&original).unwrap().contains("Maija: Yes."));
     }
 }

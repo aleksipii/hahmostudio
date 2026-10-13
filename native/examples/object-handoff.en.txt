@@ -1,0 +1,6 @@
+[background living room]
+[camera two shot]
+[object cup mug on stand at -0.25 1.22 0.20]
+KALLE: [pick up cup 2s]
+MAIJA: [at 0s] [wait 6s]
+KALLE: [at 2s] [give cup to Maija 2s]

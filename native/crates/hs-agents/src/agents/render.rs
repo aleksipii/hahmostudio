@@ -24,6 +24,7 @@ pub fn gaze_weight(time: f32, start: f32, end: f32) -> f32 {
 /// Rakentaa ruudun kohtauksen tuotannon tilasta. Lavasteverkot pidetään välimuistissa.
 #[derive(Default)]
 pub struct FrameBuilder {
+    pub last_error: Option<String>,
     environments: HashMap<String, Arc<CharacterMesh>>,
     /// Käteen otetut esineet (hahmon osoite, esine) → verkko.
     held: HashMap<(usize, String), Arc<CharacterMesh>>,
@@ -32,6 +33,7 @@ pub struct FrameBuilder {
 
 impl FrameBuilder {
     pub fn scene(&mut self, p: &Production, frame: u32, width: u32, height: u32) -> Option<RenderScene> {
+        self.last_error = None;
         let tl = p.timeline.as_ref()?;
         let camera = p.camera.as_ref()?;
         if self.held_owners.len() != p.cast.len() || !self.held_owners.iter().zip(&p.cast).all(|(a, b)| Arc::ptr_eq(a, &b.character)) {
@@ -43,7 +45,7 @@ impl FrameBuilder {
         let env = self.environments.entry(env_id.clone()).or_insert_with(|| Arc::new(environment::build(&env_id))).clone();
         let (cam, lights, _) = camera.camera_at(t, width as f32 / height as f32);
         let mut items = vec![DrawItem::rigid(env)];
-        let frames: Vec<_> = p.motion.iter().map(|m| m.evaluate(tl, t)).collect();
+        let mut frames: Vec<_> = p.motion.iter().map(|m| m.evaluate(tl, t)).collect();
         // Keskustelu: puhuja ja kumppani kääntyvät hieman toisiaan kohti (sitcom-lavastus),
         // kun kumpikaan ei liiku eikä ole erikseen käännetty.
         let turns: Vec<f32> = {
@@ -67,7 +69,8 @@ impl FrameBuilder {
                             EventKind::Motion { character, motion: hs_core::MotionKind::TurnLeft | hs_core::MotionKind::TurnRight | hs_core::MotionKind::WalkBackward } => match character { Some(name) => name.eq_ignore_ascii_case(&p.cast[a].character.params.name), None => p.cast[a].lead },
                             _ => false,
                         });
-                        let still = !authored_turn && !seated && !authored_view && !authored_look && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
+                        let contact = p.contacts.as_ref().is_some_and(|plan| plan.uses_actor(a));
+                        let still = !contact && !authored_turn && !seated && !authored_view && !authored_look && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
                         let dx = fb.root.x - fa.root.x;
                         if still && dx.abs() > 0.05 {
                             turns[a] = dx.signum() * 0.5 * ease;
@@ -77,11 +80,18 @@ impl FrameBuilder {
             }
             turns
         };
+        for (f, turn) in frames.iter_mut().zip(&turns) { if *turn != 0.0 { f.pose.root_rot = glam::Quat::from_rotation_y(*turn) * f.pose.root_rot; } }
+        if let Some(plan) = &p.contacts {
+            if !plan.matches(p) { return None; }
+            let objects=match plan.evaluate(p,t,&mut frames) {Ok(objects)=>objects,Err(error)=>{self.last_error=Some(error);return None;}};
+            for object in objects {
+                if let Some(stand)=&object.stand {items.push(DrawItem::rigid(stand.clone()));}
+                items.push(DrawItem { mesh: object.mesh.clone(), skin: vec![crate::contacts::ContactPlan::transform(&object)], outline: true });
+            }
+        }
         let positions:Vec<_>=frames.iter().map(|f|f.root).collect();
         for (index,((member, motion), (mut f, turn))) in p.cast.iter().zip(&p.motion).zip(frames.into_iter().zip(turns)).enumerate() {
-            if turn != 0.0 {
-                f.pose.root_rot = glam::Quat::from_rotation_y(turn) * f.pose.root_rot;
-            }
+            let _ = turn;
             // Äänellinen huulisynkka korvaa tekstistä arvioidun suun.
             let humanoid = &member.character.humanoid;
             if let Some(shape) = p.mouth_at(&|s| motion.motion.speaks(s), t) {

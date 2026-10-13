@@ -6,9 +6,14 @@ use eframe::egui;
 pub struct WorkflowState {
     pub line: Option<usize>,
     pub expected: String,
+    pub expected_source: String,
     pub draft: String,
     pub preview_scale: f32,
     pub delay: f32,
+    pub start_time: f64,
+    pub object: String,
+    pub recipient: String,
+    pub contact_seconds: f64,
 }
 
 impl StudioApp {
@@ -17,10 +22,12 @@ impl StudioApp {
         if let Some(text) = hs_edit::script::line_texts(&self.script).get(line.saturating_sub(1)) {
             self.workflow.line = Some(line);
             self.workflow.expected = (*text).into();
+            self.workflow.expected_source = self.script.clone();
             self.workflow.draft = (*text).into();
             self.playing = false;
             if let Some(row) = hs_agents::audit::inspect(&self.production).rows.iter().find(|r| r.line == line) {
                 self.time = row.start_seconds as f32;
+                self.workflow.start_time = row.start_seconds;
             }
         }
     }
@@ -53,6 +60,7 @@ pub fn overview(app: &mut StudioApp, ctx: &egui::Context) {
 pub fn inspector(app: &mut StudioApp, ctx: &egui::Context) {
     let Some(line) = app.workflow.line else { return };
     egui::SidePanel::right("scene-inspector").resizable(true).default_width(280.0).show(ctx, |ui| {
+        egui::ScrollArea::vertical().id_salt("scene-inspector-scroll").show(ui,|ui| {
         ui.heading(format!("Valittu rivi {line}"));
         if ui.button("Näytä hahmosäätimet").clicked() { app.workflow.line = None; }
         if let Some(row) = hs_agents::audit::inspect(&app.production).rows.into_iter().find(|r| r.line == line) {
@@ -61,12 +69,14 @@ pub fn inspector(app: &mut StudioApp, ctx: &egui::Context) {
             ui.label(format!("Tausta: {}", row.background));
             ui.label(format!("Esine: {}", row.prop.as_deref().unwrap_or("ei")));
             ui.label(format!("Kamera: {}", row.shots.join(" → ")));
+            if let Some(contact)=&row.object_contact {ui.label(format!("Esinekontakti: {contact}"));}
         }
         ui.separator();
         ui.label("Repliikki ja toimintaohjeet");
         ui.text_edit_multiline(&mut app.workflow.draft);
         ui.label("Muutos näkyy ensin tässä luonnoksessa. Ääntä ei nopeuteta.");
         if ui.button("Hyväksy rivimuutos").clicked() {
+            if app.workflow.expected_source != app.script {app.status="Käsikirjoitus muuttui: valitse rivi uudelleen ennen hyväksyntää.".into();return;}
             match hs_edit::script::rewrite(&app.script, line - 1, &app.workflow.expected,
                 hs_edit::script::LineEdit::Replace(app.workflow.draft.clone())) {
                 Ok(mut next) => {
@@ -89,14 +99,43 @@ pub fn inspector(app: &mut StudioApp, ctx: &egui::Context) {
         }
         ui.separator();
         ui.add(egui::DragValue::new(&mut app.workflow.delay).range(0.05..=60.0).speed(0.05).suffix(" s tauko ennen riviä"));
-        if ui.button("Lisää tauko ennen riviä").clicked() {
+        let fixed_start=commands(&app.workflow.expected).any(|(_,_,tag)|hs_script::command_category(tag)==Some("timing"));
+        if ui.add_enabled(!fixed_start,egui::Button::new("Lisää tauko ennen riviä")).clicked() {
+            if app.workflow.expected_source != app.script {app.status="Käsikirjoitus muuttui: valitse rivi uudelleen ennen ajoitusmuutosta.".into();return;}
             match hs_edit::script::rewrite(&app.script, line - 1, &app.workflow.expected,
                 hs_edit::script::LineEdit::PauseBefore(app.workflow.delay)) {
                 Ok(next) => { app.script = next; app.workflow.line = None; app.script_changed(); },
                 Err(e) => app.status = e,
             }
         }
-        ui.label("Tauko siirtää tämän ja myöhemmät rivit. Puheen kesto säilyy.");
+        ui.label("Tauko siirtää oletusajoitusta. Tarkan [at]-alkuajan riviä siirretään alkuaikasäädöllä.");
+        ui.add(egui::DragValue::new(&mut app.workflow.start_time).range(0.0..=59.5).speed(0.05).suffix(" s alkuaika"));
+        if ui.button("Aseta tarkka alkuaika luonnokseen").clicked() {
+            app.workflow.draft = choose_command(&app.workflow.draft, &format!("[at {:.3}s]", app.workflow.start_time));
+        }
+        ui.label("Eri hahmot voivat toimia samanaikaisesti. Saman hahmon ristiriidat estävät viennin.");
+        ui.separator();
+        ui.label("Esineen nosto ja luovutus");
+        let objects: Vec<_>=app.production.timeline.as_ref().map(|tl|tl.events.iter().filter_map(|e|match &e.kind {hs_core::EventKind::WorldObject {object}=>Some(object.id.clone()),_=>None}).collect()).unwrap_or_default();
+        egui::ComboBox::from_id_salt("contact-object").selected_text(if app.workflow.object.is_empty(){"Valitse esine"}else{&app.workflow.object}).show_ui(ui,|ui| {
+            for object in &objects {ui.selectable_value(&mut app.workflow.object,object.clone(),object);}
+        });
+        egui::ComboBox::from_id_salt("contact-recipient").selected_text(if app.workflow.recipient.is_empty(){"Valitse vastaanottaja"}else{&app.workflow.recipient}).show_ui(ui,|ui| {
+            for cast in &app.production.cast {ui.selectable_value(&mut app.workflow.recipient,cast.character.params.name.clone(),&cast.character.params.name);}
+        });
+        if app.workflow.contact_seconds<=0.0 {app.workflow.contact_seconds=2.0;}
+        ui.add(egui::DragValue::new(&mut app.workflow.contact_seconds).range(1.0..=20.0).speed(0.1).suffix(" s kontaktin kesto"));
+        let object_valid=objects.contains(&app.workflow.object)&&app.workflow.contact_seconds.is_finite()&&(1.0..=20.0).contains(&app.workflow.contact_seconds);
+        if ui.add_enabled(object_valid,egui::Button::new("Valitse nosto luonnokseen")).clicked() {
+            app.workflow.draft=choose_command(&app.workflow.draft,&format!("[pick up {} {:.3}s]",app.workflow.object,app.workflow.contact_seconds));
+        }
+        let recipient_valid=app.production.cast.iter().any(|c|c.character.params.name==app.workflow.recipient)&&!app.workflow.recipient.contains(['[',']','\n','\r']);
+        if ui.add_enabled(object_valid&&recipient_valid,egui::Button::new("Valitse luovutus luonnokseen")).clicked() {
+            app.workflow.draft=choose_command(&app.workflow.draft,&format!("[give {} to {} {:.3}s]",app.workflow.object,app.workflow.recipient,app.workflow.contact_seconds));
+        }
+        if objects.is_empty(){ui.label("Määritä ensin esine käsikirjoituksessa: [object cup mug on stand at x y z].");}
+        ui.label("Käden ulottuvuus ja esineen omistus tarkistetaan hyväksynnän jälkeen.");
+
         ui.separator();
         ui.label("Valitse ohje luonnokseen (korvaa saman ryhmän ohje)");
         for (title, tag) in [("Lähikuva", "[camera close up]"), ("Kaksikko", "[camera two shot]"),
@@ -109,6 +148,7 @@ pub fn inspector(app: &mut StudioApp, ctx: &egui::Context) {
         for (label, scale) in [("Kevyt", 0.5), ("Normaali", 0.75), ("Tarkka", 1.0)] {
             ui.selectable_value(&mut app.workflow.preview_scale, scale, label);
         }
+        });
     });
 }
 

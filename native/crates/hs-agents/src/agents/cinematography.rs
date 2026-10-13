@@ -57,6 +57,7 @@ pub struct Shot {
     /// Kameran atsimuuttipoikkeama (radiaaneina) etusuunnasta.
     pub angle: f32,
     pub tracking: bool,
+    pub authored: bool,
 }
 
 pub struct CameraTrack {
@@ -103,7 +104,7 @@ impl CameraTrack {
             let scene_end=tl.events.iter().filter(|event|event.start==e.start && event.source.line==e.source.line && !matches!(event.kind,EventKind::Background{..})).map(|event|event.end()).max().unwrap_or(e.end());
             let (start, end) = (e.start.seconds() as f32, scene_end.seconds() as f32);
             let hint = tl.events.iter().find_map(|c| match c.kind {
-                EventKind::Camera { hint } if c.start == e.start => Some(hint),
+                EventKind::Camera { hint } if c.start == e.start && c.source.line == e.source.line => Some(hint),
                 _ => None,
             });
             let speaker = tl.events.iter().find_map(|d| match &d.kind {
@@ -112,7 +113,7 @@ impl CameraTrack {
             });
             let subject = subject_of(character.as_ref().or(speaker.as_ref().and_then(|s| s.as_ref())));
             let partner = partner_of(subject, start);
-            let mut push = |kind: ShotKind, s: f32, t: f32, tracking: bool| shots.push(Shot { start: s, end: t, kind, subject, partner, angle: 0.0, tracking });
+            let mut push = |kind: ShotKind, s: f32, t: f32, tracking: bool| shots.push(Shot { start: s, end: t, kind, subject, partner, angle: 0.0, tracking, authored: hint.is_some() });
             match hint {
                 Some(CameraHint::Wide) => push(ShotKind::Wide, start, end, mk.is_locomotion()),
                 Some(CameraHint::Medium) => push(ShotKind::Medium, start, end, mk.is_locomotion()),
@@ -169,6 +170,39 @@ impl CameraTrack {
             }
             merged.push(s);
         }
+        // One global camera: authored shots win; otherwise latest starting cue
+        // wins, ties retain source order. Split intervals instead of overlapping.
+        let mut boundaries = vec![0.0, tl.duration.seconds() as f32];
+        for shot in &merged { boundaries.extend([shot.start, shot.end]); }
+        boundaries.sort_by(f32::total_cmp); boundaries.dedup();
+        let mut resolved: Vec<Shot> = Vec::new();
+        let mut last_choice = None;
+        for span in boundaries.windows(2).filter(|s| s[1] > s[0]) {
+            let middle = (span[0] + span[1]) * 0.5;
+            let chosen = merged.iter().enumerate().filter(|(_, s)| s.start <= middle && middle < s.end)
+                .max_by(|(ia, a), (ib, b)| a.authored.cmp(&b.authored)
+                    .then_with(|| a.start.total_cmp(&b.start)).then_with(|| ib.cmp(ia)))
+                .or_else(|| merged.iter().enumerate().rev().find(|(_, s)| s.end <= middle));
+            if chosen.is_none() {
+                if let Some(first)=merged.first() {let mut gap=first.clone();gap.kind=ShotKind::Wide;gap.authored=false;gap.start=span[0];gap.end=span[1];gap.tracking=true;resolved.push(gap);last_choice=None;}
+                continue;
+            }
+            if let Some((index, shot)) = chosen {
+                if last_choice == Some(index) { if let Some(last) = resolved.last_mut() { last.end = span[1]; } }
+                else { let mut shot = shot.clone(); shot.start = span[0]; shot.end = span[1];
+                    if !shot.authored {
+                        let mut active=Vec::new();
+                        for event in tl.events.iter().filter(|e|e.start.seconds() as f32<=middle&&middle<e.end().seconds() as f32) {
+                            if let EventKind::Motion{character:Some(name),..}=&event.kind {if let Some(actor)=names.iter().position(|n|n.eq_ignore_ascii_case(name)){if !active.contains(&actor){active.push(actor);}}}
+                        }
+                        if active.len()>=2 {shot.kind=if active.len()==2 {ShotKind::TwoShot}else{ShotKind::Wide};shot.partner=active.iter().copied().find(|actor|*actor!=shot.subject);shot.tracking=true;}
+                    }
+                    resolved.push(shot);
+                }
+                last_choice = Some(index);
+            }
+        }
+        let mut merged = resolved;
         // 30 asteen sääntö: vaihtele kulmaa otoksesta toiseen.
         for (i, s) in merged.iter_mut().enumerate() {
             s.angle = match s.kind {
@@ -386,6 +420,11 @@ impl StudioAgent for CinematographyAgent {
                 .collect::<Vec<_>>().join(" · ")
         );
         p.camera = Some(Arc::new(track));
+        p.contacts = None;
+        match crate::contacts::ContactPlan::build(p) {
+            Ok(plan) => p.contacts = plan,
+            Err(message) => { p.camera = None; return Err(AgentError::Failed { agent: "cinematography", message }); }
+        }
         Ok(AgentReport::new(summary))
     }
 }

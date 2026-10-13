@@ -20,6 +20,9 @@ mod viewport;
 mod voice_ui;
 mod workflow_ui;
 mod session_history;
+mod file_open;
+#[cfg(target_os = "macos")]
+mod finder_macos;
 mod library_ui;
 
 fn main() -> eframe::Result<()> {

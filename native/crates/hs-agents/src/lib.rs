@@ -12,6 +12,7 @@
 //! totuuden lähde (AGENTS.md).
 
 pub mod agents;
+pub mod contacts;
 pub mod production;
 pub mod project;
 pub mod captions;

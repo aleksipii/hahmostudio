@@ -15,6 +15,7 @@ pub struct ProjectState {
     pub path: Option<PathBuf>,
     job: Option<Receiver<Result<JobResult, String>>>,
     confirm_replace: bool,
+    pending_open: Option<PathBuf>,
     new_series: bool,
     import_directory: bool,
     confirm_close: bool,
@@ -61,6 +62,7 @@ impl ProjectState {
             path: None,
             job: None,
             confirm_replace: false,
+            pending_open: None,
             new_series: false,
             import_directory: false,
             confirm_close: false,
@@ -265,6 +267,15 @@ pub fn busy(app: &StudioApp) -> bool {
 }
 
 pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
+    if let Some(error) = app.file_open.take_error() { app.status = error; }
+    for file in ctx.input(|i| i.raw.dropped_files.clone()) {
+        if let Some(path) = file.path { if let Err(e) = app.file_open.push(path) { app.status = e; } }
+    }
+    if !app.project.confirm_replace && !app.project.confirm_close && !busy(app) && app.voice.recorder.is_none() && app.export.is_none() && !app.image.is_busy() {
+        if let Some(path) = app.file_open.pop() {
+            app.project.pending_open = Some(path); app.project.new_series = false; app.project.import_directory = false; app.project.confirm_replace = true;
+        }
+    }
     let recovered=app.project.recovery_job.as_ref().and_then(|rx|match rx.try_recv() {
         Ok(result)=>Some(result),
         Err(mpsc::TryRecvError::Disconnected)=>Some(Err("Palautustyö keskeytyi.".into())),
@@ -368,8 +379,9 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
         egui::Modal::new(egui::Id::new("koeta-replace")).show(ctx, |ui| {
             ui.set_max_width(480.0);
             ui.heading("Vaihda sarjaprojektia?");
+            if let Some(path) = &app.project.pending_open { ui.monospace(path.display().to_string()); }
             ui.label("Nykyisen sarjan tallentamattomat muutokset jäävät pois. Tallenna sarja ensin, jos haluat säilyttää ne.");
-            if ui.button("Peruuta").clicked() { app.project.confirm_replace = false; }
+            if ui.button("Peruuta").clicked() { app.project.confirm_replace = false; app.project.pending_open = None; }
             if ui.add_enabled(app.project.job.is_none() && app.voice.recorder.is_none() && app.export.is_none() && !app.image.is_busy(), egui::Button::new(if app.project.new_series { "Luo uusi sarja" } else { "Jatka avaamiseen…" })).clicked() {
                 app.project.confirm_replace = false;
                 if app.project.new_series {
@@ -379,7 +391,7 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
                     app.status = "Uusi sarjaprojekti luotu.".into();
                 } else if app.project.import_directory {
                     if let Some(path)=rfd::FileDialog::new().pick_folder() {app.open_series(path,ctx);}
-                } else if let Some(path) = rfd::FileDialog::new().add_filter("Koeta", &["koeta"]).pick_file() {
+                } else if let Some(path) = app.project.pending_open.take().or_else(|| rfd::FileDialog::new().add_filter("Koeta", &["koeta"]).pick_file()) {
                     app.open_series(path, ctx);
                 }
             }

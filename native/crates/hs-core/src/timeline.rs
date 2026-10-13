@@ -130,7 +130,13 @@ pub enum LookTarget {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct WorldObject { pub id: String, pub model: String, pub grip: [f32; 3], #[serde(default)] pub stand: bool }
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ObjectContact { PickUp { object: String }, Give { object: String, recipient: String } }
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum EventKind {
+    WorldObject { object: WorldObject },
+    ObjectContact { character: Option<String>, contact: ObjectContact },
     Dialogue { speaker: Option<String>, text: String },
     Motion { character: Option<String>, motion: MotionKind },
     Background { id: String },
@@ -147,11 +153,11 @@ impl EventKind {
     pub fn track(&self) -> TrackKind {
         match self {
             EventKind::Dialogue { .. } => TrackKind::Dialogue,
-            EventKind::Motion { .. } | EventKind::CharacterView { .. } | EventKind::Phone { .. } | EventKind::Prop { .. } | EventKind::Expression { .. } | EventKind::LookAt { .. } => {
+            EventKind::ObjectContact { .. } | EventKind::Motion { .. } | EventKind::CharacterView { .. } | EventKind::Phone { .. } | EventKind::Prop { .. } | EventKind::Expression { .. } | EventKind::LookAt { .. } => {
                 TrackKind::Motion
             }
             EventKind::Camera { .. } => TrackKind::Camera,
-            EventKind::Background { .. } => TrackKind::Environment,
+            EventKind::Background { .. } | EventKind::WorldObject { .. } => TrackKind::Environment,
         }
     }
 }

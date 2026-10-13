@@ -21,17 +21,19 @@ struct PreviewKey {
     motion: Vec<Arc<hs_motion::procedural::PreparedMotion>>,
     lips: Vec<hs_agents::production::LipClip>,
     live: Option<hs_agents::LiveOverride>,
+    contacts: Option<Arc<hs_agents::contacts::ContactPlan>>,
 }
 
 impl PreviewKey {
     fn capture(p: &Production, frame: u32, size: [u32; 2]) -> Self {
         Self { frame, size, fps: p.fps, timeline: p.timeline.clone(), camera: p.camera.clone(),
-            cast: p.cast.clone(), motion: p.motion.clone(), lips: p.lipsync.clone(), live: p.live.clone() }
+            cast: p.cast.clone(), motion: p.motion.clone(), lips: p.lipsync.clone(), live: p.live.clone(), contacts: p.contacts.clone() }
     }
 
     fn matches(&self, p: &Production, frame: u32, size: [u32; 2]) -> bool {
         self.frame == frame && self.size == size && self.fps == p.fps
             && self.timeline == p.timeline && self.live == p.live
+            && match (&self.contacts, &p.contacts) { (Some(a), Some(b)) => Arc::ptr_eq(a,b), (None,None) => true, _ => false }
             && match (&self.camera, &p.camera) { (Some(a), Some(b)) => Arc::ptr_eq(a, b), (None, None) => true, _ => false }
             && self.cast.len() == p.cast.len() && self.cast.iter().zip(&p.cast).all(|(a,b)|
                 Arc::ptr_eq(&a.character, &b.character) && Arc::ptr_eq(&a.mesh, &b.mesh) && a.lead == b.lead && a.start_x == b.start_x)

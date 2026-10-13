@@ -106,6 +106,12 @@ pub struct Beat {
     pub text: String,
     pub motion: MotionKind,
     pub seconds: f64,
+    #[serde(default)]
+    pub at: Option<f64>,
+    #[serde(default)]
+    pub object: Option<hs_core::WorldObject>,
+    #[serde(default)]
+    pub contact: Option<hs_core::ObjectContact>,
     pub background: Option<String>,
     pub view: Option<View>,
     pub phone: Option<PhoneView>,
@@ -300,6 +306,9 @@ fn strip_keyword<'a>(tag: &'a str, keys: &[&str]) -> Option<&'a str> {
 }
 
 enum Tag {
+    At(f64),
+    Object(hs_core::WorldObject),
+    Contact(hs_core::ObjectContact, f64),
     Phone(PhoneView),
     Prop(Option<String>),
     View(View),
@@ -314,6 +323,8 @@ enum Tag {
 /// Unrecognized input remains unrecognized; dialogue is never classified here.
 pub fn command_category(tag: &str) -> Option<&'static str> {
     match classify(tag).ok()? {
+        Tag::At(_) => Some("timing"),
+        Tag::Object(_) => Some("object"), Tag::Contact(..) => Some("motion"),
         Tag::Phone(_) => Some("phone"), Tag::Prop(_) => Some("prop"), Tag::View(_) => Some("view"),
         Tag::Background(_) => Some("background"), Tag::Camera(_) => Some("camera"),
         Tag::Expression(_) => Some("expression"), Tag::LookAt(_) => Some("look"), Tag::Motion(..) => Some("motion"),
@@ -321,6 +332,39 @@ pub fn command_category(tag: &str) -> Option<&'static str> {
 }
 
 fn classify(tag: &str) -> Result<Tag, String> {
+    let lower = tag.trim().to_lowercase();
+    let identifier = |s: &str| !s.is_empty() && s.len() <= 32 && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_');
+    if lower.starts_with("object ") {
+        let words: Vec<_> = lower.split_whitespace().collect();
+        let stand=words.len()==9&&words[3]=="on"&&words[4]=="stand";
+        let coordinate=if stand {6}else{4};
+        if words.len()!=coordinate+3||words[coordinate-1]!="at"||!identifier(words[1]) {return Err("Esine: [object cup mug on stand at x y z] tai [object cup mug at x y z]".into());}
+        let model = PROP_ALIASES.iter().find(|(alias, _)| *alias == words[2]).ok_or("Tuntematon esinemalli")?.1;
+        let mut grip = [0.0; 3];
+        for i in 0..3 { grip[i] = words[i + coordinate].parse::<f32>().map_err(|_| "Virheellinen esinekoordinaatti")?; }
+        if grip.iter().any(|v| !v.is_finite() || v.abs() > 5.0) || grip[1] < 0.1 { return Err("Esineen tarttumispiste on tuetun alueen ulkopuolella".into()); }
+        return Ok(Tag::Object(hs_core::WorldObject { id: words[1].into(), model: model.into(), grip, stand }));
+    }
+    if lower.starts_with("pick up ") || lower.starts_with("give ") {
+        let (instruction, duration) = lower.rsplit_once(' ').ok_or("Anna kontaktin kesto")?;
+        let duration = duration.strip_suffix('s').ok_or("Anna kontaktin kesto sekunteina")?.parse::<f64>().map_err(|_| "Virheellinen kontaktin kesto")?;
+        if !duration.is_finite() || !(1.0..=20.0).contains(&duration) { return Err("Kontaktin kesto on 1–20 sekuntia".into()); }
+        let contact = if let Some(object) = instruction.strip_prefix("pick up ") {
+            if !identifier(object) { return Err("Virheellinen esinetunniste".into()); }
+            hs_core::ObjectContact::PickUp { object: object.into() }
+        } else {
+            let (object, recipient) = instruction.strip_prefix("give ").unwrap().split_once(" to ").ok_or("Luovutus: [give cup to Maija 2s]")?;
+            if !identifier(object) || recipient.trim().is_empty() || recipient.len() > 256 { return Err("Virheellinen luovutuksen kohde".into()); }
+            let original_instruction=tag.trim().rsplit_once(' ').unwrap().0;
+            let recipient=original_instruction[instruction.find(" to ").unwrap()+4..].trim();
+            hs_core::ObjectContact::Give { object: object.into(), recipient: recipient.into() }
+        };
+        return Ok(Tag::Contact(contact, duration));
+    }
+    if let Some(value) = lower.strip_prefix("at ") {
+        let time = value.trim().strip_suffix('s').ok_or("Alkuaika: [at 0.0s]")?.trim().parse::<f64>().map_err(|_| "Virheellinen alkuaika")?;
+        return if time.is_finite() && (0.0..60.0).contains(&time) { Ok(Tag::At(time)) } else { Err("Alkuaika on oltava 0–60 sekuntia".into()) };
+    }
     match english::normalize_tag(tag)? {
         Some(canonical) => classify_canonical(&canonical),
         None => classify_canonical(tag),
@@ -555,6 +599,7 @@ pub fn parse(text: &str) -> ScriptPlan {
         ));
         return plan;
     }
+    let mut pending_object = None;
     let mut pending_bg: Option<String> = None;
     let mut pending_view: Option<View> = None;
     let mut pending_phone: Option<PhoneView> = None;
@@ -580,6 +625,7 @@ pub fn parse(text: &str) -> ScriptPlan {
         let spoken = spoken.split_whitespace().collect::<Vec<_>>().join(" ");
 
         let previous_settings = (
+            pending_object.clone(),
             pending_bg.clone(),
             pending_view,
             pending_phone,
@@ -589,11 +635,19 @@ pub fn parse(text: &str) -> ScriptPlan {
             pending_look_at.clone(),
             pending_line,
         );
+        let mut contact = None;
+        let mut at = None;
         let mut motion: Option<MotionKind> = None;
         let mut seconds: Option<f64> = None;
         let mut line_ok = true;
         for tag in &tags {
             let applied = match classify(tag) {
+                Ok(Tag::Object(object)) => set_pending_once(&mut pending_object, object, "esineen sijoitus"),
+                Ok(Tag::Contact(action, duration)) => {
+                    if motion.is_some() { Err("Kontaktirivillä voi olla vain yksi toiminto".into()) }
+                    else { contact = Some(action); motion = Some(MotionKind::Wait); seconds = Some(duration); Ok(()) }
+                }
+                Ok(Tag::At(time)) => set_pending_once(&mut at, time, "alkuaika"),
                 Ok(Tag::Phone(v)) => set_pending_once(&mut pending_phone, v, "puhelin"),
                 Ok(Tag::Prop(p)) => set_pending_once(&mut pending_prop, p, "esine"),
                 Ok(Tag::View(v)) => set_pending_once(&mut pending_view, v, "hahmosuunta"),
@@ -618,7 +672,7 @@ pub fn parse(text: &str) -> ScriptPlan {
             }
         }
         if !tags.is_empty()
-            && (pending_bg.is_some()
+            && (pending_object.is_some() || pending_bg.is_some()
                 || pending_view.is_some()
                 || pending_phone.is_some()
                 || pending_camera.is_some()
@@ -628,8 +682,13 @@ pub fn parse(text: &str) -> ScriptPlan {
         {
             pending_line = line_no;
         }
+        if at.is_some() && spoken.is_empty() && motion.is_none() {
+            plan.diagnostics.push(Diagnostic::error(line_no, "Kirjoita alkuaika samalle riville repliikin tai liikkeen kanssa."));
+            line_ok = false;
+        }
         if !line_ok {
             (
+                pending_object,
                 pending_bg,
                 pending_view,
                 pending_phone,
@@ -673,6 +732,7 @@ pub fn parse(text: &str) -> ScriptPlan {
                 "Yhden rivin kesto on 0,5–20 sekuntia.",
             ));
             (
+                pending_object,
                 pending_bg,
                 pending_view,
                 pending_phone,
@@ -684,20 +744,23 @@ pub fn parse(text: &str) -> ScriptPlan {
             ) = previous_settings;
             continue;
         }
-        if plan.seconds + seconds > MAX_TOTAL_SECONDS + 1e-9 {
+        if at.unwrap_or(plan.seconds) + seconds > MAX_TOTAL_SECONDS + 1e-9 {
             plan.diagnostics.push(Diagnostic::error(
                 line_no,
                 "Lyhytanimaatio voi kestää enintään 60 sekuntia. Rivi ja sitä seuraavat jätettiin pois.",
             ));
             break;
         }
-        plan.seconds += seconds;
+        plan.seconds = plan.seconds.max(at.unwrap_or(plan.seconds) + seconds);
         plan.beats.push(Beat {
             line: line_no,
             speaker,
             text: spoken,
             motion,
             seconds,
+            at,
+            contact,
+            object: pending_object.take(),
             background: pending_bg.take(),
             view: pending_view.take(),
             phone: pending_phone.take(),
@@ -707,7 +770,7 @@ pub fn parse(text: &str) -> ScriptPlan {
             look_at: pending_look_at.take(),
         });
     }
-    if pending_bg.is_some()
+    if pending_object.is_some() || pending_bg.is_some()
         || pending_view.is_some()
         || pending_phone.is_some()
         || pending_camera.is_some()
@@ -748,11 +811,15 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
     let mut t = Tick::ZERO;
     let mut backgrounds: Vec<(Tick, String, SourceSpan)> = Vec::new();
     for (i, beat) in plan.beats.iter().enumerate() {
+        let previous_end = t;
+        if let Some(at) = beat.at { t = Tick::from_seconds(at); }
         let span = SourceSpan {
             line: beat.line,
             text: lines.get(beat.line - 1).unwrap_or(&"").trim().to_string(),
         };
         let d = Tick::from_seconds(seconds.get(i).copied().unwrap_or(beat.seconds));
+        if let Some(object) = &beat.object { timeline.push(t, Tick::ZERO, hs_core::EventKind::WorldObject { object: object.clone() }, span.clone()); }
+        if let Some(contact) = &beat.contact { timeline.push(t, d.min(Tick::from_seconds(beat.seconds)), hs_core::EventKind::ObjectContact { character: beat.speaker.clone(), contact: contact.clone() }, span.clone()); }
         if let Some(bg) = &beat.background {
             backgrounds.push((t, bg.clone(), span.clone()));
         }
@@ -818,8 +885,9 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
             },
             span,
         );
-        t += d;
+        t = (t + d).max(previous_end);
     }
+    backgrounds.sort_by_key(|b| b.0);
     // Tausta on voimassa seuraavaan taustanvaihtoon tai loppuun asti.
     for (i, (start, id, span)) in backgrounds.iter().enumerate() {
         let end = backgrounds.get(i + 1).map_or(t, |n| n.0);
@@ -831,6 +899,7 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
         );
     }
     timeline.duration = t;
+    timeline.events.sort_by_key(|e| e.start);
     timeline
 }
 
@@ -1326,4 +1395,29 @@ mod movement_library_grammar {
             assert_eq!(parse(&format!("KALLE: {text}")).beats[0].motion, MotionKind::Wait);
         }
     }
+}
+
+/// Starts in authored row order; implicit rows follow the latest occupied end.
+pub fn scheduled_starts(plan: &ScriptPlan, seconds: &[f64]) -> Result<Vec<f64>, String> {
+    let mut end: f64 = 0.0; let mut starts = Vec::new();
+    for (i, beat) in plan.beats.iter().enumerate() {
+        let duration = seconds.get(i).copied().unwrap_or(beat.seconds);
+        let start = beat.at.unwrap_or(end);
+        if !duration.is_finite() || duration < 0.5 || !start.is_finite() || start < 0.0 || start + duration > 60.0 {
+            return Err(format!("Rivi {}: todellinen ajoitus ylittää 60 sekunnin rajan", beat.line));
+        }
+        for (j, previous) in plan.beats[..i].iter().enumerate() {
+            let overlaps = start < starts[j] + seconds.get(j).copied().unwrap_or(previous.seconds) && starts[j] < start + duration;
+            if overlaps && previous.camera.is_some() && beat.camera.is_some() {
+                return Err(format!("Rivi {}: samanaikaiset kuvakulmaohjeet ovat ristiriidassa", beat.line));
+            }
+
+            if (previous.speaker.is_none() || beat.speaker.is_none() || previous.speaker.as_ref().map(|s| s.to_lowercase()) == beat.speaker.as_ref().map(|s| s.to_lowercase()))
+                && start < starts[j] + seconds.get(j).copied().unwrap_or(previous.seconds) && starts[j] < start + duration {
+                return Err(format!("Rivi {}: saman hahmon rivit {} ja {} menevät päällekkäin", beat.line, previous.line, beat.line));
+            }
+        }
+        starts.push(start); end = end.max(start + duration);
+    }
+    Ok(starts)
 }

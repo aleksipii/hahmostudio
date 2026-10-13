@@ -11,7 +11,7 @@ sovelluksen toimivuutta toisella koneella.
 | Kohde | Nykytila | Konkreettinen seuraava tehtävä |
 | --- | --- | --- |
 | Itsenäinen MP4-vienti | Paketoija voi ottaa FFmpeg/FFprobe-binäärit ja lisenssin; runtime hakee app-resursseista | Valitse ja lisensoi toimitettavat Mac-binäärit, joilla on vain järjestelmäkirjastoriippuvuuksia. Tarkista koodekit ja vienti Macissa ilman Homebrewta. |
-| Finderin projektiavaukset | `.koeta`-assosiaatio Info.plistissä; CLI-polku luetaan | Toteuta macOS:n tiedostonavaustapahtumien käsittely myös jo käynnissä olevalle sovellukselle; suojaa tallentamattomat muutokset ja testaa kaksoisklikkaus. |
+| Finderin projektiavaukset | `.koeta`-assosiaatio, Cocoa-tiedostoavaussilta ja suojattu avausjono toteutettu; Apple Silicon -tyyppitarkistus läpi | Testaa kaksoisklikkaus sekä suljetulla että jo käynnissä olevalla sovelluksella ja tarkista tallentamattoman projektin vahvistus oikealla Macilla. |
 | Luotettu jakelu | Hardened runtime, oikeudet ja valinnainen notarisaatio/staple toteutettu; vain Linux-mock-testi | Testaa Developer ID -allekirjoitus, notarisaatio ja staple oikeilla Mac-työkaluilla ja avaimilla. |
 | Kohdearkkitehtuuri | Apple Silicon oletus, Intel erillisenä targetina | Rakenna ja testaa tuetut arkkitehtuurit macOS SDK:lla. Päätä erilliset paketit tai universal-jakelu. |
 | Sovelluksen metadata | Nimi, tunniste, käyttöoikeudet sekä valinnainen kuvake/minimiversio | Toimita oma `.icns`-kuvake ja todenna konfiguroitu macOS:n minimiversio; varmista versiointi ja lisenssit. |

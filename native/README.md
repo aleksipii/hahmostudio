@@ -157,7 +157,10 @@ Mac-paketti: [paketointiohje](packaging/README.md).
 Palautuksen rajat: [RECOVERY.md](RECOVERY.md).
 Arkkitehtuurivertailu: [STORYTOLD-NOTES.md](packaging/STORYTOLD-NOTES.md).
 
-### Todennettu ja vielä avoinna (12.10.2026)
+Ajoitus, nosto ja luovutus: [PARALLEL-CONTACTS.md](PARALLEL-CONTACTS.md).
+Finder-silta on toteutettu; Apple Silicon -tyyppitarkistus ei korvaa oikean Macin avaustestiä.
+
+### Todennettu ja vielä avoinna (13.10.2026)
 
 Linuxissa on ajettu natiivin kokonaisuuden testit, tallennus/siirto/avaus,
 kuva- ja äänityötilan resurssit, tekstitysten poltto sekä oikea FFmpeg-MP4-vienti.

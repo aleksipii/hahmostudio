@@ -10,7 +10,9 @@ Koeta on paikallinen työpöytäsovellus englanninkielisten animaatiojaksojen te
 - Mikrofonin ja kameran esitystyökalut, kuva- ja tasoeditori, rajattu PSD-tuonti, leikkaus, taustaäänet ja tekstitykset.
 - GPU-esikatselu ja CPU-varapolku. MP4-vienti tarvitsee tällä hetkellä erillisen FFmpegin ja FFproben.
 
-Käsikirjoitus on rajattu ohjekieli: tuntemattomat tai toteuttamattomat toiminnot ilmoitetaan virheinä. Sovellus ei tulkitse mitä tahansa proosaa täydelliseksi animaatioksi. Ulkoisten luurankojen yleinen retargetointi ja esimerkiksi esineen luovutus, ovien avaaminen ja halauskontaktit tarvitsevat vielä toteutusta. Kuva- ja leikkaustyökalut eivät kata Photoshopin tai ammattivideoeditorin kaikkia ominaisuuksia.
+Käsikirjoitus on rajattu ohjekieli: tuntemattomat tai toteuttamattomat toiminnot ilmoitetaan virheinä. Sovellus ei tulkitse mitä tahansa proosaa täydelliseksi animaatioksi. Ulkoisten luurankojen yleinen retargetointi ja esimerkiksi ovien avaaminen ja halauskontaktit tarvitsevat vielä toteutusta. Kuva- ja leikkaustyökalut eivät kata Photoshopin tai ammattivideoeditorin kaikkia ominaisuuksia.
+
+Päällekkäinen ajoitus ja esineiden nosto/luovutus: [kontaktiohje](native/PARALLEL-CONTACTS.md).
 
 Tuotantonäkymä, kohtausrivit, sarjakirjasto ja pilotti: [jakso-opas](native/EPISODE-WORKFLOW.md).
 

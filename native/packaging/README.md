@@ -75,4 +75,7 @@ app archive is submitted, stapled and validated before publication, then the
 DMG is signed, submitted, stapled and validated. The installer includes an
 Applications shortcut. Profile credentials belong in the existing Mac keychain.
 Linux tests use mocked Apple commands and cannot verify signing or notarization.
-Finder Apple-event delivery still needs native runtime integration and Mac tests.
+Finder Apple-event delivery is implemented with a bounded queue and project replacement confirmation.
+Run `python3 scripts/check-finder-cross.py` after installing the Apple Rust target
+for an isolated Cocoa bridge type check. Fresh-start and running-app Finder
+delivery still require real Mac tests; this check does not build the full Mac app.

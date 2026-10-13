@@ -14,3 +14,5 @@ pub use timeline::{
     CameraHint, Direction, EventId, EventKind, Expression, LookTarget, MotionKind, PhoneView, SourceSpan, Timeline,
     TimelineEvent, TrackKind, View,
 };
+
+pub use timeline::{ObjectContact, WorldObject};

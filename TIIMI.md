@@ -1345,3 +1345,74 @@ esineen nosto/luovutus/ovet/portaat ja uusi fysikaalinen kontaktieditori jääv�
 jatkokehitykseen; nykyistä taukoajoitusta/otetta ei nimetä näiden vastineeksi.
 Seuraava Mac-tehtävä: build paketoijan uusilla media/sign/notary-parametreilla,
 aja jakso-opas oikealla Kokorolla ja kirjaa laite sekä tarkka commit.
+
+
+## Codex handoff — 13.10.2026: päällekkäinen ajoitus, esinekontaktit ja Finder
+
+Tavoite: toteuta edellisen handoffin kolme Linuxissa toteutettavaa puutetta.
+Haara work; lähtöcommit main ab52a54621026f0dc111d58ad640338da737b763.
+Tämän handoffin julkaisucommit löytyy otsikolla
+`Add parallel episode timing, checked object contacts and Finder opens`.
+Etä-main tarkistettu samaksi ennen julkaisua; ei Clauden etämuutoksia tämän työn aikana.
+
+Codexin omistamat muutokset:
+- hs-core timeline/lib, hs-script lib, hs-edit script: absoluuttinen [at Ns],
+  WorldObject/ObjectContact-domain ja tarkka englanninkielinen kontaktiohjekieli.
+- hs-agents contacts/production/lib/audit ja agents/{voice,cinematography,render}:
+  todellisen puhekeston päällekkäinen ajoitus, globaalin kameran prioriteetit,
+  otteen IK, lähestyminen, 12cm nosto, omistajuuden luovutus ja ruutukohtainen
+  enintään2mm täyden otteen tarkistus. Puuttuva esine/ulottuvuus/varattu käsi/
+  omistajaristiriita estää viennin. Mesh/stand/contact-suunnitelmat välimuistitetaan.
+  Äänimiksausten muutos säilyttää muuttumattoman kontaktisuunnitelman.
+- hs-subtitle lib: päällekkäisten repliikkien puhujanimellinen yhdistäminen
+  MP4/SRT-tekstitysraitaan säilyttäen projektin alkuperäiset repliikit.
+- hs-app Cargo.toml/main/app/file_open/finder_macos/project_ui: rajattu Cocoa-
+  avausjono, paikallinen .koeta-polku, vahvistus ennen nykyprojektin korvaamista.
+  Mac-only objc2-riippuvuudet, lockfileen vain nykyisten versioiden directdeps.
+- hs-app panels/workflow_ui/production_ui/viewport: hahmokohtaiset liike-/
+  puheradat, tarkka alkuajan luonnos, kontaktivalinnat ja lähdesnapshotin suojaus.
+  Ei vapaata raitojen drag-ajoitusta eikä yleistä videoleikkaimen pariteettia.
+- Uudet object_contacts ja parallel_timing integraatiotestit, kaksi englannin
+  esimerkkiä, scripts/check-finder-cross.py, PARALLEL-CONTACTS.md ja README-/
+  jakso-/Mac-julkaisuohjeiden tilapäivitykset. hs-voice moottoria ei muutettu.
+
+Todennus Linuxissa:
+- cargo test --locked --workspace -j4:263läpi,0fail,1ohitettu(aitoKokoro),exit0,
+  /tmp/koeta-contact-workspace-final.log. Testisarjan jälkeen vain aikajanalla
+  luovutuksen nuoli vaihdettiin fontin tukemaan ASCII-merkintään. Lopullinen
+  hs-app testiajo9läpi,exit0 /tmp/koeta-contact-app-final.log.
+- Kontaktitestit6:180ruudun ote/omistajuus/geometrinen tuki, virhetilanteet,
+  projektin tallennus/uudelleenavaus, vanhentuneet resurssit ja äänen mix-cache.
+  Parallel-timing5:eri hahmojen ajoitus, ristiriidat, yhtäaikainen testiääni,
+  kameran kirjoitetut ohjeet ja alun tyhjän ajan kamera.
+- cargo build --locked -p hs-app -p hs-cli -j4 ja cargo clippy --locked
+  --workspace --all-targets -j4:exit0; varoituksia jäljellä, ei warning-free-väitettä.
+  /tmp/koeta-contact-{build,clippy}-final.log. git diff --check läpi.
+- python3 scripts/check-finder-cross.py:exit0 Apple Silicon Rust targetilla,
+  /tmp/koeta-finder-final.log. Vain oikeiden Cocoa-siltamoduulien tyyppitarkistus,
+  ei koko Mac-sovelluksen käännös, linkitys tai Finder-käynnistys.
+- Oikea FFmpeg CPU-vienti object-handoff:6s,180ruutua,320x180,H.264,äänetön
+  /tmp/koeta-contact-final.mp4; FFprobe6.000s. Luovutuksen3sruutu katsottu.
+  Parallel-dialogue:3s,90ruutua,160x90,H.264+AAC+mov_text,
+  /tmp/koeta-parallel-final.mp4; FFprobe3.000s. FFmpegillä takaisin luettu SRT
+  sisältää `Kalle: Hello there.` sekä `Maija: Welcome home.` yhtäaikaisina.
+  Puhe on eksplisiittinen TestEngine, ei Kokoro-kuuntelu.
+- Xvfb/lavapipe: käynnistys, Leikkaus-aikajanat ja aikajanan napsautuksella
+  valittu nostorivi, inspectorin alkuaika-/kontaktisäätimet ja GPU-esikatselu.
+  /tmp/koeta-contact-{ui,inspector}-final.png. Videoruutu
+  /tmp/koeta-contact-video-final.png. Nämä eivät ole Mac/laitetestit.
+- Quota unavailable; prosenttia ei päätelty.
+
+Avoin hyväksyntä:
+Oikea Mac/Metal/kamera/mikrofoni, Kokoro-synteesi ja kuuntelu, Finder-avaus
+suljetulla sekä käynnissä olevalla sovelluksella, DeveloperID/notarisaatio ja
+puhtaan Macin itsenäinen vienti ovat edelleen testaamatta. Kokoron julkinen
+malli yrittää CDN-hostia us.aws.cdn.hf.co; pilven CONNECT estyy403. Domain lisättiin
+olemassa olevaa allowlistiä säilyttävään ympäristöasetusten luonnokseen; se pitää
+tallentaa/julkaista asetuksissa ennen uutta todellista mallikoetta. Painoja ei
+viety Gitiin eikä tarkistuksia ohitettu. Pelkkä luonnoksen tallennus ei muuta runtimea.
+Kontaktit eivät ole jäykkien kappaleiden fysiikkaa tai yleinen sormien/vartaloiden
+törmäysratkaisin; ovet, portaat, pudotus ja mielivaltaiset ulkoiset riggit avoinna.
+Mac-release CPU/RAM/energia/koko mittaamatta.
+Seuraava konkreettinen tehtävä: julkaise CDN-asetus, suorita aito Kokoro-pilotti;
+Macilla build/paketointi ja Finder-kaksoisklikkaus molemmilla käynnistystavoilla.

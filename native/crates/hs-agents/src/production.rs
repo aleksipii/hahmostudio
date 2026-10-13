@@ -123,6 +123,7 @@ pub struct Production {
     pub cast: Vec<CastMember>,
     pub motion: Vec<Arc<PreparedMotion>>,
     pub camera: Option<Arc<CameraTrack>>,
+    pub contacts: Option<Arc<crate::contacts::ContactPlan>>,
     pub diagnostics: Vec<Diagnostic>,
     pub output: Option<String>,
 }
@@ -161,6 +162,7 @@ impl Production {
             cast: Vec::new(),
             motion: Vec::new(),
             camera: None,
+            contacts: None,
             diagnostics: Vec::new(),
             output: None,
         }

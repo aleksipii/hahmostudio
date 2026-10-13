@@ -22,6 +22,9 @@ pub struct LaunchOptions {
 
 pub struct StudioApp {
     pub project: crate::project_ui::ProjectState,
+    pub file_open: crate::file_open::OpenRequests,
+    #[cfg(target_os = "macos")]
+    _finder: Option<objc2::rc::Retained<crate::finder_macos::FinderDelegate>>,
     pub library: crate::library_ui::SeriesLibrary,
     pub history: crate::session_history::SessionHistory,
     pub workflow: crate::workflow_ui::WorkflowState,
@@ -105,6 +108,9 @@ impl StudioApp {
         let project = crate::project_ui::ProjectState::new(&production);
         let mut app = StudioApp {
             project,
+            file_open: Default::default(),
+            #[cfg(target_os = "macos")]
+            _finder: None,
             library: Default::default(),
             history: Default::default(),
             workflow: crate::workflow_ui::WorkflowState { preview_scale: 0.75, ..Default::default() },
@@ -141,6 +147,13 @@ impl StudioApp {
             screenshot: options.screenshot,
             screenshot_frames: 0,
         };
+        #[cfg(target_os = "macos")]
+        if !app.screenshot_mode() {
+            let context = cc.egui_ctx.clone();
+            match crate::finder_macos::install(app.file_open.clone(), Box::new(move || context.request_repaint())) {
+                Ok(delegate) => app._finder = Some(delegate), Err(e) => app.status = e,
+            }
+        }
         app.run_pipeline();
         if let Some(path) = series_path { app.script_path = None; app.open_series(path, &cc.egui_ctx); }
         else if !app.screenshot_mode() {app.scan_recovery(&cc.egui_ctx);}

@@ -59,6 +59,7 @@ pub fn rewrite(text: &str, index: usize, expected: &str, edit: LineEdit) -> Resu
             lines.insert(target, moved);
         }
         LineEdit::PauseBefore(seconds) => {
+            if body(&lines[index]).to_lowercase().contains("[at ") {return Err("Rivillä on tarkka alkuaika: muuta [at]-aikaa odotuslohkon sijaan".into());}
             if !seconds.is_finite() || !(0.05..=60.0).contains(&seconds) {
                 return Err("Tauon keston on oltava 0.05–60 sekuntia".into());
             }

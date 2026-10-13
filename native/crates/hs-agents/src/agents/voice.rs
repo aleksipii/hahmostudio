@@ -187,18 +187,20 @@ impl StudioAgent for TimingAgent {
     }
     fn run(&mut self, p: &mut Production) -> Result<AgentReport, AgentError> {
         let plan = p.plan.as_ref().ok_or(AgentError::Missing { agent: "timing", slot: Slot::Plan })?;
+        p.diagnostics.retain(|d|!d.message.starts_with("Ajoitus: "));
         let seconds=timed_seconds(plan,&p.voice_lines);
-        if seconds.iter().any(|s|!s.is_finite() || *s<0.5) || seconds.iter().sum::<f64>()>60.0 {
-            p.timeline=None;p.clips.clear();p.mix=None;p.motion.clear();p.camera=None;
-            return Err(AgentError::Failed{agent:"timing",message:"Todellinen puheaika ylittää 60 sekunnin jakson rajan. Lyhennä repliikkejä tai jaa käsikirjoitus jaksoiksi; puhetta ei nopeuteta.".into()});
-        }
+        let starts = match hs_script::scheduled_starts(plan, &seconds) {
+            Ok(starts) => starts,
+            Err(message) => {
+                p.timeline=None;p.clips.clear();p.mix=None;p.motion.clear();p.camera=None;
+                let line=message.strip_prefix("Rivi ").and_then(|s|s.split(':').next()).and_then(|s|s.parse().ok()).unwrap_or(0);
+                p.diagnostics.push(hs_core::Diagnostic::error(line,format!("Ajoitus: {message}")));
+                return Err(AgentError::Failed { agent: "timing", message });
+            }
+        };
         let extended=seconds.iter().zip(&plan.beats).filter(|(seconds,beat)|**seconds>beat.seconds).count();
         let timeline = hs_script::to_timeline_with(plan, &p.script, p.fps, &seconds);
-        let starts: Vec<f32> = seconds.iter().scan(0.0, |acc, d| {
-            let s = *acc;
-            *acc += d;
-            Some(s as f32)
-        }).collect();
+        let starts: Vec<f32> = starts.into_iter().map(|t| t as f32).collect();
         p.beat_times = starts.iter().zip(&seconds).map(|(s, d)| (*s, *d as f32)).collect();
         p.clips = p
             .voice_lines
@@ -217,8 +219,10 @@ impl StudioAgent for TimingAgent {
             p.clips.len(),
             if extended > 0 { format!(", {extended} riviä pidennetty puheen mittaisiksi") } else { String::new() }
         );
+        let unchanged=p.timeline.as_ref()==Some(&timeline);
         p.timeline = Some(timeline);
-        Ok(AgentReport::new(summary))
+        let report=AgentReport::new(summary);
+        Ok(if unchanged {report.unchanged()}else{report})
     }
 }
 
@@ -257,7 +261,7 @@ impl StudioAgent for LipSyncAgent {
         "Huulisynkka"
     }
     fn reads(&self) -> &'static [Slot] {
-        &[Slot::Timeline]
+        &[Slot::Audio, Slot::Timeline]
     }
     fn writes(&self) -> &'static [Slot] {
         &[Slot::LipSync]

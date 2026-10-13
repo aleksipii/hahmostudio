@@ -148,6 +148,11 @@ fn track_label(track: TrackKind) -> &'static str {
 
 fn event_text(kind: &EventKind) -> String {
     match kind {
+        EventKind::WorldObject { object } => format!("Esine {}", object.id),
+        EventKind::ObjectContact { character, contact } => match contact {
+            hs_core::ObjectContact::PickUp { object } => format!("{}: Nosto · {object}",character.as_deref().unwrap_or("Hahmo")),
+            hs_core::ObjectContact::Give { object, recipient } => format!("{object} -> {recipient}"),
+        },
         EventKind::Dialogue { speaker, text } => match speaker {
             Some(s) => format!("{s}: {text}"),
             None => text.clone(),
@@ -167,7 +172,7 @@ fn event_text(kind: &EventKind) -> String {
 }
 
 pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
-    egui::TopBottomPanel::bottom("aikajana").resizable(true).default_height(190.0).min_height(120.0).show(ctx, |ui| {
+    egui::TopBottomPanel::bottom("aikajana").resizable(true).default_height(300.0).min_height(120.0).show(ctx, |ui| {
         ui.horizontal(|ui| {
             if ui.button(if app.playing { "⏸ Pysäytä" } else { "▶ Toista" }).clicked() {
                 app.playing = !app.playing;
@@ -195,8 +200,22 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                     TrackKind::Motion => Color32::from_rgb(0x5d, 0xa8, 0x6c),
                     _ => Color32::from_rgb(0x8c, 0x6c, 0xb8),
                 };
-                let items = tl.on_track(track).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. })).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color)).collect();
-                rows.push((track_label(track).to_string(), items));
+                if matches!(track, TrackKind::Dialogue | TrackKind::Motion) {
+                    for (index, member) in app.production.cast.iter().enumerate() {
+                        let name = &member.character.params.name;
+                        let items = tl.on_track(track).filter(|e| match &e.kind {
+                            EventKind::Dialogue { speaker, .. } | EventKind::Motion { character: speaker, .. }
+                            | EventKind::ObjectContact { character: speaker, .. }
+                            | EventKind::LookAt { character: speaker, .. } | EventKind::Expression { character: speaker, .. } =>
+                                speaker.as_ref().map_or(index == 0, |s| s.eq_ignore_ascii_case(name)),
+                            _ => false,
+                        }).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. }) || !tl.events.iter().any(|other| other.start == e.start && other.source.line == e.source.line && matches!(other.kind, EventKind::ObjectContact { .. }))).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color)).collect();
+                        rows.push((format!("{} · {name}", track_label(track)), items));
+                    }
+                } else {
+                    let items = tl.on_track(track).filter(|e| !matches!(e.kind, EventKind::WorldObject { .. })).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color)).collect();
+                    rows.push((track_label(track).to_string(), items));
+                }
             }
             if let Some(cam) = &app.production.camera {
                 let items = cam
@@ -221,7 +240,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
             }
             rows
         };
-        let label_w = 70.0;
+        let label_w = 110.0;
         let row_h = 26.0;
         let (rect, response) = ui.allocate_exact_size(egui::vec2(ui.available_width(), row_h * rows.len() as f32 + 18.0), egui::Sense::click_and_drag());
         let painter = ui.painter_at(rect);
@@ -254,7 +273,9 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
             if response.dragged() || response.clicked() {
                 app.time = ((pos.x - lane.left()) / lane.width() * duration).clamp(0.0, duration);
                 app.playing = false;
-                if let Some(row) = hs_agents::audit::inspect(&app.production).rows.iter().find(|r| r.start_seconds <= app.time as f64 && (app.time as f64) < r.end_seconds) { let time = app.time; app.select_line(row.line); app.time = time; }
+                let index = ((pos.y - lane.top()) / row_h).max(0.0) as usize;
+                let actor = rows.get(index).and_then(|(name, _)| name.strip_prefix("Puhe · ").or_else(|| name.strip_prefix("Liike · ")));
+                if let Some(row) = hs_agents::audit::inspect(&app.production).rows.iter().find(|r| r.start_seconds <= app.time as f64 && (app.time as f64) < r.end_seconds && actor.map_or(true, |name| r.actor.as_ref().is_some_and(|s| s.eq_ignore_ascii_case(name)))) { let time = app.time; app.select_line(row.line); app.time = time; }
             }
         }
     });
@@ -484,6 +505,7 @@ pub fn stage(app: &mut StudioApp, ctx: &egui::Context, frame: &eframe::Frame) {
                 }
             }
         } else {
+            if let Some(error)=&app.viewport.builder.last_error {ui.colored_label(Color32::LIGHT_RED,error);}
             ui.centered_and_justified(|ui| ui.label("Korjaa käsikirjoituksen virheet nähdäksesi näyttämön."));
         }
     });
