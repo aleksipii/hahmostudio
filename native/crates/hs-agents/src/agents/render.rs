@@ -234,7 +234,16 @@ impl StudioAgent for RustRenderAgent {
                     std::fs::write(&audio.0, hs_voice::wav::encode(mix)).map_err(fail)?;
                 }
                 let audio_arg = p.mix.is_some().then_some(audio.0.as_path());
-                let mut writer = Mp4Writer::create_with_audio(path, p.width, p.height, p.fps.0, audio_arg).map_err(fail)?;
+                // Englanninkielinen tekstitys: SRT-tiedosto videon viereen ja valittava raita MP4:ään.
+                let cues = crate::subtitles::cues(p);
+                let srt_path = path.with_extension("srt");
+                let subs = if cues.is_empty() {
+                    None
+                } else {
+                    std::fs::write(&srt_path, crate::subtitles::to_srt(&cues)).map_err(fail)?;
+                    Some(srt_path.as_path())
+                };
+                let mut writer = Mp4Writer::create_full(path, p.width, p.height, p.fps.0, audio_arg, subs).map_err(fail)?;
                 for i in 0..total {
                     if p.cancel.load(Ordering::Relaxed) {
                         writer.cancel();

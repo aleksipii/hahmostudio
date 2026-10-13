@@ -43,7 +43,7 @@ pub fn create_series(app: &mut StudioApp, root: PathBuf) {
         Ok(open) => {
             app.status = format!("Sarja luotu: {}", root.display());
             app.series = Some(open);
-            app.series_dirty = false;
+            app.series_saved_fingerprint = None;
         }
         Err(e) => app.status = format!("Sarjan luonti epäonnistui: {e}"),
     }
@@ -86,7 +86,7 @@ fn load_episode(app: &mut StudioApp, id: &str) {
             app.pipeline.mark_dirty(Slot::Script);
             app.pipeline.mark_dirty(Slot::Voice);
             app.run_pipeline();
-            app.series_dirty = false;
+            app.series_saved_fingerprint = None;
             app.status = if loaded.warnings.is_empty() {
                 format!("Avattu {}", series_label(app))
             } else {
@@ -112,7 +112,8 @@ pub fn save_current(app: &mut StudioApp) -> bool {
     let result = series.project.save_cast(&cast).and_then(|_| series.project.save_episode(&id, &episode));
     match result {
         Ok(()) => {
-            app.series_dirty = false;
+            app.series_saved_fingerprint = Some(fingerprint(app));
+            app.series_last_save = Some(std::time::Instant::now());
             app.status = format!("Tallennettu {}", series_label(app));
             true
         }
@@ -183,9 +184,7 @@ pub fn series_menu(app: &mut StudioApp, ui: &mut egui::Ui) {
             if let Some(s) = &mut app.series {
                 ui.horizontal(|ui| {
                     ui.label("Jakson nimi");
-                    if ui.text_edit_singleline(&mut s.title).changed() {
-                        app.series_dirty = true;
-                    }
+                    ui.text_edit_singleline(&mut s.title);
                 });
             }
         }
@@ -193,4 +192,47 @@ pub fn series_menu(app: &mut StudioApp, ui: &mut egui::Ui) {
     if app.series.is_some() && ui.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::S)) {
         save_current(app);
     }
+}
+
+/// Automaattitallennus: kun sarja on auki ja jakso on muuttunut, tallennetaan hiljaa
+/// enintään kerran `AUTOSAVE_SECONDS` välein. Edellinen versio säilyy (`jakso.edellinen.json`).
+pub const AUTOSAVE_SECONDS: u64 = 20;
+
+fn fingerprint(app: &StudioApp) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    app.script.hash(&mut h);
+    app.series.as_ref().map(|s| s.title.as_str()).hash(&mut h);
+    serde_json::to_string(&app.production.cast_params).unwrap_or_default().hash(&mut h);
+    let mut own: Vec<_> = app.production.own_audio.iter().map(|(k, a)| (k.clone(), a.samples.len())).collect();
+    own.sort();
+    own.hash(&mut h);
+    app.production.accepted_notices.hash(&mut h);
+    let speech = app.production.voice_lines.iter().filter(|l| l.speech.is_some()).count();
+    speech.hash(&mut h);
+    h.finish()
+}
+
+pub fn autosave(app: &mut StudioApp, ctx: &egui::Context) {
+    if app.series.is_none() {
+        return;
+    }
+    let now = fingerprint(app);
+    let Some(last) = app.series_saved_fingerprint else {
+        app.series_saved_fingerprint = Some(now);
+        return;
+    };
+    if now == last {
+        return;
+    }
+    let due = app.series_last_save.is_none_or(|t| t.elapsed() >= std::time::Duration::from_secs(AUTOSAVE_SECONDS));
+    if !due {
+        ctx.request_repaint_after(std::time::Duration::from_secs(1));
+        return;
+    }
+    if save_current(app) {
+        app.status = format!("Tallennettu automaattisesti {}", series_label(app));
+    }
+    app.series_saved_fingerprint = Some(now);
+    app.series_last_save = Some(std::time::Instant::now());
 }

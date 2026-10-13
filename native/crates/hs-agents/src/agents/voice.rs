@@ -159,6 +159,7 @@ impl StudioAgent for TimingAgent {
             *acc += d;
             Some(s as f32)
         }).collect();
+        p.beat_times = starts.iter().zip(&seconds).map(|(s, d)| (*s, *d as f32)).collect();
         p.clips = p
             .voice_lines
             .iter()

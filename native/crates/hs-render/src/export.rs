@@ -60,18 +60,44 @@ impl Mp4Writer {
 
     /// Kuten [`Mp4Writer::create`], mutta liittää mukaan ääniraidan (WAV, AAC 160 kbit/s).
     pub fn create_with_audio(path: &Path, width: u32, height: u32, fps: u32, audio: Option<&Path>) -> Result<Mp4Writer, RenderError> {
+        Self::create_full(path, width, height, fps, audio, None)
+    }
+
+    /// Kuten [`Mp4Writer::create_with_audio`], ja liittää lisäksi englanninkielisen tekstitysraidan
+    /// (SRT → `mov_text`, kielikoodi `eng`). Tekstitys on valittavissa oleva raita, ei kuvaan poltettu.
+    pub fn create_full(path: &Path, width: u32, height: u32, fps: u32, audio: Option<&Path>, subtitles: Option<&Path>) -> Result<Mp4Writer, RenderError> {
         if !width.is_multiple_of(2) || !height.is_multiple_of(2) {
             return Err(RenderError::Export("MP4-koon pitää olla parillinen".into()));
         }
         let ffmpeg = find_ffmpeg().ok_or_else(|| RenderError::Export("FFmpegiä ei löytynyt. Asenna se tai aseta HAHMOSTUDIO_FFMPEG.".into()))?;
+        let mut args: Vec<std::ffi::OsString> = Vec::new();
+        let mut inputs = 1;
+        let mut maps: Vec<String> = vec!["0:v".into()];
+        if let Some(a) = audio {
+            args.extend(["-i".into(), a.as_os_str().to_owned()]);
+            maps.push(format!("{inputs}:a"));
+            inputs += 1;
+        }
+        if let Some(sub) = subtitles {
+            args.extend(["-i".into(), sub.as_os_str().to_owned()]);
+            maps.push(format!("{inputs}:s"));
+        }
+        for m in &maps {
+            args.extend(["-map".into(), m.into()]);
+        }
+        if audio.is_some() {
+            args.extend(["-c:a", "aac", "-b:a", "160k", "-shortest"].map(Into::into));
+        } else {
+            args.push("-an".into());
+        }
+        if subtitles.is_some() {
+            args.extend(["-c:s", "mov_text", "-metadata:s:s:0", "language=eng", "-metadata:s:s:0", "title=English"].map(Into::into));
+        }
         let child = Command::new(ffmpeg)
             .args(["-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s"])
             .arg(format!("{width}x{height}"))
             .args(["-r", &fps.to_string(), "-i", "-"])
-            .args(match audio {
-                Some(a) => vec!["-i".into(), a.as_os_str().to_owned(), "-map".into(), "0:v".into(), "-map".into(), "1:a".into(), "-c:a".into(), "aac".into(), "-b:a".into(), "160k".into(), "-shortest".into()],
-                None => vec!["-an".into()],
-            } as Vec<std::ffi::OsString>)
+            .args(&args)
             .args(["-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart"])
             .arg(path)
             .stdin(Stdio::piped())

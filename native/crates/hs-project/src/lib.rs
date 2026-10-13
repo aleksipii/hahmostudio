@@ -331,7 +331,12 @@ impl SeriesProject {
             speech,
         };
         let json = serde_json::to_vec_pretty(&manifest).map_err(|e| invalid(e.to_string()))?;
-        write_atomic(&dir.join("jakso.json"), &json)?;
+        // Edellinen versio säilyy yhden tallennuksen verran (automaattitallennus ei tuhoa työtä).
+        let current = dir.join("jakso.json");
+        if current.is_file() {
+            std::fs::copy(&current, dir.join("jakso.edellinen.json"))?;
+        }
+        write_atomic(&current, &json)?;
         if self.manifest.episodes[entry_index].title != episode.title {
             self.manifest.episodes[entry_index].title = episode.title.clone();
             self.write_manifest()?;

@@ -175,3 +175,16 @@ fn folder_can_be_moved() {
     assert_eq!(loaded.speech_cache.len(), 3);
     let _ = std::fs::remove_dir_all(&moved);
 }
+
+#[test]
+fn previous_version_survives_the_next_save() {
+    let dir = temp_dir("backup");
+    let mut series = SeriesProject::create(&dir, "S", cast()).unwrap();
+    let id = series.add_episode(&Episode { title: "1".into(), script: "PIPSA: One.".into(), ..Default::default() }).unwrap();
+    series.save_episode(&id, &Episode { title: "1".into(), script: "PIPSA: Two.".into(), ..Default::default() }).unwrap();
+    let ep = dir.join("jaksot").join(&id);
+    let old: EpisodeManifest = serde_json::from_slice(&std::fs::read(ep.join("jakso.edellinen.json")).unwrap()).unwrap();
+    let new: EpisodeManifest = serde_json::from_slice(&std::fs::read(ep.join("jakso.json")).unwrap()).unwrap();
+    assert_eq!((old.script.as_str(), new.script.as_str()), ("PIPSA: One.", "PIPSA: Two."));
+    let _ = std::fs::remove_dir_all(&dir);
+}

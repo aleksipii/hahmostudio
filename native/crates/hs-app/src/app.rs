@@ -41,7 +41,8 @@ pub struct StudioApp {
     pub camera: CameraState,
     pub left_tab: LeftTab,
     pub series: Option<crate::project_ui::OpenSeries>,
-    pub series_dirty: bool,
+    pub series_saved_fingerprint: Option<u64>,
+    pub series_last_save: Option<Instant>,
     screenshot: Option<PathBuf>,
     screenshot_frames: u32,
 }
@@ -112,7 +113,8 @@ impl StudioApp {
             voice,
             camera: CameraState::default(),
             series: None,
-            series_dirty: false,
+            series_saved_fingerprint: None,
+            series_last_save: None,
             left_tab: match options.tab.as_deref() {
                 Some("ääni" | "voice") => LeftTab::Voice,
                 Some("esitys" | "performance") => LeftTab::Performance,
@@ -253,6 +255,7 @@ impl eframe::App for StudioApp {
             }
         }
         crate::voice_ui::update(self, ctx);
+        crate::project_ui::autosave(self, ctx);
         if self.playing && !crate::voice_ui::has_player(self) {
             let dt = ctx.input(|i| i.stable_dt).min(0.1);
             self.time += dt;
