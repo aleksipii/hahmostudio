@@ -10,6 +10,8 @@ pub struct CommandExample {
 }
 
 pub const COMMANDS: &[CommandExample] = &[
+    CommandExample { example: "sit on chair 2s", description: "Sit on the actor-associated chair and remain seated" },
+    CommandExample { example: "stand up 2s", description: "Rise from the actor-associated chair" },
     CommandExample {
         example: "walk to the left for 2 seconds",
         description: "Walk left for an explicit duration",
@@ -190,8 +192,10 @@ pub fn normalize_tag(tag: &str) -> Result<Option<String>, String> {
         "nod" | "nodding" => "nyökkää",
         "wait" | "waiting" | "pause" | "pausing" => "odota",
         "text" | "texting" | "tap" | "tapping" | "type" | "typing" => "näpyttele puhelinta",
+        "sit" | "sitting" => "istu tuolille",
+        "stand" | "standing" => "nouse tuolilta",
         // Recognized English commands outside the rendered domain stay errors.
-        "sit" | "sitting" | "stand" | "standing" | "open" | "close" | "fly" | "dance" | "turn" => {
+        "open" | "close" | "fly" | "dance" | "turn" => {
             return Err(error(tag))
         }
         _ => return Ok(None),
@@ -205,6 +209,14 @@ pub fn normalize_tag(tag: &str) -> Result<Option<String>, String> {
             "front" | "forward" | "forwards" | "straight ahead" | "to the front" => " suoraan",
             // Direction is required; never silently choose right or a target.
             _ => return Err(error(tag)),
+        },
+        "istu tuolille" => {
+            if !matches!(rest.as_str(), "on chair" | "on the chair") { return Err(error(tag)); }
+            ""
+        },
+        "nouse tuolilta" => {
+            if rest != "up" { return Err(error(tag)); }
+            ""
         },
         "vilkuta" => {
             if !matches!(rest.as_str(), "" | "hello" | "goodbye") {
@@ -294,6 +306,8 @@ mod tests {
             ("waiting for 2 seconds", "odota 2s"),
             ("texting on the phone 3s", "näpyttele puhelinta 3s"),
             ("tap phone", "näpyttele puhelinta"),
+            ("sit on the chair for 2 seconds", "istu tuolille 2s"),
+            ("standing up 2s", "nouse tuolilta 2s"),
             ("typing on phone 2s", "näpyttele puhelinta 2s"),
             ("look toward camera", "look at camera"),
             ("camera close up", "shot close-up"),

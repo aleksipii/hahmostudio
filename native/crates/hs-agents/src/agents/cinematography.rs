@@ -124,7 +124,7 @@ impl CameraTrack {
                 Some(CameraHint::HighAngle) => push(ShotKind::HighAngle, start, end, mk.is_locomotion()),
                 None => match mk {
                     MotionKind::Walk(_) | MotionKind::Run(_) => push(ShotKind::Wide, start, end, true),
-                    MotionKind::Jump | MotionKind::Crouch | MotionKind::Wave => push(ShotKind::Full, start, end, false),
+                    MotionKind::Sit | MotionKind::Stand | MotionKind::Jump | MotionKind::Crouch | MotionKind::Wave => push(ShotKind::Full, start, end, false),
                     MotionKind::Nod => push(ShotKind::CloseUp, start, end, false),
                     MotionKind::PhoneTap => {
                         if end - start >= 1.6 {
@@ -209,7 +209,8 @@ impl CameraTrack {
         for k in -8..=8 {
             let dt = k as f32 * 0.05;
             let w = (-(dt * dt) / (2.0 * 0.18 * 0.18)).exp();
-            let (p, _) = m.root_at(t + dt);
+            let (mut p, _) = m.root_at(t + dt);
+            if let Some(chair) = m.chair_at(t + dt) { p += (chair.position - chair.standing_position) * chair.seated_weight; }
             acc += Vec3::new(p.x, 0.0, p.z) * w;
             wsum += w;
         }
@@ -221,7 +222,16 @@ impl CameraTrack {
             return (Camera { eye: Vec3::new(0.0, 1.0, 4.0), target: Vec3::new(0.0, 0.7, 0.0), fov_y: self.fov_y }, Lights::default(), ShotKind::Wide);
         };
         let s = shot.subject.min(self.heights.len().saturating_sub(1));
-        let h = self.heights.get(s).copied().unwrap_or(1.2);
+        let visible_height = |index: usize, fallback: f32| {
+            let height = self.heights.get(index).copied().unwrap_or(fallback);
+            self.motion.get(index).filter(|m| m.chair_at(t).is_some_and(|c| c.seated_weight > 0.0)).map_or(height, |m| {
+                let humanoid = &m.motion.humanoid;
+                let pose = m.evaluate(&self.timeline, t).pose;
+                let world = humanoid.skeleton.world(&pose);
+                height + world[humanoid.head].pos.y - humanoid.skeleton.bind_positions()[humanoid.head].y
+            })
+        };
+        let h = visible_height(s, 1.2);
         let head = self.head_heights.get(s).copied().unwrap_or(0.2);
         let anchor = if shot.tracking { self.smooth_root(s, t) } else { self.smooth_root(s, shot.start + 0.4) };
         let jump = self.motion.get(s).map_or(0.0, |m| m.root_at(t).0.y);
@@ -238,7 +248,7 @@ impl CameraTrack {
             ShotKind::TwoShot => {
                 let other = shot.partner.and_then(|p| self.motion.get(p)).map_or(anchor, |m| self.smooth_root_of(m, shot.start + 0.4));
                 let spread = (other.x - anchor.x).abs();
-                let h2 = self.heights.get(shot.partner.unwrap_or(s)).copied().unwrap_or(h).max(h);
+                let h2 = visible_height(shot.partner.unwrap_or(s), h).max(h);
                 ((h2 * 0.8).max((spread + h2 * 0.9) / aspect.max(0.3)), h2 * 0.62, 0.06)
             }
             ShotKind::LowAngle => (h * 0.95, h * 0.62 + jump * 0.5, -0.32),
@@ -266,7 +276,7 @@ impl CameraTrack {
             if let Some(p) = shot.partner.filter(|p| *p != s) {
                 // Kamera kumppanin olan takana ja vähän sivussa, katse puhujan kasvoihin.
                 let other = self.motion.get(p).map_or(anchor, |m| self.smooth_root_of(m, shot.start + 0.4));
-                let ph = self.heights.get(p).copied().unwrap_or(h);
+                let ph = visible_height(p, h);
                 let side = (other.x - anchor.x).signum();
                 let shoulder = Vec3::new(other.x, ph * 0.8, other.z);
                 // Kumppanin pää ja olka jäävät etualalle kuvan reunaan, puhuja kolmen neljäsosan kulmasta.

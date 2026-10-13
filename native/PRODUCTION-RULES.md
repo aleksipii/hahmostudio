@@ -77,7 +77,7 @@ Hyväksyntä ja vanhentuneen esikatselun suojaus ovat edelleen pakollisia.
 Sääntöpohjainen ei tarkoita todistettua virheettömyyttä. Tämä on rajatun
 animaatiokielen ja toteutettujen resurssien tarkistus, ei yleinen englannin
 ymmärtäjä, fysikaalinen törmäyssimulaatio tai kaikille kuvakulmille/ilmeille
-ammattitason laatutakuu. Esineen siirto kädestä toiselle, istuminen, ovien
+ammattitason laatutakuu. Esineen siirto kädestä toiselle, sohvalle istuminen, ovien
 avaaminen ja muut vielä toteuttamattomat toiminnot tarvitsevat oikean uuden
 animaatiototeutuksen ja testit; niitä ei nimetä olemassa olevaksi liikkeeksi.
 Hahmojen/lavasteiden fyysinen kontakti ja lopullinen ilme vaativat katselmoinnin.
@@ -90,3 +90,35 @@ Kokoron synteesin/kuuntelun hyväksyntää. Mac/Metal ja fyysiset laitteet jää
 laitetestattaviksi. MP4:n tekninen QC ei yksin todista taiteellista laatua.
 
 Esimerkki: [english-directed.txt](examples/english-directed.txt).
+
+## Ensimmäinen tuolikontakti
+
+```text
+[background living room]
+KALLE: [sit on chair 2s]
+KALLE: We can talk here. [wait 2s]
+KALLE: [nodding 1s]
+KALLE: [stand up 2s]
+```
+
+`[sit on chair]` / `[istu tuolille]` pyytää hahmolle yhden oikean 3D-tuolin.
+Tuoli mitoitetaan hahmon jalkojen/lantion perusteella ja sijoitetaan ensimmäisen
+istumisen seisomapaikan taakse, hahmon suuntaan. Se on näkyvissä ennen istumista ja pysyy paikallaan
+nousemisen jälkeen. Tämä on eksplisiittisesti pyydetty vakiotuoli, ei tuntemattoman
+lavastekalusteen tunnistus. Jokaisella istuvalla hahmolla on oma tuoli; tuolin
+jakamista ei tueta. Tuolia ei liikuteta eikä soviteta automaattisesti muihin
+lavastekalusteisiin. Tarkista esikatselusta kalusteiden vapaa tila.
+
+Istuminen ja `[stand up]` / `[nouse tuolilta]` tarvitsevat vähintään yhden sekunnin.
+Lantio siirtyy istuimelle taaksepäin ja jalat pysyvät seisomapaikan lattiakohteissa.
+Asento vaihtuu pehmeästi, jatkuu puheen/tauon/nyökkäyksen ajan ja käyttää samaa
+istuinkorkeutta kuin tuolin verkko. Jalkojen IK pitää nilkat lattiakohteissa.
+Nouseminen tarvitsee edeltävän istumisen. Kahdesti istuminen, vartalon kääntö tai
+muut liikkeet istuen estetään. Oman tuolin kohdalle ja suuntaan pitää palata ennen
+uudelleenistumista; tuoli ei seuraa kävelyä. Lavastetta ei vaihdeta tuolin sisältävän
+kohtauksen sisällä. Auto-/puhelinlavasteisiin erillistä tuolia ei hyväksytä.
+
+Kamera kohdistaa istuvan hahmon lähikuvan toteutuneeseen pään korkeuteen.
+Kontaktin tila näkyy vientiraportissa. Esimerkki: [english-chair.txt](examples/english-chair.txt).
+Tämä laajennus ei vielä toteuta ovia, maailmanesineeseen tarttumista tai esineen
+luovutusta; näiden ohjeet pysyvät virheinä. Ei yleistä törmäys- tai kontaktifysiikkaa.

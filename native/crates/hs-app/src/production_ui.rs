@@ -93,6 +93,7 @@ pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
                     ui.label(format!("{} ({:.2} s) · {} · esine {} · {} ({})",row.motion,row.motion_seconds,background,prop,row.shots.join(" → "),if row.authored_camera{"kirjoitettu"}else{"kuvaussääntö"}));
                     let look=match &row.look_at {Some(hs_core::LookTarget::Camera)=>"kamera",Some(hs_core::LookTarget::Character(name))=>name,None=>"oletus"};
                     ui.label(format!("Ilme {:?} · katsetavoite {} · puhelin {}",row.expression,look,if row.phone_visible{"näkyy"}else{"ei näy"}));
+                    if let Some(contact) = &row.chair_contact { ui.label(format!("Tuolikontakti: {contact}")); }
                     ui.separator();
                 }
             });

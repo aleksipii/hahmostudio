@@ -22,6 +22,7 @@ pub struct Row {
     pub end_seconds: f64,
     pub shots: Vec<String>,
     pub authored_camera: bool,
+    pub chair_contact: Option<String>,
 }
 #[derive(Clone, Debug, Serialize)]
 pub struct Report {
@@ -202,6 +203,8 @@ pub fn inspect(p: &Production) -> Report {
     let mut props = BTreeMap::<String, Option<String>>::new();
     let mut expressions = BTreeMap::<String, Expression>::new();
     let mut looks = BTreeMap::<String, LookTarget>::new();
+    let mut seated = BTreeMap::<String, bool>::new();
+    let mut chair_background: Option<String> = None;
     for beat in &fresh.beats {
         let actor = beat.speaker.as_ref().map(|s| s.to_lowercase());
         if let Some(name) = &actor {
@@ -244,6 +247,63 @@ pub fn inspect(p: &Production) -> Report {
         }
         if let Some(bg) = &beat.background {
             background = bg.clone();
+        }
+        let mut chair_contact = None;
+        if chair_background
+            .as_ref()
+            .is_some_and(|bg| bg != &background)
+        {
+            report.diagnostics.push(Diagnostic::error(beat.line, "Tuolin sisältävässä kohtauksessa lavastetta ei voi vaihtaa. Aloita uusi kohtaus/jakso."));
+        }
+        if let Some(name) = &actor {
+            let was_seated = seated.get(name).copied().unwrap_or(false);
+            match beat.motion {
+                MotionKind::Sit => {
+                    if was_seated {
+                        report
+                            .diagnostics
+                            .push(Diagnostic::error(beat.line, "Hahmo istuu jo tuolilla."));
+                    }
+                    if background.starts_with("car") || background.starts_with("phone") {
+                        report.diagnostics.push(Diagnostic::error(
+                            beat.line,
+                            "Tässä lavasteessa erillistä tuolikontaktia ei tueta.",
+                        ));
+                    }
+                    if beat.seconds < 1.0 {
+                        report.diagnostics.push(Diagnostic::error(
+                            beat.line,
+                            "Istuminen tarvitsee vähintään 1 sekunnin.",
+                        ));
+                    }
+                    chair_background.get_or_insert(background.clone());
+                    seated.insert(name.clone(), true);
+                    chair_contact = Some("istuu omalla tuolilla".into());
+                }
+                MotionKind::Stand => {
+                    if !was_seated {
+                        report.diagnostics.push(Diagnostic::error(
+                            beat.line,
+                            "Nouseminen tarvitsee edeltävän tuolille istumisen.",
+                        ));
+                    }
+                    seated.insert(name.clone(), false);
+                    chair_contact = Some("nousee omalta tuolilta".into());
+                }
+                MotionKind::Wait | MotionKind::Nod if was_seated => {
+                    chair_contact = Some("istuu omalla tuolilla".into());
+                }
+                _ if was_seated => {
+                    report.diagnostics.push(Diagnostic::error(beat.line, "Nouse tuolilta ennen tätä liikettä. Istuen tuetaan tällä hetkellä puhetta, taukoa ja nyökkäystä."));
+                }
+                _ => {}
+            }
+            if (was_seated || beat.motion == MotionKind::Sit) && beat.view.is_some() {
+                report.diagnostics.push(Diagnostic::error(
+                    beat.line,
+                    "Vartaloa ei voi kääntää tuolikontaktissa. Käytä erillistä katsetavoitetta.",
+                ));
+            }
         }
         if !hs_render::environment::KNOWN.contains(&background.as_str()) {
             report.diagnostics.push(Diagnostic::error(
@@ -320,6 +380,27 @@ pub fn inspect(p: &Production) -> Report {
                 beat.line,
                 "Toteutunut tapahtuma ei vastaa käsikirjoituksen ohjetta.",
             ));
+        }
+        if beat.motion == MotionKind::Sit {
+            if let Some(motion) = actor
+                .as_ref()
+                .and_then(|name| {
+                    p.cast
+                        .iter()
+                        .position(|c| c.character.params.name.eq_ignore_ascii_case(name))
+                })
+                .and_then(|i| p.motion.get(i))
+            {
+                if let Some(chair) = motion.chair_at(event.start.seconds() as f32) {
+                    let (root, yaw) = motion.root_at(event.start.seconds() as f32);
+                    let angle = (yaw - chair.yaw).sin().atan2((yaw - chair.yaw).cos()).abs();
+                    if glam::Vec3::new(root.x, 0.0, root.z).distance(chair.standing_position) > 0.02
+                        || angle > 0.05
+                    {
+                        report.diagnostics.push(Diagnostic::error(beat.line, "Hahmo ei ole oman tuolinsa kohdalla ja suunnassa. Tuolia ei siirretä hahmon mukana."));
+                    }
+                }
+            }
         }
         let start = event.start.seconds();
         let end = timeline
@@ -408,6 +489,7 @@ pub fn inspect(p: &Production) -> Report {
             end_seconds: end,
             shots,
             authored_camera: beat.camera.is_some(),
+            chair_contact,
         });
     }
     report

@@ -41,6 +41,10 @@ pub enum MotionKind {
     Nod,
     /// Puhelimen näpyttely: peukalo ja sormet IK:lla ruudun kohteisiin.
     PhoneTap,
+    /// Sit on an explicit actor-associated chair; posture persists until Stand.
+    Sit,
+    /// Rise from the actor-associated chair.
+    Stand,
 }
 
 impl MotionKind {
@@ -61,6 +65,8 @@ impl MotionKind {
             MotionKind::Crouch => "Kyykistys",
             MotionKind::Nod => "Nyökkäys",
             MotionKind::PhoneTap => "Puhelimen näpyttely",
+            MotionKind::Sit => "Istuminen tuolille",
+            MotionKind::Stand => "Nouseminen tuolilta",
         }
     }
 }

@@ -144,6 +144,7 @@ impl ProceduralMotion {
     /// Laskee juuren radan kerran koko aikajanalle.
     pub fn prepare(self, timeline: &Timeline) -> PreparedMotion {
         let events: Vec<TimelineEvent> = timeline.events.iter().filter(|e| self.applies(e)).cloned().collect();
+        let has_chair = events.iter().any(|e| matches!(e.kind, EventKind::Motion { motion: MotionKind::Sit, .. }));
         let duration = timeline.duration.seconds() as f32;
         let n = (duration * PATH_HZ).ceil() as usize + 2;
         let leg = self.humanoid.pelvis_height();
@@ -154,7 +155,8 @@ impl ProceduralMotion {
         for k in 0..n {
             let t = k as f32 * dt;
             let mut velocity = Vec3::ZERO;
-            let mut target_yaw = 0.0;
+            // Chair contact preserves authored orientation through Sit/Stand and idle.
+            let mut target_yaw = if has_chair { yaw } else { 0.0 };
             let mut jump_y = 0.0;
             for e in &events {
                 let (s, d) = (e.start.seconds() as f32, e.duration.seconds() as f32);
@@ -346,7 +348,7 @@ impl PreparedMotion {
                         MotionKind::PhoneTap => {
                             phone = Some((tau, w, true));
                         }
-                        MotionKind::Wait => {}
+                        MotionKind::Wait | MotionKind::Sit | MotionKind::Stand => {}
                     }
                 }
                 _ => {}
@@ -400,6 +402,10 @@ impl PreparedMotion {
         }
         pose.root_pos.y = path.pos.y;
 
+        if let Some(chair) = self.chair_at(t) {
+            crate::seating::apply(h, &mut pose, &chair);
+        }
+
         let props = PropFrame {
             phone: phone.map(|(tau, w, tapping)| {
                 let t_phone = if tapping { tau } else { 0.0 };
@@ -428,6 +434,7 @@ impl PreparedMotion {
         pose.local[h.hem_front] = Quat::from_rotation_x((-cloth.z * 0.05 + swing).clamp(-0.6, 0.6));
         pose.local[h.hem_back] = Quat::from_rotation_x((-cloth.z * 0.05 - swing).clamp(-0.6, 0.6));
 
+        let root = Vec3::new(pose.root_pos.x, path.pos.y, pose.root_pos.z);
         CharacterFrame {
             pose,
             props,
@@ -435,7 +442,7 @@ impl PreparedMotion {
             mouth,
             motion,
             speaking,
-            root: path.pos,
+            root,
             yaw: path.yaw,
             velocity: self.velocity(t),
         }

@@ -320,6 +320,15 @@ fn classify(tag: &str) -> Result<Tag, String> {
 fn classify_canonical(tag: &str) -> Result<Tag, String> {
     let low = lower(tag);
     let low = low.trim();
+    for (prefix, command, motion) in [("istu tuolille", "sit on chair", MotionKind::Sit), ("nouse tuolilta", "stand up", MotionKind::Stand)] {
+        if let Some(rest) = low.strip_prefix(prefix) {
+            if !rest.is_empty() && !rest.starts_with(' ') { return Err("Tuntematon tuolikontakti.".into()); }
+            let canonical = english::normalize_tag(&format!("{command}{rest}"))?.ok_or("Tuntematon tuolikontakti.")?;
+            let duration = duration_in(&canonical);
+            if duration.is_some_and(|d| d < 1.0) { return Err("Tuolille istuminen ja nouseminen tarvitsevat vähintään 1 sekunnin.".into()); }
+            return Ok(Tag::Motion(motion, duration));
+        }
+    }
     if let Some(rest) = strip_keyword(tag, &["expression", "ilme"]) {
         let expression = match lower(rest).as_str() {
             "neutral" | "neutraali" => Some(Expression::Neutral),
@@ -1247,3 +1256,20 @@ mod tests {
 }
 
 pub mod assist;
+
+#[cfg(test)]
+mod chair_grammar_tests {
+    use super::*;
+    #[test]
+    fn chair_actions_are_explicit_bounded_and_never_inferred_from_speech() {
+        for (tag, expected) in [("sit on chair 2s", MotionKind::Sit), ("sitting on the chair 1s", MotionKind::Sit), ("stand up 2s", MotionKind::Stand), ("istu tuolille 2s", MotionKind::Sit), ("nouse tuolilta 2s", MotionKind::Stand)] {
+            let p=parse(&format!("KALLE: [{tag}]"));
+            assert!(p.is_assemblable(), "{tag}: {:?}", p.diagnostics);
+            assert_eq!(p.beats[0].motion, expected);
+        }
+        for tag in ["sit down", "sit on sofa", "sit on chair quickly", "sit on chair 0.5s", "stand up 0.5s", "sit on chair 1e1s", "istu tuolille väärin", "stand beside chair"] {
+            assert!(!parse(&format!("KALLE: [{tag}]")).is_assemblable(), "{tag}");
+        }
+        assert_eq!(parse("KALLE: Please sit on the chair.").beats[0].motion, MotionKind::Wait);
+    }
+}

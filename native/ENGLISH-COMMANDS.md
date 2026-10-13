@@ -18,6 +18,8 @@ moniosainen komento tai tuntematon muunnin antaa virheen.
 | Juoksu | `[run right 3s]`, `[running to the right for 3 seconds]` |
 | Vilkutus | `[wave hello 2s]`, `[waving goodbye 2s]` |
 | Hyppy | `[jump 1.2s]`, `[jumping for 1.2 seconds]` |
+| Tuolille istuminen | `[sit on chair 2s]`, `[sitting on the chair 2s]` |
+| Tuolilta nouseminen | `[stand up 2s]`, `[standing up 2s]` |
 | Kyykky | `[crouch 2s]`, `[crouching for 2 seconds]` |
 | Nyökkäys | `[nod 2s]`, `[nodding for 2 seconds]` |
 | Tauko | `[wait for 2 seconds]`, `[pausing 2s]` |
@@ -32,6 +34,10 @@ Kävelylle ja juoksulle annetaan suunta: left/right/front/forward/straight ahead
 (tai tuettu `to the ...` -muoto). `[walk]`, `[run backward 2s]`,
 `[walk to the moon]` ja `[wave angrily]` eivät valitse arvaamalla toimintaa.
 Liikkeen kesto on 0,5–20 sekuntia; koko jakson raja on 60 sekuntia.
+Tuolille istuminen ja nouseminen tarvitsevat vähintään 1 sekunnin.
+Istuma-asento jatkuu nousemiseen asti; puhe, tauko ja nyökkäys toimivat istuen.
+Muut liikkeet tarvitsevat ensin nousemisen. Katso tuolin sijoittelu ja kontaktirajat
+[tuolikontaktin ohjeesta](PRODUCTION-RULES.md#ensimmäinen-tuolikontakti).
 Puhetta ei nopeuteta mahtumaan lyhyeen liikeohjeeseen.
 
 ## Editorin ehdotukset

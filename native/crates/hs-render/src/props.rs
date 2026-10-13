@@ -4,6 +4,50 @@ use glam::{Quat, Vec3};
 use hs_character::{CharacterMesh, MeshBuilder};
 use hs_motion::hands::PhoneState;
 
+/// Fixed chair using the exact contact dimensions of the motion solver.
+pub fn chair(contact: &hs_motion::seating::ChairContact) -> CharacterMesh {
+    let mut b = MeshBuilder::new();
+    let r = Quat::from_rotation_y(contact.yaw);
+    let p = |v: Vec3| contact.position + r * v;
+    let wood = [0x85, 0x59, 0x39];
+    let thickness = contact.width * 0.06;
+    b.cuboid(
+        p(Vec3::new(0.0, contact.seat_height - thickness * 0.5, 0.0)),
+        Vec3::new(contact.width * 0.5, thickness * 0.5, contact.depth * 0.5),
+        r,
+        wood,
+        1.0,
+    );
+    let back_height = contact.width * 0.85;
+    b.cuboid(
+        p(Vec3::new(
+            0.0,
+            contact.seat_height + back_height * 0.5,
+            -contact.depth * 0.5,
+        )),
+        Vec3::new(contact.width * 0.5, back_height * 0.5, thickness * 0.5),
+        r,
+        wood,
+        1.0,
+    );
+    for x in [-1.0, 1.0] {
+        for z in [-1.0, 1.0] {
+            b.cuboid(
+                p(Vec3::new(
+                    x * (contact.width * 0.5 - thickness),
+                    contact.seat_height * 0.5,
+                    z * (contact.depth * 0.5 - thickness),
+                )),
+                Vec3::new(thickness * 0.5, contact.seat_height * 0.5, thickness * 0.5),
+                r,
+                wood,
+                1.0,
+            );
+        }
+    }
+    b.finish()
+}
+
 /// Puhelin: runko, ruutu ja näppäimet; painettu näppäin hehkuu.
 pub fn phone(state: &PhoneState) -> CharacterMesh {
     let mut b = MeshBuilder::new();
@@ -111,6 +155,43 @@ pub fn held(id: &str, palm: Vec3, side: f32) -> Option<CharacterMesh> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn chair_mesh_matches_fixed_contact_and_reaches_floor() {
+        let contact = hs_motion::seating::ChairContact {
+            position: glam::Vec3::new(2.0, 0.0, -1.0),
+            standing_position: glam::Vec3::new(2.0, 0.0, -0.5),
+            yaw: 0.7,
+            seat_height: 0.45,
+            width: 0.5,
+            depth: 0.38,
+            seated_weight: 1.0,
+        };
+        let mesh = super::chair(&contact);
+        assert!(mesh.triangle_count() >= 72);
+        assert!(mesh
+            .vertices
+            .iter()
+            .all(|v| v.position.iter().all(|x| x.is_finite())));
+        let min_y = mesh
+            .vertices
+            .iter()
+            .map(|v| v.position[1])
+            .fold(f32::INFINITY, f32::min);
+        assert!(min_y.abs() < 1e-5);
+        let mut standing = contact;
+        standing.seated_weight = 0.0;
+        let other = super::chair(&standing);
+        assert_eq!(
+            mesh.vertices.iter().map(|v| v.position).collect::<Vec<_>>(),
+            other
+                .vertices
+                .iter()
+                .map(|v| v.position)
+                .collect::<Vec<_>>()
+        );
+    }
+
+
     #[test]
     fn every_held_prop_builds() {
         for id in super::HELD {

@@ -19,6 +19,7 @@ pub mod hands;
 pub mod humanoid;
 pub mod ik;
 pub mod procedural;
+pub mod seating;
 pub mod secondary;
 pub mod skeleton;
 

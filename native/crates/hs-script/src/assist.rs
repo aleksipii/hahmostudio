@@ -300,7 +300,7 @@ mod tests {
             "Kalle walks into the kitchen and opens a door",
             "Don't walk left",
             "Walk to the moon",
-            "Sit on the chair",
+            "Sit on the sofa",
         ] {
             assert!(
                 inspect(source).unwrap()[0].interpretation.is_none(),

@@ -46,7 +46,8 @@ impl FrameBuilder {
                             EventKind::CharacterView{character,..}=>match character {Some(name)=>name.eq_ignore_ascii_case(&p.cast[a].character.params.name),None=>p.cast[a].lead},
                             _=>false,
                         });
-                        let still = !authored_view && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
+                        let seated = p.motion[a].chair_at(t).is_some();
+                        let still = !seated && !authored_view && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
                         let dx = fb.root.x - fa.root.x;
                         if still && dx.abs() > 0.05 {
                             turns[a] = dx.signum() * 0.5 * ease;
@@ -105,6 +106,7 @@ impl FrameBuilder {
             let shadow_floor = environment::floor_color(&env_id);
             let scale = 1.0 / (1.0 + f.root.y * 2.5);
             items.push(DrawItem::rigid(Arc::new(props::contact_shadow(Vec3::new(f.root.x, 0.0, f.root.z), member.character.humanoid.proportions.height * 0.22 * scale, shadow_floor))));
+            if let Some(chair) = motion.chair_at(t) { items.push(DrawItem::rigid(Arc::new(props::chair(&chair)))); }
             let skin = skeleton.skin_matrices(&f.pose);
             // Esine oikeassa kädessä: viimeisin [esine ...] -ohje tälle hahmolle.
             let lead = std::ptr::eq(member, &p.cast[0]);
