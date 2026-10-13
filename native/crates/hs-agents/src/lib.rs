@@ -201,3 +201,5 @@ pub mod audit;
 
 pub mod motion_library;
 pub mod motion_assets;
+
+pub mod motion_plugin;

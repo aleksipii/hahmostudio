@@ -374,6 +374,9 @@ fn main() -> ExitCode {
             println!("{}",serde_json::to_string_pretty(&summary).map_err(|e|e.to_string())?);
             Ok(())
         }),
+        "motion-plugin-info" => {
+            serde_json::to_string_pretty(&hs_agents::motion_plugin::plugin_info()).map(|json| println!("{json}")).map_err(|e|e.to_string())
+        },
         "motion-catalog" => {
             println!("{}",serde_json::to_string_pretty(&hs_agents::motion_library::catalog()).unwrap());
             Ok(())

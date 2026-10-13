@@ -186,3 +186,5 @@ Puhe voi pidentää kohtausta, mutta ei kirjoitettua liikkeen kestoa.
 Sopimus ja hyväksynnän rajat: [PRODUCTION-RULES.md](PRODUCTION-RULES.md).
 
 Valmiit liikevariaatiot ja 3D-hahmot sisältävä glTF-vienti: [MOTION-ASSETS.md](MOTION-ASSETS.md).
+
+Sovelluksen sisäinen 32 400 variaation kirjasto ja projektihahmoihin sovitus: [MOTION-PLUGIN.md](MOTION-PLUGIN.md).

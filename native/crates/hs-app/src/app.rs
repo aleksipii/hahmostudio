@@ -317,7 +317,7 @@ impl eframe::App for StudioApp {
             crate::production_ui::show(self, ctx);
         } else { panels::stage(self, ctx, frame); }
         panels::dialogs(self, ctx);
-        if let Some(next)=self.script_assist.preview(ctx,&self.script) {
+        if let Some(next)=self.script_assist.preview(ctx,&self.script,&self.production) {
             self.script=next;self.script_changed();
         }
         self.handle_screenshot(ctx);

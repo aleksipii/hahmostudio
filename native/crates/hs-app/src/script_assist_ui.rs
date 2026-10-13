@@ -7,6 +7,7 @@ use hs_script::assist::{self, EditProposal, LineCheck};
 pub struct ScriptAssistState {
     pub line: usize,
     library: crate::motion_assets_ui::MotionAssetsState,
+    plugin: crate::motion_plugin_ui::MotionPluginState,
     query: String,
     source: String,
     checks: Vec<LineCheck>,
@@ -42,6 +43,7 @@ impl ScriptAssistState {
             self.suggestion_key=Some(key);
         }
         egui::ScrollArea::vertical().id_salt("script-assist").max_height(240.0).show(ui,|ui| {
+            self.plugin.ui(ui, script, p);
             self.library.ui(ui, script);
             egui::CollapsingHeader::new("Rivikohtainen tarkistus").show(ui,|ui| {
             ui.label("Valitse rivi tarkistaaksesi sen ohjeet. Puuttuva ääni tarkistetaan myös Vienti-välilehdellä.");
@@ -84,7 +86,7 @@ impl ScriptAssistState {
             if let Some(error)=&self.error {ui.colored_label(egui::Color32::LIGHT_RED,error);}
         });
     }
-    pub fn preview(&mut self, ctx: &egui::Context, script: &str) -> Option<String> {
+    pub fn preview(&mut self, ctx: &egui::Context, script: &str, p: &hs_agents::Production) -> Option<String> {
         let mut accepted = None;
         if let Some(proposal) = self.preview.clone() {
             egui::Modal::new(egui::Id::new("review-script-proposal"))
@@ -119,7 +121,8 @@ impl ScriptAssistState {
                 });
         }
         if self.preview.is_none() && accepted.is_none() {
-            accepted = self.library.preview(ctx, script);
+            accepted = self.plugin.preview(ctx, script, p);
+            if accepted.is_none() { accepted = self.library.preview(ctx, script); }
         }
         accepted
     }
