@@ -950,3 +950,56 @@ englannin ymmärtämistä. Katsetavoite on rajattu pään kääntö, ei tarkka s
 Istuminen, ovet ja esineen luovutus vaativat uuden aidon liike-/kontaktitoteutuksen;
 niitä ei korvata arvatulla liikkeellä. Seuraava rajattu toteutus valitaan todellisesta
 jakson käsikirjoituksesta ja hyväksytään kuvan/puheen katselmoinnissa.
+
+## Codex: ensimmäinen oikea tuolikontakti — 13.10.2026
+
+Työkalu Codex, haara `work`, toteutuscommit
+`b143ceb8cd69619d1b92431a82642189237d7ace`, pohja main `af4fc7a`.
+Rajattu ensimmäinen kontaktikokonaisuus valmis: tuolille istuminen/nouseminen.
+Ovet, maailmanesineen tarttuminen ja luovutus eivät sisälly tähän toteutukseen.
+
+Tehty ja omistus:
+- Pääagentti: hs-core MotionKind Sit/Stand, hs-script:n rajattu EN/FI-ohjekieli,
+  ohje-ehdotukset, hs-agents audit/render/camera ja Vienti-UI, kontaktien
+  integraatio-/projektitestit sekä dokumentaatio/esimerkki english-chair.txt.
+- Seated-motion-aliagentti: hs-motion/{lib,procedural,seating}.rs ja
+  hs-render/props.rs. Yksi pysyvä hahmokohtainen tuoli, mittasuhteiden mukaan
+  mitoitetut tuoli/asento, jalka-IK ja pehmeä jatkuva Sit/Stand. Tuoli näkyy ennen
+  istumista ja säilyy paikallaan nousemisen jälkeen.
+- Renderöity kuva paljasti alkuperäisen seisovien jalkojen/istuimen päällekkäisyyden.
+  Korjattu: tuoli seisomapaikan taakse, lantio liikkuu taakse istuimelle, jalat
+  pysyvät alkuperäisissä lattiakohteissa. Varsinainen varjo ja kamerakohdistus
+  seuraavat istuvaa hahmoa. Tuolihahmon suunta säilyy, automaattinen keskustelu-
+  kääntö ei irrota tuolikontaktia. Rotatoidun Sit/Stand-rajan niveljatkuvuus testattu.
+- Tarkistus estää nousemisen ilman istumista, toisen istumisen istuen, muut
+  istuen toteuttamattomat liikkeet, vartalon käännöt, lavastevaihdon sekä
+  uudelleenistumisen muualla/suuntaan kuin oman tuolin seisomapaikka.
+  Puhe/tauko/nyökkäys sallitaan istuen. Siirtymän minimi 1 s.
+- Claude-puhemoottoriin, tallennusmuotoon ja vanhoihin resursseihin ei koskettu.
+
+Tarkistukset viimeiselle lähteelle (Linux):
+- `cargo test --locked --workspace -j4`: 212 läpi, 0 fail, 1 ohitettu (aito Kokoro),
+  exit 0; /tmp/koeta-chair/publish-tests.log.
+- `cargo clippy --locked --workspace --all-targets -j4`: exit 0 aiemmin olemassa
+  olevin varoituksin; /tmp/koeta-chair/publish-clippy.log.
+- `cargo build --locked -p hs-app -p hs-cli -j4`: exit 0.
+- 5 luurankokontaktitestiä: jatkuvuus, nilkkakohteet, istuintaso, hahmoeristys,
+  lyhyet/pitkät ja erilaiset jalat, tuolin näkyvyys ennen toimintaa, käännetyn
+  hahmon nivelten paikka/suunta Sit/Stand-rajoilla.
+- 4 kontaktiputkitestiä: edellytykset/rivivirheet, todellinen render-kohtaus,
+  istuvan lähikuvan päänkorkeus ja portable .koeta encode/decode/restore.
+  Uudelleenavauksen tuoli ja ihomatriisit täsmäävät useassa ajankohdassa.
+- CPU-render english-chair.txt: H.264 192×320, 30 fps, 210 ruutua/7 s,
+  /tmp/koeta-chair/contact-final.mp4. Koko ffmpeg-dekoodaus exit 0.
+  Puheeton liike-esimerkki, ei ääni-/Kokoro-hyväksyntä. Myös sivukuva oikeasta
+  istumisesta katselmoitu /tmp/koeta-chair/side-contact.png.
+- Oikea Xvfb/lavapipe-GUI: istuminen/nouseminen aikajanalla ja vientiraportti;
+  /tmp/koeta-chair/{gui,proof}.png. CLI audit: ei diagnooseja, kontaktit raportoitu.
+- git diff --check läpi. Kiintiö unavailable, prosenttia ei päätelty.
+
+Avoinna: ei yleistä törmäys-/vaatefysiikkaa, lavastekalusteiden automaattista
+väistöä tai jaettua tuolia. Kalusteiden vapaa tila tarkistetaan esikatselusta.
+Seuraava erillinen kontaktitoiminto: nimetty ovi ja sen sarana/kahva sekä
+avaamisen käsi-IK, ennen sitä maailmanesineiden/luovutuksen omistussopimus.
+Aito Kokoro/kuuntelu sekä Mac/Metal/laitetestit edelleen avoinna aiemman
+proxy403-eston ja Linux-ympäristön vuoksi. Main-push-valtuutus säilyy.
