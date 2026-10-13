@@ -891,3 +891,62 @@ esimerkki/dokumentaatio. Katselmointialiagentti vain luki. Claude-puhemoottoria,
 käyttäjän todellisista käsikirjoituksista koottu ohjekorpus ja sille tuetut
 lisätoiminnot; kaikkien englannin sanojen yleistä ymmärtämistä ei väitetä.
 Aidon Kokoron/Macin hyväksyntäesteet säilyvät edellisten handoffien mukaan.
+
+## Codex: tarkistettava sääntöpohjainen 3D-tuotanto — 13.10.2026
+
+Työkalu Codex, haara `work`, toteutuscommit
+`279a330555995c04f18a9c8196245d604325d7ec`, pohja remote main `db7ede8`.
+Vaihe valmis tämän rajatun toteutuksen osalta, ei koko ammattistudion hyväksyntä.
+Main-push-valtuutus säilyy; etähaara tarkistettiin ennen julkaisua.
+
+Tehty ja omistus:
+- EN-aliagentti omisti hs-script/lib.rs:n hakasulku- ja odottavien asetusten
+  atomiset tarkistukset. Seitsemän asetuskategorian päällekkäisyydet ja
+  virheellinen markup estetään; EN-puhe ei itsestään käynnistä liikettä.
+- Kamera-aliagentti omisti cinematography.rs:n ja camera_rules.rs:n:
+  kirjoitetut lyhyetkin otokset säilyvät, kaksikko/olan yli tarvitsee kumppanin,
+  insertti näkyvän puhelimen. Laaja seuranta käyttää koko hahmoryhmää.
+- Codex integroi audit-domainin, lopullisen renderöinnin esivarmistuksen,
+  CLI audit/explain -JSON:n ja Vienti-välilehden rivikohtaisen toteumaraportin.
+  Profiileja, esineitä ja lavasteita ei arvata; aikajana ja yhtenäinen kamera-aika
+  sidotaan lähteeseen, nykyisiin profiileihin ja todelliseen puheaikaan.
+- Phone/View-tapahtumat kohdistuvat nimettyyn hahmoon; vanha actoriton JSON
+  säilyy luettavana. Explicit view front säilyy automaattisen keskustelukäännön yli.
+  Kädessä oleva esine + näkyvä puhelin estetään. Katsetavoite ei voi olla itse.
+- hs-script/timeline ja hs-agents/voice: puhe pidentää kohtausta mutta ei
+  kirjoitetun liikkeen kestoa. Näpyttelyn päätyttyä puhelin säilyy puherivillä.
+  Yli 60 s puheaika hylätään ennen miksauksen/liikeresurssien varaamista.
+- assist ja script_assist_ui: saman kategorian tagi korvataan, uusi ristiriita
+  ei pääse ehdotukseen; moninkertaiset virheet tarkistetaan lukumäärineen.
+  Ehdotukset välimuistitetaan lähteen/rivin/haun perusteella, hyväksyntä säilyy.
+- Dokumentaatio native/PRODUCTION-RULES.md, README ja english-directed.txt.
+  Claude-puhemoottorin engine/spoken/kokoro-tiedostoihin eikä projektiformaattiin
+  koskettu. Omistetut tiedostot ovat toteutuscommitin 20 lähde/testi/ohjetiedostoa.
+
+Tarkistukset (Linux):
+- `cargo test --locked --workspace -j4`: 201 läpi, 0 epäonnistunutta, 1 ohitettu
+  (aito Kokoro); exit 0, /tmp/koeta-rules-publish-tests.log.
+- `cargo clippy --locked --workspace --all-targets -j4`: exit 0, aiemmat
+  riippuvuuksien varoitukset; /tmp/koeta-rules-publish-clippy.log.
+- `cargo build --locked -p hs-app -p hs-cli -j4`: exit 0 viimeiselle lähteelle.
+- Oikea Xvfb/lavapipe-GUI: Vienti, puuttuvan mallin ilmoitukset, erillinen
+  liikkeen kesto ja rivin kameraraportti piirtyvät oikein. Paneelileveys korjattu.
+  /tmp/koeta-production/proof-verified.png (nykyinen koodi).
+- TestEngine + oikea CPU-renderöinti english-directed.txt: 303 ruutua,
+  H.264 192×320 / 30 fps, 10.10 s; AAC 10.09 s; mov_text eng 9.77 s.
+  Kokonainen ffmpeg-dekoodaus exit 0; puhelininsertti kuvana katselmoitu.
+  /tmp/koeta-production/{directed-final.mp4,audit-final.json,render-final.log}.
+  TestEngine on simulaatio, ei aito Kokoro eikä kuuntelutesti.
+- audit-JSON: 8 lähderiviä, yksi testipuheen varoitus, ei estävää virhettä.
+  Kävely 1 s säilyy 1 s; puherivin vilkutus 1 s, kohtaus 1.85 s.
+  Taustan pitkä voimassaolo ei pidennä lähderivin raportoitua kohtausta.
+- `git diff --check`: läpi. Kiintiö unavailable, prosenttia ei päätelty.
+
+Avoimet hyväksynnät ja seuraava työ:
+Aito Kokoro-lataus/synteesi/kuuntelu edelleen proxy403-eston takana; TLS/checksum
+säilytetään. Mac/Metal, mikrofoni, kamera ja Mac-paketti testataan oikealla Macilla.
+Sääntöjen läpäisy ei todista taiteellista laatua, kontaktifysiikkaa tai yleistä
+englannin ymmärtämistä. Katsetavoite on rajattu pään kääntö, ei tarkka silmä-IK.
+Istuminen, ovet ja esineen luovutus vaativat uuden aidon liike-/kontaktitoteutuksen;
+niitä ei korvata arvatulla liikkeellä. Seuraava rajattu toteutus valitaan todellisesta
+jakson käsikirjoituksesta ja hyväksytään kuvan/puheen katselmoinnissa.
