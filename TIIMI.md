@@ -794,3 +794,44 @@ Testattu (Linux-pilvi, Rust 1.97, simuloitu TestEngine, `WGPU_BACKEND=vulkan`): 
 Ei tehty / ei todennettu: tekstitystä ei ole poltettu kuvaan (soft-track; kaikki soittimet eivät näytä sitä, SRT on aina mukana); automaattitallennusta ja Sarja-valikkoa ei ole klikattu GUI:ssa; aito Kokoro-synteesi ja kuuntelu, Mac, mikrofoni, kamera. Rajapinnat: `Mp4Writer::create_full` ja `Production.beat_times` ovat uusia, vanhat ennallaan.
 
 Seuraava konkreettinen työ: tekstityksen polttaminen kuvaan (vaatii fontin; egui:n fontti tai käyttäjän valinta), vientidialogin tekstitysvalinta, jaksojen yhdistäminen sarjan vientiin, Macilla aito Kokoro-kuuntelu. Tiedostot: `native/crates/hs-agents/src/{subtitles,production,lib}.rs`, `agents/{render,voice}.rs`, `native/crates/hs-render/src/export.rs`, `native/crates/hs-project/**`, `native/crates/hs-app/src/{project_ui,app}.rs`, `native/PARITEETTI.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
+
+## Codex: käyttäjän valtuuttama main-push ja Clauden tekstitysintegraatio — 13.10.2026
+
+Käyttäjä pyysi lähdekoodin pushia (`pushaa`). Työhaara `work`, testattu
+integraatiocommit `e21125c9a93d793f4eee4f5d391126457262396c`, integroitu
+uusi remote main `9dd3fb4`. Tämä vaihe supersedoi edellisen handoffin
+"ei pushattu / promptin julkaisuvaltuutus" -tilan. Push on tavallinen mainin
+päivitys; ei forcea eikä Clauden committeja poisteta.
+
+Clauden valittava MP4-tekstitys (`mov_text`, `eng`) on yhdistetty turvalliseen
+vientiin: uniikki väliaikainen SRT, erillinen muxaus, lopullinen media-QC ja
+atominen kohdetiedoston korvaus. Tekstitys ei katkaise videota, vaikka se päättyy
+ennen kuvaa tai ääntä. Olemassa olevaa SRT-sisartiedostoa ei korvata automaattisesti;
+käyttäjä vie SRT/VTT:n erillisellä toiminnolla. Videoon poltto säilyy asetuksena.
+Manuaaliset tekstityskorjaukset ja todellisen äänen ajoitus ovat yhteinen vientilähde.
+Clauden subtitles/beat_times-API ja sen testit sekä kansiomuodon edellisen
+jakso.json-version säilytys on säilytetty. Koetan erillinen palautusvarasto ja
+Tiedosto-valikko ovat yhteinen autosave-/projekti-UI päällekkäisen rinnakkaisen
+kansiovalikon sijaan.
+
+Testit (Linux, TestEngine-simulaatio):
+- `cargo test --locked --workspace -j4`: 164 läpi, 0 fail, 1 ohitettu
+  (aito Kokoro). Loki `/tmp/koeta-push-tests.log`, prosessin exit 0.
+- `cargo clippy --locked --workspace --all-targets -j4`: exit 0 varoituksin.
+- `cargo build --locked -p hs-app -p hs-cli -j4`: exit 0.
+- Oikea Xvfb/lavapipe GUI: vientinäkymä avautuu tallennetusta sarjasta,
+  tekstitysvaihtoehdot piirtyvät. Kuva `/tmp/koeta-push-gui.png`.
+- 9 FFmpeg-vientitestiä sekä työnkulkutesti varmistavat englanninkielisen
+  mov_text-raidan, koko kuvan/äänen keston, dekoodauksen ja sisartiedostojen
+  säilymisen. Oikea Kokoro, Mac ja fyysiset laitteet edelleen avoinna.
+- `hahmostudio-cli check native/examples/english-pilot.txt`: exit 0.
+  Uusi tekstipohja käyttää Kallea/Maijaa, englanninkielisiä repliikkejä ja
+  tuettuja kamera/liike/ilme/katsetageja; se ei ole valmis Kokoro-äänitetty jakso.
+- `git diff --check`: läpi. Kiintiö ei saatavilla, prosenttia ei päätelty.
+
+Omistus tässä vaiheessa: Codex integroi `hs-agents`-puheajoituksen,
+projektikansiomuodon yhteensopivuuden, render-adapterin, export-UI:n, esimerkin ja
+dokumentaation; vientialiagentti päivitti vain `hs-render/src/export.rs` ja
+`tests/export_safety.rs`. Claude-moottoritiedostoihin ei koskettu.
+Seuraava konkreettinen hyväksyntä on aito Kokoro ja kuuntelu Macilla sekä
+Mac-paketin/kameran/mikrofonin testaus; proxy403-estettä ei ole kiertämällä ohitettu.
