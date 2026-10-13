@@ -783,3 +783,14 @@ muutoksista sekä dokumentaatiosta. Claude omisti puhemoottorin
 `hs-voice/src/{engine,spoken,kokoro}.rs`; Codexin luotetun CA-ketjun tuki on
 `hs-voice/src/store.rs`:ssä. Älä tee kahta projektiformaattia uudelleen rinnakkain;
 rajapinnat ovat nyt yhteiset. Pääagentti integroi seitsemän rajatun aliagentin työn.
+## Claude: tekstitykset ja automaattitallennus — 13.10.2026 (Vaihe C, osittain)
+
+Työhaara `claude/project-thread-g6u2lj`, pohja main `1f31bc9`.
+
+Tehty: `hs-agents::subtitles` tuottaa repliikeistä SRT:n ja WebVTT:n (teksti sellaisenaan, nopeusohjeet pois, ei käännetä eikä keksitä; ajoitus puheen mittaan, vihjeet eivät mene päällekkäin, kaksi riviä enintään 42 merkkiä). `Production.beat_times` kirjaa rivien todelliset ajat (TimingAgent). MP4-vienti kirjoittaa `<nimi>.srt`-tiedoston videon viereen ja liittää MP4:ään valittavan tekstitysraidan (`mov_text`, kieli `eng`, `Mp4Writer::create_full`). Sarjan automaattitallennus (`hs-app/project_ui.rs`): avoin sarja tallentuu 20 s välein, kun käsikirjoitus, hahmot, äänitykset tai tuotettu puhe muuttuvat; edellinen `jakso.json` säilyy tiedostona `jakso.edellinen.json`.
+
+Testattu (Linux-pilvi, Rust 1.97, simuloitu TestEngine, `WGPU_BACKEND=vulkan`): `cd native && cargo test --workspace` 82 läpi, 1 ohitettu (aito Kokoro); `cargo clippy --workspace --all-targets` 0 varoitusta. Uudet: tekstitysten muoto ja rivitys, ajoitus ja päällekkäisyys, MP4:n tekstitysraita ja kieli ffprobella, edellisen version säilyminen. Xvfb: `hahmostudio --kuvakaappaus` käynnistyy ja piirtyy.
+
+Ei tehty / ei todennettu: tekstitystä ei ole poltettu kuvaan (soft-track; kaikki soittimet eivät näytä sitä, SRT on aina mukana); automaattitallennusta ja Sarja-valikkoa ei ole klikattu GUI:ssa; aito Kokoro-synteesi ja kuuntelu, Mac, mikrofoni, kamera. Rajapinnat: `Mp4Writer::create_full` ja `Production.beat_times` ovat uusia, vanhat ennallaan.
+
+Seuraava konkreettinen työ: tekstityksen polttaminen kuvaan (vaatii fontin; egui:n fontti tai käyttäjän valinta), vientidialogin tekstitysvalinta, jaksojen yhdistäminen sarjan vientiin, Macilla aito Kokoro-kuuntelu. Tiedostot: `native/crates/hs-agents/src/{subtitles,production,lib}.rs`, `agents/{render,voice}.rs`, `native/crates/hs-render/src/export.rs`, `native/crates/hs-project/**`, `native/crates/hs-app/src/{project_ui,app}.rs`, `native/PARITEETTI.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.

@@ -38,6 +38,8 @@ fn saved_english_episode_restores_music_images_captions_and_exports() {
     assert_ne!(captioned.rgba,plain.rgba,"captions must be burned into real output pixels");
     restored.caption_settings.enabled=true;
     if hs_render::export::find_ffmpeg().is_some() {
+        let subtitle_sibling=dir.path().join("episode.srt");
+        std::fs::write(&subtitle_sibling,b"existing user subtitles").unwrap();
         let sibling=dir.path().join("episode.aani.wav");
         std::fs::write(&sibling,b"user audio must survive").unwrap();
         restored.backend=Backend::Cpu;
@@ -45,6 +47,11 @@ fn saved_english_episode_restores_music_images_captions_and_exports() {
         pipe.mark_dirty(Slot::RenderRequest);pipe.run(&mut restored).unwrap();
         assert!(std::fs::metadata(dir.path().join("episode.mp4")).unwrap().len()>1000);
         assert_eq!(std::fs::read(sibling).unwrap(),b"user audio must survive");
+        assert_eq!(std::fs::read(subtitle_sibling).unwrap(),b"existing user subtitles");
+        let probe=std::process::Command::new("ffprobe").args(["-v","error","-select_streams","s:0","-show_entries","stream=codec_name:stream_tags=language","-of","json"]).arg(dir.path().join("episode.mp4")).output().unwrap();
+        assert!(probe.status.success());
+        let info=String::from_utf8(probe.stdout).unwrap();
+        assert!(info.contains("mov_text") && info.contains("eng"),"{info}");
         assert!(!std::fs::read_dir(dir.path()).unwrap().any(|entry| entry.unwrap().file_name().to_string_lossy().starts_with(".koeta-audio-")));
     }
 }

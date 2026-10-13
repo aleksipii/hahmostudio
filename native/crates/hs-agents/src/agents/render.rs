@@ -259,7 +259,18 @@ impl StudioAgent for RustRenderAgent {
                     Some(temporary)
                 } else { None };
                 let audio_arg = audio.as_ref().map(|file| file.path());
-                let mut writer = Mp4Writer::create_with_audio(path, p.width, p.height, p.fps.0, audio_arg).map_err(fail)?;
+                let subtitles = if p.caption_settings.enabled {
+                    use std::io::Write;
+                    let cues=crate::captions::cues(p);
+                    if cues.is_empty() {None} else {
+                        let parent=path.parent().filter(|p|!p.as_os_str().is_empty()).unwrap_or_else(||std::path::Path::new("."));
+                        let mut temporary=tempfile::Builder::new().prefix(".koeta-subtitles-").suffix(".srt").tempfile_in(parent).map_err(fail)?;
+                        temporary.write_all(hs_subtitle::to_srt(&cues).map_err(fail)?.as_bytes()).map_err(fail)?;
+                        temporary.flush().map_err(fail)?;
+                        Some(temporary)
+                    }
+                } else { None };
+                let mut writer = Mp4Writer::create_full(path, p.width, p.height, p.fps.0, audio_arg, subtitles.as_ref().map(|file|file.path())).map_err(fail)?;
                 for i in 0..total {
                     if p.cancel.load(Ordering::Relaxed) {
                         writer.cancel();

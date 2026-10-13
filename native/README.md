@@ -67,7 +67,7 @@ Ensisijainen tuotantokieli on englanti. Käsikirjoitusesimerkki:
 KALLE: Welcome to our show! [wave 2s] [expression happy] [look at camera]
 [shot two shot]
 MAIJA: Let's make our first episode! [wait 2s] [look at Kalle]
-[shot close up]
+[shot close-up]
 KALLE: We are ready. [nod 1s]
 ```
 
@@ -157,3 +157,10 @@ Vioittuneita ääniä ei tuoda hiljaa. Kansiomuodon toteutus ja alkuperäiset te
 säilyvät `hs-agents::project_directory`-moduulissa. Vapaa videotimeline,
 vektorityökalut, vanhan `.sarja`-formaatin tuonti ja tuotannon kaikki
 hyväksyntä-/lukitustoiminnot ovat edelleen avoinna pariteettilistan mukaan.
+
+
+Valmis englanninkielinen käsikirjoituspohja:
+[examples/english-pilot.txt](examples/english-pilot.txt).
+Avaa se Käsikirjoitus-välilehdelle, valitse Kallelle ja Maijalle eri Kokoro-äänet
+ja tallenna ensimmäinen jakso sarjaprojektiin. Tämä on tekstipohja, ei väite
+valmiista tai kuunnellusta Kokoro-jaksosta.

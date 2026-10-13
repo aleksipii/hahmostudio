@@ -112,6 +112,8 @@ pub struct Production {
     pub plan: Option<ScriptPlan>,
     pub voice_lines: Vec<VoiceLine>,
     pub clips: Vec<PlacedClip>,
+    /// Jokaisen rivin (`plan.beats`) alku ja kesto sekunteina ajoituksen jälkeen; tekstitykset käyttävät näitä.
+    pub beat_times: Vec<(f32, f32)>,
     /// Koko jakson ääni 48 kHz mono (esikatselu ja vienti).
     pub mix: Option<Arc<Audio>>,
     pub lipsync: Vec<LipClip>,
@@ -151,6 +153,7 @@ impl Production {
             plan: None,
             voice_lines: Vec::new(),
             clips: Vec::new(),
+            beat_times: Vec::new(),
             mix: None,
             lipsync: Vec::new(),
             live: None,

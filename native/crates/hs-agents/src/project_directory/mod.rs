@@ -342,7 +342,12 @@ impl SeriesProject {
             speech,
         };
         let json = serde_json::to_vec_pretty(&manifest).map_err(|e| invalid(e.to_string()))?;
-        write_atomic(&dir.join("jakso.json"), &json)?;
+        let current=dir.join("jakso.json");
+        if current.is_file() {
+            let previous=read_limited(&current,MAX_JSON_BYTES)?;
+            write_atomic(&dir.join("jakso.edellinen.json"),&previous)?;
+        }
+        write_atomic(&current, &json)?;
         if self.manifest.episodes[entry_index].title != episode.title {
             self.manifest.episodes[entry_index].title = episode.title.clone();
             self.write_manifest()?;

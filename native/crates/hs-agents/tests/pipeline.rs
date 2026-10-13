@@ -229,3 +229,27 @@ fn portable_series_reopens_without_engine_and_preserves_own_audio() {
     assert_eq!(restored.voice_lines[0].status, LineStatus::NoEngine);
     assert_eq!(restored.voice_lines[1].status, LineStatus::KeptOwnAudio);
 }
+
+#[test]
+fn subtitles_follow_speech_timing_and_never_overlap() {
+    use hs_agents::subtitles::{cues, to_srt};
+    let engine = std::sync::Arc::new(hs_voice::TestEngine::default());
+    let mut p = Production::new("PIPSA: Hello there, Ville! (quickly)\nVILLE: Good morning, Pipsa.\nPIPSA: Moi, mitä kuuluu?");
+    p.width = 270;
+    p.height = 480;
+    p.voice_engine = Some(engine);
+    Pipeline::default().run(&mut p).expect("putki");
+    let c = cues(&p);
+    assert_eq!(c.len(), 3);
+    // Nopeusohje ei päädy tekstitykseen; teksti on repliikki sellaisenaan.
+    assert_eq!(c[0].text, "Hello there, Ville!");
+    assert_eq!(c[2].text, "Moi, mitä kuuluu?", "tekstiä ei käännetä eikä keksitä");
+    assert_eq!(c[1].speaker.as_deref(), Some("Ville"));
+    for w in c.windows(2) {
+        assert!(w[0].end <= w[1].start + 1e-4 && w[0].start < w[0].end);
+    }
+    // Puheellisen rivin vihje loppuu puheen jälkeen, ei rivin tauon lopussa.
+    let speech = p.voice_lines[0].speech.as_ref().unwrap().audio.duration();
+    assert!((c[0].end - c[0].start - (speech + 0.15)).abs() < 0.02, "{:?}", c[0]);
+    assert!(to_srt(&c).starts_with("1\n00:00:00,000 --> "));
+}

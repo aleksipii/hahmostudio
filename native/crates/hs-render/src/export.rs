@@ -94,6 +94,7 @@ pub struct Mp4Writer {
     width: u32,
     height: u32,
     has_audio: bool,
+    subtitles: Option<PathBuf>,
     failed: bool,
 }
 
@@ -116,6 +117,29 @@ impl Mp4Writer {
         fps: u32,
         audio: Option<&Path>,
     ) -> Result<Mp4Writer, RenderError> {
+        Self::create_full(path, width, height, fps, audio, None)
+    }
+
+    /// Adds an optional English SRT track. Subtitle muxing occurs after video
+    /// encoding, so a short subtitle cannot terminate the video/audio streams.
+    pub fn create_full(
+        path: &Path,
+        width: u32,
+        height: u32,
+        fps: u32,
+        audio: Option<&Path>,
+        subtitles: Option<&Path>,
+    ) -> Result<Mp4Writer, RenderError> {
+        if let Some(subtitles) = subtitles {
+            let metadata = subtitles
+                .metadata()
+                .map_err(|_| export_error("Subtitle resource is missing."))?;
+            if !metadata.is_file() || metadata.len() > 1024 * 1024 {
+                return Err(export_error(
+                    "Subtitle input must be a regular SRT file of at most 1 MiB.",
+                ));
+            }
+        }
         if fps != 30 {
             return Err(export_error("MP4 export requires exactly 30 fps."));
         }
@@ -258,6 +282,7 @@ impl Mp4Writer {
             width,
             height,
             has_audio: audio.is_some(),
+            subtitles: subtitles.map(Path::to_path_buf),
             failed: false,
         })
     }
@@ -331,6 +356,9 @@ impl Mp4Writer {
                 String::from_utf8_lossy(&stderr).trim()
             )));
         }
+        if self.subtitles.is_some() {
+            self.mux_subtitles()?;
+        }
         let temporary = self
             .temporary
             .as_ref()
@@ -354,13 +382,112 @@ impl Mp4Writer {
         Ok(size)
     }
 
+    fn mux_subtitles(&mut self) -> Result<(), RenderError> {
+        let input = self
+            .temporary
+            .as_ref()
+            .ok_or_else(|| export_error("Temporary export is missing."))?;
+        let subtitles = self
+            .subtitles
+            .as_ref()
+            .ok_or_else(|| export_error("Subtitle input is missing."))?;
+        // FFmpeg accepts malformed SRT as an empty mov_text track. Require an
+        // actual source subtitle packet rather than treating that as success.
+        let checked = Command::new(&self.ffprobe)
+            .args([
+                "-v",
+                "error",
+                "-f",
+                "srt",
+                "-count_packets",
+                "-show_entries",
+                "stream=nb_read_packets",
+                "-of",
+                "json",
+            ])
+            .arg(subtitles)
+            .output()
+            .map_err(export_error)?;
+        if !checked.status.success() {
+            return Err(export_error("Subtitle input could not be decoded."));
+        }
+        let subtitle_metadata: serde_json::Value =
+            serde_json::from_slice(&checked.stdout).map_err(export_error)?;
+        let valid_packets = subtitle_metadata["streams"]
+            .as_array()
+            .is_some_and(|streams| {
+                streams.iter().any(|stream| {
+                    stream["nb_read_packets"]
+                        .as_str()
+                        .and_then(|value| value.parse::<u64>().ok())
+                        .is_some_and(|count| count > 0)
+                })
+            });
+        if !valid_packets {
+            return Err(export_error("Subtitle input has no decodable cues."));
+        }
+        let parent = input
+            .path()
+            .parent()
+            .ok_or_else(|| export_error("Temporary export directory is missing."))?;
+        let muxed = tempfile::Builder::new()
+            .prefix(".koeta-export-")
+            .suffix(".mp4")
+            .tempfile_in(parent)
+            .map_err(export_error)?;
+        let duration = format!("{:.9}", self.frames as f64 / 30.0);
+        let status = Command::new(&self.ffmpeg)
+            .args(["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-i"])
+            .arg(input.path())
+            .args(["-f", "srt", "-i"])
+            .arg(subtitles)
+            .args([
+                "-map",
+                "0:v:0",
+                "-map",
+                "0:a:0?",
+                "-map",
+                "1:s:0",
+                "-c:v",
+                "copy",
+                "-c:a",
+                "copy",
+                "-c:s",
+                "mov_text",
+                "-metadata:s:s:0",
+                "language=eng",
+                "-metadata:s:s:0",
+                "title=English",
+                "-t",
+                &duration,
+                "-movflags",
+                "+faststart",
+                "-f",
+                "mp4",
+            ])
+            .arg(muxed.path())
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .map_err(export_error)?;
+        if !status.success() {
+            return Err(export_error(
+                "English subtitle mux failed; check the SRT input.",
+            ));
+        }
+        self.temporary = Some(muxed);
+        Ok(())
+    }
+
     fn validate_media(&self, path: &Path) -> Result<(), RenderError> {
         let output = Command::new(&self.ffprobe)
             .args([
                 "-v",
                 "error",
+                "-count_packets",
                 "-show_entries",
-                "stream=codec_type,codec_name,width,height,r_frame_rate,nb_frames:format=duration",
+                "stream=codec_type,codec_name,width,height,r_frame_rate,nb_frames,nb_read_packets:stream_tags=language:format=duration",
                 "-of",
                 "json",
             ])
@@ -407,6 +534,18 @@ impl Mp4Writer {
             || (!self.has_audio && !audio.is_empty())
         {
             return Err(export_error("Exported audio stream failed validation."));
+        }
+        let subtitles: Vec<_> = streams
+            .iter()
+            .filter(|s| s["codec_type"] == "subtitle")
+            .collect();
+        if (self.subtitles.is_some()
+            && (subtitles.len() != 1
+                || subtitles[0]["codec_name"] != "mov_text"
+                || subtitles[0]["tags"]["language"] != "eng"))
+            || (self.subtitles.is_none() && !subtitles.is_empty())
+        {
+            return Err(export_error("English subtitle stream failed validation."));
         }
         let duration = metadata["format"]["duration"]
             .as_str()

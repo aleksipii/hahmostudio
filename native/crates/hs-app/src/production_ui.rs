@@ -23,6 +23,7 @@ pub fn show(app: &mut StudioApp, ctx: &egui::Context) {
             ui.separator(); ui.heading("Englanninkieliset tekstitykset");
             ui.checkbox(&mut app.production.caption_settings.enabled,"Tekstitykset käytössä");
             ui.checkbox(&mut app.production.caption_settings.burn_in,"Polta tekstitykset videoon");
+            ui.label("Kun tekstitykset ovat käytössä, MP4 sisältää myös valittavan englanninkielisen tekstitysraidan.");
             let mut cues = hs_agents::captions::cues(&app.production);
             if cues.is_empty() { ui.label("Tekstitysten ajoitus muodostuu, kun repliikkien ääni on valmis."); }
             ui.horizontal(|ui| {
@@ -70,6 +71,7 @@ pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
         ui.checkbox(&mut app.production.allow_silent_export,"Salli luonnos, jossa puuttuvat repliikit jäävät hiljaisiksi");
         ui.checkbox(&mut app.production.caption_settings.enabled,"Tekstitykset käytössä");
         ui.checkbox(&mut app.production.caption_settings.burn_in,"Polta tekstitykset videoon");
+            ui.label("Kun tekstitykset ovat käytössä, MP4 sisältää myös valittavan englanninkielisen tekstitysraidan.");
         ui.horizontal(|ui|for (label,size) in [("Pystyvideo",(1080,1920)),("YouTube",(1920,1080)),("Neliö",(1080,1080))] {
             if ui.button(label).clicked(){app.production.width=size.0;app.production.height=size.1;app.production.fps=hs_core::Fps::EXPORT;app.pipeline.mark_dirty(hs_agents::Slot::Audio);app.run_pipeline();}
         });

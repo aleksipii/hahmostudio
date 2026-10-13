@@ -170,3 +170,109 @@ fn panic_unwind_drops_encoder_and_temporary_file() {
     assert_eq!(std::fs::read(&target).unwrap(), b"old export");
     assert_no_temporary(dir.path());
 }
+
+#[test]
+fn english_subtitle_mux_preserves_full_audio_and_video() {
+    if !have_tools() {
+        return;
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let audio = dir.path().join("short.wav");
+    let status = std::process::Command::new("ffmpeg")
+        .args([
+            "-v",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=440:sample_rate=16000:duration=0.2",
+            "-c:a",
+            "pcm_s16le",
+        ])
+        .arg(&audio)
+        .status()
+        .unwrap();
+    assert!(status.success());
+    let subtitle = dir.path().join("english.srt");
+    std::fs::write(
+        &subtitle,
+        "1\n00:00:00,000 --> 00:00:00,100\nHello, Koeta!\n\n",
+    )
+    .unwrap();
+    for with_audio in [false, true] {
+        let target = dir.path().join(format!("english-{with_audio}.mp4"));
+        let mut writer = Mp4Writer::create_full(
+            &target,
+            16,
+            16,
+            30,
+            with_audio.then_some(audio.as_path()),
+            Some(&subtitle),
+        )
+        .unwrap();
+        for _ in 0..30 {
+            writer.push(&fixture()).unwrap();
+        }
+        assert!(writer.finish().unwrap() > 0);
+        let probe = std::process::Command::new("ffprobe")
+            .args([
+                "-v",
+                "error",
+                "-show_streams",
+                "-show_format",
+                "-of",
+                "json",
+            ])
+            .arg(&target)
+            .output()
+            .unwrap();
+        assert!(probe.status.success());
+        let metadata: serde_json::Value = serde_json::from_slice(&probe.stdout).unwrap();
+        let streams = metadata["streams"].as_array().unwrap();
+        let subtitles: Vec<_> = streams
+            .iter()
+            .filter(|stream| stream["codec_type"] == "subtitle")
+            .collect();
+        assert_eq!(subtitles.len(), 1);
+        assert_eq!(subtitles[0]["codec_name"], "mov_text");
+        assert_eq!(subtitles[0]["tags"]["language"], "eng");
+        let video = streams
+            .iter()
+            .find(|stream| stream["codec_type"] == "video")
+            .unwrap();
+        assert_eq!(video["nb_frames"], "30");
+        assert_eq!(
+            streams
+                .iter()
+                .filter(|stream| stream["codec_type"] == "audio")
+                .count(),
+            usize::from(with_audio)
+        );
+        let duration = metadata["format"]["duration"]
+            .as_str()
+            .unwrap()
+            .parse::<f64>()
+            .unwrap();
+        assert!((duration - 1.0).abs() < 0.1);
+    }
+    assert_no_temporary(dir.path());
+}
+
+#[test]
+fn invalid_subtitle_mux_preserves_previous_export() {
+    if !have_tools() {
+        return;
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let subtitle = dir.path().join("invalid.srt");
+    std::fs::write(&subtitle, "not a subtitle").unwrap();
+    let target = dir.path().join("old.mp4");
+    std::fs::write(&target, b"old export").unwrap();
+    let mut writer = Mp4Writer::create_full(&target, 16, 16, 30, None, Some(&subtitle)).unwrap();
+    for _ in 0..30 {
+        writer.push(&fixture()).unwrap();
+    }
+    assert!(writer.finish().is_err());
+    assert_eq!(std::fs::read(target).unwrap(), b"old export");
+    assert_no_temporary(dir.path());
+}
