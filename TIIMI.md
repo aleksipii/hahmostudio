@@ -1003,3 +1003,60 @@ Seuraava erillinen kontaktitoiminto: nimetty ovi ja sen sarana/kahva sekä
 avaamisen käsi-IK, ennen sitä maailmanesineiden/luovutuksen omistussopimus.
 Aito Kokoro/kuuntelu sekä Mac/Metal/laitetestit edelleen avoinna aiemman
 proxy403-eston ja Linux-ympäristön vuoksi. Main-push-valtuutus säilyy.
+
+## Codex: liikkuminen ja kehonkieli, ensimmäinen 7 liikkeen erä — 13.10.2026
+
+Työkalu Codex, haara work, toteutuscommit
+`91ae01c0ab233f330fc0c53af04efd41b25f3525`, pohja main `601785b`.
+Käyttäjä pyysi laajaa liikevalikoimaa ja kysyi valmiista pluginista, mutta pyysi
+silti toteuttamaan. Käytettävissä olevista työkaluista/pluginvalikoimasta ei löytynyt
+Koetan 3D-liikemoottoriin valmista pluginia. Mixamo on vaihtoehtoinen animaatioaineisto;
+tuonti ja retargetointi Koetan luurankoon eivät ole tässä toteutettuja.
+
+Toteutettu:
+- 7 uutta oikeaa liikettä: WalkBackward, TurnLeft/Right, PointForward, Shrug,
+  ShakeHead ja Clap. EN/FI-tagit, strict modifiers/duration, editorin komentoluettelo,
+  suomalaiset aikajanalabelit ja kamera vastaavat samaa domainia.
+- Kääntyminen suhteellinen 90°, ei keksitty suunta; authored duration ja lopullinen
+  suunta säilyvät myös pitkän puheen aikana. Backward säilyttää suunnan myös idleen,
+  käyttää käänteistä askelsykliä ja liikkuu nykyistä suuntaa vasten.
+- Osoittaminen oikealla etusormella hahmon eteen, olankohautuksen olkapäät/kämmenet,
+  kieltoele pään yaw:lla; yksi oikea taputus per ohje (ei automaattinen toisto).
+- Taputuksen käsi-IK ja kämmenpintojen kohtaaminen tarkistetaan myös lopullisessa
+  tuotannon auditissa. Mittasuhteilla mahdoton kontakti estetään, ei korvata heilutuksella.
+- Kädet varataan: point/shrug/clap estetään esineen/puhelimen kanssa. Tuolilla
+  istuen uudet liikkeet eivät ole sallittuja. View +turn/backward samanaikaisesti
+  estetään. Automaattinen keskustelukääntö ei ohita kirjoitettua suuntaa.
+- Sarjan encode/decode/restore tuottaa samat suunnat/ihomatriisit uudelleen.
+- Esimerkki native/examples/english-movements.txt ja ENGLISH-COMMANDS.md päivitetty.
+
+Omistus: motion-aliagentti hs-motion/{procedural,gait,lib,gestures}.rs ja
+hs-motion/tests/motion_library.rs; Codex core/script/agent/render/camera/audit,
+integraatiotestit, ohjeet/esimerkki. Claude-moottoriin tai tallennusformaatteihin
+ ei koskettu. Ei FBX/glTF-tuontia, plugin-asennusta tai Electronin poistoa.
+
+Tarkistukset Linuxissa:
+- cargo test --locked --workspace -j4: 224 läpi, 0 fail, 1 ohitettu aito Kokoro,
+  exit 0 (/tmp/koeta-movements/tests.log). Viimeisen taputuksen audit-suojan
+  jälkeen kohdennetut testit: 4 agenttien +8 luurankoliikkeiden testiä, kaikki läpi
+  (/tmp/koeta-movements/final-targeted.log). Ei laskettu uudelleenajettuja testejä
+  uutena työtilatestien kokonaismääränä.
+- cargo build --locked -p hs-app -p hs-cli -j4: exit 0 viimeiselle lähteelle.
+- cargo clippy --locked --workspace --all-targets -j4: exit 0 myös viimeiselle
+  lähteelle, aiemmat varoitukset (/tmp/koeta-movements/final-clippy.log).
+- Motion-testeissä todelliset nilkka-/sormisuunnat ja kämmenpinnat: takaperin
+  tukijalan maailmanliukuma <1 mm, taputuksen kontaktivirhe <2 mm erikokoisilla
+  ja erilaisilla käsillä. Lisäksi kaikki toimitetut hahmoprofiilit auditissa,
+  sekä tahallaan mahdoton käsien ulottuvuus estyy.
+- Oikea CPU-MP4: 450 ruutua, H.264 192×320, 30 fps, 15 s. FFmpeg-dekoodaus läpi.
+  /tmp/koeta-movements/showcase.mp4 on puheeton liikedemo, ei Kokoro-hyväksyntä.
+  Viimeisen koodin point/shrug/clap CPU-PNG:t katselmoitu ({point,shrug,clap}-current.png).
+- Oikea Linux-GUI Xvfb/lavapipe: kaikki7 liikettä aikajanalla, vienti avautuu
+  ilman virhettä, /tmp/koeta-movements/gui.png. CLI audit: ei diagnooseja.
+- git diff --check läpi; quota unavailable, prosenttia ei päätelty.
+
+Seuraavat erilliset toteutukset: sivuaskelten oikea tukijalkalogiikka, portaat
+(lavasteen askelmatasot), oven kahva/sarana ja maailmanesineiden nouto/luovutus.
+Halausta/kättelyä/yhteistä kantamista ei merkitä tuetuksi ilman kahden hahmon
+kontaktisopimusta. Täydellinen virheettömyys tai yleinen mocap-laatu ei ole luvattu.
+Mac/Metal/laitteet ja aito Kokoro ovat edelleen aiempien handoffien mukaan avoinna.
