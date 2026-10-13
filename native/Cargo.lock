@@ -2220,6 +2220,7 @@ dependencies = [
  "hs-render",
  "hs-script",
  "hs-voice",
+ "png 0.17.16",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
@@ -2344,7 +2345,9 @@ dependencies = [
 name = "hs-render"
 version = "0.1.0"
 dependencies = [
+ "ab_glyph",
  "bytemuck",
+ "epaint_default_fonts",
  "glam",
  "hs-character",
  "hs-core",

@@ -3924,3 +3924,8 @@ No contributor can revoke this license.
 without any warranty or condition, and no contributor
 will be liable to anyone for any damages related to this
 software or this license, under any kind of legal claim.***
+
+
+## Natiivin tekstitysfontti (hs-render::caption)
+
+Poltettu tekstitys piirretään Ubuntu Light -fontilla, joka tulee mukana egui:n `epaint_default_fonts`-paketista (Ubuntu Font Licence 1.0; paketin muut fontit Hack ja Noto Emoji ovat MIT/OFL, eikä niitä käytetä tekstityksessä) ja ab_glyph-kirjastolla (Apache-2.0). Lisenssitekstit ovat paketeissa `epaint_default_fonts` (`fonts/UFL.txt`, `fonts/OFL.txt`).

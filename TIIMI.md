@@ -639,3 +639,17 @@ Testattu (Linux-pilvi, Rust 1.97, simuloitu TestEngine, `WGPU_BACKEND=vulkan`): 
 Ei tehty / ei todennettu: tekstitystä ei ole poltettu kuvaan (soft-track; kaikki soittimet eivät näytä sitä, SRT on aina mukana); automaattitallennusta ja Sarja-valikkoa ei ole klikattu GUI:ssa; aito Kokoro-synteesi ja kuuntelu, Mac, mikrofoni, kamera. Rajapinnat: `Mp4Writer::create_full` ja `Production.beat_times` ovat uusia, vanhat ennallaan.
 
 Seuraava konkreettinen työ: tekstityksen polttaminen kuvaan (vaatii fontin; egui:n fontti tai käyttäjän valinta), vientidialogin tekstitysvalinta, jaksojen yhdistäminen sarjan vientiin, Macilla aito Kokoro-kuuntelu. Tiedostot: `native/crates/hs-agents/src/{subtitles,production,lib}.rs`, `agents/{render,voice}.rs`, `native/crates/hs-render/src/export.rs`, `native/crates/hs-project/**`, `native/crates/hs-app/src/{project_ui,app}.rs`, `native/PARITEETTI.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
+
+## Claude: poltettu tekstitys ja vientivalinta — 13.10.2026
+
+Työhaara `claude/project-thread-g6u2lj`, pohja main `9dd3fb4`.
+
+Tehty: `hs-render::caption` piirtää tekstityksen kuvaan (egui:n Ubuntu Light + ab_glyph, rivitys pikselileveyden mukaan, tumma reunus ja läpikuultava tausta, alareunan 8 % turva-alue; ä/ö/å toimivat). `Production.subtitle_track` (oletus päällä: eng-raita + `.srt`) ja `Production.subtitle_burn` (oletus pois). Tiedosto-valikkoon alivalikko "Tekstitys MP4-viennissä" (kaksi valintaruutua); CLI: `renderöi … --tekstitys raita|poltettu|molemmat|pois`. Fontin lisenssi kirjattu THIRD_PARTY_NOTICES.md:hen.
+
+Testattu (Linux-pilvi, Rust 1.97, simuloitu TestEngine, CPU-renderöinti): `cd native && WGPU_BACKEND=vulkan cargo test --workspace` kaikki läpi (hs-agents 8, hs-render 4, hs-project 7 jne.), 1 ohitettu (aito Kokoro); `cargo clippy --workspace --all-targets` puhdas. Uusi testi vie MP4:n ffmpegillä ja vertaa kuvaruutuja: poltettu tekstitys näkyy vain pyydettäessä, `.srt` puuttuu kun raita on pois. Käsin: CLI-vienti `--tekstitys molemmat` tuotti h264+aac+mov_text-MP4:n ja kuvaruudun, jossa teksti on luettavissa (silmämääräinen tarkistus Linuxissa, ei Macilla).
+
+Ei tehty / ei todennettu: valikon valintojen klikkaus GUI:ssa (käännös ja logiikka vain); tekstityksen tyyli (koko, väri, paikka) ei ole säädettävä; fontti on ohut (Ubuntu Light), isompi tai lihavampi fontti on makuasia; aito Kokoro-synteesi ja kuuntelu sekä Mac, mikrofoni ja kamera.
+
+Käyttäjän Mac-tehtävä (ei ajettavissa pilvessä): `cd native && cargo run --release -p hs-cli -- ääni lataa` (lataa Kokoron luvallasi), sitten `cargo run --release -p hs-cli -- sano "Hello there" -o hello.wav`, kuuntele `hello.wav`, ja kirjaa tulos tänne.
+
+Seuraava konkreettinen työ: tekstityksen tyylisäädöt, sarjan jaksojen vienti kerralla, nimetyt revisiot ja renderöinnin palautus. Tiedostot: `native/crates/hs-render/src/caption.rs`, `hs-agents/src/{production,agents/render}.rs`, `hs-app/src/{panels,app,export_job}.rs`, `hs-cli/src/main.rs`, `THIRD_PARTY_NOTICES.md`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.

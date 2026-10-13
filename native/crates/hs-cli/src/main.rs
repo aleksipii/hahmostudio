@@ -3,6 +3,7 @@
 //! ```text
 //! hahmostudio-cli tarkista  <käsikirjoitus.txt>
 //! hahmostudio-cli renderöi  <käsikirjoitus.txt> -o <video.mp4 | kansio/ | kuva.png> [--ruutu N] [--koko 1080x1920] [--gpu | --cpu] [--hahmot hahmot.json]
+//!                           [--tekstitys raita|poltettu|molemmat|pois]   (oletus raita: eng-raita + .srt)
 //! hahmostudio-cli hahmo     <projekti.hahmo> -o <kuva.png | kansio/> [--ruutu N]
 //! hahmostudio-cli mittaa    [<käsikirjoitus.txt>] [--koko 540x960]
 //! hahmostudio-cli ääni      tila | lataa | tuo <kansio> | poista
@@ -34,6 +35,8 @@ struct Args {
     voice: Option<String>,
     text: Option<String>,
     speech: SpeechMode,
+    /// (tekstitysraita + .srt, poltettu kuvaan)
+    subtitles: (bool, bool),
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -54,6 +57,7 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
         voice: None,
         text: None,
         speech: SpeechMode::Auto,
+        subtitles: (true, false),
     };
     let mut it = raw.iter();
     while let Some(x) = it.next() {
@@ -70,6 +74,15 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
             "--hahmot" | "--cast" => a.cast = Some(it.next().ok_or("--hahmot vaatii polun")?.into()),
             "--ääni" | "--aani" | "--voice" => a.voice = Some(it.next().ok_or("--ääni vaatii nimen, esim. af_heart")?.clone()),
             "--teksti" | "--text" => a.text = Some(it.next().ok_or("--teksti vaatii tekstin")?.clone()),
+            "--tekstitys" | "--subtitles" => {
+                a.subtitles = match it.next().ok_or("--tekstitys vaatii arvon: raita, poltettu, molemmat tai pois")?.as_str() {
+                    "raita" | "track" => (true, false),
+                    "poltettu" | "burned" => (false, true),
+                    "molemmat" | "both" => (true, true),
+                    "pois" | "off" => (false, false),
+                    other => return Err(format!("tuntematon tekstitysvalinta {other}")),
+                };
+            }
             "--ei-puhetta" | "--no-speech" => a.speech = SpeechMode::Off,
             "--testipuhe" | "--test-speech" => a.speech = SpeechMode::Test,
             _ if x.starts_with('-') => return Err(format!("tuntematon valitsin {x}")),
@@ -93,6 +106,7 @@ fn production(a: &Args) -> Result<Production, String> {
         p.height = h;
     }
     p.backend = a.backend;
+    (p.subtitle_track, p.subtitle_burn) = a.subtitles;
     p.voice_engine = match a.speech {
         SpeechMode::Off => None,
         SpeechMode::Test => Some(Arc::new(hs_voice::TestEngine::default())),

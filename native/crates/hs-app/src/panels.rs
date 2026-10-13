@@ -41,6 +41,11 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                 }
                 ui.separator();
                 let can_export = app.export.is_none() && app.production.plan.as_ref().is_some_and(|p| p.is_assemblable());
+                ui.menu_button("Tekstitys MP4-viennissa", |ui| {
+                    ui.checkbox(&mut app.subtitle_track, "Valittava tekstitysraita ja .srt-tiedosto");
+                    ui.checkbox(&mut app.subtitle_burn, "Poltettu kuvaan");
+                    ui.label(RichText::new("Teksti on käsikirjoituksen repliikki sellaisenaan; sitä ei käännetä.").weak());
+                });
                 if ui.add_enabled(can_export, egui::Button::new("Vie MP4…")).clicked() {
                     ui.close_menu();
                     if let Some(p) = rfd::FileDialog::new().set_file_name("jakso.mp4").save_file() {
@@ -95,7 +100,7 @@ fn start_export(app: &mut StudioApp, request: RenderRequest) {
         own_audio: app.production.own_audio.clone(),
         accepted_notices: app.production.accepted_notices.clone(),
     };
-    app.export = Some(ExportJob::start(app.script.clone(), app.production.cast_params.clone(), voice, request, backend, (app.production.width, app.production.height)));
+    app.export = Some(ExportJob::start(app.script.clone(), app.production.cast_params.clone(), voice, request, backend, (app.production.width, app.production.height), (app.subtitle_track, app.subtitle_burn)));
     app.status = "Vienti käynnissä…".into();
 }
 

@@ -41,6 +41,8 @@ pub struct StudioApp {
     pub camera: CameraState,
     pub left_tab: LeftTab,
     pub series: Option<crate::project_ui::OpenSeries>,
+    pub subtitle_track: bool,
+    pub subtitle_burn: bool,
     pub series_saved_fingerprint: Option<u64>,
     pub series_last_save: Option<Instant>,
     screenshot: Option<PathBuf>,
@@ -113,6 +115,8 @@ impl StudioApp {
             voice,
             camera: CameraState::default(),
             series: None,
+            subtitle_track: true,
+            subtitle_burn: false,
             series_saved_fingerprint: None,
             series_last_save: None,
             left_tab: match options.tab.as_deref() {

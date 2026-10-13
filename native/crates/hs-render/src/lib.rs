@@ -5,6 +5,7 @@
 //! ohjelmistopohjainen [`cpu`]. Testit vertaavat polkuja toisiinsa (FilmCraftin
 //! tapaan), ja CPU-polku toimii varapolkuna koneissa ilman GPU:ta.
 
+pub mod caption;
 pub mod cpu;
 pub mod environment;
 pub mod export;

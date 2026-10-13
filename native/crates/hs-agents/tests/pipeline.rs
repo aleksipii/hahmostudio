@@ -220,3 +220,54 @@ fn subtitles_follow_speech_timing_and_never_overlap() {
     assert!((c[0].end - c[0].start - (speech + 0.15)).abs() < 0.02, "{:?}", c[0]);
     assert!(to_srt(&c).starts_with("1\n00:00:00,000 --> "));
 }
+
+#[test]
+fn burned_subtitles_appear_in_the_picture_only_when_asked() {
+    use hs_voice::{SpeechEngine, TestEngine};
+    let Some(ffmpeg) = hs_render::export::find_ffmpeg() else { return };
+    let dir = std::path::PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("poltettu");
+    std::fs::create_dir_all(&dir).unwrap();
+    let frame_at_one_second = |name: &str, burn: bool, track: bool| {
+        let mut p = Production::new("PIPSA: Good morning, everybody!");
+        p.width = 270;
+        p.height = 480;
+        p.backend = hs_agents::Backend::Cpu;
+        p.voice_engine = Some(std::sync::Arc::new(TestEngine::default()) as std::sync::Arc<dyn SpeechEngine>);
+        p.subtitle_burn = burn;
+        p.subtitle_track = track;
+        let out = dir.join(format!("{name}.mp4"));
+        let _ = std::fs::remove_file(out.with_extension("srt"));
+        p.render_request = RenderRequest::Mp4(out.clone());
+        Pipeline::default().run(&mut p).expect("vienti");
+        let png = dir.join(format!("{name}.png"));
+        let ok = std::process::Command::new(&ffmpeg).args(["-v", "error", "-y", "-ss", "1.0", "-i"]).arg(&out).args(["-frames:v", "1"]).arg(&png).status().unwrap().success();
+        assert!(ok);
+        (out, png)
+    };
+    let bright_bottom = |png: &std::path::Path| {
+        let img = image_pixels(png);
+        let (w, h, px) = img;
+        (h * 6 / 10..h).map(|y| (0..w).filter(|&x| px[(y * w + x) as usize * 4..][..3].iter().all(|c| *c > 235)).count()).sum::<usize>()
+    };
+    let (plain_mp4, plain) = frame_at_one_second("ilman", false, true);
+    let (_, burned) = frame_at_one_second("poltettu", true, true);
+    assert!(bright_bottom(&burned) > bright_bottom(&plain) + 100, "poltettu {} vs ilman {}", bright_bottom(&burned), bright_bottom(&plain));
+    assert!(plain_mp4.with_extension("srt").exists());
+    // Raita pois: ei .srt-tiedostoa eikä tekstitysraitaa.
+    let (off_mp4, _) = frame_at_one_second("pois", false, false);
+    assert!(!off_mp4.with_extension("srt").exists());
+}
+
+fn image_pixels(path: &std::path::Path) -> (u32, u32, Vec<u8>) {
+    let mut dec = png::Decoder::new(std::fs::File::open(path).unwrap());
+    dec.set_transformations(png::Transformations::EXPAND);
+    let mut r = dec.read_info().unwrap();
+    let mut buf = vec![0; r.output_buffer_size()];
+    let info = r.next_frame(&mut buf).unwrap();
+    let rgba = match info.color_type {
+        png::ColorType::Rgba => buf[..info.buffer_size()].to_vec(),
+        png::ColorType::Rgb => buf[..info.buffer_size()].chunks(3).flat_map(|c| [c[0], c[1], c[2], 255]).collect(),
+        t => panic!("{t:?}"),
+    };
+    (info.width, info.height, rgba)
+}

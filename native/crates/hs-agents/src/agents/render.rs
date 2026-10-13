@@ -237,7 +237,7 @@ impl StudioAgent for RustRenderAgent {
                 // Englanninkielinen tekstitys: SRT-tiedosto videon viereen ja valittava raita MP4:ään.
                 let cues = crate::subtitles::cues(p);
                 let srt_path = path.with_extension("srt");
-                let subs = if cues.is_empty() {
+                let subs = if cues.is_empty() || !p.subtitle_track {
                     None
                 } else {
                     std::fs::write(&srt_path, crate::subtitles::to_srt(&cues)).map_err(fail)?;
@@ -250,7 +250,15 @@ impl StudioAgent for RustRenderAgent {
                         return Err(AgentError::Cancelled);
                     }
                     let img = match self.render_frame(p, renderer.as_mut(), i) {
-                        Ok(img) => img,
+                        Ok(mut img) => {
+                            if p.subtitle_burn {
+                                let t = i as f32 / p.fps.0 as f32;
+                                if let Some(c) = cues.iter().find(|c| t >= c.start && t < c.end) {
+                                    hs_render::caption::draw(&mut img, &c.text);
+                                }
+                            }
+                            img
+                        }
                         Err(e) => {
                             writer.cancel();
                             return Err(e);

@@ -23,7 +23,7 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | 2D-tasojen piirto | `psd-render.ts` | `hs-hahmo` (normaali sekoitus) | 🟡 ei ryhmäeristystä eikä muita sekoitustiloja |
 | Avainruutueditori, liitokset, nivelet | `components/`, `rig-model.ts` | — | ❌ |
 | Esitys/Production-malli, lukitukset, hyväksynnät | `presentation-*.ts`, `production-*.ts` | — | ❌ |
-| MP4-vienti | WebCodecs + työpöydän ExportQueue (FFmpeg/VideoToolbox) | `hs-render::export` (FFmpeg, 30 fps, 60 s, 128 MiB, AAC-ääni, englanninkielinen tekstitysraita `mov_text` + `.srt` videon viereen) | 🟡 ei VideoToolbox-koetta; tekstitys ei ole kuvaan poltettu |
+| MP4-vienti | WebCodecs + työpöydän ExportQueue (FFmpeg/VideoToolbox) | `hs-render::export` (FFmpeg, 30 fps, 60 s, 128 MiB, AAC-ääni, englanninkielinen tekstitysraita `mov_text` + `.srt` videon viereen, valinnainen kuvaan poltettu tekstitys Ubuntu Light -fontilla; valinta Tiedosto-valikossa ja `--tekstitys`) | 🟡 ei VideoToolbox-koetta; tekstityksen tyyli ei ole säädettävä |
 | PNG-sarja (≤300 ruutua) | `animation-export.ts` | `hs-render::export` | ✅ |
 | Ääniraita: repliikit, tehosteet, musiikki, kaiku | `presentation-audio.ts`, `soundtrack.ts`, `sound-cues.ts` | `hs-agents::voice` (repliikit miksattuna 48 kHz, pehmeä rajoitin) | 🟡 tehosteet, musiikki ja kaiku puuttuvat |
 | Kokoro-puhesynteesi ja vientisynkka | `lib/kokoro.ts`, `desktop/` | `hs-voice` (Kokoro-82M puhtaalla Rustilla: candle + loqui-g2p, Metal Macilla; samat ohjesäännöt, välimuisti, oma ääni etusijalla; lataus luvalla, tuonti, poisto) | 🟡 aitoa mallia ei ole ajettu (pilvi estää Hugging Facen); kuuntelu Macilla |

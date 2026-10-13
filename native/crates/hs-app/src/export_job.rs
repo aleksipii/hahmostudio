@@ -26,7 +26,7 @@ pub struct ExportJob {
 }
 
 impl ExportJob {
-    pub fn start(script: String, cast: Vec<CharacterParams>, voice: ExportVoice, request: RenderRequest, backend: Backend, size: (u32, u32)) -> ExportJob {
+    pub fn start(script: String, cast: Vec<CharacterParams>, voice: ExportVoice, request: RenderRequest, backend: Backend, size: (u32, u32), subtitles: (bool, bool)) -> ExportJob {
         let done = Arc::new(AtomicU32::new(0));
         let total = Arc::new(AtomicU32::new(1));
         let cancel = Arc::new(AtomicBool::new(false));
@@ -46,6 +46,7 @@ impl ExportJob {
             p.width = size.0;
             p.height = size.1;
             p.backend = backend;
+            (p.subtitle_track, p.subtitle_burn) = subtitles;
             p.render_request = request;
             p.cancel = c;
             p.progress = Some(Arc::new(move |done, total| {

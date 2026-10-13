@@ -92,6 +92,10 @@ pub struct Production {
     pub cast_params: Vec<CharacterParams>,
     pub backend: Backend,
     pub render_request: RenderRequest,
+    /// Englanninkielinen tekstitysraita ja `.srt` MP4-vientiin (oletuksena päällä).
+    pub subtitle_track: bool,
+    /// Tekstitys poltettuna kuvaan MP4-viennissä (oletuksena pois).
+    pub subtitle_burn: bool,
     pub cancel: Arc<AtomicBool>,
     pub progress: Option<Arc<dyn Fn(u32, u32) + Send + Sync>>,
 
@@ -132,6 +136,8 @@ impl Production {
             cast_params: Vec::new(),
             backend: Backend::Auto,
             render_request: RenderRequest::None,
+            subtitle_track: true,
+            subtitle_burn: false,
             cancel: Arc::new(AtomicBool::new(false)),
             progress: None,
             voice_engine: None,
