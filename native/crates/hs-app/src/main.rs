@@ -14,6 +14,7 @@ mod editing_ui;
 mod production_ui;
 mod blocks_ui;
 mod script_assist_ui;
+mod motion_assets_ui;
 mod viewport;
 mod voice_ui;
 

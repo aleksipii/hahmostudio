@@ -198,3 +198,6 @@ pub mod project_directory;
 pub mod subtitles;
 
 pub mod audit;
+
+pub mod motion_library;
+pub mod motion_assets;

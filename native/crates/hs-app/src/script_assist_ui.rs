@@ -6,6 +6,7 @@ use hs_script::assist::{self, EditProposal, LineCheck};
 #[derive(Default)]
 pub struct ScriptAssistState {
     pub line: usize,
+    library: crate::motion_assets_ui::MotionAssetsState,
     query: String,
     source: String,
     checks: Vec<LineCheck>,
@@ -41,6 +42,7 @@ impl ScriptAssistState {
             self.suggestion_key=Some(key);
         }
         egui::ScrollArea::vertical().id_salt("script-assist").max_height(240.0).show(ui,|ui| {
+            self.library.ui(ui, script);
             egui::CollapsingHeader::new("Rivikohtainen tarkistus").show(ui,|ui| {
             ui.label("Valitse rivi tarkistaaksesi sen ohjeet. Puuttuva ääni tarkistetaan myös Vienti-välilehdellä.");
             egui::ScrollArea::vertical().id_salt("script-line-checks").max_height(120.0).show_rows(ui,ui.text_style_height(&egui::TextStyle::Body)+6.0,self.checks.len(),|ui,range| {
@@ -115,6 +117,9 @@ impl ScriptAssistState {
                         }
                     });
                 });
+        }
+        if self.preview.is_none() && accepted.is_none() {
+            accepted = self.library.preview(ctx, script);
         }
         accepted
     }

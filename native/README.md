@@ -184,3 +184,5 @@ vaatii nimetyn, määritetyn hahmon ja toteutetut resurssit. Vienti-välilehden
 kohtausajan, esineet/puhelimen, taustan ja kuvakulmat. CLI: `audit` / `explain`.
 Puhe voi pidentää kohtausta, mutta ei kirjoitettua liikkeen kestoa.
 Sopimus ja hyväksynnän rajat: [PRODUCTION-RULES.md](PRODUCTION-RULES.md).
+
+Valmiit liikevariaatiot ja 3D-hahmot sisältävä glTF-vienti: [MOTION-ASSETS.md](MOTION-ASSETS.md).

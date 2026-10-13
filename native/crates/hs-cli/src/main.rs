@@ -369,6 +369,15 @@ fn main() -> ExitCode {
                 if report.allowed() {Ok(())}else{Err("Tuotannon tarkistus esti lopullisen kokoamisen.".into())}
             })
         }
+        "motion-assets" => args.output.as_ref().ok_or_else(|| "Anna uusi aineistokansio: motion-assets -o kansio".to_string()).and_then(|path| {
+            let summary=hs_agents::motion_assets::export(path,&hs_agents::motion_library::catalog())?;
+            println!("{}",serde_json::to_string_pretty(&summary).map_err(|e|e.to_string())?);
+            Ok(())
+        }),
+        "motion-catalog" => {
+            println!("{}",serde_json::to_string_pretty(&hs_agents::motion_library::catalog()).unwrap());
+            Ok(())
+        },
         "tarkista" | "check" => check(&args),
         "renderöi" | "renderoi" | "render" => render(&args),
         "hahmo" => hahmo(&args),
