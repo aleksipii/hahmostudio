@@ -188,15 +188,6 @@ impl RustRenderAgent {
     }
 }
 
-/// Poistaa väliaikaisen tiedoston, kun vienti päättyy millä tavalla tahansa.
-struct TempFile(std::path::PathBuf);
-
-impl Drop for TempFile {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_file(&self.0);
-    }
-}
-
 fn fail(e: impl ToString) -> AgentError {
     AgentError::Failed { agent: "render", message: e.to_string() }
 }
@@ -255,12 +246,19 @@ impl StudioAgent for RustRenderAgent {
                 format!("{total} PNG-ruutua kansioon {} ({backend})", dir.display())
             }
             RenderRequest::Mp4(path) => {
-                // Ääniraita väliaikaiseen WAV-tiedostoon viennin ajaksi.
-                let audio = TempFile(path.with_extension("aani.wav"));
-                if let Some(mix) = &p.mix {
-                    std::fs::write(&audio.0, hs_voice::wav::encode(mix)).map_err(fail)?;
+                if !p.allow_silent_export && p.voice_lines.iter().any(|l|l.speech.is_none()) {
+                    return Err(fail("Repliikeiltä puuttuu ääni. Tuota tai tuo ääni, tai valitse nimenomaisesti hiljainen luonnosvienti."));
                 }
-                let audio_arg = p.mix.is_some().then_some(audio.0.as_path());
+                // Ääniraita väliaikaiseen WAV-tiedostoon viennin ajaksi.
+                let audio = if let Some(mix) = &p.mix {
+                    use std::io::Write;
+                    let parent = path.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or_else(|| std::path::Path::new("."));
+                    let mut temporary = tempfile::Builder::new().prefix(".koeta-audio-").suffix(".wav").tempfile_in(parent).map_err(fail)?;
+                    temporary.write_all(&hs_voice::wav::encode(mix)).map_err(fail)?;
+                    temporary.flush().map_err(fail)?;
+                    Some(temporary)
+                } else { None };
+                let audio_arg = audio.as_ref().map(|file| file.path());
                 let mut writer = Mp4Writer::create_with_audio(path, p.width, p.height, p.fps.0, audio_arg).map_err(fail)?;
                 for i in 0..total {
                     if p.cancel.load(Ordering::Relaxed) {

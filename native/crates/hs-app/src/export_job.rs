@@ -13,6 +13,8 @@ use std::sync::Arc;
 pub struct ExportVoice {
     pub engine: Option<Arc<dyn hs_voice::SpeechEngine>>,
     pub fps: Option<hs_core::Fps>,
+    pub allow_silent: bool,
+    pub recorded_lines: hs_agents::recording::RecordedLines,
     pub soundtrack: Vec<hs_edit::Track>,
     pub caption_settings: hs_subtitle::CaptionSettings,
     pub caption_overrides: Vec<hs_subtitle::CaptionCue>,
@@ -49,6 +51,8 @@ impl ExportJob {
             p.speech_cache = voice.cache;
             p.own_audio = voice.own_audio;
             p.saved_speech = voice.saved_speech;
+            p.allow_silent_export = voice.allow_silent;
+            p.recorded_lines = voice.recorded_lines;
             p.soundtrack = voice.soundtrack;
             p.caption_settings = voice.caption_settings;
             p.caption_overrides = voice.caption_overrides;

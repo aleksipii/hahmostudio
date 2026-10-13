@@ -236,7 +236,7 @@ fn validate(series: &Series) -> Result<(), ProjectError> {
         for asset in &e.assets {
             if !id_valid(&asset.id)
                 || !asset_ids.insert(&asset.id)
-                || !matches!(asset.kind.as_str(), "image" | "editing")
+                || !matches!(asset.kind.as_str(), "image" | "editing" | "recordings")
                 || !asset_kinds.insert(&asset.kind)
                 || asset.bytes.len() > MAX_BYTES
             {
@@ -810,6 +810,11 @@ mod tests {
                 id: "editing-document".into(),
                 kind: "editing".into(),
                 bytes: b"opaque editing domain".to_vec(),
+            },
+            ProjectAsset {
+                id: "recording-metadata".into(),
+                kind: "recordings".into(),
+                bytes: br#"{"version":1,"records":{}}"#.to_vec(),
             },
         ];
         s

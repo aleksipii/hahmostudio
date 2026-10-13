@@ -12,28 +12,28 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | Alue | Nykyinen toteutus (TS) | Natiivi (Rust) | Tila |
 | --- | --- | --- | --- |
 | Käsikirjoituksen perussäännöt | `lib/screenplay.ts` | `hs-script` (samat tagit, rajat, ei arvauksia) | ✅ |
-| Laaja käsikirjoitustunnistin (FI/EN, ilmeet, katseet, kuvakoot, kameraliikkeet, sanasto) | `lib/script-recognizer*.ts`, `lib/episode/`, `script-grammar.ts` | — | ❌ |
-| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | — | ❌ |
+| Laaja käsikirjoitustunnistin (FI/EN, ilmeet, katseet, kuvakoot, kameraliikkeet, sanasto) | `lib/script-recognizer*.ts`, `lib/episode/`, `script-grammar.ts` | `hs-script`: tarkat EN/FI-tagit, ilmeet ja katseet | 🟡 ei koko TS-sanastoa |
+| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | `hs-edit::script`, `hs-app::blocks_ui`: lähderivien muokkaus/järjestys | 🟡 vapaa ajoitus ja raahaus puuttuvat |
 | Jaksorakentaja ja korjausehdotukset | `lib/episode-builder.ts`, `review-suggestions.ts` | — | ❌ |
 | `.hahmo` v1–v5 luku | `lib/project-file.ts` | `hs-hahmo` (perusrakenne, kuvat, rig, raidat) | 🟡 |
 | `.hahmo` kirjoitus, resurssimanifesti, tarkistussummat, historia | `lib/project-file.ts`, `lib/studio/` | — | ❌ |
 | `.sarja`-jaksot | `lib/series-archive.ts` | `hs-project`: erillinen natiivi `.koeta` tallentaa useita jaksoja ja ääniresursseja | 🟡 vanhan `.sarja`-muodon tuonti puuttuu |
-| PSD-tuonti (ID:t, hierarkia, rajat 100 MiB / 16 MP / 1000 tasoa) | `lib/psd-import.ts`, `psd.worker.ts` | — | ❌ |
+| PSD-tuonti (ID:t, hierarkia, rajat 100 MiB / 16 MP / 1000 tasoa) | `lib/psd-import.ts`, `psd.worker.ts` | `hs-image::psd`: RAW/RLE, RGB/harmaa 8 bit, ID/hierarkia/offsetit | 🟡 maskit, eristetyt ryhmät ja efektit hylätään |
 | 2D-rigin muunnokset ja easing (linear/smooth/hold/bezier) | `animation-transform.ts`, `animation-model.ts` | `hs-hahmo` (sama kaava) | ✅ |
 | 2D-tasojen piirto | `psd-render.ts` | `hs-hahmo` (normaali sekoitus) | 🟡 ei ryhmäeristystä eikä muita sekoitustiloja |
 | Avainruutueditori, liitokset, nivelet | `components/`, `rig-model.ts` | — | ❌ |
 | Esitys/Production-malli, lukitukset, hyväksynnät | `presentation-*.ts`, `production-*.ts` | — | ❌ |
 | MP4-vienti | WebCodecs + työpöydän ExportQueue (FFmpeg/VideoToolbox) | `hs-render::export` (FFmpeg, 30 fps, 60 s, 128 MiB, AAC-ääni) | 🟡 ei VideoToolbox-koetta |
 | PNG-sarja (≤300 ruutua) | `animation-export.ts` | `hs-render::export` | ✅ |
-| Ääniraita: repliikit, tehosteet, musiikki, kaiku | `presentation-audio.ts`, `soundtrack.ts`, `sound-cues.ts` | `hs-agents::voice` (repliikit miksattuna 48 kHz, pehmeä rajoitin) | 🟡 tehosteet, musiikki ja kaiku puuttuvat |
+| Ääniraita: repliikit, tehosteet, musiikki, kaiku | `presentation-audio.ts`, `soundtrack.ts`, `sound-cues.ts` | `hs-agents::voice`, `hs-edit`: repliikit, WAV-musiikki/tehosteet, häivytys ja ducking | 🟡 kaiku puuttuu |
 | Kokoro-puhesynteesi ja vientisynkka | `lib/kokoro.ts`, `desktop/` | `hs-voice` (Kokoro-82M puhtaalla Rustilla: candle + loqui-g2p, Metal Macilla; samat ohjesäännöt, välimuisti, oma ääni etusijalla; lataus luvalla, tuonti, poisto) | 🟡 aitoa mallia ei ole ajettu (pilvi estää Hugging Facen); kuuntelu Macilla |
 | Mikrofoni, äänitys, Rhubarb-visemit, whisper.cpp | `microphone.ts`, `desktop/` | `hs-audio` (cpal: toisto, äänitys), `hs-lipsync` (10 visemiä äänteistä tai äänestä, Adobe Characterin tapaan) | 🟡 whisper.cpp puuttuu; mikrofoni testaamatta oikealla laitteella |
 | Kamera ja kasvojenseuranta (MediaPipe) | `face-motion.ts` | `hs-camera` (nokhwa-kaappaus, pään kääntö/nyökkäys/kallistus ihonvärin ja CamShiftin avulla) | 🟡 ei kasvopisteitä (silmät, kulmat); kamera testaamatta oikealla laitteella |
-| Palautus: autosave, revisiot, keskeytetty renderöinti | `desktop/`, `lib/studio/recovery*.ts` | — | ❌ |
+| Palautus: autosave, revisiot, keskeytetty renderöinti | `desktop/`, `lib/studio/recovery*.ts` | `hs-project::recovery`: kaksi autosavea, nimetyt revisiot, palautus kopiona | 🟡 renderöintityön palautus puuttuu |
 | Pilvirenderöinti (opt-in, nollakustannus) | `lib/cloud-render/`, `desktop/cloud-*.mjs` | — | ❌ |
 | Tuotantonäkymät: kommentit, tehtävät, työjono, CSV | `lib/studio/` | — | ❌ |
 | Saavutettavuus: näppäimistö, VoiceOver | React-komponentit | egui (AccessKit mahdollinen) | ❌ ei todennettu |
-| Mac-paketointi (DMG, arm64/x64) | `scripts/package-*.mjs` | — (`cargo bundle` tms.) | ❌ |
+| Mac-paketointi (DMG, arm64/x64) | `scripts/package-*.mjs` | `native/scripts/package-macos.py`: .app, valinnainen codesign/DMG | 🟡 Linux-fixturet testattu; oikea Mac avoin |
 
 ## Natiivissa jo nyt (uutta tai korvaavaa)
 
@@ -74,3 +74,10 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 - Käyttöliittymä on testattu Xvfb-ympäristössä kuvakaappauksella, ei Macilla.
 - macOS-käännöstä ei voitu tarkistaa pilvessä (nokhwa ja candle-Metal tarvitsevat Macin SDK:n).
   Paketoitu sovellus tarvitsee Info.plistiin `NSMicrophoneUsageDescription` ja `NSCameraUsageDescription`.
+
+
+12.10.2026 Codex/Claude-integraatio: natiivi `.koeta` V2 säilyttää kuvaeditorin,
+äänileikkauksen, tekstitysasetukset ja äänitysten tekstisidokset. `hs-subtitle`
+polttaa tekstitykset renderöityihin ruutuihin ja tuottaa SRT/VTT:n.
+MP4-työnkulku on testattu oikealla FFmpegillä, simuloiduilla puheäänillä.
+Tästä ei seuraa aitoa Kokoro-, Mac- tai Adobe-pariteettihyväksyntää.

@@ -87,6 +87,11 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
 
 fn read_script(a: &Args) -> Result<String, String> {
     match a.positional.first() {
+        Some(p) if p.ends_with(".koeta") => {
+            let series=hs_agents::project::load_series(std::path::Path::new(p)).map_err(|e|e.to_string())?;
+            let episode=match a.episode {Some(n)=>series.episodes.iter().find(|e|e.number==n).ok_or("Episode not found")?,None=>series.episodes.first().ok_or("Empty series")?};
+            Ok(episode.script.clone())
+        }
         Some(p) => std::fs::read_to_string(p).map_err(|e| format!("{p}: {e}")),
         None => Ok(EXAMPLE.to_string()),
     }
@@ -94,11 +99,13 @@ fn read_script(a: &Args) -> Result<String, String> {
 
 fn production(a: &Args) -> Result<Production, String> {
     let mut p = if let Some(path)=a.positional.first().filter(|path|path.ends_with(".koeta")) {
-        let series=hs_project::load(std::path::Path::new(path)).map_err(|e|e.to_string())?;
+        let series=hs_agents::project::load_series(std::path::Path::new(path)).map_err(|e|e.to_string())?;
         let episode=match a.episode { Some(number)=>series.episodes.iter().find(|e|e.number==number).ok_or("Episode not found")?, None=>series.episodes.first().ok_or("Empty series")? };
         hs_agents::project::restore_checked(episode)?
     } else {Production::new(read_script(a)?)};
     if a.no_captions {p.caption_settings.enabled=false;}
+    p.allow_silent_export=a.speech==SpeechMode::Off;
+    if a.speech==SpeechMode::Off {p.own_audio.clear();p.saved_speech.clear();p.recorded_lines.clear();}
     if let Some((w, h)) = a.size {
         p.width = w;
         p.height = h;

@@ -348,6 +348,15 @@ pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
         ui.label(RichText::new(e).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)).small());
     }
     ui.separator();
+    if let Some((rec, RecordTarget::Line(key))) = &app.voice.recorder {
+        let key = key.clone();
+        ui.label(format!("Äänitys käynnissä: {:.1} s", rec.seconds()));
+        if ui.button("Lopeta ja säilytä repliikin äänitys").clicked() {
+            let (rec, _) = app.voice.recorder.take().unwrap();
+            save_recording(app, &key, rec.finish());
+        }
+        ui.ctx().request_repaint();
+    }
     ui.label(RichText::new("Repliikit").strong());
     ui.label(RichText::new("Kokoro puhuu englantia. Suomenkieliset rivit voit äänittää itse: huulisynkka lukee rivin tekstin äänteinä.").weak().small());
     let lines = app.production.voice_lines.clone();
@@ -393,6 +402,7 @@ pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
                     } else if app.voice.recorder.is_none() && ui.small_button("Äänitä").clicked() {
                         match Recorder::start() {
                             Ok(r) => {
+                                app.production.recorded_lines.insert(l.key.clone(), hs_agents::recording::RecordedLine {speaker:l.speaker.clone(),text:l.text.clone()});
                                 app.voice.recorder = Some((r, RecordTarget::Line(l.key.clone())));
                                 app.voice.recorder_error = None;
                             }

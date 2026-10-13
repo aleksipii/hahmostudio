@@ -51,6 +51,7 @@ pub struct VoiceLine {
     pub status: LineStatus,
     pub notices: Vec<String>,
     pub speech: Option<Arc<Speech>>,
+    pub provenance: Option<hs_voice::engine::Provenance>,
 }
 
 /// Aikajanalle sijoitettu puheleike.
@@ -102,6 +103,8 @@ pub struct Production {
     pub saved_speech: HashMap<String, hs_project::AudioBinding>,
     /// Rivit, joiden huomautukset (esim. tukematon sulkeohje) käyttäjä on hyväksynyt.
     pub accepted_notices: BTreeSet<String>,
+    pub recorded_lines: crate::recording::RecordedLines,
+    pub allow_silent_export: bool,
     pub soundtrack: Vec<hs_edit::Track>,
     pub caption_settings: hs_subtitle::CaptionSettings,
     pub caption_overrides: Vec<hs_subtitle::CaptionCue>,
@@ -140,6 +143,8 @@ impl Production {
             own_audio: HashMap::new(),
             saved_speech: HashMap::new(),
             accepted_notices: BTreeSet::new(),
+            recorded_lines: Default::default(),
+            allow_silent_export: false,
             soundtrack: Vec::new(),
             caption_settings: Default::default(),
             caption_overrides: Vec::new(),

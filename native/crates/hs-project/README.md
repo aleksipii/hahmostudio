@@ -13,7 +13,7 @@ format, not a reader/writer for legacy `.sarja` or `.hahmo`.
 - `AudioSource::Own` identifies user audio. `Synthesized { engine, voice, speed,
   model_version, cache_key }` carries synthesis provenance. Callers must preserve
   user audio priority and only reuse synthesized audio for a matching cache key.
-- `ProjectAsset { id, kind, bytes }` stores opaque `image` or `editing`
+- `ProjectAsset { id, kind, bytes }` stores opaque `image`, `editing` or `recordings`
   resources. IDs are unique per episode; at most one resource of each kind is
   accepted. Content must be domain-validated by consumers before application.
 - `captions` preserves editable `hs_subtitle::CaptionCue` values and
@@ -34,7 +34,7 @@ is currently represented by the same `Own` provenance.
 The ZIP contains one `manifest.json`, numbered `audio/N.f32` entries and
 optional `assets/N.bin` entries. The manifest includes `format: "koeta-series"`,
 `version: 2`, domain values, caption data, resource paths, lengths and SHA-256
-checksums. Asset bytes are opaque and may contain image/editing domain formats.
+checksums. Asset bytes are opaque and may contain image/editing domain formats or versioned recording provenance metadata.
 No domain image or editing decoder runs inside this archive layer. Audio entries are raw little-endian f32 mono samples, preserving
 sample bits exactly (including negative zero), unlike 16-bit PCM conversion.
 The manifest sample rate and sample count determine decoding.

@@ -56,6 +56,7 @@ pub enum LeftTab {
     Performance,
     Image,
     Edit,
+    Export,
 }
 
 /// Avattu vanha `.hahmo`-projekti (2D-leikehahmo) esikatselua varten.
@@ -126,6 +127,7 @@ impl StudioApp {
                 Some("esitys" | "performance") => LeftTab::Performance,
                 Some("kuva" | "image") => LeftTab::Image,
                 Some("leikkaus" | "edit") => LeftTab::Edit,
+                Some("vienti" | "export") => LeftTab::Export,
                 _ => LeftTab::Script,
             },
             screenshot: options.screenshot,
@@ -306,6 +308,8 @@ impl eframe::App for StudioApp {
         panels::cast_panel(self, ctx);
         if self.left_tab == LeftTab::Image {
             egui::CentralPanel::default().show(ctx, |ui| self.image.ui(ui));
+        } else if self.left_tab == LeftTab::Export {
+            crate::production_ui::export(self,ctx);
         } else if self.left_tab == LeftTab::Edit {
             crate::production_ui::show(self, ctx);
         } else { panels::stage(self, ctx, frame); }

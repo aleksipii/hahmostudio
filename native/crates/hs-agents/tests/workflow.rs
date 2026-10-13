@@ -38,10 +38,14 @@ fn saved_english_episode_restores_music_images_captions_and_exports() {
     assert_ne!(captioned.rgba,plain.rgba,"captions must be burned into real output pixels");
     restored.caption_settings.enabled=true;
     if hs_render::export::find_ffmpeg().is_some() {
+        let sibling=dir.path().join("episode.aani.wav");
+        std::fs::write(&sibling,b"user audio must survive").unwrap();
         restored.backend=Backend::Cpu;
         restored.render_request=RenderRequest::Mp4(dir.path().join("episode.mp4"));
         pipe.mark_dirty(Slot::RenderRequest);pipe.run(&mut restored).unwrap();
         assert!(std::fs::metadata(dir.path().join("episode.mp4")).unwrap().len()>1000);
+        assert_eq!(std::fs::read(sibling).unwrap(),b"user audio must survive");
+        assert!(!std::fs::read_dir(dir.path()).unwrap().any(|entry| entry.unwrap().file_name().to_string_lossy().starts_with(".koeta-audio-")));
     }
 }
 #[test]

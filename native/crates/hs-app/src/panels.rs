@@ -42,8 +42,8 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     }
                 }
                 ui.separator();
-                let can_export = app.export.is_none() && app.production.plan.as_ref().is_some_and(|p| p.is_assemblable());
-                if ui.add_enabled(can_export, egui::Button::new("Vie MP4…")).clicked() {
+                let can_export = app.voice.recorder.is_none() && app.export.is_none() && app.production.plan.as_ref().is_some_and(|p| p.is_assemblable());
+                if ui.add_enabled(can_export && (app.production.allow_silent_export || app.production.voice_lines.iter().all(|l| l.speech.is_some())), egui::Button::new("Vie MP4…")).clicked() {
                     ui.close_menu();
                     if let Some(p) = rfd::FileDialog::new().set_file_name("jakso.mp4").save_file() {
                         start_export(app, RenderRequest::Mp4(p));
@@ -88,11 +88,17 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
     });
 }
 
-fn start_export(app: &mut StudioApp, request: RenderRequest) {
+pub fn start_export(app: &mut StudioApp, request: RenderRequest) {
+    if app.voice.recorder.is_some() || app.export.is_some() {
+        app.status = "Lopeta äänitys tai nykyinen vienti ennen uutta vientiä.".into();
+        return;
+    }
     let backend = if app.viewport.is_gpu() { Backend::Auto } else { Backend::Cpu };
     // Vienti käyttää mallia suoraan (odottaa puheen valmistumisen), ei käyttöliittymän taustajonoa.
     let voice = ExportVoice {
         fps: Some(app.production.fps),
+        allow_silent: app.production.allow_silent_export,
+        recorded_lines: app.production.recorded_lines.clone(),
         soundtrack: app.production.soundtrack.clone(),
         caption_settings: app.production.caption_settings.clone(),
         caption_overrides: app.production.caption_overrides.clone(),
@@ -255,13 +261,14 @@ pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
             ui.selectable_value(&mut app.left_tab, LeftTab::Performance, "Esitys");
             ui.selectable_value(&mut app.left_tab, LeftTab::Image, "Kuva");
             ui.selectable_value(&mut app.left_tab, LeftTab::Edit, "Leikkaus");
+            ui.selectable_value(&mut app.left_tab, LeftTab::Export, "Vienti");
         });
         ui.separator();
         match app.left_tab {
             LeftTab::Script => script_tab(app, ui),
             LeftTab::Voice => crate::voice_ui::voice_tab(app, ui),
             LeftTab::Performance => crate::voice_ui::performance_tab(app, ui),
-            LeftTab::Image | LeftTab::Edit => { ui.label("Työtila avautuu keskialueelle."); },
+            LeftTab::Image | LeftTab::Edit | LeftTab::Export => { ui.label("Työtila avautuu keskialueelle."); },
         }
     });
 }

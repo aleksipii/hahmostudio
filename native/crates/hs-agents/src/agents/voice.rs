@@ -59,12 +59,23 @@ impl StudioAgent for VoiceAgent {
             let key = hs_voice::spoken::line_key(&speaker, &b.text);
             lines.push((beat, b.speaker.clone(), DialogueLine { id: key, speaker, text: b.text.clone() }));
         }
+        for (_,speaker,line) in &lines {
+            if p.own_audio.contains_key(&line.id) {
+                p.recorded_lines.entry(line.id.clone()).or_insert_with(|| crate::recording::RecordedLine {speaker:speaker.clone(),text:line.text.clone()});
+            }
+        }
+        let current_keys=lines.iter().map(|l|l.2.id.clone()).collect();
+        let own_keys=p.own_audio.keys().cloned().collect();
         let own: HashMap<String, Arc<Audio>> = p.own_audio.clone();
         let mut out: Vec<VoiceLine> = Vec::new();
         let voice_for = |s: &str| voice_for(p, s);
         let has_own = |id: &str| own.contains_key(id);
         let mut results = Vec::new();
-        for (_, _, line) in &lines {
+        for (_, speaker, line) in &lines {
+            if !p.accepted_notices.contains(&line.id) && crate::recording::needs_review(speaker,&line.id,&current_keys,&own_keys,&p.recorded_lines) {
+                results.push((LineStatus::NeedsReview,vec!["Puhujan aiempi oma äänite on säilytetty, mutta sen teksti ei ole enää käsikirjoituksessa. Hyväksy uusi puhe tai äänitä tämä rivi itse.".into()],None,None));
+                continue;
+            }
             if let Some(binding) = p.saved_speech.get(&line.id).filter(|_| !has_own(&line.id)) {
                 if saved_matches(p, line, binding) {
                     results.push((LineStatus::Cached, vec![], Some(Arc::new(binding.speech.clone())), None));
@@ -90,7 +101,7 @@ impl StudioAgent for VoiceAgent {
             }
         }
         for ((beat, speaker, line), (status, notices, speech, provenance)) in lines.into_iter().zip(results) {
-            if let (Some(s), Some(meta)) = (&speech, provenance) {
+            if let (Some(s), Some(meta)) = (&speech, provenance.clone()) {
                 p.saved_speech.insert(line.id.clone(), hs_project::AudioBinding {
                     line_key: line.id.clone(), speech: (**s).clone(),
                     source: hs_project::AudioSource::Synthesized {
@@ -104,7 +115,13 @@ impl StudioAgent for VoiceAgent {
                 Some(a) => Some(Arc::new(Speech { audio: (**a).clone(), phonemes: Some(line.text.to_lowercase()) })),
                 None => speech,
             };
-            out.push(VoiceLine { beat, key: line.id, speaker, text: line.text, status, notices, speech });
+            let provenance = if own.contains_key(&line.id) { None } else {
+                provenance.or_else(|| p.saved_speech.get(&line.id).and_then(|binding| match &binding.source {
+                    hs_project::AudioSource::Synthesized {engine,voice,speed,model_version,cache_key}=>Some(hs_voice::engine::Provenance{engine:engine.clone(),voice:voice.clone(),speed:*speed,model_version:model_version.clone(),key:cache_key.clone()}),
+                    hs_project::AudioSource::Own=>None,
+                }))
+            };
+            out.push(VoiceLine { beat, key: line.id, speaker, text: line.text, status, notices, speech, provenance });
         }
         let spoken = out.iter().filter(|l| l.speech.is_some()).count();
         let summary = match &p.voice_engine {

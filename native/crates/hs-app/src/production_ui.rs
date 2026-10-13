@@ -61,3 +61,27 @@ pub fn show(app: &mut StudioApp, ctx: &egui::Context) {
         });
     });
 }
+
+pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
+    egui::CentralPanel::default().show(ctx,|ui| {
+        ui.heading("Vie englanninkielinen jakso");
+        let missing=app.production.voice_lines.iter().filter(|line|line.speech.is_none()).count();
+        ui.label(format!("{:.2} s · {} × {} · {} fps",app.duration(),app.production.width,app.production.height,app.production.fps.0));
+        if missing>0 {ui.colored_label(egui::Color32::YELLOW,format!("{missing} repliikiltä puuttuu valmis ääni."));}
+        ui.checkbox(&mut app.production.allow_silent_export,"Salli luonnos, jossa puuttuvat repliikit jäävät hiljaisiksi");
+        ui.checkbox(&mut app.production.caption_settings.enabled,"Tekstitykset käytössä");
+        ui.checkbox(&mut app.production.caption_settings.burn_in,"Polta tekstitykset videoon");
+        ui.horizontal(|ui|for (label,size) in [("Pystyvideo",(1080,1920)),("YouTube",(1920,1080)),("Neliö",(1080,1080))] {
+            if ui.button(label).clicked(){app.production.width=size.0;app.production.height=size.1;app.production.fps=hs_core::Fps::EXPORT;app.pipeline.mark_dirty(hs_agents::Slot::Audio);app.run_pipeline();}
+        });
+        ui.label("MP4: H.264 + AAC, 30 fps, enintään 60 sekuntia ja 128 MiB. Aiempi tiedosto säilyy, jos vienti epäonnistuu.");
+        let ready=app.export.is_none() && app.voice.recorder.is_none() && app.production.plan.as_ref().is_some_and(|p|p.is_assemblable());
+        if ui.add_enabled(ready && (missing==0 || app.production.allow_silent_export),egui::Button::new("Vie MP4…")).clicked(){
+            if let Some(path)=rfd::FileDialog::new().set_file_name("jakso.mp4").save_file(){crate::panels::start_export(app,hs_agents::RenderRequest::Mp4(path));}
+        }
+        if ui.add_enabled(ready,egui::Button::new("Vie kansikuva PNG…")).clicked(){
+            if let Some(path)=rfd::FileDialog::new().set_file_name("kansikuva.png").save_file(){crate::panels::start_export(app,hs_agents::RenderRequest::Still{frame:app.frame(),path});}
+        }
+        for line in &app.production.voice_lines {ui.label(format!("{}: {} · {}",line.speaker.as_deref().unwrap_or("Repliikki"),line.text,line.status.finnish()));}
+    });
+}

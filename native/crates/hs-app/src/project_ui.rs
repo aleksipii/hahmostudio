@@ -16,6 +16,7 @@ pub struct ProjectState {
     job: Option<Receiver<Result<JobResult, String>>>,
     confirm_replace: bool,
     new_series: bool,
+    import_directory: bool,
     confirm_close: bool,
     close_after_save: bool,
     allow_close: bool,
@@ -61,6 +62,7 @@ impl ProjectState {
             job: None,
             confirm_replace: false,
             new_series: false,
+            import_directory: false,
             confirm_close: false,
             close_after_save: false,
             allow_close: false,
@@ -74,8 +76,8 @@ impl StudioApp {
         let (tx, rx) = mpsc::channel();
         let ctx = ctx.clone();
         std::thread::spawn(move || {
-            let result = hs_project::load(&path).map_err(|e|e.to_string())
-                .and_then(|s| { validate_workspaces(&s)?; Ok(JobResult::Open(s,path)) })
+            let result = hs_agents::project::load_series(&path).map_err(|e|e.to_string())
+                .and_then(|s| { validate_workspaces(&s)?; Ok(JobResult::Open(s,if path.is_dir(){PathBuf::new()}else{path})) })
                 .map_err(|e| e.to_string());
             let _ = tx.send(result);
             ctx.request_repaint();
@@ -87,11 +89,11 @@ impl StudioApp {
     fn capture_episode(&mut self) -> Result<(),String> {
         self.production.script = self.script.clone();
         let old = &self.project.series.episodes[self.project.selected];
-        let mut snapshot = hs_agents::project::capture(&self.production,old.id.clone(),old.number,old.name.clone());
-        snapshot.assets = vec![
+        let mut snapshot = hs_agents::project::capture_checked(&self.production,old.id.clone(),old.number,old.name.clone())?;
+        snapshot.assets.extend(vec![
             ProjectAsset{id:"image-workspace".into(),kind:"image".into(),bytes:self.image.snapshot()?},
             ProjectAsset{id:"editing-workspace".into(),kind:"editing".into(),bytes:hs_edit::encode_workspace(&self.editing.tracks)?},
-        ];
+        ]);
         self.project.series.episodes[self.project.selected] = snapshot;
         Ok(())
     }
@@ -103,11 +105,12 @@ impl StudioApp {
             let result=match asset.kind.as_str() {
                 "image" => image.restore(&asset.bytes),
                 "editing" => hs_edit::decode_workspace(&asset.bytes).map(|tracks| editing.tracks=tracks),
+                "recordings"=>Ok(()),
                 _ => Err("Tuntematon työtilaresurssi".into()),
             };
             if let Err(e)=result {self.status=e;return;}
         }
-        let mut production=hs_agents::project::restore(episode);
+        let mut production=match hs_agents::project::restore_checked(episode){Ok(p)=>p,Err(e)=>{self.status=e;return;}};
         production.soundtrack=editing.tracks.clone();
         self.playing=false;
         self.voice.attach_project(&mut production,ctx);
@@ -159,14 +162,20 @@ pub fn menu(app: &mut StudioApp, ui: &mut egui::Ui) {
         app.project.job.is_none() && app.voice.recorder.is_none() && app.export.is_none() && !app.image.is_busy();
     ui.add_enabled_ui(can_change, |ui| {
         if ui.button("Uusi sarjaprojekti").clicked() {
+            app.project.import_directory = false;
             app.project.new_series = true;
             app.project.confirm_replace = true;
             ui.close_menu();
         }
         if ui.button("Avaa sarjaprojekti (.koeta)…").clicked() {
+            app.project.import_directory = false;
             app.project.new_series = false;
             app.project.confirm_replace = true;
             ui.close_menu();
+        }
+        if ui.button("Tuo aiempi Koeta-sarjakansio…").clicked() {
+            app.project.new_series=false;app.project.import_directory=true;
+            app.project.confirm_replace=true;ui.close_menu();
         }
         if ui.button("Tallenna sarjaprojekti").clicked() {
             let path = app.project.path.clone().or_else(|| {
@@ -301,7 +310,7 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
         match result {
             Ok(JobResult::Open(series, path)) => {
                 app.project.series = series;
-                app.project.path = Some(path);
+                app.project.path = (!path.as_os_str().is_empty()).then_some(path);
                 app.activate_episode(0, ctx);
                 app.status = "Sarjaprojekti avattu; äänet palautettu projektista.".into();
             }
@@ -362,6 +371,8 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
                     app.project = ProjectState::new(&p);
                     app.activate_episode(0, ctx);
                     app.status = "Uusi sarjaprojekti luotu.".into();
+                } else if app.project.import_directory {
+                    if let Some(path)=rfd::FileDialog::new().pick_folder() {app.open_series(path,ctx);}
                 } else if let Some(path) = rfd::FileDialog::new().add_filter("Koeta", &["koeta"]).pick_file() {
                     app.open_series(path, ctx);
                 }
@@ -375,6 +386,7 @@ fn validate_workspaces(series:&Series)->Result<(),String> {
         match a.kind.as_str() {
             "image"=>{hs_image::Document::decode(&a.bytes)?;},
             "editing"=>{hs_edit::decode_workspace(&a.bytes)?;},
+            "recordings"=>{hs_agents::recording::decode(&a.bytes)?;},
             _=>return Err("Tuntematon työtilaresurssi".into()),
         }
     }} Ok(())

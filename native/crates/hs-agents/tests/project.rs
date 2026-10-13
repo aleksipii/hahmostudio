@@ -3,7 +3,7 @@ use hs_project::Series;
 use hs_voice::{Audio, LineStatus, TestEngine};
 use std::sync::Arc;
 fn reopen(p: &Production) -> Production {
-    let episode = hs_agents::project::capture(p, "pilot".into(), 1, "Pilot".into());
+    let episode = hs_agents::project::capture_checked(p, "pilot".into(), 1, "Pilot".into()).unwrap();
     let bytes = hs_project::encode(&Series {
         id: "show".into(),
         name: "Our show".into(),
@@ -11,7 +11,7 @@ fn reopen(p: &Production) -> Production {
     })
     .unwrap();
     let series = hs_project::decode(&bytes).unwrap();
-    hs_agents::project::restore(&series.episodes[0])
+    hs_agents::project::restore_checked(&series.episodes[0]).unwrap()
 }
 fn generated() -> Production {
     let mut p =
@@ -135,4 +135,53 @@ fn changed_model_version_invalidates_saved_synthesis() {
         .all(|l| l.status == LineStatus::Synthesized));
     assert!(p.saved_speech.values().all(|binding| matches!(&binding.source,
         hs_project::AudioSource::Synthesized { model_version, .. } if model_version == "updated-test-model")));
+}
+
+#[test]
+fn edited_own_recording_requires_review_after_portable_reopen() {
+    let mut p = generated();
+    let original_key = p.voice_lines[0].key.clone();
+    p.own_audio.insert(original_key.clone(), Arc::new(Audio {sample_rate:24000,samples:vec![0.125;24000]}));
+    Pipeline::default().run(&mut p).unwrap();
+    assert!(p.recorded_lines.contains_key(&original_key));
+    p.script = p.script.replace("Hello there!", "Hello again, everyone!");
+    let mut loaded = reopen(&p);
+    let engine = Arc::new(TestEngine::default());
+    loaded.voice_engine = Some(engine.clone());
+    Pipeline::default().run(&mut loaded).unwrap();
+    assert_eq!(loaded.voice_lines[0].status, LineStatus::NeedsReview);
+    assert!(loaded.voice_lines[0].speech.is_none());
+    assert!(engine.calls.lock().unwrap().is_empty());
+    assert_eq!(loaded.own_audio[&original_key].samples[0],0.125);
+    let edited_key = loaded.voice_lines[0].key.clone();
+    loaded.accepted_notices.insert(edited_key);
+    Pipeline::default().run(&mut loaded).unwrap();
+    assert_eq!(loaded.voice_lines[0].status,LineStatus::Synthesized);
+    assert_eq!(engine.calls.lock().unwrap().len(),1);
+    assert_eq!(loaded.own_audio[&original_key].samples[0],0.125);
+}
+
+#[test]
+fn claude_directory_project_imports_without_resynthesis_or_source_changes() {
+    use hs_agents::project_directory::{SeriesProject,Episode};
+    let p=generated();
+    let dir=tempfile::tempdir().unwrap();
+    let root=dir.path().join("earlier.koeta");
+    let mut source=SeriesProject::create(&root,"Earlier show",p.cast_params.clone()).unwrap();
+    let mut draft=Episode {title:"Pilot".into(),script:p.script.clone(),speech:hs_agents::project_directory::speech_in_use(&p.voice_lines),..Default::default()};
+    let key=p.voice_lines[0].key.clone();
+    draft.own_audio.insert(key.clone(),Arc::new(Audio{sample_rate:24000,samples:vec![0.2;24000]}));
+    source.add_episode(&draft).unwrap();
+    let manifest=std::fs::read(root.join("sarja.json")).unwrap();
+    let imported=hs_agents::project::load_series(&root).unwrap();
+    assert_eq!(imported.name,"Earlier show");
+    let portable=dir.path().join("converted.koeta");
+    hs_project::save_atomic(&portable,&imported).unwrap();
+    let mut restored=hs_agents::project::restore_checked(&hs_project::load(&portable).unwrap().episodes[0]).unwrap();
+    let engine=Arc::new(TestEngine::default());restored.voice_engine=Some(engine.clone());
+    Pipeline::default().run(&mut restored).unwrap();
+    assert!(engine.calls.lock().unwrap().is_empty());
+    assert_eq!(restored.voice_lines[0].status,LineStatus::KeptOwnAudio);
+    assert_eq!(restored.voice_lines[1].status,LineStatus::Cached);
+    assert_eq!(std::fs::read(root.join("sarja.json")).unwrap(),manifest);
 }

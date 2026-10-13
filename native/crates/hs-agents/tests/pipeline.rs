@@ -52,6 +52,7 @@ fn headless_still_and_mp4_export() {
     p.width = 270;
     p.height = 480;
     p.backend = Backend::Auto;
+    p.allow_silent_export = true; // This existing test deliberately exports a silent animation draft.
     let mut pipe = Pipeline::default();
     pipe.run(&mut p).unwrap();
     for (frame, name) in [(20u32, "vilkutus"), (75, "juoksu"), (150, "puhelin"), (250, "hyppy")] {

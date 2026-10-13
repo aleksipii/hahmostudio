@@ -91,7 +91,7 @@ koko sarjaa. Samassa valikossa voi nimetä sarjan ja jakson, muuttaa jaksonumero
 lisätä jakson ja vaihtaa jaksojen välillä. Jakson vaihto säilyttää nykyisen
 jakson tilan muistissa; tallenna koko sarja levylle ennen sulkemista.
 
-Version 1 projekti sisältää käsikirjoitukset, hahmoparametrit ja niiden
+Version 2 projekti (myös V1 avautuu) sisältää käsikirjoitukset, hahmoparametrit ja niiden
 Kokoro-äänivalinnat, kuvakoon/fps:n, hyväksytyt puhehuomautukset, omat äänet ja
 valmistuneen synteettisen puheen alkuperätietoineen ja foneemeineen. Puhe
 säilytetään häviöttöminä f32-näytteinä ja SHA-256 tarkistetaan avatessa.
@@ -107,14 +107,49 @@ poistetun rivin äänet säilyvät projektissa, eivätkä saman repliikin eri ja
 Tallennus tehdään taustasäikeessä tarkistettuun väliaikaistiedostoon ja
 korvataan atomisesti. Epäonnistunut avaus säilyttää nykyisen projektin,
 epäonnistunut tallennus aiemman tiedoston. Sarjan vaihtamisesta ja sovelluksen
-sulkemisesta pyydetään tallentamattoman työn päätös. Tämä ei ole automaattinen
-sarjan autosave eikä sähkökatkodurabiliteettilupaus. Vanhojen sovellusasetusten
+sulkemisesta pyydetään tallentamattoman työn päätös. Lisäksi erillinen palautusvarasto tallentaa kaksi automaattista kopiota 30 sekunnin
+välein sekä käyttäjän nimeämät revisiot. Palautus ei korvaa alkuperäistä projektia.
+Fyysistä sähkökatkodurabiliteettia ei ole todennettu. Vanhojen sovellusasetusten
 käsikirjoitus/hahmot ja paikalliset äänitykset voidaan tallentaa ensimmäiseksi
 .koeta-projektiksi; vanhoja tiedostoja ei poisteta.
 
 `.koeta` on natiivin studion erillinen formaatti. Se ei korvaa eikä väitä
 lukevansa vanhaa TypeScript-version `.sarja`-arkistoa tai kirjoittavansa
-`.hahmo`-projekteja. V1 ei vielä sisällä tulevaa käsin editoitavaa aikajanaa,
-tekstityksiä, kuvaeditoriresursseja tai autosave-historiaa. Kuva, liike ja kamera
+`.hahmo`-projekteja. V2 sisältää englanninkieliset tekstitykset ja niiden asetukset, kerrostetun
+kuvaeditorin dokumentin, tuodut musiikki-/tehosteraidat sekä omien äänitysten
+alkuperäisen puhujan ja tekstin metatiedot. Oma äänitys säilyy repliikin
+muuttuessa; korvaava synteesi vaatii tällöin tarkistuksen. Kuva, liike ja kamera
 rakennetaan nykyisistä käsikirjoitustageista. Formaatti ja rajat:
 [hs-project/README.md](crates/hs-project/README.md).
+
+
+## Koetan uudet työtilat
+
+- **Kuva:** kerrokset, sivellin, pyyhekumi, täyttö, maskit, siirto,
+  näkyvyys ja peittävyys sekä PNG ja rajattu 8-bittinen RAW/RLE-PSD-tuonti.
+  PSD:n vakaat tunnisteet, hierarkia ja alkuperäinen lähde säilyvät;
+  tuetusta rajasta poikkeava PSD hylätään selvästi.
+- **Leikkaus:** käsikirjoituksen rivipalikat ja niiden järjestys, musiikin ja
+  tehosteiden WAV-tuonti, aloitus, voimakkuus, häivytykset, toisto ja ducking.
+  Repliikkien todellinen ääni ohjaa ajoitusta. Tämä ei ole vapaa videoleikkeiden
+  aikajana eikä Photoshopin kaikkien työkalujen toteutus.
+- **Vienti:** pysty-, vaaka- ja neliöasetukset, kansikuva, englanninkieliset
+  tekstitykset ja MP4. Puuttuva repliikkiääni estää lopullisen viennin;
+  äänettömän luonnoksen voi sallia erikseen. MP4 julkaistaan kohdetiedostoon
+  vasta FFprobe-tarkistuksen ja koko videon dekoodauksen jälkeen.
+- Englanninkieliset ilme- ja katsetagit: tarkat säännöt ovat
+  `crates/hs-script/tests/fixtures/english-family.txt`-esimerkissä.
+
+Mac-paketti: [paketointiohje](packaging/README.md).
+Palautuksen rajat: [RECOVERY.md](RECOVERY.md).
+Arkkitehtuurivertailu: [STORYTOLD-NOTES.md](packaging/STORYTOLD-NOTES.md).
+
+### Todennettu ja vielä avoinna (12.10.2026)
+
+Linuxissa on ajettu natiivin kokonaisuuden testit, tallennus/siirto/avaus,
+kuva- ja äänityötilan resurssit, tekstitysten poltto sekä oikea FFmpeg-MP4-vienti.
+Puhe näissä työnkulkutesteissä on **TestEngine-simulaatiota**.
+Pilviympäristön välityspalvelin estää Hugging Face -mallilatauksen (403).
+Aito Kokoro, kuuntelu, Mac/Metal/paketoitu käynnistys, fyysinen kamera ja
+mikrofoni sekä VoiceOver ovat edelleen hyväksyntätehtäviä.
+Electronia ei poisteta ennen [pariteettilistan](PARITEETTI.md) hyväksyntää.

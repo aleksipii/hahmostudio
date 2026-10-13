@@ -15,13 +15,14 @@ pub mod agents;
 pub mod production;
 pub mod project;
 pub mod captions;
+pub mod recording;
 
 pub use agents::{
     character_mesh::CharacterMeshAgent, cinematography::CinematographyAgent, procedural_motion::ProceduralMotionAgent,
     render::RustRenderAgent, script_parser::ScriptParserAgent,
     voice::{LipSyncAgent, TimingAgent, VoiceAgent},
 };
-pub use production::{Backend, LiveOverride, Production, RenderRequest};
+pub use production::{Backend, LiveOverride, Production, RenderRequest, VoiceLine};
 
 use serde::Serialize;
 use std::collections::BTreeSet;
@@ -191,3 +192,5 @@ impl Pipeline {
         Ok(runs)
     }
 }
+
+pub mod project_directory;
