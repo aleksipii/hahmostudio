@@ -19,6 +19,7 @@ mod motion_plugin_ui;
 mod viewport;
 mod voice_ui;
 mod workflow_ui;
+mod timeline_ui;
 mod session_history;
 mod file_open;
 #[cfg(target_os = "macos")]

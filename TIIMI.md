@@ -1478,3 +1478,52 @@ sekoitukset, rig-/avainruutueditori, kommentit/tehtävät/hyväksynnät/lukituks
 ja pilvirenderöinti puuttuvat/osittaisia. Kontaktien ovet/portaat/pudotus/fysiikka
 puuttuvat; nosto/luovutus ja [at]-päällekkäisyys jo toteutettu.
 Poisto ei ole väite ominaisuuspariteetista tai mitatusta release-keveydestä.
+
+
+## Codex handoff — 13.10.2026: visuaalinen ajoitus
+
+Haara work; lähtöcommit main 3717f9ee74d970e22a103da0ed427ac9499e3499.
+Julkaisucommit otsikolla `Add checked source-backed timeline dragging`.
+Etä-main haettu ja sama ennen julkaisua. Codexin tavoite/omistus tässä tehtävässä:
+- hs-edit/src/script.rs: StartAt-rivimuutos, vain ajoitustagi korvataan;
+  Unicode/dialogi, muut ohjeet, kameran lähderivit ja CRLF säilyvät.
+- hs-agents/src/{lib,timing_edit}.rs ja tests/timing_edit.rs: pudotuksen preflight
+  nykyisen sarjan hahmoilla ja tallennetulla puheella, ajoitus/kamera/kontaktit/
+  audit tarkistetaan. Erillinen kandidaattituotanto, ei live-projektin muutosta
+  eikä synteesiä. Hyväksynnässä tarkistetaan uudelleen nykyisten resurssien kanssa.
+- hs-app/src/{main,app,panels,workflow_ui,timeline_ui}.rs: puhe-/liikekortin
+  vaakaraahaus, ruutuun napsahtava alkuaika, molempien korttien keltainen luonnos,
+  Hyväksy/Peruuta-modal, ristiriita estää hyväksynnän, Näytä virherivi -navigaatio.
+  Muutos kirjoittaa [at]-ohjeen eikä erillistä ristiriitaista ajoitusmallia.
+  Escape peruu aktiivisen raahauksen ja yhteinen Undo palauttaa hyväksynnän.
+- EPISODE-WORKFLOW/PARALLEL-CONTACTS/PARITEETTI: käyttö ja rajat päivitetty.
+
+Todennus Linuxissa:
+- cargo test --locked --workspace -j4:267läpi,0fail,1ohitettu(aitoKokoro),exit0
+  /tmp/koeta-drag-workspace-final.log. Uusi lähderivitesti sekä3integraatiotestiä:
+  ääni/avaus säilyy, todellinen4s oma ääni estää2s päällekkäisyyden,
+  vanhentunut lähde hylätään ja luovutusta ei voi siirtää ennen nostoa.
+- build hs-app/hs-cli ja clippy workspace/all-targets exit0, vanhoja varoituksia,
+  /tmp/koeta-drag-final-{build,clippy}.log. git diff --check läpi.
+- Xvfb :102/lavapipe oikea drag: Maijan rivi0s ->1s, modal näyttää luonnoksen,
+  Hyväksy muuttaa puhe- ja liikeradan, lähteen sekä kameran; CtrlZ palauttaa
+  lähteen/raitojen3s kokonaisuuden. Kuvat /tmp/koeta-drag-{before,preview,accepted,undo}.png.
+  Viimeinen lähdemuokkaimen whitespace-säilytyskorjaus tämän happy-path-GUI:n
+  jälkeen; lopullinen koko testisarja sisälsi korjauksen.
+- Lopullisen buildin GUI: luovutus2s ->0.5s estyy saman hahmon päällekkäisyytenä;
+  Hyväksy disabled, Näytä virherivi6 valitsee rivin6 ja toistopään2s.
+  /tmp/koeta-drag-error.png ja /tmp/koeta-drag-error-navigation.png.
+- Oikea FFmpeg-vienti retimed-demo:4s,120ruutua,160x90,H.264+AAC+mov_text
+  /tmp/koeta-retimed.mp4,exit0; FFprobe4.000s. Dekoodattu SRT sisältää Maijan
+  repliikin alkuaikana1.000s sekä puhujanimellisen päällekkäisyyden Kallen kanssa.
+  Puhe on eksplisiittinen TestEngine, ei Kokoro-kuuntelu.
+- Quota unavailable; prosenttia ei päätelty. Omistetut GUI/Xvfb-prosessit pysäytetty.
+
+Rajat/jatko:
+Raahaus siirtää lähderivin puheen ja liikkeen yhdessä; ei keston venytystä,
+puhujan vaihtoa, itsenäisiä puhe-/liikeraidan ajoituksia tai kamera-/taustaraidan
+raahausta. Myöhemmät rivit ilman [at]-ohjetta voivat siirtyä. Preflight käyttää
+olemassa olevaa puhetta; puuttuva puhe tarkistetaan uudelleen tuotannon jälkeen.
+Oikea Mac/Kokoro/Metal/laitteet/Finder/notarisoitu DMG ja release-mittaukset
+yhä avoinna. Seuraava visuaalinen vaihe: lähderivin kestosäädin samalla
+äänen ensisijaisuussopimuksella; kontaktien lisätoiminnot erillinen domain-työ.

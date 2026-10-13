@@ -17,7 +17,9 @@ liikkeiden ja kuvauksen taiteellinen hyväksyntä tehdään itse esikatselusta.
 5. Raahaa Leikkaus-työtilassa rivi toisen päälle järjestääksesi jaksoa. Myös
    välittömästi edeltävät kameraohjerivit siirtyvät mukana. Muut lähderivit
    säilyvät. Lisää tauko ennen riviä, kun haluat siirtää sitä myöhemmäksi.
-   Inspectorin aloitusaika tai `[at 1s]` ajoittaa eri hahmojen rivit päällekkäin.
+   Aikajanan puhe- tai liikekortin vaakaraahaus näyttää uuden alkuajan luonnoksen,
+   tarkistaa ristiriidat ja pyytää hyväksynnän. Myös inspectorin aloitusaika tai
+   `[at 1s]` ajoittaa eri hahmojen rivit päällekkäin.
    Saman hahmon ristiriitaiset toiminnot estetään; katso [ajoitus- ja kontaktiohje](PARALLEL-CONTACTS.md).
 6. Muokkaa sarjan hahmo-/maailmakirjastoa Leikkaus-työtilassa. Hahmon tallennus
    säilyttää myös äänen, mitat, asun ja tyylin. Pohjan käyttö muuttaa nykyistä

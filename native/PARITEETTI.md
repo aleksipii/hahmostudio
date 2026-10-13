@@ -14,7 +14,7 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | --- | --- | --- | --- |
 | Käsikirjoituksen perussäännöt | `lib/screenplay.ts` | `hs-script` (samat tagit, rajat, ei arvauksia) | ✅ |
 | Laaja käsikirjoitustunnistin (FI/EN, ilmeet, katseet, kuvakoot, kameraliikkeet, sanasto) | `lib/script-recognizer*.ts`, `lib/episode/`, `script-grammar.ts` | `hs-script`: tarkat EN/FI-tagit, ilmeet ja katseet | 🟡 ei koko TS-sanastoa |
-| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | `hs-edit::script`, `hs-app::blocks_ui`: lähderivien muokkaus/järjestys | 🟡 lähderivien raahaus ja [at]-päällekkäisyys toteutettu; vapaa raitaraahaus/Alt-pudotus puuttuu |
+| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | `hs-edit::script`, `hs-app::blocks_ui`: lähderivien muokkaus/järjestys | 🟡 lähderivien järjestysraahaus, aikajanakorttien tarkistettu aloitusraahaus ja [at]-päällekkäisyys toteutettu; keston venytys/itsenäiset puhe-liikeraidat/Alt-pudotus puuttuvat |
 | Jaksorakentaja ja korjausehdotukset | `lib/episode-builder.ts`, `review-suggestions.ts` | `hs-script` diagnostiikka, `hs-app::script_assist_ui` ohje-ehdotukset | 🟡 rajatun ohjekielen ehdotukset; vanha jaksorakentaja puuttuu |
 | `.hahmo` v1–v5 luku | `lib/project-file.ts` | `hs-hahmo` (perusrakenne, kuvat, rig, raidat) | 🟡 |
 | `.hahmo` kirjoitus, resurssimanifesti, tarkistussummat, historia | `lib/project-file.ts`, `lib/studio/` | — | ❌ |
@@ -91,9 +91,9 @@ Tästä ei seuraa aitoa Kokoro-, Mac- tai Adobe-pariteettihyväksyntää.
 1. **Julkaisun hyväksyntä:** aito Kokoro, kokonainen pilotti, Mac/Metal/laitteet,
    Finder sekä allekirjoitettu/notarisoitu itsenäinen DMG. Mittaa release-koko,
    CPU/RAM/energia; Linux-testit eivät korvaa näitä.
-2. **Visuaalinen ajoitus:** vapaa raitojen raahaus, päällekkäisten toimintojen
-   selkeä muokkaus ja rivivirheen tarkka paikannus. `[at]` ja erilliset hahmoradat
-   ovat jo toteutettuja.
+2. **Visuaalinen ajoitus:** aikajanakorttien aloitusraahaus, päällekkäisyysluonnos
+   ja ajoitusvirheen lähderivin paikannus toteutettu. Seuraavaksi keston venytys
+   sekä puheen ja liikkeen itsenäinen muokkaus; nykyinen raahaus siirtää lähderivin yhdessä.
 3. **Kontaktien laatu:** nosto/luovutus on jo toteutettu käsi-IK:lla ja
    otetarkistuksilla; ovet, portaat, pudotus ja törmäysratkaisu ovat avoimia.
 4. **Vanhojen aineistojen yhteensopivuus:** `.sarja`-tuonti, `.hahmo`-täysi

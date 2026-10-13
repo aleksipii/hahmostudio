@@ -191,7 +191,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
         });
         let Some(tl) = app.production.timeline.clone() else { return };
         let duration = tl.duration.seconds().max(0.1) as f32;
-        type Clip = (f32, f32, String, Color32);
+        type Clip = (f32, f32, String, Color32, Option<usize>);
         let rows: Vec<(String, Vec<Clip>)> = {
             let mut rows = Vec::new();
             for track in [TrackKind::Dialogue, TrackKind::Motion, TrackKind::Environment] {
@@ -209,11 +209,11 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                             | EventKind::LookAt { character: speaker, .. } | EventKind::Expression { character: speaker, .. } =>
                                 speaker.as_ref().map_or(index == 0, |s| s.eq_ignore_ascii_case(name)),
                             _ => false,
-                        }).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. }) || !tl.events.iter().any(|other| other.start == e.start && other.source.line == e.source.line && matches!(other.kind, EventKind::ObjectContact { .. }))).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color)).collect();
+                        }).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. }) || !tl.events.iter().any(|other| other.start == e.start && other.source.line == e.source.line && matches!(other.kind, EventKind::ObjectContact { .. }))).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color, Some(e.source.line))).collect();
                         rows.push((format!("{} · {name}", track_label(track)), items));
                     }
                 } else {
-                    let items = tl.on_track(track).filter(|e| !matches!(e.kind, EventKind::WorldObject { .. })).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color)).collect();
+                    let items = tl.on_track(track).filter(|e| !matches!(e.kind, EventKind::WorldObject { .. })).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color, None)).collect();
                     rows.push((track_label(track).to_string(), items));
                 }
             }
@@ -233,7 +233,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                             ShotKind::LowAngle => Color32::from_rgb(0x5a, 0x8a, 0x4a),
                             ShotKind::HighAngle => Color32::from_rgb(0x4a, 0x8a, 0x6a),
                         };
-                        (s.start, s.end, format!("{}{}", s.kind.finnish(), if s.tracking { " · seuranta" } else { "" }), c)
+                        (s.start, s.end, format!("{}{}", s.kind.finnish(), if s.tracking { " · seuranta" } else { "" }), c, None)
                     })
                     .collect();
                 rows.insert(2, ("Kamera".to_string(), items));
@@ -255,22 +255,54 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
             painter.text(egui::pos2(x + 2.0, rect.top()), egui::Align2::LEFT_TOP, format!("{s:.0}s"), egui::FontId::proportional(11.0), ui.visuals().weak_text_color());
             s += step;
         }
+        let can_edit = app.script == app.production.script && app.pipeline_error.is_none() && app.workflow.pending_timing.is_none() && app.export.is_none() && app.voice.recorder.is_none();
+        let mut clip_handled = false;
+        let mut dropped = None;
         for (i, (name, items)) in rows.iter().enumerate() {
             let y = lane.top() + i as f32 * row_h;
             painter.text(egui::pos2(rect.left() + 4.0, y + row_h * 0.5), egui::Align2::LEFT_CENTER, name, egui::FontId::proportional(13.0), ui.visuals().text_color());
-            for (a, b, text, color) in items {
+            for (clip_index, (a, b, text, color, line)) in items.iter().enumerate() {
                 let r = egui::Rect::from_min_max(egui::pos2(x_of(*a) + 1.0, y + 3.0), egui::pos2(x_of(*b) - 1.0, y + row_h - 3.0));
+                if let Some(line) = line.filter(|_| can_edit) {
+                    let hit = ui.interact(r, ui.id().with(("timing-clip", i, clip_index)), egui::Sense::click_and_drag());
+                    if hit.clicked() { app.select_line(line); clip_handled = true; }
+                    if hit.drag_started() {
+                        app.select_line(line); app.playing = false;
+                        let pointer_start = ctx.input(|input| input.pointer.press_origin()).map_or(r.left(), |p| p.x);
+                        app.workflow.timeline_drag = Some(crate::timeline_ui::Drag { line, source: app.script.clone(), original_start: *a, pointer_start, seconds: *a });
+                    }
+                    if hit.dragged() || hit.drag_stopped() {
+                        clip_handled = true;
+                        if let Some(drag) = app.workflow.timeline_drag.as_mut().filter(|drag| drag.line == line) {
+                            if let Some(pos) = ctx.input(|input| input.pointer.latest_pos()) {
+                                let time = drag.original_start + (pos.x - drag.pointer_start) / lane.width() * duration;
+                                let fps = app.production.fps.0.max(1) as f32;
+                                drag.seconds = ((time.max(0.0) * fps).round() / fps).min(59.5);
+                                app.time = drag.seconds;
+                            }
+                        }
+                        if hit.drag_stopped() { dropped = app.workflow.timeline_drag.take(); }
+                    }
+                    hit.on_hover_text("Raahaa koko toimintorivin aloitusaikaa. Pudotus näyttää tarkistetun luonnoksen; hyväksy tai peruuta.");
+                }
                 painter.rect_filled(r, 4.0, *color);
+                if let Some(drag) = app.workflow.timeline_drag.as_ref().filter(|drag| Some(drag.line) == *line) {
+                    let ghost = r.translate(egui::vec2((drag.seconds - *a) / duration * lane.width(), 0.0));
+                    painter.rect_stroke(ghost, 4.0, Stroke::new(2.0_f32, ACCENT), egui::StrokeKind::Inside);
+                    painter.text(ghost.left_top(), egui::Align2::LEFT_BOTTOM, format!("{:.3} s", drag.seconds), egui::FontId::proportional(12.0), ACCENT);
+                }
                 let galley = painter.layout_no_wrap(text.clone(), egui::FontId::proportional(12.0), Color32::WHITE);
                 let clip = painter.with_clip_rect(r.shrink(2.0));
                 clip.galley(egui::pos2(r.left() + 5.0, r.center().y - galley.size().y * 0.5), galley, Color32::WHITE);
             }
         }
+        if ctx.input(|input| input.key_pressed(egui::Key::Escape)) { app.workflow.timeline_drag = None; dropped = None; }
+        if let Some(drag) = dropped { app.preview_retime(drag); }
         // Toistopää.
         let x = x_of(app.time);
         painter.line_segment([egui::pos2(x, rect.top() + 12.0), egui::pos2(x, rect.bottom())], Stroke::new(2.0_f32, ACCENT));
         if let Some(pos) = response.interact_pointer_pos() {
-            if response.dragged() || response.clicked() {
+            if !clip_handled && app.workflow.timeline_drag.is_none() && (response.dragged() || response.clicked()) {
                 app.time = ((pos.x - lane.left()) / lane.width() * duration).clamp(0.0, duration);
                 app.playing = false;
                 let index = ((pos.y - lane.top()) / row_h).max(0.0) as usize;

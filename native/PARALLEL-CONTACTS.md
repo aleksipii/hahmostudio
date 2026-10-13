@@ -8,7 +8,19 @@ Puheen todellinen kesto voi pidentää riviä; puhetta ei nopeuteta.
 Eri nimetyt hahmot voivat puhua ja liikkua samanaikaisesti. Saman hahmon
 päällekkäiset rivit, nimettömät päällekkäisyydet ja 60 sekunnin ylitys estävät viennin.
 Inspectorin aloitusaikasäädin kirjoittaa saman ohjeen hyväksyttäväksi luonnokseen.
-Aikajana näyttää hahmokohtaiset puhe- ja liikeradat; vapaa raitojen raahaus ei sisälly tähän.
+Aikajana näyttää hahmokohtaiset puhe- ja liikeradat. Raahaa puhe- tai liikekorttia
+vaakasuunnassa: koko lähderivin puhe ja liike siirtyvät yhdessä. Aloitus napsahtaa
+lähimpään ruutuun. Keltainen kehys näyttää luonnoksen. Pudotus avaa tarkistuksen;
+**Hyväksy ajoitus** kirjoittaa `[at ...]`-ohjeen, **Peruuta** säilyttää lähteen.
+Escape peruu käynnissä olevan raahauksen. Tarkistus käyttää jo tallennettua puhetta,
+kamerasääntöjä ja kontakteja eikä käynnistä uutta synteesiä. Virhe estää hyväksynnän;
+**Näytä virherivi** valitsee lähderivin ja sen nykyisen aikajanakohdan.
+
+Hyväksyntä tarkistaa tilanteen uudelleen. ⌘Z/⌘⇧Z (Linux Ctrl) palauttaa ajoituksen.
+Myöhemmät rivit ilman `[at]`-ohjetta voivat siirtyä, koska niiden alku riippuu
+aiempien rivien loppumisesta. Raahaus ei vaihda puhujaa, muuta kestoa tai erottele
+puhetta ja liikettä itsenäisiksi lähderaidoksi. Kamera- ja taustaraidat ovat tässä
+lukutilassa; puuttuva puhe tarvitsee uuden ajoitustarkistuksen tuotannon jälkeen.
 
 Kamera on yhteinen. Samanaikaiset kirjoitetut kameraohjeet ovat ristiriita.
 Kirjoitettu kuvakulma voittaa automaattisen ehdotuksen. Muuten yhtäaikaiset

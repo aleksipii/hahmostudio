@@ -12,6 +12,7 @@ pub enum LineEdit {
     MoveTo(usize),
     MoveSceneTo(usize),
     PauseBefore(f32),
+    StartAt(f64),
 }
 fn split(text: &str) -> Vec<&str> {
     text.split_inclusive('\n').collect()
@@ -32,6 +33,30 @@ pub fn rewrite(text: &str, index: usize, expected: &str, edit: LineEdit) -> Resu
     }
     let ending = if line.ends_with("\r\n") { "\r\n" } else { "\n" };
     match edit {
+        LineEdit::StartAt(seconds) => {
+            if !seconds.is_finite() || !(0.0..60.0).contains(&seconds) {
+                return Err("Alkuajan on oltava 0–60 sekuntia".into());
+            }
+            let original = body(&lines[index]);
+            let mut next = String::new();
+            let mut copied = 0;
+            let mut offset = 0;
+            let mut replaced = false;
+            while let Some(relative) = original[offset..].find('[') {
+                let start = offset + relative;
+                let end = start + original[start..].find(']').ok_or("Ohjeen sulkeva hakasulku puuttuu")? + 1;
+                let tag = original[start + 1..end - 1].trim();
+                if tag.split_whitespace().next().is_some_and(|word| word.eq_ignore_ascii_case("at")) {
+                    next.push_str(&original[copied..start]);
+                    if !replaced { next.push_str(&format!("[at {seconds:.6}s]")); replaced = true; }
+                    copied = end;
+                }
+                offset = end;
+            }
+            next.push_str(&original[copied..]);
+            let end = if lines[index].ends_with("\r\n") { "\r\n" } else if lines[index].ends_with('\n') { "\n" } else { "" };
+            lines[index] = if replaced {format!("{next}{end}")} else {format!("{next} [at {seconds:.6}s]{end}")};
+        }
         LineEdit::MoveSceneTo(target) => {
             if target >= lines.len() { return Err("Kohderiviä ei enää ole".into()); }
             let start_of = |index: usize| {
@@ -254,5 +279,22 @@ mod visual_edit_tests {
         for seconds in [f32::NAN, f32::INFINITY, -1.0, 0.0, 61.0] {
             assert!(rewrite(source, 0, source, LineEdit::PauseBefore(seconds)).is_err());
         }
+    }
+}
+
+#[cfg(test)]
+mod start_time_tests {
+    use super::*;
+    #[test]
+    fn retime_preserves_other_commands_unicode_and_crlf() {
+        let source="[camera two shot]\r\nMAIJA: Héllo! [AT 0s] [nod 2s]\r\nKALLE: Hi.";
+        let row=line_texts(source)[1];
+        let next=rewrite(source,1,row,LineEdit::StartAt(1.25)).unwrap();
+        assert!(next.starts_with("[camera two shot]\r\n"));
+        assert!(next.contains("MAIJA: Héllo! [at 1.250000s] [nod 2s]\r\n"));
+        assert!(next.ends_with("KALLE: Hi."));
+        assert_eq!(next.matches("[at ").count(),1);
+        assert!(rewrite(source,1,"stale",LineEdit::StartAt(1.0)).is_err());
+        for time in [f64::NAN,-1.0,60.0] {assert!(rewrite(source,1,row,LineEdit::StartAt(time)).is_err());}
     }
 }

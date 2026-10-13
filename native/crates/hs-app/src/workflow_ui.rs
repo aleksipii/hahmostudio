@@ -5,6 +5,8 @@ use eframe::egui;
 #[derive(Default)]
 pub struct WorkflowState {
     pub line: Option<usize>,
+    pub timeline_drag: Option<crate::timeline_ui::Drag>,
+    pub pending_timing: Option<crate::timeline_ui::Pending>,
     pub expected: String,
     pub expected_source: String,
     pub draft: String,

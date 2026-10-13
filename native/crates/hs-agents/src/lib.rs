@@ -13,6 +13,7 @@
 
 pub mod agents;
 pub mod contacts;
+pub mod timing_edit;
 pub mod production;
 pub mod project;
 pub mod captions;
