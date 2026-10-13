@@ -59,21 +59,16 @@ kaikki toimii ilman verkkoa. Malli tallentuu `~/Library/Application Support/hahm
 MP4-vienti käyttää FFmpegiä (`PATH` tai `HAHMOSTUDIO_FFMPEG`). Linuxissa ilman
 näytönohjainta GPU-polun voi testata Mesan lavapipellä: `WGPU_BACKEND=vulkan`.
 
-Käsikirjoitusesimerkki:
+Ensisijainen tuotantokieli on englanti. Käsikirjoitusesimerkki:
 
 ```text
-[tausta olohuone]
-[kuva laaja]
-KALLE: Hei kaikki, jakso alkaa! [vilkuta 2s]
-[kuva kaksikko]
-MAIJA: Taasko sinä puhut kameralle? [odota 2s]
-[kuva olan yli]
-[esine kahvikuppi]
-KALLE: Ne rakastavat minua. [nyökkää 2s]
-[kuva alakulma]
-EETU: Minä haluan olla tähti! [hyppää]
-[tausta puisto]
-RONJA: Laitan tästä viestin. [näpyttele puhelinta 3s]
+[background living room]
+[shot wide]
+KALLE: Welcome to our show! [wave 2s] [expression happy] [look at camera]
+[shot two shot]
+MAIJA: Let's make our first episode! [wait 2s] [look at Kalle]
+[shot close up]
+KALLE: We are ready. [nod 1s]
 ```
 
 Taustat: studio, studio valoisa, olohuone, keittiö, luokka, puisto, katu, kaupunki ilta,
@@ -153,3 +148,12 @@ Pilviympäristön välityspalvelin estää Hugging Face -mallilatauksen (403).
 Aito Kokoro, kuuntelu, Mac/Metal/paketoitu käynnistys, fyysinen kamera ja
 mikrofoni sekä VoiceOver ovat edelleen hyväksyntätehtäviä.
 Electronia ei poisteta ennen [pariteettilistan](PARITEETTI.md) hyväksyntää.
+
+
+**Aiempi Clauden Koeta-sarjakansio:** Tiedosto → Tuo aiempi Koeta-sarjakansio
+lukee `sarja.json`/`jaksot`-rakenteen. Tuonti säilyttää lähdekansion ja
+muuttumattoman puheen; tallenna tulos uuteen `.koeta`-tiedostoon.
+Vioittuneita ääniä ei tuoda hiljaa. Kansiomuodon toteutus ja alkuperäiset testit
+säilyvät `hs-agents::project_directory`-moduulissa. Vapaa videotimeline,
+vektorityökalut, vanhan `.sarja`-formaatin tuonti ja tuotannon kaikki
+hyväksyntä-/lukitustoiminnot ovat edelleen avoinna pariteettilistan mukaan.

@@ -694,3 +694,92 @@ Testattu (Linux-pilvi, Rust 1.97, `WGPU_BACKEND=vulkan`, simuloitu TestEngine): 
 Ei tehty / ei todennettu: aito Kokoro-synteesi ja kuuntelu (malli puuttuu, Hugging Face estetty), Sarja-valikon GUI-klikkaus (käännös ja logiikkatestit vain, ei näyttötestiä), Mac, mikrofoni, kamera. Natiivi ei lue vanhoja `.sarja`-arkistoja.
 
 Seuraava konkreettinen työ: Macilla `hahmostudio-cli ääni lataa` ja kuuntelu; sitten englanninkieliset tekstitykset ja niiden MP4-vienti (Vaihe C), automaattitallennus ja palautus. Tiedostot: `native/crates/hs-project/**`, `native/crates/hs-app/src/{project_ui,app,panels,main}.rs`, `native/crates/hs-agents/src/{production,lib}.rs`, `agents/voice.rs`. Kiintiö: Claude ei näe omaa käyttörajaansa tässä ympäristössä.
+
+
+## Codex: Koetan työtilat ja yhdistetty Claude-main — 13.10.2026
+
+Työkalu: Codex, eristetty Linux-pilvicheckout, haara `work`.
+Toteutuscommit: `e479f30ada50b8c2a8251bf4200bcefad7d7fa11`.
+Integroitu remote main `1f31bc9` (Claude), edellinen Codex-featurecommit
+`5533d3a`; omien äänitysten ja vientisuojausten checkpoint `d4c9a81`.
+Nykyinen main on ainoa pysyvä yhteishaara; vanhaa haaraa ei luoda.
+Koodia ei ole tässä vaiheessa pushattu: aiempi julkaisupyyntö koski prompttia.
+Tämä handoff ei valtuuta julkaisua tai Electronin poistoa.
+
+Tehty:
+- `.koeta` V2 tallentaa kaikki jaksot, hahmot/äänivalinnat, tarkat puheäänet ja
+  niiden alkuperätiedot sekä kerrostetun kuvan, musiikki-/tehosteraidat,
+  tekstitysasetukset ja oman äänen alkuperäisen tekstin/puhujan metatiedot.
+  V1 avautuu. Repliikin muutos ei hävitä omaa ääntä eikä korvaa sitä synteesillä
+  ilman tarkistusta. Vanha oman äänen orpo säilyy projektissa.
+- Kaksi tausta-autosavea / sarja, nimetyt revisiot, 512 MiB palautusvarasto,
+  palautus erilliseksi kopioksi. Virhe ei ylikirjoita käyttäjän projektia.
+- Tarkat EN/FI-tagit: ilmeet ja katseet, liike/kamera/taustat. Tuntematonta
+  kohdetta ei arvata. Neljän hahmon raja ilmoitetaan, ei hiljaista pudotusta.
+- Kuva-työtila: PNG, rajattu PSD (RAW/RLE 8-bit RGB/harmaa), vakaat taso-ID:t,
+  ryhmähierarkia ja lähde, sivellin/pyyhekumi/täyttö/maski/siirto/peittävyys,
+  rajattu undo/redo. Vektorit, täydet sekoitustilat ja PSD-maskit puuttuvat.
+- Leikkaus: lähderivipalikat (järjestys/muokkaus/monistus/tauko), WAV-raitojen
+  aloitus/voimakkuus/häivytys/toisto/ducking. Ei vapaa videoleikeaikajana.
+- Tekstitykset seuraavat tuotetun äänen todellista ajoitusta; käsin korjattava
+  teksti/ajoitus, SRT/VTT ja pikseleihin poltto. Vienti-välilehti, formaattiprofiilit
+  ja kansikuva. Puuttuva puhe estää lopullisen MP4:n; hiljainen luonnos sallitaan
+  vain nimenomaisesti. Äänitys estää viennin; muuttuneen rivin äänityksen voi
+  pysäyttää riippumatta rivin näkyvyydestä.
+- MP4 on väliaikainen kunnes FFprobe/QC ja koko dekoodaus onnistuvat. Äänen
+  väliaikaistiedosto on uniikki, eikä `episode.aani.wav`-sisartiedostoa kosketa.
+  Peruutus/paniikki vapauttaa encoderin ja säilyttää aiemman kohteen.
+- Mac-paketointiskripti .app/valinnainen codesign/DMG, käyttöoikeuskuvaukset ja
+  .koeta-assosiaatio. Storytold-arkkitehtuurivertailu dokumentoitu.
+- Claude-puhemoottorin muutokset säilyivät. Uudemman Clauden kansioprojektin
+  liiketoimintalogiikka ja kaikki kuusi testiä siirrettiin
+  `hs-agents::project_directory`-moduuliin (ei syklisiä crate-riippuvuuksia).
+  Yhteinen VoiceLine.provenance säilyy. Kansioprojektin tuonti on lukutoiminto,
+  säilyttää lähteen, hylkää vioittuneet äänet ja muuntaa siirrettäväksi arkistoksi.
+  Yhteinen Tiedosto-valikko korvaa päällekkäiset projektivalikot.
+
+Tarkistukset (Linux; puhe simuloitu TestEngine, ei Kokoro):
+- `cargo test --locked --workspace -j4`: 158 läpi, 0 fail, 1 ohitettu
+  (Clauden aidon Kokoro-synteesin testi). Testiloki `/tmp/koeta-combined-tests.log`.
+  Viimeiset kuvaeditorin canvas-tausta/kokosovituksen ja päällekkäisen otsikon
+  muutokset ovat GUI-muutoksia; niiden jälkeen build/check ja oikea GUI-uusinta.
+- `cargo check --locked --workspace -j4` sekä
+  `cargo build --locked -p hs-app -p hs-cli -j4`: läpi.
+- `cargo clippy --locked --workspace --all-targets -j4`: läpi varoituksin
+  (chunks_exact/as_chunks, map_or ja kaksi testien clone-suositusta).
+- `python3 -m unittest discover -s native/packaging/tests -v`: 6 läpi.
+- `git diff --check`: läpi. Ei väitettä koko vanhan repon fmt-checkistä.
+- Oikea Linux-GUI Xvfb/lavapipe: kuva/leikkaus/vienti avautuvat;
+  piirto → Tiedosto/Tallenna → uudelleenavaus säilytti pikselit sarjassa.
+  Käynnin aikana erilliseen palautusvarastoon syntyi kaksi validoitavaa autosavea.
+- `hahmostudio-cli render /tmp/koeta-final/pilot.koeta --cpu -o .../pilot.mp4`:
+  onnistui ilman mallia tallennetuilla testiäänillä, 121 ruutua, H.264 320×568
+  30 fps + AAC, kestot 4.033/4.032 s. FFprobe ja dekoodattu kuva varmistivat
+  toimivan videon sekä näkyvän englanninkielisen tekstityksen. Fyysistä kuuntelua
+  ei ole tehty. Kaksikko liikkuu ja kamera vaihtaa laajasta/puolilähestä tageista.
+- Siirrettävän sarjan musiikki/kuva/tekstitys/äänet säilyvät yhdistetyssä
+  työnkulkutestissä; kansiomuodon tuonti + uusi arkisto ei syntetisoi uudelleen.
+- Kiintiötyökalu: tieto ei saatavilla; prosenttia tai checkpoint-kynnystä ei keksitty.
+
+Ulkoiset hyväksyntäesteet ja seuraava työ:
+1. Käyttäjä antoi luvan Kokoro-mallin lataukseen. Aito CLI-lataus luotetulla
+   CA-ketjulla ja TLS-tarkistuksella epäonnistui CONNECT proxy 403 -estoon
+   huggingface.co:ssa. Malli ei ole repossa eikä onnistuneena ladattu.
+   Pilviympäristön domainit ja päivitetyt Rust-start-ohjeet on tallennettu
+   asetusten luonnokseen; tallennus ei sovella eikä julkaise verkkoasetuksia.
+2. Kun verkko toimii tai käyttäjän Macilla on hyväksytty malli: oikea Kokoro-testi
+   (hs-voice ignored, ks. Clauden komento yllä), kuuntelu ja ääni/suu-yhteistoiminta.
+   Näitä ei korvata simulaatiolla eikä ohitusta merkitä läpäisyksi.
+3. Mac/Metal, oikea paketoitu käynnistys, Finder-tiedostonavaus, kamera/mikrofoni
+   samanaikaisesti ja VoiceOver ovat avoinna. Linux-fixture ei todista Macia.
+4. Täysi Adobe/Photoshop/videoeditoripariteetti, vanhat .hahmo/.sarja-polut ja
+   tuotannon hyväksynnät/lukitukset jatketaan native/PARITEETTI.md:n mukaan.
+   Electron säilyy. Sovellusta ei merkitä kokonaan valmiiksi ennen hyväksyntää.
+
+Omistus: Codex vastaa `hs-project`, `hs-image`, `hs-edit`, `hs-subtitle`,
+`hs-agents`-projektisovittimesta/integraatiosta, natiivin appin kuva/leikkaus/vienti/
+projekti-UI:sta, CLI-projektipalautuksesta, vientisuojausten ja Mac-paketoinnin
+muutoksista sekä dokumentaatiosta. Claude omisti puhemoottorin
+`hs-voice/src/{engine,spoken,kokoro}.rs`; Codexin luotetun CA-ketjun tuki on
+`hs-voice/src/store.rs`:ssä. Älä tee kahta projektiformaattia uudelleen rinnakkain;
+rajapinnat ovat nyt yhteiset. Pääagentti integroi seitsemän rajatun aliagentin työn.
