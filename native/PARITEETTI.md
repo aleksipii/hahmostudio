@@ -67,13 +67,15 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
   valaistus tai ihonvärinen tausta voi häiritä. Kalibrointi ja herkkyys säädetään Esitys-välilehdellä.
 - Natiivisovellus tallentaa sarjan `.koeta`-muotoon: käsikirjoitukset, hahmot/äänivalinnat,
   omat ja tuotetut puheet sekä nykyiset vientiasetukset. `.hahmo`-kirjoitus ja vanhan
-  `.sarja`-muodon tuonti puuttuvat. Käsin editoitavan aikajanan, tekstitysten,
-  kuvaeditoriresurssien ja autosave-historian tallennus odottaa niiden toteutusta.
+  `.sarja`-muodon tuonti puuttuvat. Nykyisten leikkausasetusten, tekstitysten,
+  kuvaeditoriresurssien ja autosave-historian tallennus on sittemmin toteutettu
+  `.koeta` V2 -integraatiossa (ks. alla); tämä ei poista muita pariteettirajoja.
 - GPU-polku on testattu Linuxissa Vulkanilla (lavapipe, ohjelmistopohjainen).
   Metal (Mac) ja oikea näytönohjain ovat todentamatta.
 - Käyttöliittymä on testattu Xvfb-ympäristössä kuvakaappauksella, ei Macilla.
 - macOS-käännöstä ei voitu tarkistaa pilvessä (nokhwa ja candle-Metal tarvitsevat Macin SDK:n).
-  Paketoitu sovellus tarvitsee Info.plistiin `NSMicrophoneUsageDescription` ja `NSCameraUsageDescription`.
+  Paketoija lisää Info.plistiin `NSMicrophoneUsageDescription` ja
+  `NSCameraUsageDescription`; oikeudet ja laitteet pitää hyväksyä oikeassa Macissa.
 
 
 12.10.2026 Codex/Claude-integraatio: natiivi `.koeta` V2 säilyttää kuvaeditorin,

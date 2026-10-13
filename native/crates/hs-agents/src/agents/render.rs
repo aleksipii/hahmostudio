@@ -20,12 +20,17 @@ pub struct FrameBuilder {
     environments: HashMap<String, Arc<CharacterMesh>>,
     /// Käteen otetut esineet (hahmon osoite, esine) → verkko.
     held: HashMap<(usize, String), Arc<CharacterMesh>>,
+    held_owners: Vec<Arc<hs_character::Character>>,
 }
 
 impl FrameBuilder {
     pub fn scene(&mut self, p: &Production, frame: u32, width: u32, height: u32) -> Option<RenderScene> {
         let tl = p.timeline.as_ref()?;
         let camera = p.camera.as_ref()?;
+        if self.held_owners.len() != p.cast.len() || !self.held_owners.iter().zip(&p.cast).all(|(a, b)| Arc::ptr_eq(a, &b.character)) {
+            self.held.clear();
+            self.held_owners = p.cast.iter().map(|c| c.character.clone()).collect();
+        }
         let t = frame as f32 / p.fps.0 as f32;
         let env_id = camera.background_at(t).to_string();
         let env = self.environments.entry(env_id.clone()).or_insert_with(|| Arc::new(environment::build(&env_id))).clone();
@@ -307,5 +312,30 @@ impl StudioAgent for RustRenderAgent {
         };
         p.output = Some(summary.clone());
         Ok(AgentReport::new(summary))
+    }
+}
+
+#[cfg(test)]
+mod cache_tests {
+    use super::*;
+
+    #[test]
+    fn held_meshes_are_released_between_character_rebuilds() {
+        let mut builder = FrameBuilder::default();
+        for _ in 0..8 {
+            let mut p = Production::new("KALLE: [prop coffee cup] [wait 1s]");
+            crate::Pipeline::default().run(&mut p).unwrap();
+            builder.scene(&p, 0, 160, 90).unwrap();
+            assert_eq!(builder.held.len(), 1);
+            assert_eq!(builder.held_owners.len(), p.cast.len());
+            assert!(Arc::ptr_eq(&builder.held_owners[0], &p.cast[0].character));
+            let cached = builder.held.values().next().unwrap().clone();
+            builder.scene(&p, 1, 160, 90).unwrap();
+            assert!(Arc::ptr_eq(&cached, builder.held.values().next().unwrap()));
+        }
+        let mut empty = Production::new("KALLE: [wait 1s]");
+        crate::Pipeline::default().run(&mut empty).unwrap();
+        builder.scene(&empty, 0, 160, 90).unwrap();
+        assert!(builder.held.is_empty());
     }
 }

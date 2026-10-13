@@ -1,4 +1,17 @@
-# Hahmostudio natiivina (Rust)
+# Koeta — natiivi Rust-työpöytäsovellus
+
+Koetalla tehdään ensisijaisesti englanninkielisiä animaatiojaksoja paikallisesti:
+käsikirjoitus → hahmoäänet tai oma äänitys → ajoitus ja huulisynkka →
+3D-animaatio → tallennettava sarja → tekstitykset ja MP4.
+Käyttöliittymä on suomenkielinen. Sovellus sisältää parametriset hahmot,
+liikepluginin, lavasteet, esineet ja kameran, ääni-/esitystyökalut,
+kuva- ja tasoeditorin rajatulla PSD-tuella sekä leikkauksen ja tekstitykset.
+Kyseessä on kehitysversio, ei täydellinen Adobe-työkalujen korvaaja.
+
+Ajon aikana ei tarvita Electronia, Nodea tai Pythonia. Python on Mac-paketoijan
+kehitystyökalu. Kokoro-mallia ja generoituja liikeaineistoja ei pakata sovellukseen;
+malli ladataan käyttäjän luvalla. MP4-vienti tarvitsee nyt FFmpegin ja FFproben.
+Mac-paketin julkaisuesteet ja hyväksyntä: [DMG-tarkistuslista](packaging/RELEASE-CHECKLIST.md).
 
 Puhdas Rust-työtila, johon Hahmostudio siirretään Electronista. Rakenne ottaa
 mallia Storytold-ekosysteemistä (esim. FilmCraft): kerroksittaiset cratet, joista

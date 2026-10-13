@@ -1,4 +1,33 @@
-# KILSAT Studio 2
+# Koeta — natiivi Rust-animaatiostudio
+
+Koeta on paikallinen työpöytäsovellus englanninkielisten animaatiojaksojen tekemiseen. Kirjoitat käsikirjoituksen ja tuetut toimintaohjeet, valitset hahmot ja niiden äänet, tarkistat muokattavan 3D-esikatselun ja viet jakson MP4-videoksi. Suomenkielinen käyttöliittymä ja FI-tuki säilyvät. Natiivi sovellus käyttää Rustia, egui/eframea ja wgpu:ta; se ei tarvitse Nodea, Electronia tai selainta ajon aikana.
+
+**Nykyinen työnkulku:** englanninkielinen käsikirjoitus → hahmokohtainen Kokoro-puhe tai oma ääni → äänen kestoon ajoitetut repliikit ja huulisynkka → 3D-liikkeet, esineet, taustat ja kuvakulmat → sarjaprojekti → leikkaus ja englanninkieliset tekstitykset → MP4.
+
+- Parametriset 3D-hahmot, perhehahmot, ilmeet ja sääntöpohjaiset liikkeet. Liikeplugin tarjoaa 32 400 yhdistelmää **18 perustoiminnosta**, ei yhtä monta erillistä mocap-liikettä.
+- Paikallinen Kokoro-puhe ja pysyvät hahmoäänet; käyttäjän äänitys tai tuotu ääni on ensisijainen. Malli ladataan luvalla erikseen, minkä jälkeen synteesi toimii offline. Tallennettu puhe säilyy projektissa.
+- `.koeta`-sarjaprojekti kokoaa jaksot, käsikirjoitukset, hahmot, äänet ja editoriresurssit. Automaattitallennus ja palautus suojaavat keskeneräistä työtä.
+- Mikrofonin ja kameran esitystyökalut, kuva- ja tasoeditori, rajattu PSD-tuonti, leikkaus, taustaäänet ja tekstitykset.
+- GPU-esikatselu ja CPU-varapolku. MP4-vienti tarvitsee tällä hetkellä erillisen FFmpegin ja FFproben.
+
+Käsikirjoitus on rajattu ohjekieli: tuntemattomat tai toteuttamattomat toiminnot ilmoitetaan virheinä. Sovellus ei tulkitse mitä tahansa proosaa täydelliseksi animaatioksi. Ulkoisten luurankojen yleinen retargetointi ja esimerkiksi esineen luovutus, ovien avaaminen ja halauskontaktit tarvitsevat vielä toteutusta. Kuva- ja leikkaustyökalut eivät kata Photoshopin tai ammattivideoeditorin kaikkia ominaisuuksia.
+
+## Natiivin sovelluksen käynnistys
+
+```sh
+cd native
+cargo run --locked --release -p hs-app
+```
+
+Rust-työkalut ja käyttöjärjestelmän kehitysriippuvuudet tarvitaan lähteestä kääntämiseen. Tarkat ohjeet, käsikirjoitusesimerkit ja resurssirajat: [native/README.md](native/README.md). Mac-paketointi: [paketoijan ohje](native/packaging/README.md) ja [DMG-julkaisun tarkistuslista](native/packaging/RELEASE-CHECKLIST.md).
+
+**Julkaisutila:** natiivi sovellus on kehitysversio. `.app`/`.dmg`-paketoija on olemassa, mutta itsenäinen, allekirjoitettu ja notarisoitu Mac-julkaisu sekä oikeiden Mac-laitteiden hyväksyntä ovat vielä kesken. Linux-testit eivät todista Macin kameraa, mikrofonia, Metal-renderöintiä tai aitoa Kokoro-kuuntelua toimiviksi. Kevyen lopullisen paketin kokoa ja Macin muistinkäyttöä ei ole vielä mitattu release-versiosta.
+
+**Yhteinen päähaara:** `main`. Codexin ja Clauden työohjeet ja handoff: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [TIIMI.md](TIIMI.md). Electron-/selainversio säilyy siirtymän ajan; sen alla olevat npm-ohjeet koskevat tätä vanhaa versiota. Poiston ehdot: [PARITEETTI.md](native/PARITEETTI.md).
+
+---
+
+# Vanha KILSAT Studio 2: Electron ja selain
 
 Suomenkielinen animaatiostudio Macille ja selaimeen: kirjoitat käsikirjoituksen, valitset hahmot ja saat muokattavan animaation, jonka viet MP4-videoksi. Kaikki käsittely tapahtuu omalla koneella. Ainoa poikkeus on valinnainen, oletuksena pois päältä oleva tekoälyrenderöinti (ks. [Pilvirenderöinti](#pilvirenderöinti-valinnainen)).
 

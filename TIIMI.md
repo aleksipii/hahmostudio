@@ -1193,3 +1193,65 @@ Kasvavat projektihahmot tarvitsevat nykyiset max4cast/60sresurssirajat; koko
 kohtauksen kirjaus/ääniaika/käsissä olevat esineet tarkistetaan lopullisessaauditissa.
 Ovet/portaat/luovutus/kättely/halaus tarvitsevat omat aidot kontaktitoiminnot.
 Mac/Metal, laitteet ja aito Kokoro edelleen aiempien handoffien mukaan auki.
+
+## 13.10.2026 Codex — Mac-julkaisun tarkistus ja kevyt esikatselu
+
+Tavoite: tarkistaa Clauden yhdistetty työ, itsenäisen DMG:n puutteet ja
+natiivisovelluksen keveys; päivittää tuotteen README. Työkalu Codex.
+Lähtöhaara work; tarkka HEAD ja tarkistettu origin/main:
+7e1f1a7b139a951510add82e5b2808b70e83536c. Muutokset julkaistaan tämän
+handoffin sisältävän commitin kanssa mainiin session aiemman push-valtuutuksen
+mukaan; ei force-pushia. Uusia Clauden main-committeja ei fetchissä löytynyt.
+Clauden yhdistettyjä kontribuutioita tarkistettu koodista, Co-Authored-By-
+commit-viesteistä ja aiemmista handoffeista, kirjattu RELEASE-CHECKLIST.md:hen.
+
+Toteutettu ja omistetut tiedostot:
+- README.md / native/README.md: Koetan natiivi Rust-tuotekuvaus, ensisijainen
+  englanninkielinen työnkulku, nykyiset ominaisuudet ja todelliset rajat;
+  vanhan Electron-/selainversion ohjeet säilytetty erillisenä osuutena.
+- native/packaging/{README.md,RELEASE-CHECKLIST.md}, native/PARITEETTI.md:
+  DMG:n julkaisuesteet, Mac-hyväksyntä, kevyyden mittaussuunnitelma ja päivitetyt
+  jo toteutettujen tallennus-/Info.plist-ominaisuuksien kuvaukset.
+- native/crates/hs-app/{src/viewport.rs,Cargo.toml}, native/Cargo.lock:
+  viimeksi renderöidyn tekstuurin uudelleenkäyttö muuttumattomalle ruudulle.
+  Koko, aika, fps, aikajana, kamera, hahmo/mesh/liikeresurssit, huulisynkka
+  ja live-esitys mitätöivät välimuistin. Vahvat Arc-viitteet estävät vapautuneen
+  osoitteen uusiokäytöstä syntyvän väärän osuman. hs-motion suora riippuvuus
+  on jo ennestään työtilassa; uusia ulkoisia paketteja ei lisätty.
+- native/crates/hs-agents/src/agents/render.rs: kädessä olevien esineiden
+  verkkovälimuisti tyhjennetään näyttelijäresurssien vaihtuessa. Vanhojen
+  hahmoversioiden verkot eivät jää kasvattamaan välimuistia; nykyiset säilyvät.
+  Ei muutoksia Clauden puhemoottoriin tai projektiformaattiin.
+
+Tarkistukset Linuxissa (ei Mac-/oikean laitteen hyväksyntää):
+- cargo test --locked --workspace -j4: 240 läpi, 0 fail, 1 ohitettu (aito Kokoro),
+  exit0; /tmp/koeta-release-workspace-tests.log.
+- Viimeisen erillisen invalidointitestin jälkeen cargo test --locked -p hs-app
+  viewport::tests -j4: 2 läpi, exit0; /tmp/koeta-release-preview-final-tests.log.
+  Kokonaisuudessa 241 eri läpäissyttä testiä aiemman ajon ja tämän lisätestin
+  perusteella; koko työtilaa ei ajettu uudelleen pelkän testilisäyksen takia.
+- cargo build --locked -p hs-app -p hs-cli -j4: exit0 viimeiselle lähteelle;
+  /tmp/koeta-release-build-final.log.
+- cargo clippy --locked -p hs-app -p hs-agents --all-targets -j4: exit0,
+  olemassa olevia muiden moduulien varoituksia; ei uutta testimoduulivaroitusta;
+  /tmp/koeta-release-clippy-final.log.
+- python3 -m unittest discover -s native/packaging/tests -v: 6 läpi.
+  Tämä validoi Linux-fixture-app-rakenteen, ei oikeaa DMG:tä/Mach-O:ta.
+- Oikea GUI Xvfb/lavapipe: /tmp/koeta-release-gui.png (aika0),
+  /tmp/koeta-release-gui-moving.png (aika3s, kaksikkokuva),
+  /tmp/koeta-release-gui-cpu.png (sama aika CPU-varapolulla).
+  Kuvat tarkistettu visuaalisesti; esikatselu ei jäänyt vanhaan kuvakulmaan.
+- git diff --check läpi. Quota-helper unavailable; prosenttia ei päätelty.
+
+Avoin ja seuraava konkreettinen työ:
+1. Mac/FFmpeg-resurssipaketointi ja app-resurssien suoritettavien haku; puhdas
+   Mac ilman Homebrewta. FFmpeg/FFprobe eivät nyt kuulu app-pakettiin.
+2. Finderin .koeta-tiedostonavaustapahtumat myös käynnissä olevaan sovellukseen.
+3. Kuvake/minimimacOS/asennuslayout, hardened runtime, asianmukaiset oikeudet,
+   Developer ID, notarisaatio ja staple; nykyinen codesign ei takaa näitä.
+4. Oikea Mac/Metal, kamera/mikrofoni, luvan epääminen, todellinen Kokoro-kuuntelu,
+   offline- ja sarjan uudelleenavaus sekä ääni/tekstitys-MP4 lopullisesta paketista.
+5. Release-appin/DMG:n koko, RAM/CPU/energia ja pitkän muokkauksen mittaukset
+   oikealla Macilla. Linux debug-binäärin kokoa ei käytetty julkaisulupauksena.
+Electron säilyy pariteettiehtojen mukaisesti. Kokoro-mallia ei ladattu tässä
+tehtävässä; aiempi proxy-403 ja todellinen synteesihyväksyntä edelleen auki.

@@ -46,3 +46,5 @@ Linux fixture tests (not real Mac validation):
 ```sh
 python3 -m unittest discover -s native/packaging/tests -v
 ```
+
+Public release requirements and remaining work: [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).

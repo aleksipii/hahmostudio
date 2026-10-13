@@ -16,6 +16,7 @@ hs-edit.workspace = true
 hs-subtitle.workspace = true
 hs-project.workspace = true
 hs-core.workspace = true
+hs-motion.workspace = true
 hs-script.workspace = true
 hs-character.workspace = true
 hs-render.workspace = true

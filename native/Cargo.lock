@@ -2246,6 +2246,7 @@ dependencies = [
  "hs-hahmo",
  "hs-image",
  "hs-lipsync",
+ "hs-motion",
  "hs-project",
  "hs-render",
  "hs-script",
