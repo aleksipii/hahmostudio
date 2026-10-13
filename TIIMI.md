@@ -1127,3 +1127,69 @@ Puhelin/tuoli jätetty aineistosta pois, koska ne tarvitsevat esinekontaktit.
 2 000 variaatiota ei toteuta ovia, portaita, luovutusta tai kahden hahmon kontakteja.
 Seuraava oma kokonaisuus on esine/kahvakontakti tai glTF-retargetointi/takaisin tuonti.
 Aito Kokoro, kuuntelu ja Mac-laitetestit ovat edelleen aiemman handoffin mukaan auki.
+
+## Codex: sisäinen liikeplugin ja omaan hahmoon sovitus — 13.10.2026
+
+Työkalu Codex, haara work, toteutuscommit
+`db9efd190ce721da8559d72c9f2a4dd8c67a4637`, pohja main `811ccbb`.
+Valmis rajattu sisäinen native Humanoid -plugin. Käyttäjän "mihin tahansa"
+rajattiin alussa rehellisesti tunnetun luurangon hahmoihin; mielivaltaisten
+ulkoisten luurankojen yleistä retargetointia ei väitetä.
+
+Tehty:
+- MotionPlugin trait, sisäinen rekisteri ja koeta.motion.humanoid.v1.
+  18 yksittäistä liikettä+306järjestettyä paria=324pohjaa,
+  25kestoa×4aloitussuuntaa=32 400hahmoriippumatonta variaatiota.
+  O(1)variantin muodostus, UIvälimuistissa vain324pohjaa, hakutulokset≤50.
+- Liike sidotaan projektihahmon todellisiin CharacterParams-mittoihin ja
+  omaan native Humanoid -luurankoon. Toisen hahmon kiertoja ei kopioida;
+  target-luupituuksille lasketaan sama oikea procedural/IK-liike.
+- HumanoidBinding tarkistaa semanttiset nivelet, hierarkian, sormet ja
+  ei-nollapituiset IK-segmentit. Tuntematon ID/profiili, actor-injektio,
+  muutettu sidonta/esikatselu ja lähteen/keston ylitykset estetään.
+- UIkäyttää oikeasti rekisteröityä MotionPlugin.bind-metodia. Omien
+  projektihahmojen profiilit menevät samannimisten presetien edelle.
+  Lähteen tai target-profiilin muutos mitätöi esikatselun.
+- Liikevalinta lisää vain hyväksytyt loppurivit, säilyttää dialogin/CRLF:n.
+  Native2 000glTF-variaation valitsin ja vienti säilyivät ennallaan.
+- CLI motion-plugin-info. Esimerkki hs-agents/examples/motion_plugin.rs
+  tuottaa uuden Jane.koeta-sarjan ja kieltäytyy korvaamasta olemassa olevaa
+  polkua, myös symlinkkiä. Dokumentaatio native/MOTION-PLUGIN.md.
+
+Omistus: domainaliagentti vain src/motion_plugin.rs ja tests/motion_plugin.rs;
+UIaliagentti vain motion_plugin_ui.rs ja script_assist_ui.rs; Codexpääagentti
+main/app-kutsut, CLI, esimerkkiprojekti, dokumentaatio ja integraatio.
+Claude-ääni-/projektiformaatteihin ei koskettu, ei ulkoisten DLL:ien asennusta.
+
+Tarkistukset (Linux):
+- cargo test --locked --workspace -j4:238läpi,0fail,1ohitettu(aito Kokoro),exit0
+  /tmp/koeta-plugin-workspace-tests.log. UI-rekisteribindin viimeistelyn jälkeen
+  2kohdennettua UItestiä läpi /tmp/koeta-plugin-ui-registry-tests.log.
+- cargo build --locked -p hs-app -p hs-cli -j4:exit0.
+- cargo clippy --locked --workspace --all-targets -j4:exit0 viimeiselle lähteelle
+  myös esimerkki mukaan lukien, nykyiset muiden moduulien varoitukset;
+  /tmp/koeta-plugin-clippy-final.log.
+- Domainin4testiä: kaikki32 400ID:t/syntaksit; kaikki324pohjaa oikeassa Pipeline+
+  audit-putkessa; Jane eri mittasuhteilla, todellinen taputuskontakti<2mm;
+  väärät/puuttuvat nivelet/nollapituiset IK-segmentit sekä väärennetyt previews.
+- UI2testiä: oman Janen valinta, projektiprofiilien prioriteetti, koko lähteen
+  ja hahmon mittamuutoksen vanhenemissuoja, valinta ei itsessään muuta tekstiä.
+- Oikea sarjaprojekti /tmp/koeta-plugin-jane-final.koeta luotu esimerkillä;
+  CLI/Cargo-esimerkki exit0. Käsitelty Jane1.12m/build1.05/leg_ratio.45,
+  nativeengine sovitti/renderöi taputuksen (CPU-kuva /tmp/koeta-plugin/jane-clap.png).
+- Oikea Xvfb/lavapipe-GUI: projekti avautui Jane-hahmona, plugin valitsi Janen,
+  haku ja Puhe/tauko→taputus-parin esikatselu; ennenhyväksyntää2.5s/75ruutua,
+  hyväksynnän jälkeen5s/150ruutua ja vain3uuttariviä. Vanha2riviä säilyi.
+  /tmp/koeta-plugin/{picker,preview,accepted}.png.
+- CLIinfo ilmoitti32400varianttia/324pohjaa ja tuetun rig-sopimuksen.
+- git diff --check läpi, quota unavailable eikä prosenttia päätelty.
+
+Rajat ja jatko:
+Aloitussuunta on erillinen0.5s asetus, ei kaikkien myöhempien liikkeiden lukko.
+Kirjasto on variaatioita18toiminnosta; ei32 400uutta perusliikettä/mocap-tiedostoa.
+Nativevakiohahmot ja omat kelvolliset ihmisluurankoprofiilit tuettu; ulkoisen
+mesh/rig-tuonnin lepoasento-, akseli- ja luukartoituseditori vielä toteuttamatta.
+Kasvavat projektihahmot tarvitsevat nykyiset max4cast/60sresurssirajat; koko
+kohtauksen kirjaus/ääniaika/käsissä olevat esineet tarkistetaan lopullisessaauditissa.
+Ovet/portaat/luovutus/kättely/halaus tarvitsevat omat aidot kontaktitoiminnot.
+Mac/Metal, laitteet ja aito Kokoro edelleen aiempien handoffien mukaan auki.
