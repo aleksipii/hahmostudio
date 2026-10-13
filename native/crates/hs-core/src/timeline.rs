@@ -114,8 +114,8 @@ pub enum EventKind {
     Dialogue { speaker: Option<String>, text: String },
     Motion { character: Option<String>, motion: MotionKind },
     Background { id: String },
-    CharacterView { view: View },
-    Phone { view: PhoneView },
+    CharacterView { view: View, #[serde(default)] character: Option<String> },
+    Phone { view: PhoneView, #[serde(default)] character: Option<String> },
     /// Hahmo ottaa käteensä esineen (`item`) tai laskee sen pois (`None`).
     Prop { character: Option<String>, item: Option<String> },
     Camera { hint: CameraHint },

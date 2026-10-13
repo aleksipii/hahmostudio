@@ -1,5 +1,6 @@
 //! Reviewed edits for the bounded command language. Suggestions never mutate source.
 use crate::{parse, Diagnostic, MAX_SCRIPT_CHARS};
+use hs_core::Severity;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EditProposal {
@@ -165,20 +166,56 @@ pub fn completions(script: &str, line: usize, query: &str) -> Result<Vec<EditPro
     if query.chars().count() > 256 {
         return Err("Hakuteksti on liian pitkä.".into());
     }
+    let mut existing_errors = std::collections::BTreeMap::new();
+    for diagnostic in parse(script)
+        .diagnostics
+        .into_iter()
+        .filter(|d| d.severity == Severity::Error)
+    {
+        *existing_errors
+            .entry((diagnostic.line, diagnostic.message))
+            .or_insert(0usize) += 1;
+    }
     let mut out = Vec::new();
     for command in crate::english::COMMANDS {
         if !query.is_empty() && !command.example.to_lowercase().contains(&query) {
             continue;
         }
-        crate::classify(command.example)?;
+        let kind = crate::classify(command.example)?;
+        let replacement =
+            candidate.or_else(|| {
+                source.match_indices('[').rev().find_map(|(open, _)| {
+                    let close = source[open..].find(']').map(|i| open + i)?;
+                    let body = &source[open + 1..close];
+                    let existing = crate::classify(body).ok()?;
+                    (std::mem::discriminant(&existing) == std::mem::discriminant(&kind))
+                        .then_some((open, close + 1, body))
+                })
+            });
         let tag = format!("[{}]", command.example);
-        let after = match candidate {
+        let after = match replacement {
             Some((open, end, _)) => format!("{}{}{}", &source[..open], tag, &source[end..]),
             None if source.trim().is_empty() => tag.clone(),
             None => format!("{} {}", source, tag),
         };
         let mut edit = proposal(script, line, after, command.description)?;
         edit.command = Some(tag);
+        let next = apply(script, &edit)?;
+        let mut remaining = existing_errors.clone();
+        let new_error = parse(&next)
+            .diagnostics
+            .into_iter()
+            .filter(|d| d.severity == Severity::Error)
+            .any(|d| match remaining.get_mut(&(d.line, d.message)) {
+                Some(count) if *count > 0 => {
+                    *count -= 1;
+                    false
+                }
+                _ => true,
+            });
+        if new_error {
+            continue;
+        }
         out.push(edit);
         if out.len() == 8 {
             break;
@@ -284,5 +321,31 @@ mod tests {
         let edits = completions(source, 1, "look").unwrap();
         assert!(!edits.is_empty());
         assert!(edits[0].after.starts_with(source));
+    }
+}
+
+#[cfg(test)]
+mod safe_completion_tests {
+    use super::*;
+    #[test]
+    fn existing_motion_is_replaced_instead_of_adding_a_conflicting_second_action() {
+        let source = "KALLE: Hello! [wave 2s]";
+        let edits = completions(source, 1, "walk").unwrap();
+        assert!(!edits.is_empty());
+        for edit in edits {
+            let next = apply(source, &edit).unwrap();
+            assert!(!next.contains("[wave 2s]"));
+            assert!(parse(&next).is_assemblable(), "{next}");
+        }
+    }
+    #[test]
+    fn pending_scene_conflicts_are_never_offered_as_acceptable_edits() {
+        let source = "[background living room]\nKALLE: Hello! [wait 1s]";
+        assert!(completions(source, 2, "background").unwrap().is_empty());
+        let already_invalid = "KALLE: Hello! [wave 1s] [nod 1s] [unknown]";
+        assert!(completions(already_invalid, 1, "walk").unwrap().is_empty());
+        for edit in completions(source, 2, "").unwrap() {
+            assert!(parse(&apply(source, &edit).unwrap()).is_assemblable());
+        }
     }
 }

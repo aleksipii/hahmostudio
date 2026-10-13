@@ -132,12 +132,11 @@ impl ProceduralMotion {
 
     fn applies(&self, e: &TimelineEvent) -> bool {
         match &e.kind {
-            EventKind::Motion { character, .. } => match (character, &self.name) {
+            EventKind::Motion { character, .. } | EventKind::CharacterView { character, .. } | EventKind::Phone { character, .. } => match (character, &self.name) {
                 (None, _) => self.lead,
                 (Some(c), Some(n)) => c.eq_ignore_ascii_case(n),
                 (Some(_), None) => self.lead,
             },
-            EventKind::CharacterView { .. } | EventKind::Phone { .. } => self.lead,
             _ => false,
         }
     }
@@ -183,7 +182,7 @@ impl ProceduralMotion {
                     EventKind::Motion { motion: MotionKind::Jump, .. } => {
                         jump_y = jump_profile(tau / d.max(1e-3), leg * 0.35).0;
                     }
-                    EventKind::CharacterView { view } => target_yaw = view_yaw(*view),
+                    EventKind::CharacterView { view, .. } => target_yaw = view_yaw(*view),
                     _ => {}
                 }
             }
@@ -296,7 +295,7 @@ impl PreparedMotion {
             let w = ramp(tau, d, BLEND);
             let p = tau / d.max(1e-3);
             match &e.kind {
-                EventKind::Phone { view } => phone_view = Some(*view),
+                EventKind::Phone { view, .. } => phone_view = Some(*view),
                 EventKind::Motion { motion: mk, .. } => {
                     motion = Some(*mk);
                     match mk {

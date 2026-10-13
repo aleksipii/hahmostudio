@@ -460,6 +460,48 @@ fn split_speaker(spoken: &str) -> (Option<String>, String) {
     (None, spoken.to_string())
 }
 
+/// Parse bracket syntax before publishing any setting from this line.
+fn split_tags(raw: &str) -> Result<(Vec<String>, String), &'static str> {
+    let mut tags = Vec::new();
+    let mut spoken = String::new();
+    let mut cursor = 0;
+    let mut opened = None;
+    for (offset, ch) in raw.char_indices() {
+        match ch {
+            '[' => {
+                if opened.is_some() {
+                    return Err("Sisäkkäisiä hakasulkuja ei tueta; riviä ei tulkittu.");
+                }
+                spoken.push_str(&raw[cursor..offset]);
+                opened = Some(offset + 1);
+            }
+            ']' => {
+                let start = opened
+                    .take()
+                    .ok_or("Sulkeva hakasulku ilman avaavaa hakasulkua; riviä ei tulkittu.")?;
+                tags.push(raw[start..offset].trim().to_string());
+                cursor = offset + 1;
+            }
+            _ => {}
+        }
+    }
+    if opened.is_some() {
+        return Err("Hakasulku jäi sulkematta; riviä ei tulkittu.");
+    }
+    spoken.push_str(&raw[cursor..]);
+    Ok((tags, spoken))
+}
+
+fn set_pending_once<T>(slot: &mut Option<T>, value: T, name: &str) -> Result<(), String> {
+    if slot.is_some() {
+        return Err(format!(
+            "Useampi {name}-ohje ennen samaa animaatioriviä. Kirjoita ohje vain kerran."
+        ));
+    }
+    *slot = Some(value);
+    Ok(())
+}
+
 /// Jäsentää käsikirjoituksen. Ei koskaan kaadu.
 pub fn parse(text: &str) -> ScriptPlan {
     let mut plan = ScriptPlan {
@@ -494,32 +536,13 @@ pub fn parse(text: &str) -> ScriptPlan {
         if raw.is_empty() {
             continue;
         }
-        // Erota tagit ja puhe.
-        let mut tags = Vec::new();
-        let mut spoken = String::new();
-        let mut rest = raw;
-        let mut broken = false;
-        while let Some(open) = rest.find('[') {
-            spoken.push_str(&rest[..open]);
-            match rest[open + 1..].find(']') {
-                Some(close) => {
-                    tags.push(rest[open + 1..open + 1 + close].trim().to_string());
-                    rest = &rest[open + 1 + close + 1..];
-                }
-                None => {
-                    broken = true;
-                    rest = "";
-                }
+        let (tags, spoken) = match split_tags(raw) {
+            Ok(parts) => parts,
+            Err(message) => {
+                plan.diagnostics.push(Diagnostic::error(line_no, message));
+                continue;
             }
-        }
-        spoken.push_str(rest);
-        if broken {
-            plan.diagnostics.push(Diagnostic::error(
-                line_no,
-                "Hakasulku jäi sulkematta; riviä ei tulkittu.",
-            ));
-            continue;
-        }
+        };
         let spoken = spoken.split_whitespace().collect::<Vec<_>>().join(" ");
 
         let previous_settings = (
@@ -536,31 +559,28 @@ pub fn parse(text: &str) -> ScriptPlan {
         let mut seconds: Option<f64> = None;
         let mut line_ok = true;
         for tag in &tags {
-            match classify(tag) {
-                Ok(Tag::Phone(v)) => pending_phone = Some(v),
-                Ok(Tag::Prop(p)) => pending_prop = Some(p),
-                Ok(Tag::View(v)) => pending_view = Some(v),
-                Ok(Tag::Background(id)) => pending_bg = Some(id),
-                Ok(Tag::Camera(c)) => pending_camera = Some(c),
-                Ok(Tag::Expression(e)) => pending_expression = Some(e),
-                Ok(Tag::LookAt(target)) => pending_look_at = Some(target),
+            let applied = match classify(tag) {
+                Ok(Tag::Phone(v)) => set_pending_once(&mut pending_phone, v, "puhelin"),
+                Ok(Tag::Prop(p)) => set_pending_once(&mut pending_prop, p, "esine"),
+                Ok(Tag::View(v)) => set_pending_once(&mut pending_view, v, "hahmosuunta"),
+                Ok(Tag::Background(id)) => set_pending_once(&mut pending_bg, id, "tausta"),
+                Ok(Tag::Camera(c)) => set_pending_once(&mut pending_camera, c, "kamera"),
+                Ok(Tag::Expression(e)) => set_pending_once(&mut pending_expression, e, "ilme"),
+                Ok(Tag::LookAt(target)) => set_pending_once(&mut pending_look_at, target, "katse"),
                 Ok(Tag::Motion(m, d)) => {
                     if motion.is_some() {
-                        plan.diagnostics.push(Diagnostic::error(
-                            line_no,
-                            "Kirjoita eri liikkeet omille riveilleen.",
-                        ));
-                        line_ok = false;
-                    }
-                    motion = Some(m);
-                    if d.is_some() {
+                        Err("Kirjoita eri liikkeet omille riveilleen.".to_string())
+                    } else {
+                        motion = Some(m);
                         seconds = d;
+                        Ok(())
                     }
                 }
-                Err(message) => {
-                    plan.diagnostics.push(Diagnostic::error(line_no, message));
-                    line_ok = false;
-                }
+                Err(message) => Err(message),
+            };
+            if let Err(message) = applied {
+                plan.diagnostics.push(Diagnostic::error(line_no, message));
+                line_ok = false;
             }
         }
         if !tags.is_empty()
@@ -703,10 +723,10 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
             backgrounds.push((t, bg.clone(), span.clone()));
         }
         if let Some(view) = beat.view {
-            timeline.push(t, d, EventKind::CharacterView { view }, span.clone());
+            timeline.push(t, d, EventKind::CharacterView { view, character:beat.speaker.clone() }, span.clone());
         }
-        if let Some(view) = beat.phone {
-            timeline.push(t, d, EventKind::Phone { view }, span.clone());
+        if let Some(view) = beat.phone.or_else(|| (beat.motion==MotionKind::PhoneTap).then_some(PhoneView::Front)) {
+            timeline.push(t, d, EventKind::Phone { view, character:beat.speaker.clone() }, span.clone());
         }
         if let Some(hint) = beat.camera {
             timeline.push(t, d, EventKind::Camera { hint }, span.clone());
@@ -757,7 +777,7 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
         }
         timeline.push(
             t,
-            d,
+            d.min(Tick::from_seconds(beat.seconds)),
             EventKind::Motion {
                 character: beat.speaker.clone(),
                 motion: beat.motion,
@@ -787,6 +807,113 @@ mod tests {
     const EXAMPLE: &str = "[tausta studio]\nHei! Tervetuloa mukaan. [vilkuta 2s]\nKävelen oikealle. [kävele oikealle 3s]\n[tausta auto kuljettaja]\nNyt ollaan autossa. [nyökkää 2s]\n[tausta puhelin edestä]\nNähdään seuraavassa jaksossa! [vilkuta 2s]";
 
     const ENGLISH_FAMILY: &str = include_str!("../tests/fixtures/english-family.txt");
+
+    #[test]
+    fn duplicate_scene_declarations_reject_the_whole_line_instead_of_last_wins() {
+        for (first, conflicting) in [
+            ("background living room", "background kitchen"),
+            ("view front", "view left"),
+            ("phone front", "phone hidden"),
+            ("shot wide", "shot close up"),
+            ("prop coffee cup", "prop none"),
+            ("expression happy", "expression angry"),
+            ("look at camera", "look at Maija"),
+        ] {
+            for second in [first, conflicting] {
+                let same_line = parse(&format!(
+                    "[{first}][{second}] KALLE: Rejected. [wait]\n[wait]"
+                ));
+                assert!(!same_line.is_assemblable(), "{first}, {second}");
+                assert_eq!(same_line.beats, parse("\n[wait]").beats);
+                assert!(same_line
+                    .diagnostics
+                    .iter()
+                    .any(|d| d.line == 1 && d.severity == Severity::Error));
+
+                // Previously accepted pending settings survive a rejected next
+                // line; the duplicate is never silently applied to the beat.
+                let across = parse(&format!(
+                    "[{first}]\n[{second}] KALLE: Rejected. [wait]\nKALLE: Accepted. [wait]"
+                ));
+                let expected = parse(&format!("[{first}]\n\nKALLE: Accepted. [wait]"));
+                assert!(!across.is_assemblable(), "{first}, {second}");
+                assert_eq!(across.beats, expected.beats);
+                assert!(across
+                    .diagnostics
+                    .iter()
+                    .any(|d| d.line == 2 && d.severity == Severity::Error));
+            }
+        }
+    }
+
+    #[test]
+    fn conflicting_line_rolls_back_every_field_and_pending_origin() {
+        let source = "[tausta olohuone]\n[expression happy][look at camera][prop coffee cup][view left][phone front][shot wide][background kitchen]\nKALLE: Accepted. [wait]";
+        let rejected = parse(source);
+        let expected = parse("[tausta olohuone]\n\nKALLE: Accepted. [wait]");
+        assert!(!rejected.is_assemblable());
+        assert_eq!(rejected.beats, expected.beats);
+        let dangling = parse("[background living room]\n[background kitchen]");
+        assert!(dangling
+            .diagnostics
+            .iter()
+            .any(|d| d.line == 1 && d.message.contains("Lisää")));
+        assert!(dangling
+            .diagnostics
+            .iter()
+            .any(|d| d.line == 2 && d.message.contains("Useampi")));
+    }
+
+    #[test]
+    fn malformed_brackets_never_become_spoken_text_or_apply_partial_settings() {
+        for bad in [
+            "KALLE: Hello ] [wait]",
+            "KALLE: Hello [wait]]",
+            "[background [kitchen]]",
+            "[background kitchen] KALLE: Hello ]",
+            "KALLE: Tässä on ääntä [wave [hello]]",
+            "KALLE: Hello [wait",
+            "KALLE: Hello ][wait]",
+        ] {
+            let source = format!("[background living room]\n{bad}\nKALLE: Valid. [wait]");
+            let plan = parse(&source);
+            assert!(!plan.is_assemblable(), "{bad}");
+            assert_eq!(
+                plan.beats,
+                parse("[background living room]\n\nKALLE: Valid. [wait]").beats,
+                "{bad}"
+            );
+            assert!(
+                plan.diagnostics
+                    .iter()
+                    .any(|d| d.line == 2 && d.severity == Severity::Error),
+                "{bad}"
+            );
+        }
+    }
+
+    #[test]
+    fn mixed_language_pending_settings_reset_after_each_accepted_beat() {
+        let source = "[tausta olohuone]\n[shot wide]\n[ilme iloinen]\nKALLE: Don't run the studio alone. [odota 2s]\n[background kitchen]\n[kuva lähikuva]\n[expression neutral]\nMAIJA: I love to walk. [wait 2s]";
+        let plan = parse(source);
+        assert!(plan.is_assemblable(), "{:?}", plan.diagnostics);
+        assert_eq!(plan.beats.len(), 2);
+        assert_eq!(plan.beats[0].background.as_deref(), Some("apartment-v1"));
+        assert_eq!(plan.beats[1].background.as_deref(), Some("kitchen-v1"));
+        assert_eq!(plan.beats[0].camera, Some(CameraHint::Wide));
+        assert_eq!(plan.beats[1].camera, Some(CameraHint::CloseUp));
+        assert_eq!(plan.beats[0].text, "Don't run the studio alone.");
+        assert_eq!(plan.beats[1].text, "I love to walk.");
+        assert!(plan.beats.iter().all(|b| b.motion == MotionKind::Wait));
+        for negated in ["don't run left", "do not wave", "never jump", "älä kävele"] {
+            let source =
+                format!("[tausta olohuone]\n[shot wide][{negated}]\nKALLE: Accepted. [wait]");
+            let plan = parse(&source);
+            assert!(!plan.is_assemblable(), "{negated}");
+            assert_eq!(plan.beats[0].background.as_deref(), Some("apartment-v1"));
+            assert_eq!(plan.beats[0].camera, None);
+        }
+    }
 
     #[test]
     fn english_dialogue_is_never_automatically_interpreted_as_action() {

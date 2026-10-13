@@ -6,7 +6,7 @@
 //!   (30 asteen sääntö), jotta ei synny hyppyleikkausta.
 //! * Näpyttely: ensin puolilähi, sitten insertti puhelimeen.
 //! * Kamera pysyy aina toiminta-akselin samalla puolella (180 asteen sääntö).
-//! * Alle 1 s otokset yhdistetään edelliseen; staattisissa otoksissa hidas sisäänajo.
+//! * Vain saman automaattisen kuvan jatkuvat otokset yhdistetään; kirjoitetut leikkaukset säilyvät.
 //! * Valot sijoitetaan kameran suhteen: avain 45° vasemmalla ylhäällä, täyte oikealla, takavalo vastapäätä.
 
 use crate::{AgentError, AgentReport, Production, Slot, StudioAgent};
@@ -69,7 +69,6 @@ pub struct CameraTrack {
     pub fov_y: f32,
 }
 
-const MIN_SHOT: f32 = 1.0;
 
 fn smoothstep(x: f32) -> f32 {
     let x = x.clamp(0.0, 1.0);
@@ -101,7 +100,8 @@ impl CameraTrack {
         };
         for e in beats {
             let EventKind::Motion { motion: mk, character } = &e.kind else { continue };
-            let (start, end) = (e.start.seconds() as f32, e.end().seconds() as f32);
+            let scene_end=tl.events.iter().filter(|event|event.start==e.start && event.source.line==e.source.line && !matches!(event.kind,EventKind::Background{..})).map(|event|event.end()).max().unwrap_or(e.end());
+            let (start, end) = (e.start.seconds() as f32, scene_end.seconds() as f32);
             let hint = tl.events.iter().find_map(|c| match c.kind {
                 EventKind::Camera { hint } if c.start == e.start => Some(hint),
                 _ => None,
@@ -118,9 +118,8 @@ impl CameraTrack {
                 Some(CameraHint::Medium) => push(ShotKind::Medium, start, end, mk.is_locomotion()),
                 Some(CameraHint::CloseUp) => push(ShotKind::CloseUp, start, end, mk.is_locomotion()),
                 Some(CameraHint::Insert) => push(ShotKind::Insert, start, end, false),
-                Some(CameraHint::TwoShot) if partner.is_some() => push(ShotKind::TwoShot, start, end, false),
-                Some(CameraHint::OverShoulder) if partner.is_some() => push(ShotKind::OverShoulder, start, end, false),
-                Some(CameraHint::TwoShot | CameraHint::OverShoulder) => push(ShotKind::Medium, start, end, false),
+                Some(CameraHint::TwoShot) => push(ShotKind::TwoShot, start, end, false),
+                Some(CameraHint::OverShoulder) => push(ShotKind::OverShoulder, start, end, false),
                 Some(CameraHint::LowAngle) => push(ShotKind::LowAngle, start, end, mk.is_locomotion()),
                 Some(CameraHint::HighAngle) => push(ShotKind::HighAngle, start, end, mk.is_locomotion()),
                 None => match mk {
@@ -152,12 +151,17 @@ impl CameraTrack {
                 dialogue_run = 0;
             }
         }
-        // Yhdistä saman kuvan peräkkäiset otokset ja liian lyhyet otokset.
+        // Authored cuts (including repeated kinds and subsecond shots) are
+        // editorial boundaries. Never absorb them or the shot preceding them.
+        let authored: Vec<f32> = tl.events.iter().filter_map(|event| match event.kind {
+            EventKind::Camera { .. } => Some(event.start.seconds() as f32), _ => None,
+        }).collect();
         let mut merged: Vec<Shot> = Vec::new();
         for s in shots {
             if let Some(last) = merged.last_mut() {
                 let same = last.kind == s.kind && last.subject == s.subject && last.tracking == s.tracking && last.partner == s.partner;
-                if same || s.end - s.start < MIN_SHOT {
+                let explicit = authored.contains(&s.start) || authored.contains(&last.start);
+                if same && !explicit && (last.end - s.start).abs() < 1e-4 {
                     last.end = s.end;
                     last.tracking |= s.tracking;
                     continue;
@@ -246,8 +250,9 @@ impl CameraTrack {
             ShotKind::Insert => (0.42, h * 0.56, 0.62),
         };
         let group_x = match shot.kind {
-            ShotKind::Wide if !shot.tracking => {
-                let xs: Vec<f32> = self.motion.iter().map(|m| self.smooth_root_of(m, shot.start + 0.4).x).collect();
+            ShotKind::Wide => {
+                let sample = if shot.tracking { t } else { shot.start + 0.4 };
+                let xs: Vec<f32> = self.motion.iter().map(|m| self.smooth_root_of(m, sample).x).collect();
                 (xs.iter().cloned().fold(f32::MIN, f32::max) + xs.iter().cloned().fold(f32::MAX, f32::min)) * 0.5
             }
             ShotKind::TwoShot => {
@@ -339,15 +344,36 @@ impl StudioAgent for CinematographyAgent {
         &[Slot::Camera]
     }
     fn run(&mut self, p: &mut Production) -> Result<AgentReport, AgentError> {
+        // Derived camera state from an older revision must not survive a
+        // failed authored shot validation.
+        p.camera = None;
         let tl = p.timeline.as_ref().ok_or(AgentError::Missing { agent: "cinematography", slot: Slot::Timeline })?;
         let names: Vec<String> = p.cast.iter().map(|c| c.character.params.name.clone()).collect();
         let heights = p.cast.iter().map(|c| c.character.humanoid.proportions.height).collect();
         let heads = p.cast.iter().map(|c| c.character.humanoid.head_height).collect();
         let track = CameraTrack::plan(tl, p.motion.clone(), heights, heads, &names);
+        for shot in &track.shots {
+            let reject = |reason: &str| AgentError::Failed { agent: "cinematography",
+                message: format!("{} {:.3}–{:.3}s, {}: {}", shot.kind.finnish(), shot.start, shot.end,
+                    names.get(shot.subject).map_or("missing subject", String::as_str), reason) };
+            if matches!(shot.kind, ShotKind::TwoShot | ShotKind::OverShoulder)
+                && shot.partner.is_none_or(|partner| partner == shot.subject || partner >= p.cast.len()) {
+                return Err(reject("shot requires a distinct available partner; the authored shot was not replaced"));
+            }
+            if shot.kind == ShotKind::Insert {
+                let sample = shot.start + (shot.end - shot.start) * 0.3;
+                if p.motion.get(shot.subject).and_then(|motion| motion.evaluate(tl, sample).props.phone).is_none() {
+                    return Err(reject("insert requires a visible supported phone prop; the authored shot was not replaced"));
+                }
+            }
+        }
         let summary = format!(
             "{} otosta: {}",
             track.shots.len(),
-            track.shots.iter().map(|s| s.kind.finnish()).collect::<Vec<_>>().join(" · ")
+            track.shots.iter().map(|s| format!("{:.3}–{:.3}s {} / {}{}", s.start, s.end, s.kind.finnish(),
+                names.get(s.subject).map_or("?", String::as_str), s.partner.map_or(String::new(),
+                    |partner| format!(" + {}", names.get(partner).map_or("?", String::as_str)))))
+                .collect::<Vec<_>>().join(" · ")
         );
         p.camera = Some(Arc::new(track));
         Ok(AgentReport::new(summary))

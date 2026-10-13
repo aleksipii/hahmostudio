@@ -161,6 +161,17 @@ const TAIL: f64 = 0.3;
 #[derive(Default)]
 pub struct TimingAgent;
 
+/// Shared clock contract: speech may extend the scene, never the authored motion.
+pub fn timed_seconds(plan:&hs_script::ScriptPlan,lines:&[VoiceLine])->Vec<f64> {
+    let mut seconds:Vec<_>=plan.beats.iter().map(|beat|beat.seconds).collect();
+    for line in lines {
+        if let (Some(speech),Some(duration))=(&line.speech,seconds.get_mut(line.beat)) {
+            *duration=duration.max(speech.audio.duration() as f64+TAIL);
+        }
+    }
+    seconds
+}
+
 impl StudioAgent for TimingAgent {
     fn id(&self) -> &'static str {
         "timing"
@@ -176,17 +187,12 @@ impl StudioAgent for TimingAgent {
     }
     fn run(&mut self, p: &mut Production) -> Result<AgentReport, AgentError> {
         let plan = p.plan.as_ref().ok_or(AgentError::Missing { agent: "timing", slot: Slot::Plan })?;
-        let mut seconds: Vec<f64> = plan.beats.iter().map(|b| b.seconds).collect();
-        let mut extended = 0;
-        for l in &p.voice_lines {
-            if let Some(s) = &l.speech {
-                let need = s.audio.duration() as f64 + TAIL;
-                if need > seconds[l.beat] {
-                    seconds[l.beat] = need;
-                    extended += 1;
-                }
-            }
+        let seconds=timed_seconds(plan,&p.voice_lines);
+        if seconds.iter().any(|s|!s.is_finite() || *s<0.5) || seconds.iter().sum::<f64>()>60.0 {
+            p.timeline=None;p.clips.clear();p.mix=None;p.motion.clear();p.camera=None;
+            return Err(AgentError::Failed{agent:"timing",message:"Todellinen puheaika ylittää 60 sekunnin jakson rajan. Lyhennä repliikkejä tai jaa käsikirjoitus jaksoiksi; puhetta ei nopeuteta.".into()});
         }
+        let extended=seconds.iter().zip(&plan.beats).filter(|(seconds,beat)|**seconds>beat.seconds).count();
         let timeline = hs_script::to_timeline_with(plan, &p.script, p.fps, &seconds);
         let starts: Vec<f32> = seconds.iter().scan(0.0, |acc, d| {
             let s = *acc;

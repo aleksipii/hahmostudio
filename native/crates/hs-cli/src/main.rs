@@ -361,6 +361,14 @@ fn main() -> ExitCode {
         }
     };
     let result = match cmd.as_str() {
+        "audit" | "explain" => {
+            production(&args).and_then(|mut p| {
+                Pipeline::default().run(&mut p).map_err(|e|e.to_string())?;
+                let report=hs_agents::audit::inspect(&p);
+                println!("{}",serde_json::to_string_pretty(&report).map_err(|e|e.to_string())?);
+                if report.allowed() {Ok(())}else{Err("Tuotannon tarkistus esti lopullisen kokoamisen.".into())}
+            })
+        }
         "tarkista" | "check" => check(&args),
         "renderöi" | "renderoi" | "render" => render(&args),
         "hahmo" => hahmo(&args),

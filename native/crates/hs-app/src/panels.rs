@@ -43,7 +43,7 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     }
                 }
                 ui.separator();
-                let can_export = app.voice.recorder.is_none() && app.export.is_none() && app.production.plan.as_ref().is_some_and(|p| p.is_assemblable());
+                let can_export = app.pipeline_error.is_none() && app.production.script==app.script && hs_agents::audit::inspect(&app.production).allowed() && app.voice.recorder.is_none() && app.export.is_none() && app.production.plan.as_ref().is_some_and(|p| p.is_assemblable());
                 if ui.add_enabled(can_export && (app.production.allow_silent_export || app.production.voice_lines.iter().all(|l| l.speech.is_some())), egui::Button::new("Vie MP4…")).clicked() {
                     ui.close_menu();
                     if let Some(p) = rfd::FileDialog::new().set_file_name("jakso.mp4").save_file() {
@@ -152,8 +152,8 @@ fn event_text(kind: &EventKind) -> String {
             None => motion.finnish_name().to_string(),
         },
         EventKind::Background { id } => id.clone(),
-        EventKind::CharacterView { view } => format!("Suunta {view:?}"),
-        EventKind::Phone { view } => format!("Puhelin {view:?}"),
+        EventKind::CharacterView { view, character } => format!("{}: suunta {view:?}",character.as_deref().unwrap_or("päähenkilö")),
+        EventKind::Phone { view, character } => format!("{}: puhelin {view:?}",character.as_deref().unwrap_or("päähenkilö")),
         EventKind::Prop { character, item } => format!("{}esine {}", character.as_ref().map(|c| format!("{c}: ")).unwrap_or_default(), item.as_deref().unwrap_or("pois")),
         EventKind::Camera { hint } => format!("Kuva {hint:?}"),
         EventKind::Expression {expression,..}=>format!("Ilme {expression:?}"),
@@ -318,7 +318,7 @@ fn color_row(ui: &mut egui::Ui, label: &str, c: &mut [u8; 3]) -> bool {
 }
 
 pub fn cast_panel(app: &mut StudioApp, ctx: &egui::Context) {
-    egui::SidePanel::right("hahmot").resizable(true).default_width(300.0).min_width(240.0).show(ctx, |ui| {
+    egui::SidePanel::right("hahmot").resizable(true).default_width(300.0).min_width(240.0).max_width(400.0).show(ctx, |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.heading("Hahmot");
             app.ensure_cast_params();
@@ -416,13 +416,13 @@ pub fn cast_panel(app: &mut StudioApp, ctx: &egui::Context) {
             }
             ui.separator();
             ui.heading("Agentit");
-            egui::Grid::new("agentit").striped(true).num_columns(3).show(ui, |ui| {
+            egui::Grid::new("agentit").striped(true).num_columns(3).max_col_width(110.0).show(ui, |ui| {
                 for r in &app.last_runs {
                     ui.label(r.name);
                     ui.label(RichText::new(format!("{:.1} ms", r.took.as_secs_f64() * 1000.0)).monospace());
                     match &r.outcome {
-                        Ok(s) => ui.label(RichText::new(s).small()),
-                        Err(e) => ui.label(RichText::new(e).small().color(Color32::from_rgb(0xe0, 0x6c, 0x5a))),
+                        Ok(s) => ui.add(egui::Label::new(RichText::new(s).small()).wrap()),
+                        Err(e) => ui.add(egui::Label::new(RichText::new(e).small().color(Color32::from_rgb(0xe0, 0x6c, 0x5a))).wrap()),
                     };
                     ui.end_row();
                 }

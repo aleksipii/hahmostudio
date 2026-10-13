@@ -196,3 +196,5 @@ impl Pipeline {
 pub mod project_directory;
 
 pub mod subtitles;
+
+pub mod audit;

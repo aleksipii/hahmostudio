@@ -42,7 +42,11 @@ impl FrameBuilder {
                     let ease = ease * ease * (3.0 - 2.0 * ease);
                     for (a, b) in [(shot.subject, other), (other, shot.subject)] {
                         let (fa, fb) = (&frames[a], &frames[b]);
-                        let still = fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
+                        let authored_view=tl.events_at(p.fps.frame_to_tick(frame)).any(|event|match &event.kind {
+                            EventKind::CharacterView{character,..}=>match character {Some(name)=>name.eq_ignore_ascii_case(&p.cast[a].character.params.name),None=>p.cast[a].lead},
+                            _=>false,
+                        });
+                        let still = !authored_view && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
                         let dx = fb.root.x - fa.root.x;
                         if still && dx.abs() > 0.05 {
                             turns[a] = dx.signum() * 0.5 * ease;
@@ -215,6 +219,8 @@ impl StudioAgent for RustRenderAgent {
                 return Err(fail("Käsikirjoituksessa on virheitä; korjaa ne ennen vientiä."));
             }
         }
+        let proof=crate::audit::inspect(p);
+        if !proof.allowed() {return Err(fail(proof.diagnostics.iter().filter(|d|d.severity==hs_core::Severity::Error).map(|d|format!("Rivi {}: {}",d.line,d.message)).collect::<Vec<_>>().join("\n")));}
         let total = p.frame_count();
         let mut renderer = make_renderer(p.backend)?;
         let backend = renderer.name();

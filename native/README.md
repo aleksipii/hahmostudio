@@ -175,3 +175,12 @@ Esimerkiksi `[walking to the left for 2 seconds]`, `[camera close up]` ja
 `walk` ei enää itsessään käynnistä liikettä. Englanninkielisessä kävely-/juoksu-
 ohjeessa suunta annetaan nimenomaisesti; FI-tunnistus säilyy.
 Ohjeet ja rajat: [ENGLISH-COMMANDS.md](ENGLISH-COMMANDS.md).
+
+## Tarkistettava 3D-tuotantosuunnitelma
+
+Tuntematon hahmo ei enää saa automaattista oletusulkonäköä. Lopullinen vienti
+vaatii nimetyn, määritetyn hahmon ja toteutetut resurssit. Vienti-välilehden
+**Toteutuvan animaation tarkistus** näyttää rivin todellisen liikkeen keston,
+kohtausajan, esineet/puhelimen, taustan ja kuvakulmat. CLI: `audit` / `explain`.
+Puhe voi pidentää kohtausta, mutta ei kirjoitettua liikkeen kestoa.
+Sopimus ja hyväksynnän rajat: [PRODUCTION-RULES.md](PRODUCTION-RULES.md).

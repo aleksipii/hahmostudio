@@ -10,6 +10,8 @@ pub struct ScriptAssistState {
     source: String,
     checks: Vec<LineCheck>,
     preview: Option<EditProposal>,
+    suggestions:Option<Result<Vec<EditProposal>,String>>,
+    suggestion_key:Option<(usize,String)>,
     error: Option<String>,
 }
 impl ScriptAssistState {
@@ -19,6 +21,7 @@ impl ScriptAssistState {
     pub fn ui(&mut self, ui: &mut egui::Ui, script: &str, p: &hs_agents::Production) {
         if self.source != script || self.checks.is_empty() {
             self.source = script.into();
+            self.suggestion_key=None;
             match assist::inspect(script) {
                 Ok(checks) => {
                     self.checks = checks;
@@ -32,6 +35,11 @@ impl ScriptAssistState {
         }
         self.line = self.line.min(self.checks.len().saturating_sub(1));
         let selected = self.line + 1;
+        let key=(selected,self.query.clone());
+        if self.suggestion_key.as_ref()!=Some(&key) {
+            self.suggestions=Some(assist::completions(script,selected,&self.query));
+            self.suggestion_key=Some(key);
+        }
         egui::ScrollArea::vertical().id_salt("script-assist").max_height(240.0).show(ui,|ui| {
             egui::CollapsingHeader::new("Rivikohtainen tarkistus").show(ui,|ui| {
             ui.label("Valitse rivi tarkistaaksesi sen ohjeet. Puuttuva ääni tarkistetaan myös Vienti-välilehdellä.");
@@ -62,11 +70,11 @@ impl ScriptAssistState {
                     ui.colored_label(if diagnostic.severity==Severity::Error {egui::Color32::LIGHT_RED}else{egui::Color32::YELLOW},&diagnostic.message);
                 }
             }
-            match assist::completions(script,selected,&self.query) {
+            match self.suggestions.as_ref().unwrap() {
                 Ok(edits)=>{
-                    if edits.is_empty() {ui.label("Tuettua ohjetta ei löytynyt. Kokeile walk, wave, camera, emotion tai look.");}
+                    if edits.is_empty() {ui.label("Ristiriidatonta ehdotusta ei löytynyt. Muokkaa hakua tai lähderivin ohjeita.");}
                     for edit in edits {
-                        if ui.button(edit.command.as_deref().unwrap_or(&edit.reason)).on_hover_text(format!("{}\n{}",edit.reason,edit.after)).clicked() {self.preview=Some(edit);}
+                        if ui.button(edit.command.as_deref().unwrap_or(&edit.reason)).on_hover_text(format!("{}\n{}",edit.reason,edit.after)).clicked() {self.preview=Some(edit.clone());}
                     }
                 }
                 Err(error)=>{ui.colored_label(egui::Color32::LIGHT_RED,error);},

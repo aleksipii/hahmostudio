@@ -65,6 +65,7 @@ pub fn show(app: &mut StudioApp, ctx: &egui::Context) {
 pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
     egui::CentralPanel::default().show(ctx,|ui| {
         ui.heading("Vie englanninkielinen jakso");
+        if let Some(error)=&app.pipeline_error {ui.colored_label(egui::Color32::LIGHT_RED,error); }
         let missing=app.production.voice_lines.iter().filter(|line|line.speech.is_none()).count();
         ui.label(format!("{:.2} s · {} × {} · {} fps",app.duration(),app.production.width,app.production.height,app.production.fps.0));
         if missing>0 {ui.colored_label(egui::Color32::YELLOW,format!("{missing} repliikiltä puuttuu valmis ääni."));}
@@ -76,7 +77,27 @@ pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
             if ui.button(label).clicked(){app.production.width=size.0;app.production.height=size.1;app.production.fps=hs_core::Fps::EXPORT;app.pipeline.mark_dirty(hs_agents::Slot::Audio);app.run_pipeline();}
         });
         ui.label("MP4: H.264 + AAC, 30 fps, enintään 60 sekuntia ja 128 MiB. Aiempi tiedosto säilyy, jos vienti epäonnistuu.");
-        let ready=app.export.is_none() && app.voice.recorder.is_none() && app.production.plan.as_ref().is_some_and(|p|p.is_assemblable());
+        let proof=hs_agents::audit::inspect(&app.production);
+        let current=app.production.script==app.script;
+        if !current {ui.label("Käsikirjoituksen uusi versio odottaa tarkistusta.");}
+        for diagnostic in proof.diagnostics.iter().filter(|d|d.severity!=hs_core::Severity::Info) {
+            ui.colored_label(if diagnostic.severity==hs_core::Severity::Error{egui::Color32::LIGHT_RED}else{egui::Color32::YELLOW},format!("Rivi {}: {}",diagnostic.line,diagnostic.message));
+        }
+        egui::CollapsingHeader::new("Toteutuvan animaation tarkistus").show(ui,|ui| {
+            ui.label("Automaattinen kamera käyttää näkyviä kuvaussääntöjä. Kirjoitettu kuvakulma säilyy.");
+            egui::ScrollArea::vertical().max_height(200.0).show(ui,|ui| {
+                for row in &proof.rows {
+                    ui.label(format!("Rivi {} · {} · {:.2}–{:.2} s",row.line,row.actor.as_deref().unwrap_or("ei nimettyä hahmoa"),row.start_seconds,row.end_seconds));
+                    let background=hs_script::BACKGROUND_ALIASES.iter().find(|(_,id)|*id==row.background).map(|(name,_)|*name).unwrap_or(&row.background);
+                    let prop=row.prop.as_deref().map(|id|hs_script::PROP_ALIASES.iter().find(|(_,known)|*known==id).map(|(name,_)|*name).unwrap_or(id)).unwrap_or("ei");
+                    ui.label(format!("{} ({:.2} s) · {} · esine {} · {} ({})",row.motion,row.motion_seconds,background,prop,row.shots.join(" → "),if row.authored_camera{"kirjoitettu"}else{"kuvaussääntö"}));
+                    let look=match &row.look_at {Some(hs_core::LookTarget::Camera)=>"kamera",Some(hs_core::LookTarget::Character(name))=>name,None=>"oletus"};
+                    ui.label(format!("Ilme {:?} · katsetavoite {} · puhelin {}",row.expression,look,if row.phone_visible{"näkyy"}else{"ei näy"}));
+                    ui.separator();
+                }
+            });
+        });
+        let ready=app.pipeline_error.is_none() && current && proof.allowed() && app.export.is_none() && app.voice.recorder.is_none();
         if ui.add_enabled(ready && (missing==0 || app.production.allow_silent_export),egui::Button::new("Vie MP4…")).clicked(){
             if let Some(path)=rfd::FileDialog::new().set_file_name("jakso.mp4").save_file(){crate::panels::start_export(app,hs_agents::RenderRequest::Mp4(path));}
         }

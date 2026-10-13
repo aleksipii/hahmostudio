@@ -31,21 +31,21 @@ pub fn cast_names(p: &Production) -> Vec<String> {
     names
 }
 
-fn params_for(p: &Production, name: Option<&str>, index: usize) -> CharacterParams {
+fn params_for(p: &Production, name: Option<&str>, _index: usize) -> Result<CharacterParams,AgentError> {
     if let Some(n) = name {
         if let Some(c) = p.cast_params.iter().find(|c| c.name.eq_ignore_ascii_case(n)) {
-            return c.clone();
+            return Ok(c.clone());
         }
         if let Some(c) = CharacterParams::presets().into_iter().find(|c| c.name.eq_ignore_ascii_case(n)) {
-            return c;
+            return Ok(c);
         }
-        // Tuntematon nimi: esiasetus järjestyksessä, nimi säilyy.
-        let presets = CharacterParams::presets();
-        let mut c = presets[index % presets.len()].clone();
-        c.name = n.to_string();
-        return c;
+        return Err(AgentError::Failed{agent:"character-mesh",message:format!("Hahmolle {n} puuttuu määritetty profiili. Ulkonäköä ei arvata; valitse nykyinen hahmo tai tuo oma hahmoprofiili.")});
     }
-    p.cast_params.first().cloned().unwrap_or_else(CharacterParams::pipsa)
+    Ok(p.cast_params.first().cloned().unwrap_or_else(CharacterParams::pipsa))
+}
+
+fn reject_derived_cast(p:&mut Production,error:AgentError)->AgentError {
+    p.cast.clear();p.motion.clear();p.camera=None;error
 }
 
 impl StudioAgent for CharacterMeshAgent {
@@ -64,9 +64,9 @@ impl StudioAgent for CharacterMeshAgent {
     fn run(&mut self, p: &mut Production) -> Result<AgentReport, AgentError> {
         let names = cast_names(p);
         let wanted: Vec<CharacterParams> = if names.is_empty() {
-            vec![params_for(p, None, 0)]
+            vec![params_for(p, None, 0).map_err(|error|reject_derived_cast(p,error))?]
         } else {
-            names.iter().enumerate().map(|(i, n)| params_for(p, Some(n), i)).collect()
+            names.iter().enumerate().map(|(i, n)| params_for(p, Some(n), i)).collect::<Result<Vec<_>,_>>().map_err(|error|reject_derived_cast(p,error))?
         };
         if wanted.len()>4 {return Err(AgentError::Failed{agent:"character-mesh",message:"Näyttämölle mahtuu enintään neljä hahmoa.".into()});}
         if let Some(tl)=&p.timeline {for event in &tl.events {
@@ -74,6 +74,7 @@ impl StudioAgent for CharacterMeshAgent {
                 if !wanted.iter().any(|c|c.name.eq_ignore_ascii_case(name)){return Err(AgentError::Failed{agent:"character-mesh",message:format!("Katseen kohde {name} ei ole kohtauksen hahmo.")});}
             }
         }}
+        for profile in &wanted {crate::audit::validate_profile(profile).map_err(|message|reject_derived_cast(p,AgentError::Failed{agent:"character-mesh",message}))?;}
         let mut built = 0;
         let mut cast = Vec::new();
         let n = wanted.len();
