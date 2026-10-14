@@ -1656,3 +1656,108 @@ yhä avoinna; CDN-asetuksen runtime-julkaisu odottaa aiemman handoffin mukaan.
 Seuraava domain-kokonaisuus: kontaktien laskeminen/pudotus ja esteiden
 mittaaminen ennen ovien/portaiden lisäämistä; tarvitaan oikeat toiminto- ja
 omistajuussäännöt sekä renderöinnin kontaktimittaukset.
+
+## Codex handoff — 14.10.2026: tuotantotyökalujen integraatio ja 3D-renderpassit PSD:hen
+
+Työkalu: Codex. Haara `work`, yhteinen julkaisukohde `main`.
+Tarkistettu toteutuscommit: `d85d04de2128adeabc1097a7963954c092010308`.
+Lähtöcommit/main: `f5bd4631cd1ebc11dc347a268f6f401c7218ad57`.
+Tämä handoff on erillinen dokumentaatiocommit toteutuksen jälkeen.
+
+Omistajan järjestys: ominaisuudet ensin, Mac-hyväksyntä ja keveysmittaukset viimeiseksi.
+Henkilökohtainen käyttö; allekirjoitus/notarisaatio ei ole tämän vaiheen valmiusehto.
+Aiemmin valtuutettu Codex-agenttijako jatkettiin; root vastasi yhdistämisestä ja
+lopputuloksen testeistä. Claude-keskusteluhistoriaa ei oletettu näkyväksi.
+
+Integroitu aiemman tehtävän työ:
+- Esineen lasku/pudotus, omistajuuden vapautus ja uudelleenpoiminta, oikea
+  käsi-IK; tuki rajattu lattiaan/omaan ilmoitettuun alustaan. Painovoima9.81,
+  otteen/FK:n ja konservatiivisten alusta-/esine-AABB-törmäysten tarkistus.
+- Ovet ja portaat: eksplisiittiset mitat/koordinaatit, kahvan saavutus,
+  oven kierto, portaan jalkakontaktit ja säilyvä korkeustaso. Kontaktiristiriidat
+  pysäyttävät viennin; ei yleisen rigid-body-fysiikan väitettä.
+- Saman hahmon erillisten kehokanavien kerrostus, sama kanava hylätään;
+  automaattinen puhe-ele väistää kirjoitettua elettä. Kamera/tausta voivat olla
+  itsenäisiä [at]-rivejä; niiden raahaus ja atominen ryhmäsiirto tarkistetaan.
+- .sarja v1 validoidaan kokonaan ennen vaihtoa; jokainen alkuperäinen .hahmo
+  säilyy .koeta-resurssina. .hahmo luku/kirjoitus/manifesti/SHA256/historia,
+  tuntemattomien resurssien/metadatan säilytys; alkuperäistä lähdetiedostoa ei poisteta.
+- PSD-rasterimaskit, ryhmäopacity/eristys ja kahdeksan blend-tilaa; vector-maskit
+  ja olennaiset tukemattomat efektit annetaan virheenä.
+- 2D-rigin nivel-/avaineditori sekä natiivien 3D-luurankojen avainruudut;
+  todellinen esikatselu/vienti, pose-resurssit ja yhteinen kumoaminen.
+- Kommentit, tehtävät, sisältöhashiin sidottu hyväksyntä ja paikallinen lukitus.
+  Lukittu undo/muokkaus estetään, vanhentunut hyväksyntä ei avaa lukkoa.
+  Tarkistus ei kopioi/hajauta suuria PCM/kuvia jokaisella idle-ruudulla.
+  AccessKit-feature aktivoitu, VoiceOverin laitehyväksyntä tekemättä.
+
+Uusi käyttäjän pyytämä PSD-renderputki:
+- hs-render/src/raytrace.rs: RenderBuffers (background, diffuse, AO, specular,
+  depth, normal), glam, ohjelmistokolmioraytracing, median-BVH, etukäteen
+  ihotettu geometria, deterministinen kosinipainotettu AO, shadow-tested
+  directional specular, near/far-radial depth, face-forward world normals.
+  Tavalliset Rust-workerit, oletus≤8; ei uusia C/C++-sidoksia tai GPU-polun kutsuja.
+- hs-render/src/psd_exporter.rs: Photoshop RGB8 PSDv1, RAW planar -tasot,
+  AO Multiply, Specular Screen, piilotetut Depth/Normal. Koko-/resurssirajat,
+  kaikkien kuuden tason pikselivertailu ja atominen tallennus.
+- psd0.3.5 on LUKIJA, ei kirjoitus-API:a. Oma Pure Rust -enkooderi ja psd-craten
+  dekooderi. Craten näkyvyysbitti on käänteinen; oikeat Photoshop-bitit testataan
+  riippumattomasti hs-image-tuonnilla. Ei väitettä olemattoman API:n käytöstä.
+- DrawItem.ray_visible/raster_only erottaa maalatut rasterikontaktivarjot, jotta
+  niitä ei polteta Diffuse-passiin. FrameBuilder antaa saman animoidun kohtauksen
+  kuin näyttämölle/videolle. UI: Tiedosto→Vie nykyinen 3D-ruutu PSD-passeina.
+  Taustatyö ja peruutus; nykyistä tiedostoa ei vaihdeta virheellisellä tuloksella.
+- CPU-esimerkki examples/render_3d_psd.rs; ohje native/RENDER-PASSES.md.
+
+Omistetut/muutetut tiedostot: toteutuscommit listaa67 lähde-, testi-, manifesti-
+ja dokumentaatiotiedostoa hs-core/script/motion/character-riippuvuuksien,
+hs-render/agents/project/hahmo/image/app integraatiossa. Ei puhemallipainoja,
+käyttäjän ääniä, yksityisiä tiedostoja tai uusia Electron/TS-lähteitä.
+
+Todennus (Linux, Rust1.99; Mac/laitteet eivät mukana):
+- Lopullinen cargo test --locked --workspace -j2:344läpi,0fail,1ignored
+  (aitoKokoro), exit0 /tmp/koeta-feature-workspace-final5.log.
+  Mukana oikea FFmpeg-vienti; TestEngine-puhe ei ole Kokoro-hyväksyntä.
+- cargo build --locked -p hs-app -p hs-cli -j2 exit0,
+  /tmp/koeta-feature-build-ready.log. Lopullinen cargo clippy --locked
+  --workspace --all-targets -j2 exit0 /tmp/koeta-feature-clippy-ready.log;
+  tyylivaroituksia ja aiempia varoituksia, ei estäviä virheitä.
+- CPU-only cargo test --locked -p hs-render --no-default-features --test
+  raytrace_psd:5läpi /tmp/koeta-aov-cpu-only-final.log. Analyyttiset normaali/
+  syvyysarvot, luumatriisin vaikutus, AO/specular, alpha/alignment, tasonsisältö,
+  oikeat visibility/blend-bitit, thread-determinismi, peruutus, invalid-geometry,
+  rasterivarjojen poisto ja epäonnistuneen tallennuksen vanhan kohteen säilytys.
+- Agentsin oikea FrameBuilder→PSD ja animoitujen luiden muuttuvat pikselit
+  mukana workspace-sarjassa. Pose FK/render/archive-roundtrip myös mukana.
+- CPU-only esimerkki loi /tmp/koeta-character-passes.psd (256x256,~1.7MiB).
+  psd-dekooderi, hs-image ja riippumaton ImageMagick identify tunnistavat kuusi
+  tasoa + merged-kuvan, oikeat nimet ja mitat. /tmp/koeta-aov-example.log.
+- Sovelluksen15testiä läpi /tmp/koeta-app-integration-tests.log, mukaan lukien
+  oikea viiden jakson .sarja→.koeta roundtrip ja rig edit/render/save/undo.
+- Python-paketointi10testiä läpi /tmp/koeta-packaging-current.log.
+- Xvfb:114 + Vulkan lavapipe: oikea sovellus käynnistyi, avainruudut + sovitettu
+  näkyvä3D-esikatselu /tmp/koeta-aov-gui-ready.png. PSD-valikkokohta nähty
+  aktiivisena /tmp/koeta-aov-menu.png. OS-tiedostodialogin kautta koko
+  1080x1920PSD:tä ei ajettu; tiedoston tuotanto todistettu CPU-esimerkillä/
+  integraatiotesteillä. Ei Photoshop-laitehyväksyntää.
+- git diff --check läpi. Quotahelper unavailable, prosenttia ei päätelty.
+- Väliaikaiset epäonnistumiset korjattu: omien testikäännösvälimuistien levytila,
+  keskeneräiset moduulirekisteröinnit, kerrostuksen automaattinen puhe-ele,
+  vanhat päällekkäisyyttä olettavat testit (sama-kanava/itsenäinen puheaika),
+  rigitestin lähdeaineiston suhteellinen polku. Valmis workspace-ajo on yllä.
+  Vaihtoehtoisen featuregraafin turha raskas testibuild keskeytettiin itse;
+  lopullinen yhtenäinen workspace-ajo suoritti kaikki sarjat.
+
+Avoinna / seuraava konkreettinen tehtävä:
+- Täysi mielivaltaisen maailman/kehon törmäysfysiikka, käden kaikki sormikontaktit,
+  automaattinen ulottuva lattialle kumartuminen ja yleinen rig-retargettaus.
+  Mahdoton kontakti torjutaan, sitä ei väitetä animaatioksi.
+- Vanhojen esitystilojen/PSD-vector-maskien/efektien täydellinen renderöinti;
+  vanha2D-jakso tallentuu ja on muokattava, ei väärennettyä3D-vientiä.
+- Raytracer: opaque geometry, ei tekstuureja/HDR/refraction/pathtracingia.
+  Seuraava PSD-parannus: UI-asetukset AO/depth-rajoille ja tuonti suoraan
+  tasoeditoriin; tällä hetkellä parametrit julkisessa Rust-API:ssa.
+- User-prioriteetin mukaisesti vasta myöhemmin: aito Kokoro/kuuntelu, oikea
+  Mac/Metal/kamera/mikrofoni/Finder/VoiceOver, itsenäinen DMG, keveysmittaukset.
+  Aiempi CDN403 ei ole poistunut pelkällä koodimuutoksella. Ei uusia malli/
+  turvallisuus-/julkaisuhyväksynnän väitteitä.
