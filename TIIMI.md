@@ -2095,3 +2095,65 @@ Rajat ja seuraava työ:
   hahmokohtaiset näyttelyparametrit, sen jälkeen käyttäjän tarkistama puhuva pilotti.
 - Aito Kokoro/kuuntelu ja Mac/Metal/Finder/laitteet/VoiceOver/DMG/keveys ovat
   erillisiä viimeisen vaiheen hyväksyntöjä. Omat GUI/Xvfb-prosessit suljetaan.
+
+
+## Codex — alkuperäisen hahmoperheen ulkonäkö, 14.10.2026
+
+Käyttäjä pyysi selvästi kauniimpia hahmoja ja asiantuntija-agentteja.
+Haara work, kohde main; lähdecommit
+`bb3a994c75e75dc5348bc0344b9e4af08e9a7632`, pohja
+`d9794adfb534effe26301196f7fe08a3a74a1e3b`.
+
+Omistus: character_art_direction auditoi todelliset kuvat ja muotokielen;
+character_geometry omisti hs-character/mesh.rs; character_palette params.rs;
+character_validation uuden hs-agents/tests/character_redesign.rs:n.
+Root omisti character_gallery-esimerkin, README/CHARACTER-DESIGN.md:n,
+integraation, sarjalliset Cargo-ajot, todelliset renderit ja GUI-tarkistuksen.
+
+Toteutus: suljettu yhtenäinen paitaloft korvaa erilliset rinta-/vatsapallot,
+paitojen pallomainen helma ja olkapääpallot poistettu, hihojen päät sovitettu
+vartaloon. Mekossa suljettu levenevä helma, vyötärö ankkuroitu ja helmaluut
+säilyvät. Hiukset seuraavat pään pintaa; sivuotsatukka, pienemmät bob-massat,
+korkeampi pipon reuna, näkyvät kulmakarvat. Silmissä hillitympi valkuainen,
+erillinen iiris/pupilli/valopiste, ohuemmat lasit. Perheen uudet pohjat saavat
+luonnonvalkoisen/petroolin/korallin/mustikan/laventelin paletin ja rauhallisemmat
+kasvoparametrit. Ronjan poninhäntä näkyy ilman lippalakkia.
+Mitat, ääni-ID:t, luuranko ja mouth()-sidonnat säilyvät; vanhat tallennetut
+ulkonäköparametrit luetaan sellaisinaan. Geometria rakentuu kerran muutoksessa,
+ei joka ruudussa; ei uusia riippuvuuksia tai ladattavia mallipainoja.
+
+Todennus Linux/Rust1.99:
+- Koko workspace: 427 passed, 0 failed, 1 ignored (aito Kokoro), exit0
+  /tmp/koeta-character-final-tests.log. Tämä ajo edelsi viimeistä Bob-hiusten
+  sivuleveyden .11hh→.125hh korjausta; viimeiselle täsmälliselle lähteelle
+  hs-character 9 passed ja character_redesign 3 passed, exit0
+  /tmp/koeta-character-verified-mesh-tests.log ja -verified-render-tests.log.
+- Lopullinen app+CLI-binäärien build exit0 /tmp/koeta-character-app-cli-build.log;
+  erillinen gallery build exit0 /tmp/koeta-character-gallery-verified-build.log.
+  --example-rajaus ei rakenna app/CLI-binäärejä: ne rakennettiin erikseen,
+  vanhaa CLI-binääriä käyttäneet väliaikaiset kuvat korvattiin oikeilla.
+- Workspace/all-targets clippy exit0 /tmp/koeta-character-final-clippy.log,
+  olemassa olevia varoituksia. Viimeinen hiuskorjaus sisältyi lint-ajoon.
+- Uudet testit: finite vertex/normal/bone/weight+budjetti, loftcap-winding,
+  hiusraja, levenevä rigattu helma, säilyvät mittasuhteet/äänet ja käyttäjän
+  JSON-ulkonäkö; todelliset perheen CPU-lähikuvat edestä/viistosta/profiilista,
+  skinning ja näkyvä Ah-vs-Rest. Vanha kontaktilogiikka läpäisi workspace-ajon.
+- /tmp/koeta-character-gallery/family-final.png: todellinen lopullinen CPU-kuva,
+  vasemmalta Kalle/Maija/Eetu/Ronja, riveillä kokovartalo/front/viisto/happy.
+  Maijan korvan kärki näkyi hiusten läpi ensimmäisessä kuvassa; viimeinen
+  hiusleveyskorjaus poisti sen, lopullinen kuva renderöity ja katsottu.
+- /tmp/koeta-character-gallery/kalle-before-after.png: sama käsikirjoitus,
+  kamera ja CLI-koko480x720; vasen alkuperäinen, oikea uusi toteutus.
+  Myös kaikki neljä perheenjäsentä renderöity erikseen oikealla CLI-binäärillä.
+- GUI Xvfb:124/Vulkan lavapipe, eristetty tmp config/data, lopullinen app:
+  /tmp/koeta-character-gui.png näyttää uuden perheen oikeassa esikatselussa
+  ja uudet hahmoasetukset. Ei ääni-/Mac-hyväksyntä.
+- git diff --check pass; quotahelper unavailable, prosenttia ei päätelty.
+
+Avoimet: kasvojen päämuodot edelleen samaan parametriseen perheeseen kuuluvia;
+silmät/kulmakarvat eivät ole erikseen rigattuja. Ei käsin veistettyä studiotason
+kasvoriigiä, vaatteen fysiikkaa tai koko kehon uutta topologiaa. Seuraava
+konkreettinen askel on käyttäjän ulkonäköpalaute renderöidystä perhekuvasta,
+sitten silmien/luomien/kulmakarvojen riggaus ja yksilöllisempi päämuotokieli.
+Omat app/Xvfb-prosessit suljetaan. Mac ja aito Kokoro jäävät sovittuun myöhempään
+hyväksyntään; käyttäjän projektit/äänet/mallit eivät ole commitissa.
