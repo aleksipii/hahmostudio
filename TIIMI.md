@@ -1854,3 +1854,89 @@ Rajat/jatko:
 - Seuraava konkreettinen nativefeature: floorpickup samalla ankkuroitujen jalkojen
   sopimuksella ja actor–actor reittikontaktien tarkistus. Mielivaltaisten kehojen
   täydellisen fysiikan väitettä ei anneta.
+
+## Codex handoff — 14.10.2026: kuuden ammattitason kehitysvaiheen toteutuskierros
+
+Työkalu Codex, haara `work`, yhteinen kohde `main`.
+Tarkistettu toteutuscommit `0661f9441d56518f5dd59195d28034da879aecbb`;
+lähtömain `37601f3cb46b82f14540b20f4ec67ca2c39c558e`.
+Tämä handoff on erillinen dokumentaatiocommit. Fetch tehty ennen työtä ja
+ennen julkaisua; lähtötila oli puhdas eikä etämainiin tullut välissä muutoksia.
+
+Käyttäjä pyysi agentin jokaiselle edellisen ammattitasosuunnitelman vaiheelle
+ja toteutusta. Kuusi rajattua agenttia teki koodimuutokset; root integroi,
+katselmoi, testasi ja omistaa dokumentaation/julkaisun. Omistukset ja jäljellä
+olevat vaihekohtaiset hyväksynnät: `docs/tiimi/AMMATTITASO.md`.
+Mac-mittauksia ei tehty ominaisuuksien edellä, ainoastaan mittaustyökalu valmisteltiin.
+
+Toteutettu:
+- `pilot_voice`: hs-app/voice_ui.rs + hs-voice/store.rs. Mallikansiotuonti
+  taustasäikeessä, eteneminen/peruutus, katkenneen työn diagnostiikka,
+  403:n vaihtoehtoinen tuontiohje, tyhjän/vajaan mallin torjunta. Vanha malli
+  palautetaan manifestin tallennusvirheessä; yhden kirjoittajan sopimus.
+  Tämä ei ole malliasennuksen virtakatkosjournalointi. Aiempi CDN403 säilyy;
+  muuttumatonta estettyä verkkolatausta ei toistettu eikä mallipainoja commitoitu.
+- `animation_quality`: contacts.rs/object_contacts.rs ja floor-pickup.en.txt.
+  Lattialta nosto käyttää Place-liikkeen nilkka-/varvasankkurointia, kyykistymistä,
+  45% kohdalla otetta, esineen nostoa ja seisomaan palautumista. Tavoittamaton ote
+  edelleen tarkka lähderivivirhe. Esimerkissä viimeinenkin kuva laaja, jotta kuppi näkyy.
+- `editor_workflow`: timeline_ui.rs. Valitse hahmo -painike, valintamäärä,
+  tyhjennys ja lähdetekstiin sidottu valinta. Tekstin muuttuminen myös kumouksessa
+  poistaa vanhat rivinumerot. Root panels.rs näyttää valituissa palikoissa kehyksen;
+  valintajoukko luetaan kerran piirtoa kohti, ei joka palikalle uudestaan.
+- `project_resilience`: hs-project/recovery.rs ja crate-ohje. Julkaise uusi
+  palautuskopio ennen vanhojen poistamista. Tallennusvirhe säilyttää molemmat
+  vanhat kopiot ja nimetyt revisiot. Keskeytys voi jättää ylimääräisen arkiston,
+  jonka seuraava onnistunut julkaisu siivoaa; konservatiivinen quota säilyy.
+- `picture_audio`: hs-audio/lib.rs. 5 ms master-voimakkuusrampi laitteen
+  näytetaajuudella, NaN/Inf/hakukohtien rajaus ja äärelliset laitenäytteet.
+  Mikrofonin callback ei enää varaa väliaikaista mono-Veciä; tallennepuskuri
+  voi edelleen kasvaa. Alkuperäistä PCM:ää, puheen kestoa ja cachea ei kirjoiteta uusiksi.
+- `release_readiness`: packaging/measure_macos.py + testit/ohje. Mac-PID:n
+  interval-CPU-deltat/RSS ja bundle/DMG-koot JSON:iin. Prosessin poistuminen/
+  tunnisteen vaihtuminen ilmoitetaan keskeneräisenä; aiempaa raporttia ei korvata.
+  Energia merkitään mittaamatta, erillinen Instruments tarvitaan; lapsi-FFmpeg ei sisälly.
+- Root päivitti README:n ja vanhentuneet PARALLEL-CONTACTS-tekstit vastaamaan
+  toteutettuja kerroksia, kamera-/taustaraahausta ja kontakteja.
+
+Todennus, Linux/Rust1.99:
+- `cargo test --locked --workspace -j2`: 374 passed,0 failed,1 ignored
+  (oikea Kokoro). Exit0 `/tmp/koeta-pro-final-workspace.log`.
+- `cargo build --locked -p hs-app -p hs-cli -j2` exit0
+  `/tmp/koeta-pro-final-build.log`. `cargo clippy --locked --workspace
+  --all-targets -j2` exit0 `/tmp/koeta-pro-final-clippy.log`; tyylivaroituksia jäi.
+- `python3 -m unittest discover -s native/packaging/tests`:16 passed;
+  measure_macos.py py_compile pass. Nämä ovat Python-logiikkatestejä Linuxissa,
+  eivät oikean Macin mittauksia.
+- 14 object-contacttestiä: molemmat lattia-IK-polut3001 näytettä1ms,
+  jalkojen/otteen≤2mm sekä luurangon jatkuvuus, omistajuus, FrameBuilder ja
+  projektin uudelleenavaus. Ensimmäisen ajon ainoa fail oli liian kaukaisen
+  otteen testin väärä odotettu sanamuoto: oikea virhe oli Rivi2/2.222m.
+  Korjattiin sanamuotoassertio, varsinaista otetarkistusta ei heikennetty.
+- Viisi uutta modelstore-regressiota: viimeisen lohkon peruutus,
+  manifestivirheen rollback, tyhjä tiedosto, ennakkoperuutus ilman verkkoa,
+  virheellisen manifestin diagnostiikka. Kolme uutta audiotestiä ja kolme
+  ryhmävalintatestiä; kaksi uutta recovery storagefailure/interruption-testiä.
+- Oikea Xvfb:119/lavapipe GUI: `/tmp/koeta-pro-floor.png` (1.35s kyykky/ote),
+  `/tmp/koeta-pro-floor-recovered.png` (3s seisominen kuppi kädessä).
+  `/tmp/koeta-pro-voice.png` näyttää English pilotin8 puuttuvaa repliikkiääntä
+  ja mallin lataus/tuontipainikkeet. Ei oikeaa Kokoro-synteesiä tai kuuntelua.
+- InteractiveGUI: `/tmp/koeta-pro-group-selected.png`, Kallen rivit4,5
+  valittu/count2+korostus; `/tmp/koeta-pro-group-invalidated.png`, source edit
+  tyhjentää valinnan/count0. Ei käyttäjän projekteja muokattu: eristetyt tmp-data/config.
+- CLI CPU/FFmpeg floor-pickup.en.txt: `/tmp/koeta-pro-floor-pickup.mp4`,
+  ffprobe H.264160x90/4.000s,120 frames, tarkoituksella ei ääntä;
+  `/tmp/koeta-pro-floor-video.log`. Tämä on kontaktiesimerkki, ei puhepilotin hyväksyntä.
+- git diff --check pass. Quotahelper unavailable ennen/jälkeen; prosenttia ei päätelty.
+  Levytilaa vapautettu vanhoista käyttämättömistä generated linktuotteista;
+  source/rlib/äänet/mallit/projektit säilytettiin. Omat GUI/Xvfb-prosessit suljetaan.
+
+Rajat ja seuraava konkreettinen työ:
+- Tämä on ensimmäinen toteutuskierros joka vaiheesta, ei koko ammattistudion valmistumisväite.
+- Toteuta seuraavaksi actor–actor reittien/kontaktien rajattu tarkistus ja
+  liikkeiden siirtymien laatu; staattinen collisionproxy ei vielä ratkaise niitä.
+- Kuvan valaistus/materiaalit/PBR/HDR sekä hakujen/pysäytyksen audiohäivytys ja
+  vientiloudness tarvitsevat omaa toteutusta; tämä kierros ei toteuttanut niitä.
+- Varsinainen pilotin käytettävyyskoe, suuret projektit ja pitkät istunnot avoinna.
+- Oikea Kokoro/kuuntelu ja Mac/Metal/Finder/laitteet/VoiceOver/DMG/keveys viimeiseksi.
+  Henkilökohtaisen käytön nykyinen tavoite ei vaadi notarisaatiota tässä vaiheessa.
