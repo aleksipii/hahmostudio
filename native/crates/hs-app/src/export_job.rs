@@ -11,6 +11,7 @@ use std::sync::Arc;
 /// Puhe vientiin: sama malli, välimuisti ja omat äänitykset kuin studiossa.
 #[derive(Clone, Default)]
 pub struct ExportVoice {
+    pub acting_style: hs_motion::acting_style::ActingStyle,
     pub engine: Option<Arc<dyn hs_voice::SpeechEngine>>,
     pub fps: Option<hs_core::Fps>,
     pub allow_silent: bool,
@@ -58,6 +59,7 @@ impl ExportJob {
             p.caption_settings = voice.caption_settings;
             p.caption_overrides = voice.caption_overrides;
             p.accepted_notices = voice.accepted_notices;
+            p.acting_style = voice.acting_style;
             p.pose_tracks = voice.pose_tracks;
             p.width = size.0;
             p.height = size.1;

@@ -88,6 +88,13 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     ui.close_menu();
                 }
             });
+            ui.menu_button("Näyttelytyyli", |ui| {
+                let enabled = !app.review.locked && !crate::project_ui::busy(app) && !app.image.is_busy() && app.legacy.is_none() && app.export.is_none() && app.voice.recorder.is_none();
+                if crate::acting_ui::ui(ui, &mut app.production.acting_style, enabled) {
+                    app.pipeline.mark_dirty(Slot::Motion); app.run_pipeline();
+                    app.status = "Näyttelytyyli muutettu; Kumoa palauttaa asetuksen.".into();
+                }
+            });
             ui.menu_button("Ohje", |ui| {
                 if ui.button("Tietoja Hahmostudiosta").clicked() {
                     app.show_about = true;
@@ -110,6 +117,7 @@ pub fn start_export(app: &mut StudioApp, request: RenderRequest) {
     let backend = if app.viewport.is_gpu() { Backend::Auto } else { Backend::Cpu };
     // Vienti käyttää mallia suoraan (odottaa puheen valmistumisen), ei käyttöliittymän taustajonoa.
     let voice = ExportVoice {
+        acting_style: app.production.acting_style,
         fps: Some(app.production.fps),
         allow_silent: app.production.allow_silent_export,
         recorded_lines: app.production.recorded_lines.clone(),

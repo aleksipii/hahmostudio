@@ -36,6 +36,7 @@ struct Args {
     speech: SpeechMode,
     episode: Option<u32>,
     no_captions: bool,
+    acting_style: Option<hs_agents::ActingStyle>,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -58,6 +59,7 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
         speech: SpeechMode::Auto,
         episode: None,
         no_captions: false,
+        acting_style: None,
     };
     let mut it = raw.iter();
     while let Some(x) = it.next() {
@@ -71,6 +73,7 @@ fn parse_args(raw: &[String]) -> Result<Args, String> {
             }
             "--episode" => a.episode=Some(it.next().ok_or("--episode needs number")?.parse().map_err(|_|"invalid episode number")?),
             "--no-captions"=>a.no_captions=true,
+            "--acting-style" => { let value = it.next().ok_or("--acting-style needs smooth, stepped12 or stepped15")?; a.acting_style = Some(hs_agents::ActingStyle::decode(&serde_json::to_vec(value).map_err(|e|e.to_string())?)?); },
             "--gpu" => a.backend = Backend::Gpu,
             "--cpu" => a.backend = Backend::Cpu,
             "--hahmot" | "--cast" => a.cast = Some(it.next().ok_or("--hahmot vaatii polun")?.into()),
@@ -103,6 +106,7 @@ fn production(a: &Args) -> Result<Production, String> {
         let episode=match a.episode { Some(number)=>series.episodes.iter().find(|e|e.number==number).ok_or("Episode not found")?, None=>series.episodes.first().ok_or("Empty series")? };
         hs_agents::project::restore_checked(episode)?
     } else {Production::new(read_script(a)?)};
+    if let Some(style) = a.acting_style { p.acting_style = style; }
     if a.no_captions {p.caption_settings.enabled=false;}
     p.allow_silent_export=a.speech==SpeechMode::Off;
     if a.speech==SpeechMode::Off {p.own_audio.clear();p.saved_speech.clear();p.recorded_lines.clear();}

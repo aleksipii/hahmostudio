@@ -525,6 +525,7 @@ pub fn swept_capsules_intersect(
 }
 
 pub struct CollisionPlan {
+    acting_style: hs_motion::acting_style::ActingStyle,
     timeline: Timeline,
     characters: Vec<Arc<Character>>,
     motion: Vec<Arc<PreparedMotion>>,
@@ -542,7 +543,7 @@ fn same_option<T>(a: &Option<Arc<T>>, b: &Option<Arc<T>>) -> bool {
 }
 impl CollisionPlan {
     pub fn matches(&self, p: &Production) -> bool {
-        p.timeline.as_ref() == Some(&self.timeline)
+        p.acting_style == self.acting_style && p.timeline.as_ref() == Some(&self.timeline)
             && self.timeline.fps == p.fps
             && self.poses == p.pose_tracks
             && self.characters.len() == p.cast.len()
@@ -586,6 +587,7 @@ impl CollisionPlan {
             );
         }
         let plan = Arc::new(Self {
+            acting_style: p.acting_style,
             timeline: timeline.clone(),
             characters: p.cast.iter().map(|c| c.character.clone()).collect(),
             motion: p.motion.clone(),
@@ -746,11 +748,7 @@ impl CollisionPlan {
         times.dedup();
         let mut previous: Option<(f32, Vec<CharacterFrame>)> = None;
         for time in times {
-            let mut frames = p
-                .motion
-                .iter()
-                .map(|m| m.evaluate(&self.timeline, time))
-                .collect::<Vec<_>>();
+            let mut frames = crate::acting::frames(p, time)?;
             if let Some(scenery) = &p.scenery {
                 scenery.apply_roots(p, &mut frames, time)?;
             }

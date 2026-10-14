@@ -103,7 +103,7 @@ impl FrameBuilder {
         let env = self.environments.entry(env_id.clone()).or_insert_with(|| Arc::new(environment::build(&env_id))).clone();
         let (mut cam, lights, _) = camera.camera_at(t, width as f32 / height as f32);
         let mut items = vec![DrawItem::rigid(env)];
-        let mut frames: Vec<_> = p.motion.iter().map(|m| m.evaluate(tl, t)).collect();
+        let mut frames = match crate::acting::frames(p, t) { Ok(frames)=>frames, Err(error)=>{self.last_error=Some(error);return None;} };
         if frames.len()!=p.cast.len(){self.last_error=Some("Hahmojen liikeresurssit ovat vanhentuneet".into());return None;}
         let original_roots:Vec<_>=frames.iter().map(|frame|frame.root).collect();
         if let Some(scenery)=&p.scenery {if let Err(error)=scenery.apply_roots(p,&mut frames,t){self.last_error=Some(error);return None;}}
@@ -239,12 +239,11 @@ impl FrameBuilder {
             }
             let now=hs_core::Tick::from_seconds(t as f64);
             let mine=|character:&Option<String>| character.as_ref().map_or(index==0,|c|c.eq_ignore_ascii_case(&member.character.params.name));
+            let speaking=p.mouth_at(&|s|motion.motion.speaks(s),t).is_some() || p.live.as_ref().is_some_and(|l|l.speaker.eq_ignore_ascii_case(&member.character.params.name)&&l.mouth.is_some());
+            let (from, to, progress)=crate::acting::expression(tl,&member.character.params.name,index==0,t,p.acting_style);
+            hs_motion::expression::apply_expression_blend(humanoid,&mut f.pose,from,to,progress,speaking);
             for event in tl.events.iter().filter(|e|e.start<=now && now<e.end()) {
                 match &event.kind {
-                    EventKind::Expression{character,expression} if mine(character)=>{
-                        let speaking=p.mouth_at(&|s|motion.motion.speaks(s),t).is_some() || p.live.as_ref().is_some_and(|l|l.speaker.eq_ignore_ascii_case(&member.character.params.name)&&l.mouth.is_some());
-                        hs_motion::expression::apply_expression(humanoid,&mut f.pose,*expression,speaking);
-                    }
                     EventKind::LookAt{character,target} if mine(character) && !p.live.as_ref().is_some_and(|l|l.speaker.eq_ignore_ascii_case(&member.character.params.name)&&l.head.is_some())=>{
                         let destination=match target {
                             hs_core::LookTarget::Camera=>Some(cam.eye),

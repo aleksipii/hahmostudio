@@ -117,6 +117,7 @@ impl StudioApp {
         let mut legacy=None;
         for asset in &episode.assets {
             let result=match asset.kind.as_str() {
+                "acting-style" => hs_motion::acting_style::ActingStyle::decode(&asset.bytes).map(|_|()),
                 "render-settings" => hs_project::render_settings::RenderSettings::decode(&asset.bytes).map(|value|aov.settings=value),
                 "image" => image.restore(&asset.bytes),
                 "editing" => hs_edit::decode_workspace(&asset.bytes).map(|tracks| editing.tracks=tracks),
@@ -423,6 +424,7 @@ fn validate_workspaces(series:&Series)->Result<(),String> {
             "recordings"=>{hs_agents::recording::decode(&a.bytes)?;},
             "legacy"=>{hs_hahmo::Project::open(&a.bytes).map_err(|e|e.to_string())?;},
             "review"=>{hs_project::production_review::ReviewState::decode(&a.bytes)?;},
+            "acting-style"=>{hs_motion::acting_style::ActingStyle::decode(&a.bytes)?;},
             "render-settings"=>{hs_project::render_settings::RenderSettings::decode(&a.bytes)?;},
             "pose"=>{hs_motion::pose_edit::PoseTracks::decode(&a.bytes)?;},
             _=>return Err("Tuntematon työtilaresurssi".into()),

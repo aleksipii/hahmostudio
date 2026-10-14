@@ -127,6 +127,7 @@ pub struct Production {
     pub scenery: Option<Arc<crate::scenery::SceneryPlan>>,
     pub collision: Option<Arc<crate::collision::CollisionPlan>>,
     /// Authored native joint/root transforms, kept separate from derived motion.
+    pub acting_style: hs_motion::acting_style::ActingStyle,
     pub pose_tracks: hs_motion::pose_edit::PoseTracks,
     pub diagnostics: Vec<Diagnostic>,
     pub output: Option<String>,
@@ -169,6 +170,7 @@ impl Production {
             contacts: None,
             scenery: None,
             collision: None,
+            acting_style: Default::default(),
             pose_tracks: Default::default(),
             diagnostics: Vec::new(),
             output: None,

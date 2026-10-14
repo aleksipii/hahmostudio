@@ -78,12 +78,18 @@ pub fn restore(episode: &Episode) -> Production {
 /// Validated restore for file consumers; rejects malformed editing/image workspaces.
 pub fn restore_checked(episode:&Episode)->Result<Production,String> {
     let mut p=restore(episode);
+    let mut has_acting_style = false;
     for asset in &episode.assets {match asset.kind.as_str() {
         "editing"=>p.soundtrack=hs_edit::decode_workspace(&asset.bytes)?,
         "image"=>{hs_image::Document::decode(&asset.bytes)?;},
         "library"=>{validate_library(&asset.bytes)?;},
         "recordings"=>p.recorded_lines=crate::recording::decode(&asset.bytes)?,
         "pose"=>p.pose_tracks=hs_motion::pose_edit::PoseTracks::decode(&asset.bytes)?,
+        "acting-style"=>{
+            if has_acting_style { return Err("Duplicate acting style resource".into()); }
+            p.acting_style = hs_motion::acting_style::ActingStyle::decode(&asset.bytes)?;
+            has_acting_style = true;
+        },
         "render-settings"=>{hs_project::render_settings::RenderSettings::decode(&asset.bytes)?;},
         "review"=>{hs_project::production_review::ReviewState::decode(&asset.bytes)?;},
         "legacy"=>{hs_hahmo::Project::open(&asset.bytes).map_err(|e|e.to_string())?;},
@@ -94,6 +100,10 @@ pub fn restore_checked(episode:&Episode)->Result<Production,String> {
 
 pub fn capture_checked(p:&Production,id:String,number:u32,name:String)->Result<Episode,String> {
     let mut episode=capture(p,id,number,name);
+    episode.assets.push(hs_project::ProjectAsset {
+        id: "acting-style".into(), kind: "acting-style".into(),
+        bytes: p.acting_style.encode()?,
+    });
     if !p.recorded_lines.is_empty() {episode.assets.push(hs_project::ProjectAsset{id:"recording-identities".into(),kind:"recordings".into(),bytes:crate::recording::encode(&p.recorded_lines)?});}
     if !p.pose_tracks.tracks.is_empty() {episode.assets.push(hs_project::ProjectAsset{id:"native-pose-tracks".into(),kind:"pose".into(),bytes:p.pose_tracks.encode()?});}
     Ok(episode)

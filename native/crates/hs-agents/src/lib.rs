@@ -11,6 +11,8 @@
 //! tekstiä koodina. Ne eivät myöskään keksi repliikkejä: käsikirjoitus on
 //! totuuden lähde (AGENTS.md).
 
+pub use hs_motion::acting_style::ActingStyle;
+pub mod acting;
 pub mod agents;
 pub mod contacts;
 pub mod timing_edit;

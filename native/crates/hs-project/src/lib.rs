@@ -241,9 +241,19 @@ fn validate(series: &Series) -> Result<(), ProjectError> {
         for asset in &e.assets {
             if asset.kind == "render-settings" { render_settings::RenderSettings::decode(&asset.bytes).map_err(invalid)?; }
             if asset.kind == "review" { production_review::ReviewState::decode(&asset.bytes).map_err(invalid)?; }
+            if asset.kind == "acting-style" {
+                // Portable schema bound intentionally independent of hs-motion.
+                if asset.bytes.len() > 128 {
+                    return Err(invalid("acting style resource exceeds 128 bytes"));
+                }
+                let style: String = serde_json::from_slice(&asset.bytes)?;
+                if !matches!(style.as_str(), "smooth" | "stepped12" | "stepped15") {
+                    return Err(invalid("unknown acting style"));
+                }
+            }
             if !id_valid(&asset.id)
                 || !asset_ids.insert(&asset.id)
-                || !matches!(asset.kind.as_str(), "image" | "editing" | "recordings" | "library" | "legacy" | "review" | "pose" | "render-settings")
+                || !matches!(asset.kind.as_str(), "image" | "editing" | "recordings" | "library" | "legacy" | "review" | "pose" | "render-settings" | "acting-style")
                 || !asset_kinds.insert(&asset.kind)
                 || asset.bytes.len() > MAX_BYTES
             {
@@ -604,6 +614,31 @@ mod tests {
                     },
                 ],
             }],
+        }
+    }
+    #[test]
+    fn checksummed_untrusted_acting_style_rejected_by_archive_loader() {
+        let mut original = series();
+        original.episodes[0].assets.push(ProjectAsset {
+            id: "acting-style".into(), kind: "acting-style".into(), bytes: b"\"smooth\"".to_vec(),
+        });
+        let encoded = encode(&original).unwrap();
+        for payload in [b"\"unexpected-style\"".to_vec(), vec![b' '; 129]] {
+            let checksum = hash(&payload);
+            let forged = rewrite(&encoded, |name, data| {
+                if name == "manifest.json" {
+                    let mut manifest: serde_json::Value = serde_json::from_slice(data).unwrap();
+                    let asset = &mut manifest["episodes"][0]["assets"][0];
+                    asset["bytes"] = payload.len().into();
+                    asset["sha256"] = checksum.clone().into();
+                    *data = serde_json::to_vec(&manifest).unwrap();
+                } else if name.starts_with("assets/") {
+                    *data = payload.clone();
+                }
+            });
+            // ZIP CRC and SHA256 both match the changed resource. Only the
+            // supported bounded schema can reject this untrusted archive.
+            assert!(decode(&forged).is_err());
         }
     }
     fn rewrite(bytes: &[u8], change: impl Fn(&str, &mut Vec<u8>)) -> Vec<u8> {

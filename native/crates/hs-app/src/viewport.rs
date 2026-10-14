@@ -12,6 +12,7 @@ use std::sync::Arc;
 /// Keep strong references: a freed allocation's address must never produce a
 /// false cache hit after an editor rebuild.
 struct PreviewKey {
+    acting_style: hs_motion::acting_style::ActingStyle,
     frame: u32,
     size: [u32; 2],
     fps: hs_core::Fps,
@@ -29,12 +30,12 @@ struct PreviewKey {
 impl PreviewKey {
     fn capture(p: &Production, frame: u32, size: [u32; 2]) -> Self {
         Self { frame, size, fps: p.fps, timeline: p.timeline.clone(), camera: p.camera.clone(),
-            cast: p.cast.clone(), motion: p.motion.clone(), lips: p.lipsync.clone(), live: p.live.clone(), contacts: p.contacts.clone(), scenery: p.scenery.clone(), poses: p.pose_tracks.clone() }
+            acting_style: p.acting_style, cast: p.cast.clone(), motion: p.motion.clone(), lips: p.lipsync.clone(), live: p.live.clone(), contacts: p.contacts.clone(), scenery: p.scenery.clone(), poses: p.pose_tracks.clone() }
     }
 
     fn matches(&self, p: &Production, frame: u32, size: [u32; 2]) -> bool {
         self.frame == frame && self.size == size && self.fps == p.fps
-            && self.timeline == p.timeline && self.live == p.live && self.poses == p.pose_tracks
+            && self.acting_style == p.acting_style && self.timeline == p.timeline && self.live == p.live && self.poses == p.pose_tracks
             && match (&self.scenery, &p.scenery) { (Some(a),Some(b)) => Arc::ptr_eq(a,b), (None,None) => true, _ => false }
             && match (&self.contacts, &p.contacts) { (Some(a), Some(b)) => Arc::ptr_eq(a,b), (None,None) => true, _ => false }
             && match (&self.camera, &p.camera) { (Some(a), Some(b)) => Arc::ptr_eq(a, b), (None, None) => true, _ => false }

@@ -7,6 +7,7 @@ const MAX_BYTES: usize = 128 * 1024 * 1024;
 #[derive(Clone)]
 struct State {
     script: String,
+    acting_style: hs_motion::acting_style::ActingStyle,
     render_settings: hs_project::render_settings::RenderSettings,
     library: crate::library_ui::SeriesLibrary,
     cast: Vec<hs_character::CharacterParams>,
@@ -45,6 +46,7 @@ impl State {
             },
         };
         Ok(Self {
+            acting_style: app.production.acting_style,
             render_settings: app.aov.settings.clone(),
             pose_tracks: app.production.pose_tracks.clone(),
             review: app.review.clone(),
@@ -71,7 +73,7 @@ impl State {
         })
     }
     fn matches(&self, app: &StudioApp) -> bool {
-        self.render_settings == app.aov.settings && self.pose_tracks == app.production.pose_tracks
+        self.acting_style == app.production.acting_style && self.render_settings == app.aov.settings && self.pose_tracks == app.production.pose_tracks
             && review_edit_eq(&self.review, &app.review)
             && self.rig_revision == app.rig.revision
             && self.legacy.is_some() == app.legacy.is_some()
@@ -137,6 +139,7 @@ impl State {
         app.legacy = legacy;
         app.rig.revision = self.rig_revision;
         app.rig.invalidate_preview();
+        app.production.acting_style = self.acting_style;
         app.production.pose_tracks = self.pose_tracks.clone();
         app.pose.invalidate();
         app.review = self.review.clone();
