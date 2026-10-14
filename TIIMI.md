@@ -2157,3 +2157,64 @@ konkreettinen askel on käyttäjän ulkonäköpalaute renderöidystä perhekuvas
 sitten silmien/luomien/kulmakarvojen riggaus ja yksilöllisempi päämuotokieli.
 Omat app/Xvfb-prosessit suljetaan. Mac ja aito Kokoro jäävät sovittuun myöhempään
 hyväksyntään; käyttäjän projektit/äänet/mallit eivät ole commitissa.
+
+
+## Codex — käsikirjoitusstudion tutkimus ja huulisynkan ajoitusadapteri, 14.10.2026
+
+Käyttäjän tarkennus: käsikirjoitus ensisijainen, kamera valinnainen, englannin
+30–60 s animaatiosarja someen; kattava teknologiatutkimus ja huulisynkka.
+Haara work, kohde main. Lähdecommit
+`a01835ed3ae68fe6ee03c77fa9bb1ece1f87939c`, pohja
+`b6739cfeb11c2f3594ff2664df648a4c392c78ed`.
+Root omisti kaikki tämän tehtävän tiedostot; uusia aliagentteja ei käynnistetty.
+
+Toteutus:
+- docs/suunnitelmat/KASIKIRJOITUSSTUDIO-TUTKIMUS-20261014.md: 381-rivinen
+  lähteistetty suunnitelma: Bevy/egui uuden repositorion vaihtoehtona,
+  moottorista erillinen domain, käsikirjoituskompilointi, tuotanto-GLB/rig,
+  Kokoro-ajoitus, omien äänien forced alignment, koartikulaatio, kontaktit,
+  kamera/valo, projekti/cache, vienti/kuvasuhteet, UI ja pilotin hyväksyntä.
+  Nykyistä Koetaa ei siirretty Bevyyn eikä luotu uutta repositorya.
+- README linkittää tutkimuksen.
+- hs-lipsync/alignment.rs + lib.rs: AlignedViseme näyteindekseillä ja
+  Result-pohjainen from_aligned. Lopulliseen waveformiin sidotut tapahtumat,
+  hiljaiset gapit lepoon, lyhyttä Mbp-sulkua ei minimum-hold-yhdistetä.
+  Hylkää väärät rate/span/order/overlap/range/NaN/koko/precision-tiedot.
+  Ei uusia riippuvuuksia eikä muutosta nykyiseen tuotantopolkuun.
+
+Keskeinen auditointilöydös:
+Virallisen Kokoro Pythonin pred_dur auttaa ajoituksessa, mutta nykyisen
+omp-voice-kokoro0.1:n forward_with_mode palauttaa vain audioTensorin vaikka
+laskee kestot sisäisesti. Rust-sovitus normalisoi BOS/EOS omalla tavalla.
+Nykyinen from_text on energiasegmentteihin jaettujen painotettujen foneemien
+heuristiikka, ei forced alignment. Uusi adapteri ottaa valmiin vahvistetun
+kohdistuksen; se ei ole sen tunnistin. Vanha shape_at45ms ristihäivytys
+säilyy, joten lyhyen sulun täysi visuaalinen toteutus vaatii seuraavan vaiheen.
+
+Todennus Linux/Rust1.99:
+- cargo test --locked -p hs-lipsync -j2:8 passed0failed, exit0
+  /tmp/koeta-lipsync-alignment-final-tests.log (3uutta,5olemassaolevaa).
+  Testit5näytetaajuutta,20msMbp/adjacentvowel/gaps/repeatability,
+  invalid/overlap/outoforder/range/nonfinite, empty/rest/seek.
+- cargo build --locked -p hs-app -p hs-cli -j2:exit0
+  /tmp/koeta-lipsync-alignment-build.log, olemassa olevia varoituksia.
+- cargo clippy --locked -p hs-lipsync --all-targets -j2:exit0,
+  /tmp/koeta-lipsync-alignment-clippy.log. git diff --check pass.
+  Ei UI-muutosta, ei uutta GUI-/Mac-/Kokoro-hyväksyntää.
+- Quotahelper unavailable; prosenttia ei päätelty.
+
+Tutkimuksen näyttö: viralliset Bevy/wgpu/egui/Candle/Kokoro/glTF/cpal/FFmpeg/
+MediaPipe/ort/MFA/Rhubarb lähteet luettu GitHubista/mallikortista. URL-kohtaiset
+vastaukset /tmp/koeta-studio-research/sources.json, ladatut julkiset lähteet
+samassa tmp-hakemistossa, eivät commitissa. Adobe/MediaPipe/Blender/YouTube/
+FFmpeg/MFA verkkosivujen proxy403 ja yhden BlenderGithubpolun404 merkitty
+raporttiin. Somealustojen nykyisiä rajoja ei vahvistettu; formaattipresetit
+ovat ehdotuksia. Ei uusia modeldownloads tai keksittyjä suorituskykymittauksia.
+
+Seuraava konkreettinen tehtävä: versionlukittu, ylläpidetty Kokoro duration-API,
+audio+token+duration+revision yhdestä ajosta, oikean äänen sampleclock +hash,
+chunk/BOS/EOS/space-verifiointi ja kuunneltava/renderöity yhden rivin näyte.
+Sen jälkeen projektin kohdistusresurssi, adaptiven koartikulaation sulkutesti
+ja tuotantohahmon kasvorigi. Oma ääni tarvitsee erikseen todennetun alignerin.
+Uuden studion Mac-vaiheistus on suositus; nykyinen ominaisuudet ensin -ohje
+säilyy. Täyttä automaattista elokuvatasoa tai oikeaa puhehyväksyntää ei väitetä.
