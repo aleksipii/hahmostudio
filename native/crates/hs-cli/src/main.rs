@@ -22,7 +22,7 @@ use std::process::ExitCode;
 use std::sync::Arc;
 use std::time::Instant;
 
-const EXAMPLE: &str = "[tausta studio]\nPIPSA: Hei! Tervetuloa mukaan. [vilkuta 2s]\n[juokse oikealle 2s]\nPIPSA: Laitan viestin. [näpyttele puhelinta 3s]\n[tausta kaupunki ilta]\nVILLE: Nähdään! [hyppää]";
+const EXAMPLE: &str = "[tausta studio]\nPIPSA: Hei! Tervetuloa mukaan. [vilkuta 2s]\nPIPSA: [juokse vasemmalle 2s]\nPIPSA: Laitan viestin. [näpyttele puhelinta 3s]\n[tausta kaupunki ilta]\nVILLE: Nähdään! [hyppää]";
 
 struct Args {
     positional: Vec<String>,
@@ -396,5 +396,16 @@ fn main() -> ExitCode {
             eprintln!("virhe: {e}");
             ExitCode::FAILURE
         }
+    }
+}
+
+#[cfg(test)]
+mod example_tests {
+    #[test]
+    fn default_example_has_valid_actor_routes() {
+        let mut p = hs_agents::Production::new(super::EXAMPLE);
+        hs_agents::Pipeline::default().run(&mut p).unwrap();
+        let proof = hs_agents::audit::inspect(&p);
+        assert!(proof.allowed(), "{:?}", proof.diagnostics);
     }
 }

@@ -286,6 +286,137 @@ pub fn handle_scene_drag(
         preview_start,
     }
 }
+#[derive(Clone)]
+struct GroupDrag {
+    source: std::sync::Arc<str>,
+    lines: std::sync::Arc<Vec<usize>>,
+    line: usize,
+    pointer_x: f32,
+    start: f32,
+    delta: f64,
+}
+fn group_drag_id() -> egui::Id {
+    egui::Id::new("koeta-group-drag")
+}
+fn snap_group_delta(pointer_delta: f32, pixels_per_second: f32, fps: u32) -> f64 {
+    if !pointer_delta.is_finite() || !pixels_per_second.is_finite() || pixels_per_second <= 0.0 {
+        return 0.0;
+    }
+    let fps = fps.max(1) as f64;
+    ((pointer_delta as f64 / pixels_per_second as f64 * fps).round() / fps).clamp(-59.5, 59.5)
+}
+fn group_edit_available(app: &StudioApp, ctx: &egui::Context) -> bool {
+    !app.review.locked
+        && !crate::project_ui::busy(app)
+        && !app.image.is_busy()
+        && app.script == app.production.script
+        && app.pipeline_error.is_none()
+        && app.export.is_none()
+        && app.voice.recorder.is_none()
+        && app.workflow.pending_timing.is_none()
+        && !scene_pending(ctx)
+}
+/// Drag a selected group as one relative timing edit. Call before single-clip handlers.
+/// Returns ghost timing for selected clips; only the initiating response is handled.
+/// Right-edge resize remains a single-clip edit. No script mutation occurs here.
+pub fn handle_group_drag(
+    app: &mut StudioApp,
+    ctx: &egui::Context,
+    response: &egui::Response,
+    line: usize,
+    start: f32,
+    pixels_per_second: f32,
+) -> SceneInteraction {
+    let mut drag = ctx.data(|data| data.get_temp::<GroupDrag>(group_drag_id()));
+    if ctx.input(|input| input.key_pressed(egui::Key::Escape))
+        || drag.as_ref().is_some_and(|draft| {
+            draft.source.as_ref() != app.script || !group_edit_available(app, ctx)
+        })
+    {
+        let handled = drag.as_ref().is_some_and(|draft| draft.line == line);
+        ctx.data_mut(|data| data.remove::<GroupDrag>(group_drag_id()));
+        return SceneInteraction {
+            handled,
+            preview_start: None,
+        };
+    }
+    if drag.is_none() && response.drag_started() && group_edit_available(app, ctx) {
+        let pointer = ctx.input(|input| input.pointer.press_origin());
+        if let Some(pointer) = pointer.filter(|pointer| pointer.x < response.rect.right() - 10.0) {
+            let lines = group_selected_lines(ctx, &app.script);
+            if lines.len() >= 2 && lines.contains(&line) {
+                app.playing = false;
+                app.select_line(line);
+                drag = Some(GroupDrag {
+                    source: app.script.clone().into(),
+                    lines: std::sync::Arc::new(lines.into_iter().collect()),
+                    line,
+                    pointer_x: pointer.x,
+                    start,
+                    delta: 0.0,
+                });
+            }
+        }
+    }
+    let Some(mut draft) = drag else {
+        return SceneInteraction {
+            handled: false,
+            preview_start: None,
+        };
+    };
+    let handled = draft.line == line;
+    if handled && (response.dragged() || response.drag_stopped()) {
+        if let Some(pointer) = ctx.input(|input| input.pointer.latest_pos()) {
+            draft.delta = snap_group_delta(
+                pointer.x - draft.pointer_x,
+                pixels_per_second,
+                app.production.fps.0,
+            );
+            app.time = (draft.start as f64 + draft.delta).clamp(0.0, app.duration() as f64) as f32;
+        }
+        if response.drag_stopped() {
+            if draft.delta == 0.0 {
+                ctx.data_mut(|data| data.remove::<GroupDrag>(group_drag_id()));
+                return SceneInteraction {
+                    handled: true,
+                    preview_start: None,
+                };
+            }
+            let source = draft.source.to_string();
+            let edit = SceneEdit::Group {
+                lines: draft.lines.as_ref().clone(),
+                delta: draft.delta,
+            };
+            let result = check_scene_edit(app, &source, &edit);
+            ctx.data_mut(|data| {
+                data.remove::<GroupDrag>(group_drag_id());
+                data.insert_temp(
+                    scene_pending_id(),
+                    ScenePending {
+                        source,
+                        edit,
+                        result,
+                    },
+                );
+            });
+            return SceneInteraction {
+                handled: true,
+                preview_start: None,
+            };
+        }
+    }
+    let preview_start = draft
+        .lines
+        .binary_search(&line)
+        .is_ok()
+        .then_some(start + draft.delta as f32);
+    ctx.data_mut(|data| data.insert_temp(group_drag_id(), draft));
+    SceneInteraction {
+        handled,
+        preview_start,
+    }
+}
+
 fn selected_lines(text: &str) -> Result<Vec<usize>, String> {
     let mut selected = std::collections::BTreeSet::new();
     for part in text
@@ -353,6 +484,9 @@ pub fn group_controls(app: &mut StudioApp, ui: &mut egui::Ui) {
         .data(|d| d.get_temp::<GroupSelection>(group_selection_id()))
         .unwrap_or_default();
     selected.bind_source(&app.script);
+    if !group_edit_available(app, &ctx) {
+        ctx.data_mut(|data| data.remove::<GroupDrag>(group_drag_id()));
+    }
     // The existing checked plan identifies the authored actor; do not reparse per frame.
     let actor = app
         .workflow
@@ -382,7 +516,8 @@ pub fn group_controls(app: &mut StudioApp, ui: &mut egui::Ui) {
             selected.set_lines(std::iter::empty());
         }
         let count = selected_lines(&selected.text).map_or(0, |lines| lines.len());
-        ui.label(format!("{count} valittua riviä"));
+        ui.label(format!("{count} valittua riviä"))
+            .on_hover_text("Raahaa valitun palikan keskeltä siirtääksesi koko ryhmää. Oikean reunan kahva muuttaa edelleen vain yhden palikan kestoa. Esc peruuttaa raahauksen.");
         ui.label("Ryhmä · rivit");
         ui.add(egui::TextEdit::singleline(&mut selected.text).desired_width(105.0).hint_text("3,5-7"));
         ui.add(egui::DragValue::new(&mut selected.delta).speed(0.1).range(-59.5..=59.5).prefix("Siirto ").suffix(" s"));
@@ -485,6 +620,19 @@ fn scene_confirmation(app: &mut StudioApp, ctx: &egui::Context) {
 #[cfg(test)]
 mod group_selection_tests {
     use super::*;
+
+    #[test]
+    fn group_drag_snaps_relative_offset_without_changing_track_separation() {
+        let delta = snap_group_delta(31.0, 100.0, 30);
+        assert!((delta - 9.0 / 30.0).abs() < 1e-10);
+        let dialogue = 2.0_f64;
+        let motion = 2.7_f64;
+        assert!(((motion + delta) - (dialogue + delta) - 0.7).abs() < 1e-10);
+        assert_eq!(snap_group_delta(-31.0, 100.0, 30), -delta);
+        assert_eq!(snap_group_delta(f32::NAN, 100.0, 30), 0.0);
+        assert_eq!(snap_group_delta(1.0, 0.0, 30), 0.0);
+        assert_eq!(snap_group_delta(10_000.0, 1.0, 30), 59.5);
+    }
 
     #[test]
     fn source_changes_invalidate_selection_but_keep_shift_preference() {

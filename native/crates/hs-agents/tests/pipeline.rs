@@ -1,6 +1,6 @@
 use hs_agents::{Backend, Pipeline, Production, RenderRequest, Slot};
 
-const SCRIPT: &str = "[tausta studio]\nPIPSA: Hei! Tervetuloa mukaan. [vilkuta 2s]\nPIPSA: Kävelen oikealle. [juokse oikealle 2s]\nPIPSA: Laitan viestin. [näpyttele puhelinta 3s]\n[tausta kaupunki ilta]\nVILLE: Nähdään! [hyppää]";
+const SCRIPT: &str = "[tausta studio]\nPIPSA: Hei! Tervetuloa mukaan. [vilkuta 2s]\nPIPSA: Kävelen vasemmalle. [juokse vasemmalle 2s]\nPIPSA: Laitan viestin. [näpyttele puhelinta 3s]\n[tausta kaupunki ilta]\nVILLE: Nähdään! [hyppää]";
 
 #[test]
 fn full_pipeline_plans_every_stage() {

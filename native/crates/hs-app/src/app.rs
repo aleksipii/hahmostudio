@@ -9,7 +9,20 @@ use hs_character::CharacterParams;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-pub const EXAMPLE: &str = "[tausta olohuone]\n[kuva laaja]\nKALLE: Hello everyone, welcome to our show! [vilkuta 2s]\n[kuva kaksikko]\nMAIJA: Are you talking to the camera again? [odota 2s]\n[kuva olan yli]\nKALLE: They love me. [nyökkää 2s]\n[kuva alakulma]\nEETU: I want to be a star! [hyppää]\nRONJA: I will send them a message. [näpyttele puhelinta 3s]\n[kuva yläkulma]\nEETU: Wait for me! [juokse oikealle 2s]";
+pub const EXAMPLE: &str = "[tausta olohuone]\n[kuva laaja]\nKALLE: Hello everyone, welcome to our show! [vilkuta 2s]\n[kuva kaksikko]\nMAIJA: Are you talking to the camera again? [odota 2s]\n[kuva olan yli]\nKALLE: They love me. [nyökkää 2s]\n[kuva alakulma]\nEETU: I want to be a star! [hyppää]\nRONJA: I will send them a message. [näpyttele puhelinta 3s]\n[kuva yläkulma]\nEETU: See you in the next episode! [vilkuta 2s]";
+
+fn history_shortcut(ctx: &egui::Context) -> Option<bool> {
+    if ctx.wants_keyboard_input() { return None; }
+    // egui permits extra Shift when matching COMMAND alone. Consume the more
+    // specific redo combination first, or Shift+Z incorrectly becomes undo.
+    ctx.input_mut(|input| {
+        if input.consume_key(egui::Modifiers::COMMAND | egui::Modifiers::SHIFT, egui::Key::Z) {
+            Some(true)
+        } else if input.consume_key(egui::Modifiers::COMMAND, egui::Key::Z) {
+            Some(false)
+        } else { None }
+    })
+}
 
 #[derive(Default)]
 pub struct LaunchOptions {
@@ -342,8 +355,7 @@ impl eframe::App for StudioApp {
             }
         }
 
-        if !ctx.wants_keyboard_input() && ctx.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::Z)) { self.undo_edit(false); }
-        if !ctx.wants_keyboard_input() && ctx.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND | egui::Modifiers::SHIFT, egui::Key::Z)) { self.undo_edit(true); }
+        if let Some(redo) = history_shortcut(ctx) { self.undo_edit(redo); }
         panels::menu_bar(self, ctx);
         crate::workflow_ui::overview(self, ctx);
         panels::status_bar(self, ctx);
@@ -368,5 +380,37 @@ impl eframe::App for StudioApp {
         }
         if self.dirty_since.is_none() && !ctx.input(|i| i.pointer.any_down()) && !self.image.is_busy() { self.observe_edits(); }
         self.handle_screenshot(ctx);
+    }
+}
+
+#[cfg(test)]
+mod example_tests {
+    fn shortcut(shift: bool) -> Option<bool> {
+        let ctx = eframe::egui::Context::default();
+        let modifiers = eframe::egui::Modifiers { ctrl: true, command: true, shift, ..Default::default() };
+        let input = eframe::egui::RawInput {
+            modifiers,
+            events: vec![eframe::egui::Event::Key {
+                key: eframe::egui::Key::Z, physical_key: None, pressed: true,
+                repeat: false, modifiers,
+            }],
+            ..Default::default()
+        };
+        let mut result = None;
+        let _ = ctx.run(input, |ctx| {
+            result = super::history_shortcut(ctx);
+            assert_eq!(super::history_shortcut(ctx), None, "key consumed exactly once");
+        });
+        result
+    }
+    #[test]
+    fn shifted_command_z_requests_redo_instead_of_undo() { assert_eq!(shortcut(true), Some(true)); }
+    #[test]
+    fn plain_command_z_requests_undo() { assert_eq!(shortcut(false), Some(false)); }
+    #[test]
+    fn default_example_has_valid_actor_routes() {
+        let mut p = hs_agents::Production::new(super::EXAMPLE);
+        hs_agents::Pipeline::default().run(&mut p).unwrap();
+        assert!(hs_agents::audit::inspect(&p).allowed());
     }
 }

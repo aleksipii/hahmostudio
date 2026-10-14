@@ -20,6 +20,7 @@ vanhan lähdekoodin; toimitetut hahmo-, tausta- ja esimerkkiaineistot säilyvät
 - 2D-rigin ja natiivin 3D-luurangon avainruudut, tarkistetut ryhmäsiirrot sekä
   kamera-/taustakorttien ajoitus; kommentit, tehtävät ja paikallinen hyväksyntä/lukitus.
   Aikajanalla hahmon rivit voi valita yhdessä ja valitut palikat korostuvat.
+  Valittu ryhmä voidaan raahata yhteiseen, ennen hyväksyntää tarkistettavaan ajoitusluonnokseen.
 - Mikrofoni-/kameraesitystyökalut, kuva- ja tasoeditori, rajattu PSD-tuonti,
   leikkausasetukset, taustaäänet, englanninkieliset tekstitykset ja MP4-vienti.
 - [Ohjelmistopohjainen 3D-renderpassien PSD-vienti](native/RENDER-PASSES.md):

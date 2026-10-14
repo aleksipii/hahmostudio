@@ -50,8 +50,19 @@ struct GainRamp {
 
 impl GainRamp {
     fn new(sample_rate: u32) -> Self {
-        Self { current: 1.0, target: 1.0, step: 0.0, remaining: 0,
+        Self::at(sample_rate, 1.0)
+    }
+
+    fn at(sample_rate: u32, initial: f32) -> Self {
+        Self { current: initial, target: initial, step: 0.0, remaining: 0,
             frames: sample_rate.max(1).div_ceil(200) }
+    }
+
+    fn reset(&mut self, initial: f32) {
+        self.current = initial;
+        self.target = initial;
+        self.step = 0.0;
+        self.remaining = 0;
     }
 
     fn next(&mut self, target: f32) -> f32 {
@@ -70,20 +81,107 @@ impl GainRamp {
     }
 }
 
+/// Commands and callback advancement share one critical section. Read-only
+/// atomics below publish the result; they never act as a second clock writer.
+#[derive(Clone, Copy)]
+struct Transport {
+    position: f64,
+    playing: bool,
+    revision: u64,
+}
+
 struct PlayShared {
     audio: Mutex<Option<Arc<Audio>>>,
-    /// Toistokohta sekunteina (f64-bitit).
+    transport: Mutex<Transport>,
+    /// Published position in seconds (f64 bits).
     position: AtomicU64,
     playing: AtomicBool,
     volume: AtomicU32,
 }
 
 impl PlayShared {
-    fn pos(&self) -> f64 {
-        f64::from_bits(self.position.load(Ordering::Relaxed))
+    fn new() -> Self {
+        Self {
+            audio: Mutex::new(None),
+            transport: Mutex::new(Transport { position: 0.0, playing: false, revision: 0 }),
+            position: AtomicU64::new(0f64.to_bits()),
+            playing: AtomicBool::new(false),
+            volume: AtomicU32::new(1f32.to_bits()),
+        }
     }
-    fn set_pos(&self, t: f64) {
-        self.position.store(t.to_bits(), Ordering::Relaxed);
+
+    fn pos(&self) -> f64 {
+        f64::from_bits(self.position.load(Ordering::Acquire))
+    }
+
+    fn publish(&self, transport: Transport) {
+        self.position.store(transport.position.to_bits(), Ordering::Release);
+        self.playing.store(transport.playing, Ordering::Release);
+    }
+
+    fn play_from(&self, t: f32) {
+        let mut transport = self.transport.lock().unwrap();
+        transport.position = if t.is_finite() { t.max(0.0) as f64 } else { 0.0 };
+        transport.playing = true;
+        transport.revision = transport.revision.wrapping_add(1);
+        self.publish(*transport);
+    }
+
+    fn pause(&self) {
+        let mut transport = self.transport.lock().unwrap();
+        transport.playing = false;
+        transport.revision = transport.revision.wrapping_add(1);
+        self.publish(*transport);
+    }
+}
+
+/// Hardware-independent frame kernel. A transition crossfades the last
+/// delivered signal into the new source for five milliseconds, restarting
+/// from the actual intermediate signal when rapidly retargeted. The held old
+/// sample is only a short de-click tail, not a delayed second speech stream.
+/// Logical position belongs to Transport and is never delayed by the fade.
+struct PlaybackKernel {
+    gain: GainRamp,
+    transition: GainRamp,
+    command: Option<(u64, bool, Option<usize>)>,
+    anchor: f32,
+    last_signal: f32,
+}
+
+impl PlaybackKernel {
+    fn new(sample_rate: u32) -> Self {
+        Self {
+            gain: GainRamp::new(sample_rate),
+            transition: GainRamp::at(sample_rate, 0.0),
+            command: None,
+            anchor: 0.0,
+            last_signal: 0.0,
+        }
+    }
+
+    fn frame(&mut self, audio: Option<&Arc<Audio>>, t: f64, playing: bool, revision: u64, volume: f32) -> f32 {
+        let command = (revision, playing, audio.map(|a| Arc::as_ptr(a) as usize));
+        if self.command != Some(command) {
+            self.anchor = self.last_signal;
+            self.transition.reset(0.0);
+            self.command = Some(command);
+        }
+        let target = if playing { audio.map_or(0.0, |a| sample_at(a, t)) } else { 0.0 };
+        let weight = self.transition.next(1.0);
+        self.last_signal = finite_sample(self.anchor * (1.0 - weight) + target * weight);
+        finite_sample(self.last_signal * self.gain.next(volume)).clamp(-1.0, 1.0)
+    }
+
+    fn buffer<T>(&mut self, data: &mut [T], channels: usize, sample_rate: u32,
+        audio: Option<&Arc<Audio>>, transport: &mut Transport, volume: f32)
+    where T: SizedSample + cpal::FromSample<f32> {
+        let step = 1.0 / sample_rate.max(1) as f64;
+        for frame in data.chunks_mut(channels.max(1)) {
+            let sample = self.frame(audio, transport.position, transport.playing, transport.revision, volume);
+            if transport.playing { transport.position += step; }
+            let value = T::from_sample(sample);
+            frame.fill(value);
+        }
     }
 }
 
@@ -100,12 +198,7 @@ impl Player {
         let device = host.default_output_device().ok_or("Äänilaitetta ei löytynyt.")?;
         let supported = device.default_output_config().map_err(|e| format!("Äänilaite: {e}"))?;
         let config = supported.config();
-        let shared = Arc::new(PlayShared {
-            audio: Mutex::new(None),
-            position: AtomicU64::new(0f64.to_bits()),
-            playing: AtomicBool::new(false),
-            volume: AtomicU32::new(1f32.to_bits()),
-        });
+        let shared = Arc::new(PlayShared::new());
         let stream = match supported.sample_format() {
             SampleFormat::F32 => build_output::<f32>(&device, config, shared.clone()),
             SampleFormat::I16 => build_output::<i16>(&device, config, shared.clone()),
@@ -124,16 +217,15 @@ impl Player {
     }
 
     pub fn play_from(&self, t: f32) {
-        self.shared.set_pos(if t.is_finite() { t.max(0.0) as f64 } else { 0.0 });
-        self.shared.playing.store(true, Ordering::Relaxed);
+        self.shared.play_from(t);
     }
 
     pub fn pause(&self) {
-        self.shared.playing.store(false, Ordering::Relaxed);
+        self.shared.pause();
     }
 
     pub fn is_playing(&self) -> bool {
-        self.shared.playing.load(Ordering::Relaxed)
+        self.shared.playing.load(Ordering::Acquire)
     }
 
     pub fn position(&self) -> f32 {
@@ -150,33 +242,27 @@ where
     T: SizedSample + cpal::FromSample<f32>,
 {
     let channels = config.channels.max(1) as usize;
-    let step = 1.0 / config.sample_rate.max(1) as f64;
-    // Keep the smoothing state on the device thread, not in the saved audio.
-    let mut gain = GainRamp::new(config.sample_rate);
+    let sample_rate = config.sample_rate;
+    let mut kernel = PlaybackKernel::new(sample_rate);
     device
         .build_output_stream::<T, _, _>(
             config,
             move |data: &mut [T], _| {
-                let playing = shared.playing.load(Ordering::Relaxed);
                 let volume = f32::from_bits(shared.volume.load(Ordering::Relaxed));
-                // Älä odota lukkoa äänisäikeessä: jos ääntä vaihdetaan juuri nyt, soita hiljaisuutta.
+                // Neither lock can block the hardware thread. Transport is
+                // held through advancement/publication: a UI seek/pause then
+                // runs after this callback, and cannot be overwritten by it.
+                let mut transport = shared.transport.try_lock().ok();
                 let guard = shared.audio.try_lock().ok();
                 let audio = guard.as_ref().and_then(|g| g.as_ref());
-                let mut t = shared.pos();
-                for frame in data.chunks_mut(channels) {
-                    let frame_gain = gain.next(volume);
-                    let s = match (playing, audio) {
-                        (true, Some(a)) => sample_at(a, t) * frame_gain,
-                        _ => 0.0,
-                    };
-                    if playing {
-                        t += step;
-                    }
-                    let v = T::from_sample(s.clamp(-1.0, 1.0));
-                    frame.iter_mut().for_each(|x| *x = v);
-                }
-                if playing {
-                    shared.set_pos(t);
+                if let Some(ref mut transport) = transport {
+                    kernel.buffer(data, channels, sample_rate, audio, transport, volume);
+                    shared.publish(**transport);
+                } else {
+                    // Control mutation in flight: fade toward silence without
+                    // publishing or advancing a potentially stale clock.
+                    let mut paused = Transport { position: 0.0, playing: false, revision: u64::MAX };
+                    kernel.buffer(data, channels, sample_rate, None, &mut paused, volume);
                 }
             },
             |e| eprintln!("äänilaite: {e}"),
@@ -399,6 +485,131 @@ mod tests {
         }
         assert_eq!(a.samples, original);
         assert_eq!(a.duration(), 0.01);
+    }
+
+    fn transition_audio(rate: u32) -> Arc<Audio> {
+        let mut samples = vec![0.75; rate as usize * 2];
+        samples[rate as usize..].fill(-0.75);
+        Arc::new(Audio { samples, sample_rate: rate })
+    }
+
+    #[test]
+    fn seek_crossfade_and_stop_tail_preserve_the_logical_clock() {
+        for rate in [1_000, 44_100, 48_000, 96_000] {
+            let audio = transition_audio(rate);
+            let original = audio.samples.clone();
+            let mut kernel = PlaybackKernel::new(rate);
+            let frames = rate.div_ceil(200) as usize;
+            let mut transport = Transport { position: 0.0, playing: true, revision: 1 };
+            let mut data = vec![0.0f32; frames];
+            kernel.buffer(&mut data, 1, rate, Some(&audio), &mut transport, 1.0);
+            assert!(data[0] > 0.0 && data[0] < 0.75);
+            assert!((*data.last().unwrap() - 0.75).abs() < 1e-6);
+            assert!((transport.position - frames as f64 / rate as f64).abs() < 1e-12);
+
+            transport.position = 1.25;
+            transport.revision += 1;
+            kernel.buffer(&mut data, 1, rate, Some(&audio), &mut transport, 1.0);
+            assert!(data[0] > -0.75 && data[0] < 0.75);
+            let mut previous = 0.75;
+            for sample in &data {
+                assert!((*sample - previous).abs() <= 1.5 / frames as f32 + 1e-5);
+                previous = *sample;
+            }
+            assert!((*data.last().unwrap() + 0.75).abs() < 1e-6);
+            assert!((transport.position - (1.25 + frames as f64 / rate as f64)).abs() < 1e-11);
+
+            transport.playing = false;
+            transport.revision += 1;
+            let paused_position = transport.position;
+            kernel.buffer(&mut data, 1, rate, Some(&audio), &mut transport, 1.0);
+            assert!(data[0] < 0.0 && data[0] > -0.75);
+            assert_eq!(*data.last().unwrap(), 0.0);
+            assert_eq!(transport.position, paused_position);
+            kernel.buffer(&mut data, 1, rate, Some(&audio), &mut transport, 1.0);
+            assert!(data.iter().all(|sample| *sample == 0.0));
+            assert_eq!(transport.position, paused_position);
+            assert_eq!(audio.samples, original);
+        }
+    }
+
+    #[test]
+    fn transition_ramps_are_identical_for_mono_stereo_and_six_channels() {
+        let rate = 48_000;
+        let audio = transition_audio(rate);
+        let frames = rate.div_ceil(200) as usize;
+        let mut reference = Vec::new();
+        for channels in [1, 2, 6] {
+            let mut kernel = PlaybackKernel::new(rate);
+            let mut transport = Transport { position: 0.0, playing: true, revision: 1 };
+            let mut rendered = Vec::new();
+            for (position, playing, revision) in [(0.0, true, 1), (1.25, true, 2), (1.3, false, 3)] {
+                transport.position = position;
+                transport.playing = playing;
+                transport.revision = revision;
+                let mut data = vec![0.0f32; frames * channels];
+                kernel.buffer(&mut data, channels, rate, Some(&audio), &mut transport, 0.8);
+                for frame in data.chunks(channels) {
+                    assert!(frame.iter().all(|sample| *sample == frame[0]));
+                    rendered.push(frame[0]);
+                }
+                let expected = if playing { position + frames as f64 / rate as f64 } else { position };
+                assert!((transport.position - expected).abs() < 1e-11);
+            }
+            if channels == 1 { reference = rendered; } else { assert_eq!(rendered, reference); }
+        }
+    }
+
+    #[test]
+    fn rapid_seek_stop_and_source_retarget_restart_from_delivered_signal() {
+        let rate = 48_000;
+        let audio = transition_audio(rate);
+        let mut kernel = PlaybackKernel::new(rate);
+        let mut transport = Transport { position: 0.0, playing: true, revision: 1 };
+        let mut warmup = vec![0.0f32; 240];
+        kernel.buffer(&mut warmup, 1, rate, Some(&audio), &mut transport, 1.0);
+        let mut previous = 0.75;
+        for revision in 2..402 {
+            transport.revision = revision;
+            transport.position = if revision % 2 == 0 { 1.25 } else { 0.25 };
+            transport.playing = revision % 3 != 0;
+            let before = transport.position;
+            let mut frame = [0.0f32; 6];
+            let source = if revision % 5 == 0 { None } else { Some(&audio) };
+            kernel.buffer(&mut frame, 6, rate, source, &mut transport, 1.0);
+            assert!(frame.iter().all(|sample| *sample == frame[0]));
+            assert!((frame[0] - previous).abs() <= 1.5 / 240.0 + 1e-5);
+            assert!(frame[0].is_finite());
+            let expected = if transport.playing { before + 1.0 / rate as f64 } else { before };
+            assert_eq!(transport.position, expected);
+            previous = frame[0];
+        }
+    }
+
+    #[test]
+    fn command_cannot_be_overwritten_by_callback_clock_publication() {
+        let shared = Arc::new(PlayShared::new());
+        shared.play_from(0.0);
+        let mut callback = shared.transport.lock().unwrap();
+        let command_shared = shared.clone();
+        let (ready_tx, ready_rx) = std::sync::mpsc::channel();
+        let command = std::thread::spawn(move || {
+            assert!(command_shared.transport.try_lock().is_err());
+            ready_tx.send(()).unwrap();
+            command_shared.play_from(12.5);
+        });
+        ready_rx.recv().unwrap();
+        callback.position = 0.01;
+        shared.publish(*callback);
+        drop(callback);
+        command.join().unwrap();
+        assert_eq!(shared.pos(), 12.5);
+        assert!(shared.playing.load(Ordering::Acquire));
+        shared.pause();
+        assert_eq!(shared.pos(), 12.5);
+        assert!(!shared.playing.load(Ordering::Acquire));
+        shared.play_from(f32::NAN);
+        assert_eq!(shared.pos(), 0.0);
     }
 
     #[test]

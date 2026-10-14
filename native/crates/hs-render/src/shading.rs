@@ -7,10 +7,15 @@ use glam::Vec3;
 pub fn shade(base: Vec3, normal: Vec3, to_eye: Vec3, shade_flag: f32, style: ShadingStyle, l: &Lights) -> Vec3 {
     let n = normal.normalize_or_zero();
     let v = to_eye.normalize_or_zero();
-    let mut k = n.dot(-l.key.dir).max(0.0);
-    let mut f = n.dot(-l.fill.dir).max(0.0);
+    // Direction magnitude is not brightness; intensity lives in light.color.
+    let key = -l.key.dir.normalize_or_zero();
+    let fill = -l.fill.dir.normalize_or_zero();
+    let back = -l.rim.dir.normalize_or_zero();
+    let key_facing = n.dot(key).max(0.0);
+    let mut k = key_facing;
+    let mut f = n.dot(fill).max(0.0);
     let facing = n.dot(v).max(0.0);
-    let mut rim = (1.0 - facing).powi(3) * (n.dot(-l.rim.dir) * 0.5 + 0.5);
+    let mut rim = (1.0 - facing).powi(3) * (n.dot(back) * 0.5 + 0.5);
     if style == ShadingStyle::Cel {
         k = if k > 0.5 { 1.0 } else if k > 0.18 { 0.6 } else { 0.3 };
         f = if f > 0.3 { 0.8 } else { 0.35 };
@@ -26,7 +31,18 @@ pub fn shade(base: Vec3, normal: Vec3, to_eye: Vec3, shade_flag: f32, style: Sha
         ShadingStyle::Cel => lit,
     };
     let rim_amount = if style == ShadingStyle::Flat { 0.15 } else { 0.35 };
-    let lit_color = base * lit + l.rim.color * rim * rim_amount;
+    // A small key-light highlight gives character/prop surfaces readable form
+    // as the camera moves. It is intentionally a stylized approximation, not
+    // a per-material BRDF. Backgrounds and unlit facial features keep their
+    // original response. Turning off the key light also turns this off.
+    let half = (key + v).normalize_or_zero();
+    let mut specular = n.dot(half).max(0.0).powi(32) * key_facing;
+    if style == ShadingStyle::Cel {
+        specular = if specular > 0.65 { 1.0 } else { 0.0 };
+    }
+    if shade_flag < 0.9 { specular = 0.0; }
+    let strength = if style == ShadingStyle::Flat { 0.08 } else { 0.05 };
+    let lit_color = base * lit + l.rim.color * rim * rim_amount + l.key.color * (specular * strength);
     // Silmät ja suu: lähes valaisematon perusväri.
     let unlit = base * (0.92 + 0.08 * k);
     unlit.lerp(lit_color, shade_flag.clamp(0.0, 1.0))

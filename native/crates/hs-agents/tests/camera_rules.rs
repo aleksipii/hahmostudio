@@ -96,7 +96,7 @@ fn repeated_authored_same_subject_same_kind_keeps_cut_boundary() {
 #[test]
 fn tracking_wide_centers_the_cast_instead_of_only_the_moving_subject() {
     let mut production =
-        Production::new("[shot wide]\nKALLE: Moving. [walk right 4s]\nMAIJA: Watching. [wait 1s]");
+        Production::new("[shot wide]\nKALLE: Moving. [walk left 4s]\nMAIJA: Watching. [wait 1s]");
     Pipeline::default().run(&mut production).unwrap();
     let track = production.camera.as_ref().unwrap();
     assert!(track.shots[0].tracking);

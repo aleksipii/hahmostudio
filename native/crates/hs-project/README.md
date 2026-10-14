@@ -93,3 +93,13 @@ finishes rotation. A pruning I/O error may report failure after publication,
 leaving the new snapshot and extra old files intact. Quota checks conservatively
 include the candidate before pruning; no valid archive is deleted to make space.
 This protects process-interruption recovery, not physical power-loss durability.
+
+ZIP directory counts are checked before the ZIP decoder allocates its index.
+The preflight selects the outer end record and bounds absolute ZIP64 records,
+preserving small third-party ZIP64 archives. During index construction, the
+reader refuses to parse other end records so malformed outer metadata cannot
+fall back into an embedded archive. Reads always preserve original bytes;
+valid opaque assets may contain arbitrary embedded ZIP data. Multi-disk archives
+and relative ZIP64 records from prepended self-extracting containers are rejected;
+normal ZIP comments and trailing bytes remain supported. Resource CRC/SHA-256
+validation still runs after indexing and no archive entries are extracted.

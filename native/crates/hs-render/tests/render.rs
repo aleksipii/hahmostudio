@@ -77,3 +77,103 @@ fn gpu_matches_cpu() {
         assert!(frac < 0.03, "poikkeavia {frac}");
     }
 }
+
+/// An opaque planar prop keeps diffuse illumination constant across pixels,
+/// so the actual rendered gradient comes from the camera-dependent highlight.
+fn highlight_scene(style: ShadingStyle, flag: f32) -> RenderScene {
+    use hs_character::mesh::Vertex;
+    let vertices = [(-1.5, -1.5), (1.5, -1.5), (1.5, 1.5), (-1.5, 1.5)]
+        .into_iter().map(|(x, y)| Vertex {
+            position: [x, y, 0.0], normal: [0.0, 0.0, 1.0],
+            color: [0.12, 0.12, 0.12, 0.0], bones: [0, 0], weight: 1.0, shade: flag,
+        }).collect();
+    let mesh = hs_character::mesh::CharacterMesh { vertices, indices: vec![0, 1, 2, 0, 2, 3] };
+    let disabled = hs_render::scene::Light { dir: -Vec3::Z, color: Vec3::ZERO };
+    RenderScene {
+        width: 64, height: 64,
+        camera: Camera { eye: Vec3::new(0.0, 0.0, 3.0), target: Vec3::ZERO, fov_y: 60.0 },
+        lights: Lights {
+            key: hs_render::scene::Light { dir: -Vec3::Z, color: Vec3::X },
+            fill: disabled, rim: disabled, ambient: Vec3::splat(0.1),
+        },
+        style, clear: [0, 0, 0], outline: 0.0,
+        items: vec![DrawItem::rigid(Arc::new(mesh))],
+    }
+}
+
+fn render_sample(scene: &RenderScene) -> hs_render::Image {
+    CpuRenderer { supersample: 1, threads: 1 }.render(scene).unwrap()
+}
+
+#[test]
+fn beauty_highlight_tracks_view_and_key_color_in_rendered_pixels() {
+    for style in [ShadingStyle::Flat, ShadingStyle::Cel] {
+        let mut s = highlight_scene(style, 1.0);
+        let front = render_sample(&s);
+        let center = front.pixel(32, 32);
+        let edge = front.pixel(8, 32);
+        assert!(center[0] > edge[0] + 5, "{style:?}: center {center:?}, edge {edge:?}");
+        assert!(center[1].abs_diff(edge[1]) <= 1, "red key must not add green glare");
+        assert_eq!(center[3], 255);
+        s.camera.eye.x = 3.0;
+        let angled = render_sample(&s).pixel(32, 32);
+        assert!(center[0] > angled[0] + 5, "{style:?}: front {center:?}, angled {angled:?}");
+    }
+}
+
+#[test]
+fn beauty_highlight_does_not_light_unlit_faces_backgrounds_or_disabled_key() {
+    for style in [ShadingStyle::Flat, ShadingStyle::Cel] {
+        for flag in [0.0, 0.6, 1.0] {
+            let mut s = highlight_scene(style, flag);
+            if flag == 1.0 { s.lights.key.color = Vec3::ZERO; }
+            let front = render_sample(&s).pixel(32, 32);
+            s.camera.eye.x = 3.0;
+            let angled = render_sample(&s).pixel(32, 32);
+            for c in 0..3 {
+                assert!(front[c].abs_diff(angled[c]) <= 1, "{style:?}, flag {flag}: {front:?} vs {angled:?}");
+            }
+        }
+    }
+}
+
+#[test]
+fn directional_light_magnitude_does_not_change_rendered_intensity() {
+    for style in [ShadingStyle::Flat, ShadingStyle::Cel] {
+        let mut s = scene(style, 96, 144);
+        let unit = render_sample(&s);
+        s.lights.key.dir *= 37.0;
+        s.lights.fill.dir *= 7.0;
+        s.lights.rim.dir *= 0.3;
+        let scaled = render_sample(&s);
+        assert!(unit.mean_abs_diff(&scaled) < 0.02);
+        assert_eq!(unit.differing_fraction(&scaled, 1), 0.0);
+    }
+}
+
+#[cfg(feature = "gpu")]
+#[test]
+fn gpu_matches_cpu_for_view_dependent_highlight_and_scaled_directions() {
+    let mut gpu = match hs_render::gpu::GpuRenderer::headless() {
+        Ok(g) => g,
+        Err(e) => { eprintln!("GPU-testi ohitettu: {e}"); return; }
+    };
+    for style in [ShadingStyle::Flat, ShadingStyle::Cel] {
+        for flag in [0.0, 0.6, 1.0] {
+            let mut s = highlight_scene(style, flag);
+            s.lights.key.dir *= 12.0;
+            for eye_x in [0.0, 3.0] {
+                s.camera.eye.x = eye_x;
+                let g = gpu.render(&s).unwrap();
+                let c = CpuRenderer { supersample: 2, threads: 1 }.render(&s).unwrap();
+                // Center is away from raster coverage/AA differences.
+                let gp = g.pixel(32, 32);
+                let cp = c.pixel(32, 32);
+                for channel in 0..4 {
+                    assert!(gp[channel].abs_diff(cp[channel]) <= 1, "{style:?}, flag {flag}, eye {eye_x}: GPU {gp:?}, CPU {cp:?}");
+                }
+                assert!(g.differing_fraction(&c, 24) < 0.04);
+            }
+        }
+    }
+}

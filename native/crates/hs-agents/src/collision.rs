@@ -1,4 +1,5 @@
-//! Conservative static-environment collision rejection, not physics or avoidance.
+//! Conservative static-environment and actor-body collision rejection.
+//! This validates bounded proxies; it does not provide physics or avoidance.
 //! Torso/head/leg capsules use current FK; cached triangles are the rendered scenery.
 //! Continuous capsule-axis hull sweeps prevent crossing thin walls between samples.
 use crate::Production;
@@ -360,6 +361,12 @@ fn segment_distance(a: Vec3, b: Vec3, c: Vec3, d: Vec3) -> f32 {
     let dd = u.dot(w);
     let ee = v.dot(w);
     let den = aa * cc - bb * bb;
+    if aa < 1e-15 && cc < 1e-15 {
+        return a.distance(c);
+    }
+    if cc < 1e-15 {
+        return (a + u * (-dd / aa).clamp(0., 1.)).distance(c);
+    }
     let mut s = if aa < 1e-15 || den.abs() < 1e-15 {
         0.
     } else {
@@ -436,6 +443,85 @@ fn inside_tetrahedron(p: Vec3, v: [Vec3; 4]) -> bool {
         }
     }
     true
+}
+
+/// Actor-body contact allows up to 3 mm of proxy penetration. Arms/fingers
+/// are deliberately excluded by `body_capsules`; a handoff is not a body hit.
+pub fn capsules_intersect(a: BodyCapsule, b: BodyCapsule) -> Result<bool, String> {
+    validate_capsule(a)?;
+    validate_capsule(b)?;
+    Ok(segment_distance(a.a, a.b, b.a, b.b) < (a.radius + b.radius - CONTACT_TOLERANCE).max(0.0))
+}
+
+/// Continuous *synchronized* linear endpoint sweep, rather than independent
+/// swept-volume overlap. The clearance bound uses the maximum endpoint speed
+/// of each segment: segment distance is Lipschitz with their summed speeds.
+/// Ambiguous subintervals at depth 16 or 4096 distance queries are rejected
+/// conservatively, bounding work for near-tangent sweeps. This does
+/// not claim an exact bound for arbitrary nonlinear FK between sampled poses.
+pub fn swept_capsules_intersect(
+    a0: BodyCapsule,
+    a1: BodyCapsule,
+    b0: BodyCapsule,
+    b1: BodyCapsule,
+) -> Result<bool, String> {
+    for c in [a0, a1, b0, b1] {
+        validate_capsule(c)?;
+    }
+    let radius = a0.radius.max(a1.radius) + b0.radius.max(b1.radius);
+    let threshold = (radius - CONTACT_TOLERANCE).max(0.0);
+    let bounds = |a: BodyCapsule, b: BodyCapsule| {
+        (
+            a.a.min(a.b).min(b.a).min(b.b),
+            a.a.max(a.b).max(b.a).max(b.b),
+        )
+    };
+    let (alo, ahi) = bounds(a0, a1);
+    let (blo, bhi) = bounds(b0, b1);
+    if !(alo - Vec3::splat(radius)).cmple(bhi).all() || !blo.cmple(ahi + Vec3::splat(radius)).all()
+    {
+        return Ok(false);
+    }
+    // Common translation cannot change relative clearance.
+    let common = ((a1.a - a0.a) + (b1.a - b0.a)) * 0.5;
+    let speed = ((a1.a - a0.a) - common)
+        .length()
+        .max(((a1.b - a0.b) - common).length())
+        + ((b1.a - b0.a) - common)
+            .length()
+            .max(((b1.b - b0.b) - common).length());
+    let distance = |time: f32| {
+        segment_distance(
+            a0.a.lerp(a1.a, time),
+            a0.b.lerp(a1.b, time),
+            b0.a.lerp(b1.a, time),
+            b0.b.lerp(b1.b, time),
+        )
+    };
+    if distance(0.0) < threshold || distance(1.0) < threshold {
+        return Ok(true);
+    }
+    let mut pending = vec![(0.0_f32, 1.0_f32, 0_u8)];
+    let mut queries = 2;
+    while let Some((lo, hi, depth)) = pending.pop() {
+        if queries == 4096 {
+            return Ok(true);
+        }
+        queries += 1;
+        let mid = (lo + hi) * 0.5;
+        let d = distance(mid);
+        if d < threshold {
+            return Ok(true);
+        }
+        if d - speed * (hi - lo) * 0.5 >= threshold {
+            continue;
+        }
+        if depth == 16 {
+            return Ok(true);
+        }
+        pending.extend([(lo, mid, depth + 1), (mid, hi, depth + 1)]);
+    }
+    Ok(false)
 }
 
 pub struct CollisionPlan {
@@ -554,9 +640,27 @@ impl CollisionPlan {
             .environments
             .get(id)
             .ok_or("Missing collision environment")?;
-        for (actor, frame) in frames.iter().enumerate() {
-            for capsule in body_capsules(&p.cast[actor].character, frame)? {
-                if collider.intersects(capsule)? {
+        let bodies = frames
+            .iter()
+            .zip(&p.cast)
+            .map(|(frame, member)| body_capsules(&member.character, frame))
+            .collect::<Result<Vec<_>, _>>()?;
+        for a in 0..bodies.len() {
+            for b in a + 1..bodies.len() {
+                for ca in &bodies[a] {
+                    for cb in &bodies[b] {
+                        if capsules_intersect(*ca, *cb)? {
+                            return Err(format!("Rivi {}: hahmot {} ja {} törmäävät ajassa {:.3}s; muuta reittiä tai ajoitusta",
+                            self.line(p,a,time).max(self.line(p,b,time)),
+                            p.cast[a].character.params.name,p.cast[b].character.params.name,time));
+                        }
+                    }
+                }
+            }
+        }
+        for (actor, capsules) in bodies.iter().enumerate() {
+            for capsule in capsules {
+                if collider.intersects(*capsule)? {
                     return Err(format!("Rivi {}: hahmo {} törmää lavasteeseen {} ajassa {:.3}s; muuta reittiä tai ajoitusta",self.line(p,actor,time),p.cast[actor].character.params.name,id,time));
                 }
             }
@@ -580,16 +684,36 @@ impl CollisionPlan {
         {
             return Err("Invalid collision sweep resources or interval".into());
         }
+        let bodies = |frames: &[CharacterFrame]| {
+            frames
+                .iter()
+                .zip(&p.cast)
+                .map(|(frame, member)| body_capsules(&member.character, frame))
+                .collect::<Result<Vec<_>, _>>()
+        };
+        let initial = bodies(before)?;
+        let final_bodies = bodies(after)?;
+        for a in 0..initial.len() {
+            for b in a + 1..initial.len() {
+                for (a0, a1) in initial[a].iter().zip(&final_bodies[a]) {
+                    for (b0, b1) in initial[b].iter().zip(&final_bodies[b]) {
+                        if swept_capsules_intersect(*a0, *a1, *b0, *b1)? {
+                            return Err(format!("Rivi {}: hahmojen {} ja {} liikeradat törmäävät välillä {:.3}–{:.3}s; muuta reittiä tai ajoitusta",
+                            self.line(p,a,end).max(self.line(p,b,end)),
+                            p.cast[a].character.params.name,p.cast[b].character.params.name,start,end));
+                        }
+                    }
+                }
+            }
+        }
         let ids = [self.background(start), self.background(end)];
-        for (actor, (a, b)) in before.iter().zip(after).enumerate() {
-            let a = body_capsules(&p.cast[actor].character, a)?;
-            let b = body_capsules(&p.cast[actor].character, b)?;
+        for (actor, (a, b)) in initial.iter().zip(&final_bodies).enumerate() {
             for (environment_index, id) in ids.into_iter().enumerate() {
                 let collider = self
                     .environments
                     .get(id)
                     .ok_or("Missing collision environment")?;
-                for (a, b) in a.iter().zip(&b) {
+                for (a, b) in a.iter().zip(b) {
                     let hit = if ids[0] != ids[1] && environment_index == 1 {
                         collider.intersects(*b)?
                     } else {

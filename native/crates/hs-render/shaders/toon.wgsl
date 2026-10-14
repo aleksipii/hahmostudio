@@ -70,10 +70,14 @@ fn safe_normalize(v: vec3<f32>) -> vec3<f32> {
 fn fs_main(i: VOut) -> @location(0) vec4<f32> {
     let n = safe_normalize(i.normal);
     let v = safe_normalize(g.eye.xyz - i.world);
-    var k = max(dot(n, -g.key_dir.xyz), 0.0);
-    var f = max(dot(n, -g.fill_dir.xyz), 0.0);
+    let key = -safe_normalize(g.key_dir.xyz);
+    let fill = -safe_normalize(g.fill_dir.xyz);
+    let back = -safe_normalize(g.rim_dir.xyz);
+    let key_facing = max(dot(n, key), 0.0);
+    var k = key_facing;
+    var f = max(dot(n, fill), 0.0);
     let facing = max(dot(n, v), 0.0);
-    var rim = pow(1.0 - facing, 3.0) * (dot(n, -g.rim_dir.xyz) * 0.5 + 0.5);
+    var rim = pow(1.0 - facing, 3.0) * (dot(n, back) * 0.5 + 0.5);
     let cel = g.style.x > 0.5;
     if (cel) {
         k = select(select(0.3, 0.6, k > 0.18), 1.0, k > 0.5);
@@ -88,7 +92,13 @@ fn fs_main(i: VOut) -> @location(0) vec4<f32> {
         lit = mix(vec3<f32>(1.0), lit, 0.3);
     }
     let rim_amount = select(0.15, 0.35, cel);
-    let lit_color = i.color * lit + g.rim_col.xyz * rim * rim_amount;
+    // Restrained stylized key-light highlight, matching shading.rs exactly.
+    let half = safe_normalize(key + v);
+    var specular = pow(max(dot(n, half), 0.0), 32.0) * key_facing;
+    if (cel) { specular = select(0.0, 1.0, specular > 0.65); }
+    if (i.shade < 0.9) { specular = 0.0; }
+    let strength = select(0.08, 0.05, cel);
+    let lit_color = i.color * lit + g.rim_col.xyz * rim * rim_amount + g.key_col.xyz * (specular * strength);
     let unlit = i.color * (0.92 + 0.08 * k);
     let c = mix(unlit, lit_color, clamp(i.shade, 0.0, 1.0));
     return vec4<f32>(clamp(c, vec3<f32>(0.0), vec3<f32>(1.0)), 1.0);

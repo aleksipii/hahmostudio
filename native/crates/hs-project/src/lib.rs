@@ -7,6 +7,7 @@ pub mod library;
 pub mod legacy_series;
 pub mod production_review;
 pub mod render_settings;
+mod zip_bounds;
 
 use hs_character::CharacterParams;
 use hs_subtitle::{CaptionCue, CaptionSettings};
@@ -396,7 +397,7 @@ pub fn decode(bytes: &[u8]) -> Result<Series, ProjectError> {
     if bytes.len() > MAX_BYTES {
         return Err(invalid("archive size limit"));
     }
-    let mut zip = zip::ZipArchive::new(Cursor::new(bytes))?;
+    let mut zip = zip_bounds::open(bytes)?;
     if zip.len() > MAX_ENTRIES {
         return Err(invalid("entry count limit"));
     }

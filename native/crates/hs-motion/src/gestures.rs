@@ -56,6 +56,11 @@ pub fn clap(h: &Humanoid, pose: &mut Pose, progress: f32) {
         for joint in [arm.upper, arm.fore, arm.hand] {
             pose.local[joint] = original.local[joint].slerp(pose.local[joint], weight);
         }
-        crate::hands::curl_fingers(h, pose, side, 0.04 * weight);
+        crate::hands::curl_fingers(h, pose, side, 0.04);
+        for finger in &arm.fingers {
+            for joint in finger.joints {
+                pose.local[joint] = original.local[joint].slerp(pose.local[joint], weight);
+            }
+        }
     }
 }

@@ -24,6 +24,24 @@ samalla tiedostolla on yksi omistaja.
 Pääagentti lisää ryhmävalinnan korostuksen aikajanan piirtoon. Valitut rivit
 luetaan kerran piirtoa kohti, ei uudelleen jokaiselle palikalle.
 
+## Toinen agenttikierros 14.10.2026
+
+| Agentti | Toteutus | Rajat |
+| --- | --- | --- |
+| `animation_quality` | Hahmojen vartalo-, pää- ja jalkakapselien kontaktit sekä samanaikaisesti liikkuvien reittien tarkistus; rivillä näkyvät osapuolet ja aika | Konservatiivinen proxy, 3 mm toleranssi; ei sormien/vaatteiden fysiikkaa tai automaattista väistöä |
+| `release_readiness` (tässä kierroksessa liikkeet) | Vilkutus, osoitus, olankohautus ja taputus palautuvat pehmeästi alkuperäiseen nivel- ja sormiasentoon | Tuetut eleet, ei yleinen kaikkien liikkeiden yhdistelijä; juuren rata ja jalat säilyvät |
+| `editor_workflow` | Valittujen rivien yhteinen raahaus, ruutuihin kohdistettu siirto, esikatselukehykset, tarkistettu hyväksyntä ja Escape-peruutus | Puhe/liike siirtyvät yhdessä; oikea reuna muokkaa edelleen yksittäisen palikan kestoa |
+| `picture_audio` | Toiston käynnistys/pysäytys/haku ja äänilähteen vaihto saavat 5 ms siirtymän; callback ei voi ylikirjoittaa uudempaa hakua | Lyhyt edellisen näytteen häntä, ei kahden jatkuvan puheraiteen miksaus; laitekuuntelu avoinna |
+| `pilot_voice` (tässä kierroksessa kuva) | Sama hillitty avainvalon kiilto CPU:ssa ja GPU:ssa, Flat/Cel-tyylit; valosuunnan pituus ei muuta kirkkautta | Tyylitelty kiilto, ei PBR-materiaaleja/HDR:ää tai uusia GPU-riippuvuuksia |
+| `project_resilience` | Projektin ZIP-hakemiston koko tarkistetaan ennen indeksointia; rikkinäinen ulompi arkisto ei palaudu aineiston sisäiseen arkistoon | Lukutavujen sisältö ei muutu; tuetaan rajattu absoluuttinen ZIP64, ei monilevyistä tai suhteellisesti upotettua ZIP64:ää |
+
+Pääagentti integroi ryhmäraahauksen, lisäsi tuotantovirheen rivipainikkeen ja
+korjasi ⌘⇧Z:n käsittelyjärjestyksen: uudelleenteko tarkistetaan ennen kumoamista.
+Esimerkkireitit muutettiin törmäämättömiksi; käyttäjän projekteja ei muuteta automaattisesti.
+Mac-hyväksyntä ja mittaukset jäävät edelleen viimeiseksi.
+
+Liikkeiden esimerkki: [gesture-transitions.en.txt](../../native/examples/gesture-transitions.en.txt).
+
 ## Mitä valmistuminen tarkoittaa
 
 Tekninen testi ei korvaa valmista jaksoa tai taiteellista hyväksyntää.
@@ -41,7 +59,7 @@ Nykyinen 8-bittinen ohjelmistorenderöinti ei vielä toteuta täyttä PBR-valais
 HDR:ää, refraktiota tai path tracingia. Tämä kierros ei nimeä sovellusta valmiiksi
 ammattistudioksi. Tarkat ajetut testit, havainnot ja jatkotyö kirjataan TIIMI.md:hen.
 
-## Tämän kierroksen tekninen tarkistus
+## Ensimmäisen kierroksen tekninen tarkistus
 
 Linuxissa: `cargo test --locked --workspace -j2` läpäisi 374 testiä;
 yksi oikeaa Kokoro-mallia tarvitseva testi jätettiin ajamatta. App/CLI-build
@@ -50,3 +68,18 @@ läpäisivät. Xvfb/lavapipe-esikatselu todensi noston ja seisomaan palautumisen
 puhepaneelin puuttuvan mallin tilanteen sekä hahmon ryhmävalinnan korostuksen
 ja tyhjentymisen lähdemuutoksessa. Floor-pickup-esimerkistä vietiin oikea
 4 sekunnin H.264-MP4 CPU:lla ilman puhetta; se ei ole Kokoro-pilotti.
+
+## Toisen kierroksen tekninen tarkistus
+
+Linuxissa 400 Rust-testiä läpäisi, yksi oikeaa Kokoro-mallia tarvitseva testi
+oli edelleen ohitettu. App/CLI-build ja workspace-clippy läpäisivät;
+tyylivaroituksia jäi. GPU-testit ajettiin oikeasti Vulkan/lavapipella:
+CPU/GPU-kuvien keskiero oli Flat 0.23 ja Cel 0.32, ja kiillon 12 vertailutilannetta
+läpäisivät. Kyse on Linuxin ohjelmistorenderöijästä, ei Macin Metal-testistä.
+
+Xvfb-käyttöliittymässä kaksi toimintoriviä siirtyi raahauksella +0.5 s,
+hyväksyntä muutti jakson 4.0→4.5 s, Ctrl+Z palautti 4.0 s ja Ctrl+Shift+Z
+palautti 4.5 s. Escape perui uuden luonnoksen muuttamatta käsikirjoitusta.
+Törmäävä reitti esti näyttämön ja ilmoitti rivin, molemmat hahmot ja ajan.
+Ele-esimerkistä vietiin 10 sekunnin H.264-MP4 CPU:lla ilman puhetta.
+Oikea puhe, taiteellinen arvio ja Mac-hyväksyntä ovat edelleen erillisiä tehtäviä.

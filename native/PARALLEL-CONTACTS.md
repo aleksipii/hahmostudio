@@ -55,6 +55,10 @@ jakson kesto säilyy erillisenä. Kamera-/taustakortteja voi raahata ajoitusluon
 Valitse hahmo -painike valitsee tarkistetun käsikirjoituksen hahmon toimintorivit;
 valintamäärä ja palikoiden korostus näyttävät ryhmän. Lähdetekstin muuttuminen
 tyhjentää ryhmävalinnan, jotta vanhat rivinumerot eivät osu uusiin toimintoihin.
+Kun vähintään kaksi riviä on valittuna, valitun palikan raahaus siirtää koko
+ryhmää yhteisellä ruutuihin kohdistetulla aikaerolla. Kehykset näyttävät luonnoksen;
+pudotus avaa tarkistuksen ja hyväksynnän. Escape peruu, nollasiirto ei luo muutosta.
+Palikan viimeiset 10 pikseliä säilyvät yksittäisen keston muokkaukseen.
 Ilmeet ja katseet näkyvät inspectorissa ja esikatselussa; ne eivät peitä
 varsinaisia liikeradan kortteja.
 
@@ -102,6 +106,14 @@ fysiikkasimulaatio eikä yleinen sormien tai vartaloiden törmäysratkaisin.
 Ovilla, pudottamisella ja portailla on rajatut toteutetut kontaktit; yleinen
 dynaaminen törmäysratkaisu ja mielivaltaisten ulkoisten luurankojen retargetointi
 ovat edelleen avoinna. Tarkista kuva, kädet ja ajoitus esikatselusta.
+
+Hahmojen vartaloita, päitä ja jalkoja tarkistetaan FK:sta johdetuilla kapseleilla.
+Samanaikaiset risteävät reitit hylätään lähderivin, osapuolten ja ajan virheellä.
+Tarkistus käyttää ratkaistuja kontaktiasentoja ja sallii 3 mm toleranssin;
+käsivarsia ja sormia ei käsitellä vartalotörmäyksinä, joten tuettu luovutus säilyy.
+Näytteiden välissä tarkistetaan samanaikaisesti etenevät lineaariset kapseliradat.
+Työ on rajattu; epäselvä läheinen kontakti hylätään konservatiivisesti.
+Tämä ei ole mielivaltaisen epälineaarisen liikkeen tai tarkkojen pintojen fysiikkatakuu.
 
 Linux-testit kattavat kontaktigeometrian, omistajuuden, ristiriidat,
 tallennuksen ja uudelleenavauksen. TestEngine on simuloitu puhe; se ei todista

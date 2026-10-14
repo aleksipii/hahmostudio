@@ -279,10 +279,14 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
             painter.text(egui::pos2(rect.left() + 4.0, y + row_h * 0.5), egui::Align2::LEFT_CENTER, name, egui::FontId::proportional(13.0), ui.visuals().text_color());
             for (clip_index, (a, b, text, color, line)) in items.iter().enumerate() {
                 let r = egui::Rect::from_min_max(egui::pos2(x_of(*a) + 1.0, y + 3.0), egui::pos2(x_of(*b) - 1.0, y + row_h - 3.0));
+                let mut group_preview = None;
                 if let Some(line) = line.filter(|_| can_edit) {
                     let hit = ui.interact(r, ui.id().with(("timing-clip", i, clip_index)), egui::Sense::click_and_drag());
                     hit.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, text));
                     if hit.clicked() && ctx.input(|i| i.modifiers.command || i.modifiers.ctrl) { crate::timeline_ui::toggle_group_line(ctx,line); clip_handled=true; }
+                    let group = crate::timeline_ui::handle_group_drag(app, ctx, &hit, line, *a, lane.width()/duration);
+                    group_preview = group.preview_start;
+                    if group.handled { clip_handled = true; } else {
                     let scene_kind = if name == "Kamera" {Some(crate::timeline_ui::SceneKind::Camera)} else if name == "Tausta" {Some(crate::timeline_ui::SceneKind::Background)} else {None};
                     if let Some(kind)=scene_kind {
                         let interaction=crate::timeline_ui::handle_scene_drag(app,ctx,&hit,kind,line,*a,lane.width()/duration);
@@ -313,9 +317,15 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                         if hit.drag_stopped() { dropped = app.workflow.timeline_drag.take(); }
                     }
                     }
+                    }
                     hit.on_hover_text("Liikerata muuttaa vain liikettä; puherata repliikin ajoitusta. Raahaa korttia tai keston oikeaa reunaa. Pudotus näyttää tarkistetun luonnoksen.");
                 }
                 painter.rect_filled(r, 4.0, *color);
+                if let Some(start) = group_preview {
+                    let ghost = r.translate(egui::vec2((start-*a)/duration*lane.width(), 0.0));
+                    painter.rect_stroke(ghost, 4.0, Stroke::new(2.0_f32, ACCENT), egui::StrokeKind::Inside);
+                    painter.text(ghost.left_top(), egui::Align2::LEFT_BOTTOM, format!("{start:.3} s"), egui::FontId::proportional(12.0), ACCENT);
+                }
                 if line.is_some_and(|line| group_selected.contains(&line)) {
                     painter.rect_stroke(r, 4.0, Stroke::new(2.0_f32, ACCENT), egui::StrokeKind::Inside);
                 }
@@ -399,10 +409,15 @@ fn script_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
                 }
             });
         }
-        app.script_assist.ui(ui,&app.script,&app.production);
         if let Some(e) = &app.pipeline_error {
             ui.label(RichText::new(e).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)));
+            let line = e.split_once("Rivi ").and_then(|(_, tail)| tail.split(':').next())
+                .and_then(|value| value.parse::<usize>().ok()).filter(|line| *line > 0);
+            if let Some(line) = line {
+                if ui.button(format!("Näytä virherivi {line}")).clicked() { app.select_line(line); }
+            }
         }
+        app.script_assist.ui(ui,&app.script,&app.production);
     }
 }
 

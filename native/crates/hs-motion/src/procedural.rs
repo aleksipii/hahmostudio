@@ -402,21 +402,25 @@ impl PreparedMotion {
                         MotionKind::Wave => {
                             let arm = h.arm(Side::Left);
                             let env = (PI * p).sin().powi(2);
-                            pose.local[arm.upper] = Quat::from_rotation_z(0.09 + 2.45 * env)
-                                * Quat::from_rotation_x(-0.25 * env);
-                            pose.local[arm.fore] =
-                                Quat::from_rotation_z((0.45 * (tau * TAU * 2.0).sin() + 0.3) * env)
-                                    * Quat::from_rotation_x(-0.3 * env);
+                            // Blend from the incoming idle pose, including the bent elbow.
+                            // Multiplying target angles by env alone loses that rest pose.
+                            pose.local[arm.upper] = pose.local[arm.upper].slerp(
+                                Quat::from_rotation_z(2.54) * Quat::from_rotation_x(-0.25), env);
+                            pose.local[arm.fore] = pose.local[arm.fore].slerp(
+                                Quat::from_rotation_z(0.45 * (tau * TAU * 2.0).sin() + 0.3)
+                                    * Quat::from_rotation_x(-0.3), env);
                             hands::curl_fingers(h, &mut pose, Side::Left, 0.22 * (1.0 - env));
                         }
                         MotionKind::PointForward => {
                             let env = (PI * p).sin().powi(2);
                             let arm = h.arm(Side::Right);
-                            pose.local[arm.upper] = Quat::from_rotation_x(-FRAC_PI_2 * env);
-                            pose.local[arm.fore] = Quat::from_rotation_x(-0.08 * env);
-                            hands::curl_fingers(h, &mut pose, Side::Right, 0.8 * env);
+                            pose.local[arm.upper] = pose.local[arm.upper]
+                                .slerp(Quat::from_rotation_x(-FRAC_PI_2), env);
+                            pose.local[arm.fore] = pose.local[arm.fore]
+                                .slerp(Quat::from_rotation_x(-0.08), env);
+                            hands::curl_fingers(h, &mut pose, Side::Right, 0.22 + 0.58 * env);
                             for joint in arm.fingers[1].joints {
-                                pose.local[joint] = Quat::IDENTITY;
+                                pose.local[joint] = pose.local[joint].slerp(Quat::IDENTITY, env);
                             }
                         }
                         MotionKind::Shrug => {
@@ -426,13 +430,15 @@ impl PreparedMotion {
                                 pose.translate[arm.clavicle].y +=
                                     h.proportions.height * 0.035 * env;
                                 pose.local[arm.upper] =
-                                    Quat::from_rotation_z(side.sign() * 0.42 * env);
-                                pose.local[arm.fore] = Quat::from_rotation_x(-1.35 * env);
+                                    pose.local[arm.upper].slerp(
+                                        Quat::from_rotation_z(side.sign() * 0.42), env);
+                                pose.local[arm.fore] = pose.local[arm.fore]
+                                    .slerp(Quat::from_rotation_x(-1.35), env);
                                 let current = sk.world(&pose)[arm.hand].rot;
                                 let up =
                                     pose.root_rot * Quat::from_rotation_z(-side.sign() * FRAC_PI_2);
                                 sk.set_world_rotation(&mut pose, arm.hand, current.slerp(up, env));
-                                hands::curl_fingers(h, &mut pose, side, 0.1);
+                                hands::curl_fingers(h, &mut pose, side, 0.22 - 0.12 * env);
                             }
                         }
                         MotionKind::ShakeHead => {
