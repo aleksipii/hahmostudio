@@ -2259,3 +2259,36 @@ Quotahelper unavailable, prosenttia ei päätelty. Ei uusia assets/malleja,
 valmista maailma-API:a, automallia tai ajettavaa Kilsat-animaatiota.
 Seuraava: hyväksy hahmosuhde ja taidesuunta, vahvista AppStoretuote,
 valmista 2hahmoa+1paikka ja yksi30s TheForgottenThing-pilotti oikealla puheella.
+
+
+## Codex — yksi satiirinen sarja-/studiotoimeksianto, 14.10.2026
+
+Käyttäjä pyysi samaistuttavan satiirisen sarjan sekä kaiken yhteen.md:hen ja
+antoi täsmällisen pääagentin ohjeen. Dokumentticommit
+`5b57c94b6b930811b84bf79e0eec379b9432c5eb`, pohja
+`a8ab24728ac3c0d659274af9573808f545e89010`, haara work/kohde main.
+Root omisti masterdokumentin ja README-linkin; ei runtime-/assetmuutoksia.
+
+JUST-ONE-STOP-SARJA-JA-RUST-STUDIO.md sisältää yhden luettavan kokonaisuuden:
+JustOneStop-sarjaraamattu, Milo/Nora, satiirin kohteet ja ystävyyden dynamiikka,
+maailma/esineet, Kilsat-säännöt,10jaksoehdotusta, alkuperäinen englannin
+FiveMinutes-pilotti tavoite30–45s, sovelluksen periaatteet, käyttäjän ohje
+sellaisenaan ja molemmat aiemmat tutkimukset kokonaisuudessaan syventävissä
+liitteissä. Liitteiden vaihtoehtoiset tarinat eivät korvaa masterin kanonia.
+Nykyiset tutkimukset säilytetty; mitään aineistoa ei poistettu.
+
+Käyttäjän uusi vaihekohtainen hyväksyntäohje ohjaa uuden hankkeen toteutusta;
+asiakirjan kokoaminen ei käynnistä sen sisällä kuvattua ensimmäistä tehtävää,
+uutta repositorya tai aliagentteja. Maks2aliagenttia pääagentin lisäksi.
+Tarinan luova dialogi erotettu sovelluksen tuotantoparsijan 'ei keksi dialogia'
+-säännöstä. Kilsat hienovaraisena mutta ilmoitettuna kaupallisena yhteytenä,
+ei todistamattomia tuoteominaisuuksia tai riippumatonta asiakaskokemusta.
+AppStore/tuotetiedot yhä vahvistamatta aiemman403-eston vuoksi.
+
+Todennus: exactprompt sisältyy muuttamattomana,10jaksoa/molemmat liitteet
+paikalla,codefencet tasapainossa; git diff --check pass. Dokumentteihin ei
+tehty Cargo/GUI-testejä eikä väitetä videoiden olevan toteutettuja.
+Quotahelper unavailable; prosenttia ei päätelty.
+Seuraava: käyttäjä lukee yhden mastertiedoston, hyväksyy/vaihtaa konseptin
+ja hahmot; uuden repositorion varsinainen perustaminen omana toimeksiantona,
+sitten vaihe1 yhdellä hahmolla. Kilsat-linkki/kuvaus vahvistetaan ennen näyttöaineistoa.
