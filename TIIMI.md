@@ -2218,3 +2218,44 @@ Sen jälkeen projektin kohdistusresurssi, adaptiven koartikulaation sulkutesti
 ja tuotantohahmon kasvorigi. Oma ääni tarvitsee erikseen todennetun alignerin.
 Uuden studion Mac-vaiheistus on suositus; nykyinen ominaisuudet ensin -ohje
 säilyy. Täyttä automaattista elokuvatasoa tai oikeaa puhehyväksyntää ei väitetä.
+
+
+## Codex — kahden hahmon maailma ja Kilsat, 14.10.2026
+
+Käyttäjä pyysi lisätutkimusta kokonaisesta maailmasta, hahmoista ja esineistä,
+samaistuttavasta kahden hahmon sarjasta sekä Kilsat–Ajopäiväkirjan näkyvyydestä.
+Haara work, kohde main, dokumentticommit
+`926b1d6e2c554ff891c408a3c2d3be56817e65e5`, pohja
+`bcd80fd961bde7e66dd1317924c0a0b1202995b3`.
+Root omisti molemmat tutkimusdokumentit ja handoffin; runtime ei muuttunut.
+
+Valmis: MAAILMA-HAHMOT-KILSAT-TUTKIMUS-20261014.md ja linkki edellisestä
+käsikirjoitusstudion tutkimuksesta. Työehdotus Milo/Nora, lämmin ristiriitainen
+ystävyyssuhde ilman ainaoikeassa-/hölmöasetelmaa; 3toistuvaapaikkaa+auto,
+rekvisiitan semanticprofiilit/contacts, GLB+worldmanifest/assetrevision,
+PureRust/runtime/authoring-raja, materiaalivariaatiot/instancing/LOD,
+jakson dramaturgia,3alkuperäistätarinaehdotusta ja rajattu agenttityöjärjestys.
+Kilsat hienovaraisena tuotesijoitteluna kaupallisen yhteyden kertomisen kanssa;
+ei salattua tarkoitusta eikä keksittyjä ominaisuus-/asiakastulosväitteitä.
+
+Lähteet: Khronoksen KHR_materials_variants, EXT_mesh_gpu_instancing,
+MSFT_lod ja OpenUSDreleaseREADME luettu virallisista repositorioista.
+OpenUSD C/C++vaatimus dokumentoitu; glTF2spec luettu edellisessä tutkimuksessa.
+Tarinat/näkyvyysajat ovat ehdotuksia, eivät tutkimuksessa todistettua menestystä.
+KKV/FTC/YouTube-paidpromotion verkkosivut proxy403; kaksi Bevyexamplepolkua404,
+GitHubAPIpuuhaku403. Ei oletusta extensionloader-tuesta tai vahvistamattomia
+ajantasaisia alustamerkintäsääntöjä. Vastaukset /tmp/koeta-world-research/.
+
+Käyttäjä vastasi tuotetietopyyntöön 'Etsi App Storesta'. Apple iTunes search
+(countryfi,entitysoftware,termKilsat), AppStorewebhaku ja rajattuhakukonehaku
+palauttivat proxy403. Tuotteen tarkkaaAppID/kehittäjää/toimintoja ei tunnistettu.
+Selitetty käyttäjälle; suoraa AppStorelinkkiä/kuvausta pyydetty async-työkalulla.
+Se ei estä maailman suunnitelmaa, mutta tuotteen tarkat käyttökohtaukset
+jäävät odottamaan vahvistettuja ominaisuuksia ja ownership/mainostussuhdetta.
+
+Todennus: git diff --check pass, luetut lähteet erotettu estyneistä.
+Dokumenttimuutos: Cargo/GUI/laitetestejä ei tarvittu eikä uusia väitetä.
+Quotahelper unavailable, prosenttia ei päätelty. Ei uusia assets/malleja,
+valmista maailma-API:a, automallia tai ajettavaa Kilsat-animaatiota.
+Seuraava: hyväksy hahmosuhde ja taidesuunta, vahvista AppStoretuote,
+valmista 2hahmoa+1paikka ja yksi30s TheForgottenThing-pilotti oikealla puheella.
