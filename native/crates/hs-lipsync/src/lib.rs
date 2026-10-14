@@ -14,6 +14,8 @@
 //! Molemmat ovat deterministisiä. Lyhyet välähdykset yhdistetään, jotta suu ei
 //! värise (vähimmäiskesto), ja muodosta toiseen siirrytään lyhyellä ristihäivytyksellä.
 
+pub mod alignment;
+
 use serde::{Deserialize, Serialize};
 
 /// Monoääni liukulukuina (−1..1).
