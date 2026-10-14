@@ -202,3 +202,12 @@ fn raster_shadow_decorations_do_not_contaminate_base_colour() {
     s.items.push(DrawItem::rigid(Arc::new(decoration.finish())).raster_only());
     let after=raytrace::render(&s,RayTraceOptions{ao_samples:0,..Default::default()}).unwrap();assert_eq!(before.diffuse,after.diffuse);assert_eq!(before.depth,after.depth);
 }
+
+#[test]
+fn depth_range_does_not_clip_geometry_and_ao_strength_is_independent(){
+ let scene=scene();let full=raytrace::render(&scene,RayTraceOptions{ao_samples:32,..Default::default()}).unwrap();
+ let remapped=raytrace::render(&scene,RayTraceOptions{ao_samples:32,ao_strength:0.0,depth_near:0.0,depth_far:0.1,..Default::default()}).unwrap();
+ assert_eq!(full.diffuse,remapped.diffuse);assert_eq!(full.normal,remapped.normal);assert_eq!(full.specular,remapped.specular);
+ assert_ne!(full.depth,remapped.depth);assert_ne!(full.ambient_occlusion,remapped.ambient_occlusion);
+ assert!(remapped.ambient_occlusion.chunks_exact(4).filter(|p|p[3]>0).all(|p|p[0]==255));
+}

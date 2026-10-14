@@ -595,7 +595,8 @@ pub fn start_psd_export(app:&mut StudioApp,path:std::path::PathBuf) {
     let snapshot=match crate::review_integration::capture_content(app,&[]){Ok(s)=>s,Err(e)=>{app.status=e;return;}};
     if let Err(e)=crate::review_integration::export_guard(&mut app.review,&snapshot){app.status=e;return;}
     if app.script!=app.production.script||app.pipeline_error.is_some()||!hs_agents::audit::inspect(&app.production).allowed(){app.status="Korjaa tuotannon virheet ennen PSD-vientiä.".into();return;}
+    let options=match crate::aov_ui::options(&app.aov.settings){Ok(o)=>o,Err(e)=>{app.status=e;return;}};
     let frame=app.frame();
     let scene=app.viewport.builder.scene(&app.production,frame,app.production.width,app.production.height);
-    match scene {Some(scene)=>{app.export=Some(ExportJob::start_psd(scene,path));app.status="Ohjelmistosäteenseuranta: AO ja PSD-renderpassit…".into();},None=>{app.status=app.viewport.builder.last_error.clone().unwrap_or("3D-kohtaus puuttuu".into());}}
+    match scene {Some(scene)=>{app.export=Some(ExportJob::start_psd(scene,path,options));app.status="Ohjelmistosäteenseuranta: AO ja PSD-renderpassit…".into();},None=>{app.status=app.viewport.builder.last_error.clone().unwrap_or("3D-kohtaus puuttuu".into());}}
 }

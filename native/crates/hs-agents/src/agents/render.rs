@@ -176,6 +176,9 @@ impl FrameBuilder {
                 });
             }
         }
+        if let Some(collision)=&p.collision {
+            if let Err(error)=collision.evaluate(p,t,&frames){self.last_error=Some(error);return None;}
+        }
         // The camera was planned against procedural roots. Follow authored root
         // movement and stairs while preserving the shot's framing and direction.
         if let Some(shot) = camera.shot_at(t) {
@@ -516,6 +519,7 @@ mod authored_pose_tests {
         p.pose_tracks.upsert("Kalle",Some(&joint),PoseKey::from_euler_degrees(1.0,[0.0,0.0,75.0],[0.0;3],Interpolation::Linear)).unwrap();
         p.pose_tracks.upsert("Kalle",None,PoseKey::from_euler_degrees(1.0,[0.0;3],(root_before+Vec3::X).to_array(),Interpolation::Linear)).unwrap();
         validate_pose_tracks(&p).unwrap();
+        let mut pipeline=crate::Pipeline::default(); pipeline.run(&mut p).unwrap();
         let unchanged=builder.scene(&p,0,160,90).unwrap();
         let mut original=ready("[camera medium]\nKALLE: [wait 3s]");
         let original_scene=builder.scene(&original,0,160,90).unwrap();

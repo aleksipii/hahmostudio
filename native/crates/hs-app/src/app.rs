@@ -29,6 +29,7 @@ pub struct StudioApp {
     pub history: crate::session_history::SessionHistory,
     pub workflow: crate::workflow_ui::WorkflowState,
     pub image: crate::image_ui::ImageWorkspace,
+    pub aov: crate::aov_ui::AovState,
     pub rig: crate::rig_ui::RigWorkspace,
     pub pose: crate::pose_ui::PoseWorkspace,
     pub review_ui: crate::review_ui::ReviewUi,
@@ -121,6 +122,7 @@ impl StudioApp {
             history: Default::default(),
             workflow: crate::workflow_ui::WorkflowState { preview_scale: 0.75, ..Default::default() },
             image: Default::default(),
+            aov: Default::default(),
             rig: Default::default(),
             pose: Default::default(),
             review_ui: Default::default(),
@@ -307,6 +309,7 @@ impl eframe::App for StudioApp {
             }
         }
         self.image.update();
+        crate::aov_ui::update(self,ctx);
         crate::project_ui::update(self, ctx);
         if crate::project_ui::busy(self) {
             egui::CentralPanel::default().show(ctx, |ui| { ui.spinner(); ui.label(&self.status); });

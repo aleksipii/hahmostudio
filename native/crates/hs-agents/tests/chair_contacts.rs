@@ -31,7 +31,8 @@ fn missing_contact_and_incompatible_actions_are_line_errors() {
         "KALLE: [sit on chair 2s]\nKALLE: [stand up 2s]\nKALLE: [walk left 2s]\nKALLE: [sit on chair 2s]",
         "[background living room]\nKALLE: [sit on chair 2s]\n[background kitchen]\nKALLE: [wait 1s]",
     ] {
-        let p=ready(script);
+        let mut p=Production::new(script);
+        if let Err(error)=Pipeline::default().run(&mut p) { assert!(error.to_string().contains("Rivi "),"{script}: {error}"); continue; }
         let report=hs_agents::audit::inspect(&p);
         assert!(!report.allowed(), "{script}");
         assert!(report.diagnostics.iter().any(|d| d.line>0 && d.severity==hs_core::Severity::Error), "{script}");

@@ -89,11 +89,11 @@ impl ExportJob {
 }
 
 impl ExportJob {
-    pub fn start_psd(scene: hs_render::RenderScene, path: std::path::PathBuf) -> Self {
+    pub fn start_psd(scene: hs_render::RenderScene, path: std::path::PathBuf, options: hs_render::raytrace::RayTraceOptions) -> Self {
         let done=Arc::new(AtomicU32::new(0));let total=Arc::new(AtomicU32::new(1));let cancel=Arc::new(AtomicBool::new(false));let (tx,rx)=mpsc::channel();
         let label=path.display().to_string();let progress=done.clone();let signal=cancel.clone();
         std::thread::spawn(move || {
-            let result=hs_render::raytrace::render_cancelable(&scene,Default::default(),&signal)
+            let result=hs_render::raytrace::render_cancelable(&scene,options,&signal)
                 .and_then(|buffers| if signal.load(Ordering::Relaxed) { Err(hs_render::RenderError::Export("PSD-vienti peruttu".into())) } else { hs_render::psd_exporter::save_atomic(&buffers,&path) });
             let message=match result {Ok(())=>{progress.store(1,Ordering::Relaxed);format!("PSD valmis: {}",path.display())},Err(e)=>format!("PSD-vienti keskeytyi: {e}")};let _=tx.send(message);
         });

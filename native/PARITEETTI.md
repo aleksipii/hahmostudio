@@ -101,6 +101,10 @@ kommentit/tehtävät/hyväksyntä/lukitus sekä AccessKit.
 Uusi [3D-AOV → PSD](RENDER-PASSES.md): ohjelmistosäteenseuranta, base color,
 AO, specular, depth ja world normals omilla tasoillaan.
 
+Lisätty14.10.: renderpassien käyttöliittymäasetukset, suora avaus tasoiksi,
+muokattujen tasojen PSD-kirjoitus, oikea lattialle laskemisen kumartuminen
+ja staattisen ympäristön FK-kehoproksyjen jatkuva törmäystarkistus.
+
 Yhä rajattu: koko kehon ja mielivaltaisen maailman törmäysfysiikka,
 automatisoitu lattialle kumartuminen/lasku, mikä tahansa rig-retargettaus,
 Photoshopin vector maskit/efektit ja vanhojen esitystilojen täydellinen renderöinti.

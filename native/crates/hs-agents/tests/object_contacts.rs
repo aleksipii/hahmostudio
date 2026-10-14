@@ -286,3 +286,94 @@ fn release_rejects_foreign_owners_and_swept_foreign_stand_collisions() {
         assert!(Pipeline::default().run(&mut p).is_err(), "{source}");
     }
 }
+#[test]
+fn floor_place_crouches_with_anchored_feet_and_recovers_continuously() {
+    let model = hs_render::props::held("mug", glam::Vec3::ZERO, 1.0).unwrap();
+    let grip_y = -model.bounds().0.y;
+    let source=format!("[object cup mug on stand at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]\nKALLE: [place cup at -0.25 {grip_y:.3} 0.50 3s]\nKALLE: [wait 1s]");
+    let p = ready(&source);
+    let evaluate = |time: f32| {
+        let mut frames = p
+            .motion
+            .iter()
+            .map(|motion| motion.evaluate(p.timeline.as_ref().unwrap(), time))
+            .collect::<Vec<_>>();
+        let base = p.cast[0].character.humanoid.skeleton.world(&frames[0].pose);
+        let objects = p
+            .contacts
+            .as_ref()
+            .unwrap()
+            .evaluate(&p, time, &mut frames)
+            .unwrap();
+        let posed = p.cast[0].character.humanoid.skeleton.world(&frames[0].pose);
+        (frames, base, posed, objects)
+    };
+    let humanoid = &p.cast[0].character.humanoid;
+    let initial_anchors = evaluate(2.0).2;
+    let mut previous = None;
+    for tick in 2000..=5000 {
+        let time = tick as f32 / 1000.0;
+        let (frames, base, posed, objects) = evaluate(time);
+        for leg in &humanoid.legs {
+            assert!(
+                posed[leg.foot].pos.distance(initial_anchors[leg.foot].pos) < 0.002,
+                "world anchor {time}"
+            );
+            assert!(
+                posed[leg.foot].pos.distance(base[leg.foot].pos) < 0.002,
+                "foot {time}"
+            );
+            assert!(
+                posed[leg.toe].pos.distance(base[leg.toe].pos) < 0.002,
+                "toe {time}"
+            );
+        }
+        for grip in &objects[0].grips {
+            if grip.weight >= 0.999 {
+                assert!(grip.actual.distance(grip.expected) < 0.002, "hand {time}");
+            }
+        }
+        assert!(objects[0].point.y + model.bounds().0.y >= -0.002);
+        if let Some(old) = previous {
+            let old: Vec<glam::Vec3> = old;
+            for (index, (joint, old)) in posed.iter().zip(old).enumerate() {
+                assert!(
+                    joint.pos.distance(old) < 0.025,
+                    "pose discontinuity {time} joint {index} {} {:?} {:?}",
+                    humanoid.skeleton.joints[index].name,
+                    joint.pos,
+                    old
+                );
+            }
+        }
+        previous = Some(posed.iter().map(|j| j.pos).collect::<Vec<_>>());
+        if tick == 4250 {
+            assert!(frames[0].pose.root_pos.y < -humanoid.proportions.height * 0.10);
+            assert_eq!(objects[0].owner, None);
+            assert!((objects[0].point.y + model.bounds().0.y).abs() < 0.002);
+        }
+    }
+    let (end, base, posed, objects) = evaluate(5.0);
+    assert_eq!(objects[0].owner, None);
+    assert!(end[0].pose.root_pos.y.abs() < 0.001);
+    for (a, b) in base.iter().zip(posed) {
+        assert!(a.pos.distance(b.pos) < 0.002);
+    }
+    let episode =
+        hs_agents::project::capture_checked(&p, "floor".into(), 1, "Floor place".into()).unwrap();
+    let series = hs_project::Series {
+        id: "floor-series".into(),
+        name: "Floor contact".into(),
+        episodes: vec![episode],
+    };
+    let decoded = hs_project::decode(&hs_project::encode(&series).unwrap()).unwrap();
+    let mut restored = hs_agents::project::restore_checked(&decoded.episodes[0]).unwrap();
+    Pipeline::default().run(&mut restored).unwrap();
+    assert!((samples(&restored, 4.25)[0].point.y + model.bounds().0.y).abs() < 0.002);
+    let mut builder = hs_agents::agents::render::FrameBuilder::default();
+    assert!(
+        builder.scene(&restored, 127, 160, 90).is_some(),
+        "{:?}",
+        builder.last_error
+    );
+}

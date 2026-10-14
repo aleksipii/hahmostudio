@@ -84,6 +84,7 @@ pub fn restore_checked(episode:&Episode)->Result<Production,String> {
         "library"=>{validate_library(&asset.bytes)?;},
         "recordings"=>p.recorded_lines=crate::recording::decode(&asset.bytes)?,
         "pose"=>p.pose_tracks=hs_motion::pose_edit::PoseTracks::decode(&asset.bytes)?,
+        "render-settings"=>{hs_project::render_settings::RenderSettings::decode(&asset.bytes)?;},
         "review"=>{hs_project::production_review::ReviewState::decode(&asset.bytes)?;},
         "legacy"=>{hs_hahmo::Project::open(&asset.bytes).map_err(|e|e.to_string())?;},
         _=>return Err("Unknown project workspace".into()),

@@ -42,6 +42,7 @@ impl RenderBuffers {
 pub struct RayTraceOptions {
     pub ao_samples: u32,
     pub ao_radius: f32,
+    pub ao_strength: f32,
     pub depth_near: f32,
     pub depth_far: f32,
     pub threads: usize,
@@ -51,6 +52,7 @@ impl Default for RayTraceOptions {
         Self {
             ao_samples: 8,
             ao_radius: 0.3,
+            ao_strength: 1.0,
             depth_near: 0.05,
             depth_far: 100.0,
             threads: std::thread::available_parallelism()
@@ -228,6 +230,7 @@ pub fn render_cancelable(
         || !(1.0..179.0).contains(&camera.fov_y)
         || camera.eye.distance(camera.target) < 1e-5
         || options.ao_samples > 64
+        || !options.ao_strength.is_finite() || !(0.0..=1.0).contains(&options.ao_strength)
         || options.threads == 0
         || options.threads > 64
         || !options.ao_radius.is_finite()
@@ -333,11 +336,11 @@ pub fn render_cancelable(
                         + up * ((1.0 - 2.0 * (y as f32 + 0.5) / scene.height as f32) * tan))
                         .normalize();
                     if let Some((id, distance, u, v)) = bvh.hit(
-                        camera.eye + d * options.depth_near,
+                        camera.eye + d * (0.05/d.dot(forward)),
                         d,
-                        options.depth_far - options.depth_near,
+                        (100.0-0.05)/d.dot(forward),
                     ) {
-                        let distance = distance + options.depth_near;
+                        let distance = distance + 0.05/d.dot(forward);
                         let tri = &bvh.tri[id];
                         let w = 1.0 - u - v;
                         let mut normal =
@@ -373,14 +376,14 @@ pub fn render_cancelable(
                         let ao = if options.ao_samples == 0 {
                             1.0
                         } else {
-                            1.0 - occluded as f32 / options.ao_samples as f32
+                            1.0 - options.ao_strength * occluded as f32 / options.ao_samples as f32
                         };
                         pixel.ao = rgb(Vec3::splat(ao));
                         let mut spec = Vec3::ZERO;
                         for light in [scene.lights.key, scene.lights.fill, scene.lights.rim] {
                             let l = -light.dir.normalize();
                             if normal.dot(l) > 0.0
-                                && bvh.hit(origin, l, options.depth_far).is_none()
+                                && bvh.hit(origin, l, 100.0).is_none()
                             {
                                 let half = (l - d).normalize_or_zero();
                                 spec += light.color * normal.dot(half).max(0.0).powi(48) * 0.25;

@@ -226,6 +226,16 @@ impl ImageWorkspace {
                     });
                 }
             }
+            if ui.button("Vie PSD").clicked() {
+                if let Some(path)=rfd::FileDialog::new().add_filter("PSD", &["psd"]).set_file_name("koeta-tasot.psd").save_file() {
+                    let d=self.document.clone();
+                    self.start(ui.ctx(),move |cancel| {
+                        if cancel.load(Ordering::Relaxed){return Err("PSD-vienti peruttu".into());}
+                        d.save_psd_atomic_cancelable(&path,&cancel)?;
+                        Ok(JobResult::Written)
+                    });
+                }
+            }
             if ui.button("Vie PNG").clicked() {
                 if let Some(path) = rfd::FileDialog::new()
                     .add_filter("PNG", &["png"])

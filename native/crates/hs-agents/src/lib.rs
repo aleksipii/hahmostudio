@@ -209,3 +209,5 @@ pub mod motion_plugin;
 pub mod scenery;
 
 pub mod scene_timing_edit;
+
+pub mod collision;

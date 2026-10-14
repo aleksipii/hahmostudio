@@ -227,6 +227,66 @@ fn apply_hand(
         weight,
     }
 }
+/// Ground placement crouch for the current humanoid. Root translation lowers
+/// the pelvis; spine bending and explicit leg IK preserve both ankle anchors.
+fn ground_place_body(
+    p: &Production,
+    frame: &mut CharacterFrame,
+    actor: usize,
+    strength: f32,
+) -> Result<(), String> {
+    if strength <= 0.000001 {
+        return Ok(());
+    }
+    let humanoid = &p.cast[actor].character.humanoid;
+    let sk = &humanoid.skeleton;
+    let original = sk.world(&frame.pose);
+    let anchors: Vec<_> = humanoid
+        .legs
+        .iter()
+        .map(|leg| {
+            (
+                original[leg.foot].pos,
+                original[leg.foot].rot,
+                original[leg.toe].pos,
+            )
+        })
+        .collect();
+    let max_drop = humanoid
+        .legs
+        .iter()
+        .map(|leg| {
+            original[leg.thigh].pos.y
+                - original[leg.foot].pos.y
+                - humanoid.proportions.height * 0.08
+        })
+        .fold(f32::INFINITY, f32::min)
+        .max(0.0);
+    frame.pose.root_pos.y -= max_drop * strength;
+    frame.pose.local[humanoid.spine] *= Quat::from_rotation_x(1.1 * strength);
+    for (leg, (anchor, rotation, toe)) in humanoid.legs.iter().zip(anchors) {
+        let world = sk.world(&frame.pose);
+        let pole = world[leg.thigh].pos + frame.pose.root_rot * Vec3::new(0.0, -0.1, 0.6);
+        let solved = hs_motion::ik::two_bone(
+            sk,
+            &mut frame.pose,
+            leg.thigh,
+            leg.shin,
+            leg.foot,
+            anchor,
+            pole,
+        );
+        sk.set_world_rotation(&mut frame.pose, leg.foot, rotation);
+        let posed = sk.world(&frame.pose);
+        if solved.error > 0.002
+            || posed[leg.foot].pos.distance(anchor) > 0.002
+            || posed[leg.toe].pos.distance(toe) > 0.002
+        {
+            return Err("Kumartumisen jalkakontakti ei toteudu 2 mm tarkkuudella".into());
+        }
+    }
+    Ok(())
+}
 impl ContactPlan {
     pub fn matches(&self, p: &Production) -> bool {
         self.timeline.fps == p.fps
@@ -335,10 +395,33 @@ impl ContactPlan {
                         0.2
                     };
                     if action.kind == ActionKind::Place {
-                        point = action.from.lerp(action.to, ease(u / release));
+                        let progress = u / release;
+                        let waypoint = Vec3::new(action.to.x, action.from.y, action.to.z);
+                        point = if progress < 0.35 {
+                            action.from.lerp(waypoint, ease(progress / 0.35))
+                        } else {
+                            waypoint.lerp(action.to, ease((progress - 0.35) / 0.65))
+                        };
                     } else {
                         let fall = ((u - release).max(0.0) * action.duration).powi(2) * 4.905;
                         point = action.from - Vec3::Y * fall.min(action.from.y - action.to.y);
+                    }
+                    if action.kind == ActionKind::Place
+                        && action.to.y < p.cast[action.actor].character.params.height * 0.3
+                    {
+                        let lower =
+                            (action.from.y - point.y) / (action.from.y - action.to.y).max(0.001);
+                        let body_strength = if u <= release {
+                            lower
+                        } else {
+                            1.0 - ease((u - release) / (1.0 - release))
+                        };
+                        ground_place_body(
+                            p,
+                            &mut frames[action.actor],
+                            action.actor,
+                            body_strength,
+                        )?;
                     }
                     let weight = if u <= release {
                         1.0
@@ -520,8 +603,8 @@ impl ContactPlan {
                     && (!grip.actual.is_finite() || grip.actual.distance(grip.expected) > 0.002)
                 {
                     return Err(format!(
-                        "Esine {}: käden tarttumispiste ei toteudu 2 mm tarkkuudella",
-                        object.id
+                        "Esine {}: käden tarttumispiste ei toteudu 2 mm tarkkuudella ({time:.3}s, virhe {:.3}m, tavoite {:?}, käsi {:?})",
+                        object.id, grip.actual.distance(grip.expected), grip.expected, grip.actual
                     ));
                 }
             }
@@ -797,31 +880,39 @@ impl ContactPlan {
             if matches!(candidate.kind, ActionKind::Place | ActionKind::Drop) {
                 // Swept AABB rejection prevents thin stands being skipped by
                 // fast falls between sampled frames. This is conservative.
-                let (from_min, from_max) = mesh_bounds(&plan.objects[index].mesh, candidate.from);
-                let (to_min, to_max) = mesh_bounds(&plan.objects[index].mesh, candidate.to);
-                let swept_min = from_min.min(to_min);
-                let swept_max = from_max.max(to_max);
-                for support in &plan.objects {
-                    if support.stand.is_none() || support.start > start {
-                        continue;
-                    }
-                    let bottom = support.point.y + mesh_bounds(&support.mesh, Vec3::ZERO).0.y;
-                    let center = support.point + Vec3::Z * 0.05;
-                    for (center, half) in [
-                        (
-                            Vec3::new(center.x, bottom - 0.01, center.z),
-                            Vec3::new(0.13, 0.01, 0.13),
-                        ),
-                        (
-                            Vec3::new(center.x, (bottom - 0.02) * 0.5, center.z),
-                            Vec3::new(0.055, (bottom - 0.02) * 0.5, 0.055),
-                        ),
-                    ] {
-                        if box_overlap(swept_min, swept_max, center - half, center + half) {
-                            return Err(format!(
-                                "Rivi {line}: esineen liikerata törmää alustaan {}",
-                                support.id
-                            ));
+                let waypoint = Vec3::new(candidate.to.x, candidate.from.y, candidate.to.z);
+                let segments = if candidate.kind == ActionKind::Place {
+                    vec![(candidate.from, waypoint), (waypoint, candidate.to)]
+                } else {
+                    vec![(candidate.from, candidate.to)]
+                };
+                for (from, to) in segments {
+                    let (from_min, from_max) = mesh_bounds(&plan.objects[index].mesh, from);
+                    let (to_min, to_max) = mesh_bounds(&plan.objects[index].mesh, to);
+                    let swept_min = from_min.min(to_min);
+                    let swept_max = from_max.max(to_max);
+                    for support in &plan.objects {
+                        if support.stand.is_none() || support.start > start {
+                            continue;
+                        }
+                        let bottom = support.point.y + mesh_bounds(&support.mesh, Vec3::ZERO).0.y;
+                        let center = support.point + Vec3::Z * 0.05;
+                        for (center, half) in [
+                            (
+                                Vec3::new(center.x, bottom - 0.01, center.z),
+                                Vec3::new(0.13, 0.01, 0.13),
+                            ),
+                            (
+                                Vec3::new(center.x, (bottom - 0.02) * 0.5, center.z),
+                                Vec3::new(0.055, (bottom - 0.02) * 0.5, 0.055),
+                            ),
+                        ] {
+                            if box_overlap(swept_min, swept_max, center - half, center + half) {
+                                return Err(format!(
+                                    "Rivi {line}: esineen liikerata törmää alustaan {}",
+                                    support.id
+                                ));
+                            }
                         }
                     }
                 }

@@ -7,6 +7,7 @@ const MAX_BYTES: usize = 128 * 1024 * 1024;
 #[derive(Clone)]
 struct State {
     script: String,
+    render_settings: hs_project::render_settings::RenderSettings,
     library: crate::library_ui::SeriesLibrary,
     cast: Vec<hs_character::CharacterParams>,
     size: (u32, u32, hs_core::Fps),
@@ -44,6 +45,7 @@ impl State {
             },
         };
         Ok(Self {
+            render_settings: app.aov.settings.clone(),
             pose_tracks: app.production.pose_tracks.clone(),
             review: app.review.clone(),
             legacy,
@@ -69,8 +71,8 @@ impl State {
         })
     }
     fn matches(&self, app: &StudioApp) -> bool {
-        self.pose_tracks == app.production.pose_tracks
-            && self.review == app.review
+        self.render_settings == app.aov.settings && self.pose_tracks == app.production.pose_tracks
+            && review_edit_eq(&self.review, &app.review)
             && self.rig_revision == app.rig.revision
             && self.legacy.is_some() == app.legacy.is_some()
             && self.legacy_name == app.legacy.as_ref().map(|l| l.name.clone())
@@ -138,7 +140,7 @@ impl State {
         app.production.pose_tracks = self.pose_tracks.clone();
         app.pose.invalidate();
         app.review = self.review.clone();
-        app.library = self.library.clone();
+        app.aov.settings = self.render_settings.clone(); app.library = self.library.clone();
         app.script = self.script.clone();
         app.production.cast_params = self.cast.clone();
         (
@@ -198,6 +200,7 @@ impl SessionHistory {
             return;
         }
         if self.states[self.cursor].matches(app) {
+            self.states[self.cursor].review.content_hash = app.review.content_hash.clone();
             return;
         }
         let next = match State::capture(app, Some(&self.states[self.cursor])) {
@@ -256,7 +259,7 @@ impl SessionHistory {
             return;
         };
         match self.states[next].apply(app) {
-            Ok(()) => self.cursor = next,
+            Ok(()) => { self.cursor = next; self.states[next].review = app.review.clone(); },
             Err(e) => app.status = e,
         }
     }
@@ -284,4 +287,17 @@ impl StudioApp {
         history.observe(self);
         self.history = history;
     }
+}
+
+// Autosave-derived fingerprints are bookkeeping, not a user edit that consumes undo.
+fn review_edit_eq(a:&hs_project::production_review::ReviewState,b:&hs_project::production_review::ReviewState)->bool {
+    a.comments==b.comments && a.tasks==b.tasks && a.approval==b.approval && a.locked==b.locked && a.next_id==b.next_id
+}
+#[cfg(test)]
+mod review_history_tests {
+ #[test]
+ fn autosave_fingerprint_cannot_mask_an_artistic_undo(){
+  let a=hs_project::production_review::ReviewState::default();let mut b=a.clone();b.content_hash="a".repeat(64);assert!(super::review_edit_eq(&a,&b));
+  b.add_comment("Review the hand contact".into(),None).unwrap();assert!(!super::review_edit_eq(&a,&b));
+ }
 }

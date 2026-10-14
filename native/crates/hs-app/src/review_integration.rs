@@ -33,6 +33,7 @@ pub fn capture_content(app: &StudioApp, additional: &[ProjectAsset]) -> Result<E
             bytes: legacy.project.encode().map_err(|e| e.to_string())?,
         });
     }
+    episode.assets.push(ProjectAsset {id:"render-settings".into(),kind:"render-settings".into(),bytes:app.aov.settings.encode()?});
     episode.assets.push(ProjectAsset {
         id: "image-workspace".into(),
         kind: "image".into(),

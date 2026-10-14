@@ -10,6 +10,7 @@ mod pose_ui;
 mod review_ui;
 mod review_integration;
 
+mod aov_ui;
 mod app;
 mod camera_ui;
 mod export_job;

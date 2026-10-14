@@ -69,6 +69,8 @@ pub fn show(app: &mut StudioApp, ctx: &egui::Context) {
 
 pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
     egui::CentralPanel::default().show(ctx,|ui| {
+        egui::ScrollArea::vertical().show(ui,|ui| {
+        crate::aov_ui::controls(app,ui);
         ui.heading("Vie englanninkielinen jakso");
         if let Some(error)=&app.pipeline_error {ui.colored_label(egui::Color32::LIGHT_RED,error); }
         let missing=app.production.voice_lines.iter().filter(|line|line.speech.is_none()).count();
@@ -115,5 +117,6 @@ pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
             if let Some(path)=rfd::FileDialog::new().set_file_name("kansikuva.png").save_file(){crate::panels::start_export(app,hs_agents::RenderRequest::Still{frame:app.frame(),path});}
         }
         for line in &app.production.voice_lines {ui.label(format!("{}: {} · {}",line.speaker.as_deref().unwrap_or("Repliikki"),line.text,line.status.finnish()));}
+        });
     });
 }

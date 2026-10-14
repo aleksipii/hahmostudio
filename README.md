@@ -23,6 +23,8 @@ vanhan lähdekoodin; toimitetut hahmo-, tausta- ja esimerkkiaineistot säilyvät
   leikkausasetukset, taustaäänet, englanninkieliset tekstitykset ja MP4-vienti.
 - [Ohjelmistopohjainen 3D-renderpassien PSD-vienti](native/RENDER-PASSES.md):
   base color, AO, specular, syvyys ja normaalit omiksi kohdistetuiksi tasoiksi.
+  Vienti-välilehden asetukset ja Renderöi tasoiksi avaavat ne suoraan Kuva-editoriin;
+  muokatut tasot/PSD ja asetukset säilyvät .koeta-projektissa.
 
 Tuntematon ohje tai mahdoton kontakti annetaan virheenä. Sovellus ei tulkitse
 mielivaltaista proosaa eikä korvaa kaikkia Photoshopin tai ammattivideoeditorin ominaisuuksia.

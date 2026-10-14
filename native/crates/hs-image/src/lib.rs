@@ -1,6 +1,7 @@
 //! Local, portable raster layer document. No UI or rendering dependencies.
 use serde::{Deserialize, Serialize};
 mod psd;
+mod psd_export;
 use std::io::Cursor;
 pub const MAX_BYTES: usize = 128 * 1024 * 1024;
 pub const MAX_PIXELS: usize = 16_000_000;
@@ -336,6 +337,23 @@ impl Document {
                 .and_then(|g| g.parent_id);
         }
         false
+    }
+    /// Export current editable pixels as a layered PSD, not the original source bytes.
+    pub fn export_psd(&self) -> Result<Vec<u8>> {
+        psd_export::export(self)
+    }
+    pub fn save_psd_atomic(&self, path: &std::path::Path) -> Result<()> {
+        psd_export::save(self, path)
+    }
+    /// Cancellation is checked before/after encoding, during writes and before
+    /// atomic replacement. A cancellation after the final check may race with
+    /// successful commit; success means the edited PSD was actually saved.
+    pub fn save_psd_atomic_cancelable(
+        &self,
+        path: &std::path::Path,
+        cancel: &std::sync::atomic::AtomicBool,
+    ) -> Result<()> {
+        psd_export::save_cancelable(self, path, cancel)
     }
     pub fn import_psd(bytes: &[u8]) -> Result<Self> {
         psd::import(bytes)

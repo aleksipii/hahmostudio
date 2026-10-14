@@ -446,6 +446,8 @@ impl StudioAgent for CinematographyAgent {
             Ok(plan) => p.scenery = plan,
             Err(message) => { p.camera = None; return Err(AgentError::Failed { agent: "cinematography", message }); }
         }
+        p.collision=None;
+        match crate::collision::CollisionPlan::build(p) {Ok(plan)=>p.collision=plan,Err(message)=>{p.camera=None;return Err(AgentError::Failed{agent:"cinematography",message});}}
         Ok(AgentReport::new(summary))
     }
 }

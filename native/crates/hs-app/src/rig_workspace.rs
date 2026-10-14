@@ -46,19 +46,28 @@ impl StudioApp {
                         .timeline
                         .as_ref()
                         .map_or(0.0, |t| t.duration.seconds());
+                    let mut pose_changed = false;
                     egui::ScrollArea::vertical().show(ui, |ui| {
                         if self
                             .pose
                             .ui(ui, &mut self.production.pose_tracks, &actors, duration)
                         {
+                            pose_changed = true;
                             self.status =
                                 "3D-avainruudut päivitetty; tarkista liike esikatselussa.".into();
                         }
                     });
+                    if pose_changed {
+                        self.pipeline.mark_dirty(hs_agents::Slot::Camera);
+                        self.run_pipeline();
+                    }
                     self.time = self.pose.time as f32;
                     self.playing = false;
                     ui.separator();
-                    let side = ui.available_height().min(ui.available_width()).clamp(32.0, 400.0);
+                    let side = ui
+                        .available_height()
+                        .min(ui.available_width())
+                        .clamp(32.0, 400.0);
                     let pixels = side.ceil() as u32;
                     if let Some(id) =
                         self.viewport

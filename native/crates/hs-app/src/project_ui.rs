@@ -95,6 +95,7 @@ impl StudioApp {
         if let Some(legacy) = &self.legacy {
             snapshot.assets.push(ProjectAsset { id: "legacy-hahmo".into(), kind: "legacy".into(), bytes: legacy.project.encode().map_err(|e| e.to_string())? });
         }
+        snapshot.assets.push(ProjectAsset{id:"render-settings".into(),kind:"render-settings".into(),bytes:self.aov.settings.encode()?});
         snapshot.assets.extend(vec![
             ProjectAsset{id:"image-workspace".into(),kind:"image".into(),bytes:self.image.snapshot()?},
             ProjectAsset{id:"editing-workspace".into(),kind:"editing".into(),bytes:hs_edit::encode_workspace(&self.editing.tracks)?},
@@ -109,12 +110,14 @@ impl StudioApp {
     fn activate_episode(&mut self, index:usize, ctx:&egui::Context) {
         let episode=&self.project.series.episodes[index];
         let review=match crate::review_integration::restore_review(episode) { Ok(review)=>review,Err(error)=>{self.status=error;return;} };
+        let mut aov=crate::aov_ui::AovState::default();
         let mut image=crate::image_ui::ImageWorkspace::default();
         let mut editing=crate::editing_ui::EditingState::default();
         let mut library=crate::library_ui::SeriesLibrary::default();
         let mut legacy=None;
         for asset in &episode.assets {
             let result=match asset.kind.as_str() {
+                "render-settings" => hs_project::render_settings::RenderSettings::decode(&asset.bytes).map(|value|aov.settings=value),
                 "image" => image.restore(&asset.bytes),
                 "editing" => hs_edit::decode_workspace(&asset.bytes).map(|tracks| editing.tracks=tracks),
                 "library" => hs_agents::project::validate_library(&asset.bytes).map(|v| library=v),
@@ -133,7 +136,7 @@ impl StudioApp {
         self.review=review;self.rig=Default::default();self.pose=Default::default();self.review_ui=Default::default();
         self.playing=false;
         self.voice.attach_project(&mut production,ctx);
-        self.production=production;self.image=image;self.editing=editing;self.library=library;self.workflow.line=None;self.history=Default::default();
+        self.production=production;self.image=image;self.aov=aov;self.editing=editing;self.library=library;self.workflow.line=None;self.history=Default::default();
         self.script=self.production.script.clone();self.script_path=None;self.dirty_since=None;self.legacy=legacy;
         self.time=0.0;self.selected_cast=0;self.project.selected=index;self.blocks=Default::default();self.script_assist=Default::default();
         self.pipeline=hs_agents::Pipeline::default();self.run_pipeline();
@@ -420,6 +423,7 @@ fn validate_workspaces(series:&Series)->Result<(),String> {
             "recordings"=>{hs_agents::recording::decode(&a.bytes)?;},
             "legacy"=>{hs_hahmo::Project::open(&a.bytes).map_err(|e|e.to_string())?;},
             "review"=>{hs_project::production_review::ReviewState::decode(&a.bytes)?;},
+            "render-settings"=>{hs_project::render_settings::RenderSettings::decode(&a.bytes)?;},
             "pose"=>{hs_motion::pose_edit::PoseTracks::decode(&a.bytes)?;},
             _=>return Err("Tuntematon työtilaresurssi".into()),
         }
