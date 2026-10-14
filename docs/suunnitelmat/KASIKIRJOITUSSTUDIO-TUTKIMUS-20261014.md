@@ -4,6 +4,8 @@ Tutkimus ja toteutussuositus, 14.10.2026. Kohde: englanninkielinen alkuperäinen
 3D-animaatiosarja, jakso 30–60 s, TikTok/Instagram/YouTube. Ensisijainen ohjaus
 on käsikirjoitus. Kameraesityksen tallennus on myöhempi valinnainen lisä.
 
+Lisätutkimus: [kahden hahmon maailma, esineet ja Kilsat-tuotesijoittelu](MAAILMA-HAHMOT-KILSAT-TUTKIMUS-20261014.md).
+
 ## 1. Suositus käyttäjälle
 
 Rakenna yksi laadukas, toistettavasti tuotettava pilotti: kaksi hahmoa, yksi
