@@ -1940,3 +1940,104 @@ Rajat ja seuraava konkreettinen työ:
 - Varsinainen pilotin käytettävyyskoe, suuret projektit ja pitkät istunnot avoinna.
 - Oikea Kokoro/kuuntelu ja Mac/Metal/Finder/laitteet/VoiceOver/DMG/keveys viimeiseksi.
   Henkilökohtaisen käytön nykyinen tavoite ei vaadi notarisaatiota tässä vaiheessa.
+
+
+## Codex handoff — 14.10.2026: kontaktit, eleet, ryhmäraahaus ja toiston viimeistely
+
+Työkalu Codex, haara `work`, yhteinen kohde `main`.
+Tarkistettu toteutuscommit `b54e7eb3b2023c58c59a3ea76296d3b1b92070c7`;
+lähtömain `b798fd2c7ba0511a5e44b2f006a60daf7fa4a35a`.
+Tämä handoff on erillinen dokumentaatiocommit. Fetch ennen työtä ja ennen
+julkaisua: etämain pysyi lähtörevisiossa, paikallisia muutoksia ei ollut alussa.
+
+Käyttäjä pyysi agentit jatkamaan. Kuuden rajatun agentin toinen kierros:
+- animation_quality omisti collision.rs/actor_collision.rs ja kamera-fixtuurin.
+  FK torso/head/leg capsules, 3 mm toleranssi, samanaikaiset lineaariset
+  kapseliradat estävät reittien läpäisyn. Työ rajattu4096 kyselyyn/depth16;
+  epäselvä kontakti hylätään. Varsinaista liikettä ei muuteta. FK-kapselit
+  lasketaan kerran per pass ja käytetään myös staattiseen tarkistukseen.
+  Korjattu degeneroituneen headsegmentin segment-distance-nearestpoint.
+- release_readiness omisti tällä kierroksella hs-motion/procedural.rs/gestures.rs
+  ja gesture_transitions-testin, ei Mac-tehtävää. Wave/Point/Shrug/Clap:n
+  nivel- ja sormiasennot palautuvat pehmeästi incoming idleposeen; peak targets,
+  juuren rata, jalat, aika ja jälkikäteen ratkaistut kontaktit säilyvät.
+- editor_workflow omisti timeline_ui.rs. Valittujen≥2 rivin group drag,
+  ruutuihin kohdistettu yhteinen delta, ghost starts ja sama checked_shift
+  confirmation/recheck/undo-polku. Escape/peruutus, source/lock/busy guards,
+  nollasiirto no-op; oikea10px reuna säilyy single-clip resizeen.
+- picture_audio omisti hs-audio/lib.rs. 5ms de-click start/stop/seek/sourcechange,
+  nopea retarget lähtee nykyisestä välisignaalista; pausedclock ei liiku.
+  Transport-mutex sarjallistaa callbackin ja UI:n komennot; callback vain try_lock,
+  published position/playing atomics Acquire/Release. Ei alkuperäisen PCM:n muokkausta.
+- pilot_voice omisti tällä kierroksella hs-render/shading.rs/toon.wgsl/render.rs.
+  Sama hillitty keylight BlinnPhong32 highlight Flat/Cel CPU+GPU, ei unlitface/bg
+  glare; normalisoitu lightdirection. Ei uusia domain-tyyppejä/riippuvuuksia/PBR/HDR.
+- project_resilience omisti hs-project/lib.rs/new zip_bounds.rs ja crate-ohje.
+  OuterEOCD-count tarkistetaan ennen ZIP2-index allocationia; index-only ReadSeek
+  guard estää fallbackin aiempaan aineiston sisäiseen EOCD:hen. Tavujen sisältö
+  ei muutu ja guard poistuu käytöstä heti constructorin jälkeen, joten CRC ja
+  payloadit säilyvät. Tuetaan small absoluteZIP64, ei multidisk/relativeZIP64.
+  Guard käyttää lukitun ZIP2:n fixed22byte EOCDparse-read-sopimusta; versionvaihto
+  tarvitsee regression tarkistuksen. Ei ylimääräistä koko arkiston kopiota.
+- Root integroi panels.rs groupghostit ja virherivin painikkeen ennen ohje-ehdotuksia.
+  Root korjasi global ⌘⇧Z consume-orderin app.rs: redo ennen COMMAND-Z:n matchia;
+  lisäsi oikeat egui key-event regressionit. Korjatut app/CLI/default/pipeline
+  esimerkit eivät enää kulje muiden hahmojen läpi; käyttäjän projekteja ei päivitetä
+  automaattisesti. CLI:n oletusliikeriville lisättiin eksplisiittinen PIPSA-puhuja,
+  koska tuotantoauditointi edellyttää sitä. Root omistaa README/guide/handoff.
+
+Todennus, Linux/Rust1.99:
+- Final `cargo test --locked --workspace -j2`:400 passed,0 failed,1 ignored
+  (aito Kokoro), exit0 `/tmp/koeta-polish-verified-workspace.log`.
+- Final app+CLI build exit0 `/tmp/koeta-polish-verified-build.log`;
+  workspace/all-targets clippy exit0 `/tmp/koeta-polish-verified-clippy.log`.
+  Tyylivaroituksia jäi. Paketointikoodi ei muuttunut tällä kierroksella.
+- GPU-tests todellisesti ajettiin Vulkan/lavapipe llvmpipe LLVM19.1.7:
+  `/tmp/koeta-polish-gpu.log` (--workspace gpu_matches_cpu --nocapture).
+  Ei 'ohitettu': Flat mean0.23/outlier0.37%, Cel mean0.32/outlier0.58%,
+  plus12 highlighted plane/view/direction cases≤1LSB. Renderer ei muuttunut
+  tämän ajon jälkeen; viimeisin lisäkorjaus koski vain appin keyboard-handleria.
+- 5 actorcollision-regressiota actualFK/posekeys/reopen/handoff + synchronized
+  crossing/tolerance; 2 gesturetests sisältävät1001 plantedfoot/root näytettä,
+  action-boundary FK ja stateless adjacent sequence. Existing contacts14 edelleenpass.
+- 6 ZIP-regressiota: classic/ZIP64 oversize, prepend, comment/trailing,
+  embedded fakeZIP opaque payload exactbytes+CRC, malformedouter nofallback.
+  `/tmp/koeta-polish-zip.log`, myös finalworkspace.
+- 4 lisää audio kerneltests: four rates, mono/stereo/6ch,400 rapidcommands,
+  exactclock/sourcepreservation sekä deterministic callback/seek-ordering.
+  Groupdelta snaptest ja molemmat defaultpipeline-tests pass.
+- 2 actualegui keyboardtests: COMMAND-Z undo, COMMAND-SHIFT-Z redo,
+  key consumed once. `/tmp/koeta-polish-shortcuts.log`, finalworkspace sisältää.
+- GUI Xvfb:121/lavapipe finalbinary: group selected4,5→drag+0.5s ghost→modal
+  checked+confirmed source→4.5s episode; CtrlZ→4.0s original, CtrlShiftZ→4.5s
+  same shifted source. `/tmp/koeta-polish-group-ghost.png`, -keys-confirm.png,
+  -group-applied-ready.png, -group-undo-ready.png, -group-redo-ready.png.
+  Escape uusiin ghostsiin säilytti0.5/3.5 sourceanchors, ei modal/sourcechange:
+  `/tmp/koeta-polish-group-escape.png`. Eristetty tmp config/data, ei käyttäjän projekteja.
+- `/tmp/koeta-polish-collision.png`: estetty näyttämö, Rivi4/Kalle+Maija/t1.000s
+  ja Näytä virherivi4 -painike. `/tmp/koeta-polish-default.png`: defaultfamily
+  phoneinsert renderöity. `/tmp/koeta-polish-gesture.png`: todellinen osoitusele/beauty.
+- CLI CPU/FFmpeg `gesture-transitions.en.txt`: `/tmp/koeta-gesture-polish.mp4`,
+  H.264160x90/10.000s/300frames, ei ääntä, `/tmp/koeta-polish-video.log`.
+  Katse/eleet ja kamera ovat oikeita tuettuja toimintoja, ei simuloitu kuvavienti.
+- git diff --check pass; quotahelper unavailable, prosenttia ei päätelty.
+
+Integraatiolöydökset ratkaistu: vanhat camera/pipeline-fixtuurit ylittivät toisen
+hahmon reitin (vaihdettu vastakkaiseen suuntaan, tarkistusta ei ohitettu), CLI:n
+nimetön oletusliikerivi oli auditoinnin estämä, esimerkin ensimmäinen toistettu
+shotwide oli kaksoisohje (poistettu ylimääräinen ohje), ja GUI löysi aiemman
+COMMAND-SHIFT-Z:n kulutuksen undona. Yksi ennen lähdekorjauksen valmistumista
+aloitettu testiajo keskeytettiin; yllä ovat lopulliset onnistuneet ajot.
+Omat GUI/Xvfb-prosessit suljetaan; muut vanhat prosessit säilytettiin.
+
+Avoimet/jatko:
+- Törmäykset ovat konservatiivisia bodyproxyja ja lineaarisia capsuleendpoints
+  60Hz/cue/key samplesvälissä, eivät täydellinen epälineaarinen mesh/cloth/finger
+  fysiikka. Tarkista esikatselu; laajemmat dynaamiset kontaktit edelleen jatkotyötä.
+- Valaistus on tyylitelty fixed strength, ei per-material BRDF/shadowcasting/HDR.
+  Äänisiirtymä on edellisen näytteen lyhyt häntä, ei kahden jatkuvan raidan crossfade;
+  laitekuuntelu ja exportloudness/miksauksen käyttökokemus ovat avoimia.
+- Seuraava konkreettinen ominaisuuspaketti: tuottajan ääni-/valaistussäädöt sekä
+  suuremman projektin ja pidemmän muokkausistunnon hyväksyttävä pilotin työnkulku.
+- Aito Kokoro/kuuntelu ja Mac/Metal/Finder/laitteet/VoiceOver/DMG/keveys ovat
+  sovitusti viimeisen vaiheen oikeita hyväksyntöjä. Testimoottori/Linux ei korvaa niitä.
