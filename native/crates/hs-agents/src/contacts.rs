@@ -227,9 +227,9 @@ fn apply_hand(
         weight,
     }
 }
-/// Ground placement crouch for the current humanoid. Root translation lowers
+/// Ground contact crouch for the current humanoid. Root translation lowers
 /// the pelvis; spine bending and explicit leg IK preserve both ankle anchors.
-fn ground_place_body(
+fn ground_contact_body(
     p: &Production,
     frame: &mut CharacterFrame,
     actor: usize,
@@ -416,7 +416,7 @@ impl ContactPlan {
                         } else {
                             1.0 - ease((u - release) / (1.0 - release))
                         };
-                        ground_place_body(
+                        ground_contact_body(
                             p,
                             &mut frames[action.actor],
                             action.actor,
@@ -497,7 +497,19 @@ impl ContactPlan {
                     } else {
                         point
                     };
-                    let weight = if u < 0.2 { ease(u / 0.2) } else { 1.0 };
+                    let floor_pickup =
+                        action.from.y < p.cast[action.actor].character.params.height * 0.3;
+                    let (target, weight) = if floor_pickup {
+                        let strength = if u < 0.45 {
+                            ease(u / 0.45)
+                        } else {
+                            1.0 - ease((u - 0.45) / 0.55)
+                        };
+                        ground_contact_body(p, &mut frames[action.actor], action.actor, strength)?;
+                        (point, if u < 0.45 { ease(u / 0.45) } else { 1.0 })
+                    } else {
+                        (target, if u < 0.2 { ease(u / 0.2) } else { 1.0 })
+                    };
                     grips.push(apply_hand(
                         p,
                         frames,
@@ -739,7 +751,15 @@ impl ContactPlan {
                                 .total_cmp(&world[sk.arm(*b).upper].pos.distance_squared(point))
                         })
                         .ok_or_else(|| format!("Rivi {line}: hahmolla ei ole vapaata kättä"))?;
-                    let to = point + Vec3::Y * 0.12;
+                    let to = if point.y < p.cast[giver].character.params.height * 0.3 {
+                        Vec3::new(
+                            point.x,
+                            p.cast[giver].character.params.height * 0.68,
+                            point.z,
+                        )
+                    } else {
+                        point + Vec3::Y * 0.12
+                    };
                     let relative = final_frames[giver].pose.root_rot.inverse()
                         * (to - final_frames[giver].pose.root_pos);
                     Action {

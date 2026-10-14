@@ -16,7 +16,12 @@ use std::sync::{Arc, Mutex};
 pub struct Download {
     pub progress: Arc<Mutex<(String, u64, Option<u64>)>>,
     pub cancel: Arc<AtomicBool>,
+    importing: bool,
     rx: Receiver<Result<StoreStatus, String>>,
+}
+
+impl Drop for Download {
+    fn drop(&mut self) { self.cancel.store(true, Ordering::Relaxed); }
 }
 
 /// Mihin mikrofonin äänitys menee.
@@ -94,6 +99,7 @@ impl VoiceState {
 
     /// Avaa mallin taustasäikeessä (painot ~330 MiB).
     pub fn start_loading(&mut self, ctx: &egui::Context) {
+        if self.loading.is_some() || self.download.is_some() { return; }
         let Some(store) = &self.store else { return };
         let dir = store.model_dir();
         let verify = ModelStore { dir: store.dir.clone() };
@@ -101,7 +107,7 @@ impl VoiceState {
         let ctx = ctx.clone();
         std::thread::spawn(move || {
             let result = if !verify.status(true).installed {
-                Err("Mallitiedostot eivät vastaa manifestia; lataa malli uudelleen.".to_string())
+                Err("Mallitiedostot eivät vastaa manifestia. Tuo täydellinen mallikansio uudelleen tai lataa Kokoro.".to_string())
             } else {
                 hs_voice::kokoro::KokoroEngine::load(&dir).map(|e| Arc::new(e) as Arc<dyn SpeechEngine>).map_err(|e| e.to_string())
             };
@@ -141,7 +147,12 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
     }
     // Mallin avaus valmistui.
     if let Some(rx) = &app.voice.loading {
-        if let Ok(result) = rx.try_recv() {
+        let result = match rx.try_recv() {
+            Ok(r) => Some(r),
+            Err(std::sync::mpsc::TryRecvError::Disconnected) => Some(Err("Mallin avaus keskeytyi. Voit yrittää uudelleen.".into())),
+            Err(std::sync::mpsc::TryRecvError::Empty) => None,
+        };
+        if let Some(result) = result {
             app.voice.loading = None;
             match result {
                 Ok(inner) => {
@@ -171,7 +182,12 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
     }
     // Lataus valmistui.
     if let Some(d) = &app.voice.download {
-        if let Ok(result) = d.rx.try_recv() {
+        let result = match d.rx.try_recv() {
+            Ok(r) => Some(r),
+            Err(std::sync::mpsc::TryRecvError::Disconnected) => Some(Err("Mallin siirto keskeytyi. Nykyiset puheresurssit säilyivät.".into())),
+            Err(std::sync::mpsc::TryRecvError::Empty) => None,
+        };
+        if let Some(result) = result {
             app.voice.download = None;
             match result {
                 Ok(st) => {
@@ -235,6 +251,7 @@ pub fn has_player(app: &StudioApp) -> bool {
 }
 
 fn start_download(app: &mut StudioApp, ctx: &egui::Context) {
+    if app.voice.download.is_some() || app.voice.is_loading() { return; }
     let Some(store) = &app.voice.store else { return };
     let store = ModelStore { dir: store.dir.clone() };
     let progress = Arc::new(Mutex::new((String::new(), 0u64, None)));
@@ -246,7 +263,27 @@ fn start_download(app: &mut StudioApp, ctx: &egui::Context) {
         let _ = tx.send(r);
         ctx.request_repaint();
     });
-    app.voice.download = Some(Download { progress, cancel, rx });
+    app.voice.download = Some(Download { progress, cancel, importing: false, rx });
+    app.voice.load_error = None;
+}
+
+/// A 330 MiB offline import must not block the window or cancellation controls.
+fn start_import(app: &mut StudioApp, source: PathBuf, ctx: &egui::Context) {
+    if app.voice.download.is_some() || app.voice.is_loading() { return; }
+    let Some(store) = &app.voice.store else { return };
+    let store = ModelStore { dir: store.dir.clone() };
+    let progress = Arc::new(Mutex::new(("Tuodaan mallia".into(), 0u64, None)));
+    let cancel = Arc::new(AtomicBool::new(false));
+    let (tx, rx) = std::sync::mpsc::channel();
+    let (p, c, ctx) = (progress.clone(), cancel.clone(), ctx.clone());
+    std::thread::spawn(move || {
+        let result = store.import_from_cancelable(&source, &c, &|file, got, total| {
+            *p.lock().unwrap() = (file.to_string(), got, total);
+        }).map_err(|e| e.to_string());
+        let _ = tx.send(result);
+        ctx.request_repaint();
+    });
+    app.voice.download = Some(Download { progress, cancel, importing: true, rx });
     app.voice.load_error = None;
 }
 
@@ -283,7 +320,7 @@ fn status_color(s: LineStatus) -> Color32 {
 /// Ääni-välilehti: malli ja rivit.
 pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
     ui.heading("Puhe (Kokoro, offline)");
-    if app.voice.status.installed && app.voice.engine.is_none() && app.voice.loading.is_none() {
+    if app.voice.status.installed && app.voice.engine.is_none() && app.voice.loading.is_none() && app.voice.download.is_none() {
         ui.label("Kokoro on asennettu. Malli avataan muistiin vain pyynnöstä.");
         if ui.button("Ota Kokoro käyttöön").clicked() { app.voice.start_loading(ui.ctx()); }
     }
@@ -292,7 +329,7 @@ pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
         let (file, got, total) = d.progress.lock().unwrap().clone();
         let frac = total.map_or(0.0, |t| got as f32 / t.max(1) as f32);
         ui.add(egui::ProgressBar::new(frac).text(format!("{file}: {:.0} MiB", got as f64 / 1048576.0)));
-        if ui.button("Peruuta lataus").clicked() {
+        if ui.button(if d.importing { "Peruuta tuonti" } else { "Peruuta lataus" }).clicked() {
             d.cancel.store(true, Ordering::Relaxed);
         }
     } else if app.voice.is_loading() {
@@ -322,21 +359,21 @@ pub fn voice_tab(app: &mut StudioApp, ui: &mut egui::Ui) {
             if ui.add_enabled(app.voice.store.is_some(), egui::Button::new("Lataa Kokoro…")).clicked() {
                 app.voice.confirm_download = true;
             }
-            if ui.button("Tuo kansiosta…").clicked() {
-                if let (Some(dir), Some(store)) = (rfd::FileDialog::new().pick_folder(), &app.voice.store) {
-                    match store.import_from(&dir) {
-                        Ok(st) => {
-                            app.voice.status = st;
-                            app.voice.start_loading(&ctx);
-                        }
-                        Err(e) => app.voice.load_error = Some(e.to_string()),
-                    }
+            if ui.add_enabled(app.voice.store.is_some(), egui::Button::new("Tuo kansiosta…")).clicked() {
+                if let Some(dir) = rfd::FileDialog::new().pick_folder() {
+                    start_import(app, dir, &ctx);
                 }
             }
         });
     }
+    if let Some(e) = &app.voice.status.error {
+        ui.label(RichText::new(format!("Asennus tarvitsee korjauksen: {e}")).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)));
+    }
     if let Some(e) = &app.voice.load_error {
         ui.label(RichText::new(e).color(Color32::from_rgb(0xe0, 0x6c, 0x5a)));
+        if e.contains("403") {
+            ui.label("Mallipalvelu tai verkkovälityspalvelin esti latauksen. Voit ladata mallin toisessa verkossa ja käyttää Tuo kansiosta -toimintoa; tallennetut repliikit toimivat edelleen ilman mallia.");
+        }
     }
     if let Some(e) = &app.voice.player_error {
         ui.label(RichText::new(format!("Toisto ei käytössä: {e}")).weak().small());

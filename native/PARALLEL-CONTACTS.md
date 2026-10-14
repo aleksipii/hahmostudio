@@ -36,9 +36,10 @@ Ajoituksen muutos ei järjestä hahmoja uudelleen näyttämöllä: tallennettuje
 profiilien järjestys säilytetään, ja uudessa projektissa käytetään lähderivien järjestystä.
 
 Kestot ovat 0.5–20s; esinekontaktit ja istuminen/nouseminen vähintään 1s.
-Saman hahmon eri rivit eivät saa limittyä koko niiden varaamalla aikavälillä:
-tämä on konservatiivinen ristiriitasääntö, ei yleinen päällekkäisten
-saman hahmon toimintojen yhdistäjä. Enimmäispituus on 60s. Puuttuvan puheen
+Saman hahmon eri rivien päällekkäisyys hyväksytään vain erillisillä tuetuilla
+liikekanavilla; koko kehon kontaktit varaavat vartalon ja tarvittavat kädet.
+Tämä on konservatiivinen ristiriitasääntö, ei mielivaltaisten liikkeiden
+yhdistäjä. Enimmäispituus on 60s. Puuttuvan puheen
 todellinen ajoitus tarkistetaan vasta sen tuotannon jälkeen.
 
 Rivin yhteiset hahmo-, esine- ja kamera-asetukset ovat voimassa aikaisemmasta
@@ -50,7 +51,10 @@ ja kirjoitettu kuvakulma voittaa automaattisen ehdotuksen.
 MP4/SRT yhdistää päällekkäiset repliikit puhujanimineen yhteen ajoitettuun
 tekstipakettiin. Projektin alkuperäisiä repliikkejä ei muuteta.
 Aikajanan lopussa on enintään kaksi sekuntia tyhjää muokkaustilaa pidennykseen;
-jakson kesto säilyy erillisenä. Kamera-/taustaraidat ovat lukutilassa.
+jakson kesto säilyy erillisenä. Kamera-/taustakortteja voi raahata ajoitusluonnokseksi.
+Valitse hahmo -painike valitsee tarkistetun käsikirjoituksen hahmon toimintorivit;
+valintamäärä ja palikoiden korostus näyttävät ryhmän. Lähdetekstin muuttuminen
+tyhjentää ryhmävalinnan, jotta vanhat rivinumerot eivät osu uusiin toimintoihin.
 Ilmeet ja katseet näkyvät inspectorissa ja esikatselussa; ne eivät peitä
 varsinaisia liikeradan kortteja.
 
@@ -76,8 +80,12 @@ numerot tai alaviiva, pituus 1–32. Koordinaatit ovat äärellisiä, enintään
 ±5 metriä ja korkeus vähintään 0.1 metriä.
 
 Nosto ja luovutus kestävät 1–20 sekuntia. Nosto valitsee lähimmän vapaan
-käden, lähestyy esinettä ylhäältä, tarttuu 45 prosentin kohdalla ja nostaa
-12 cm. Luovutus siirtää omistajuuden puolivälissä ja vapauttaa antajan käden.
+käden ja tarttuu 45 prosentin kohdalla. Alustalta nostettaessa esine nousee
+12 cm. Lattialla olevaan esineeseen hahmo kyykistyy nilkat ja varpaat
+ankkuroituina, tarttuu ja nousee takaisin seisten esine kädessä. Lattialle
+laskeminen käyttää vastaavaa ankkuroitua kyykistymistä.
+Esimerkki: [floor-pickup.en.txt](examples/floor-pickup.en.txt).
+Luovutus siirtää omistajuuden puolivälissä ja vapauttaa antajan käden.
 Vastaanottajan pitää olla käsikirjoituksen nimetty hahmo. Esineen on oltava
 olemassa ja antajan omistuksessa; toiminnan osapuolet pysyvät paikallaan
 kontaktin aikana. Odotus ja pienet pään liikkeet ovat sallittuja.
@@ -91,7 +99,8 @@ Inspectorissa voi valita tunnetun esineen, vastaanottajan ja kontaktin keston.
 Käsikirjoitus tallentuu `.koeta`-projektiin; kontaktit rakennetaan uudelleen
 projektin omista hahmoista avaamisen jälkeen. Tämä ei ole jäykkien kappaleiden
 fysiikkasimulaatio eikä yleinen sormien tai vartaloiden törmäysratkaisin.
-Ovet, pudottaminen, portaat ja mielivaltaisten ulkoisten luurankojen retargetointi
+Ovilla, pudottamisella ja portailla on rajatut toteutetut kontaktit; yleinen
+dynaaminen törmäysratkaisu ja mielivaltaisten ulkoisten luurankojen retargetointi
 ovat edelleen avoinna. Tarkista kuva, kädet ja ajoitus esikatselusta.
 
 Linux-testit kattavat kontaktigeometrian, omistajuuden, ristiriidat,

@@ -1,0 +1,5 @@
+[background studio]
+[shot wide]
+[object cup mug at -0.25 0.137 0.50]
+KALLE: [pick up cup 3s]
+KALLE: [shot wide] [wait 1s]

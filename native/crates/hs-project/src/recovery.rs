@@ -48,6 +48,16 @@ impl RecoveryStore {
         self.write(series, Some(name))
     }
     fn write(&self, series: &Series, name: Option<&str>) -> Result<PathBuf, ProjectError> {
+        self.write_with(series, name, save_atomic)
+    }
+    // Keep the publication boundary injectable to exercise storage failures
+    // without relying on platform-specific permission behaviour.
+    fn write_with(
+        &self,
+        series: &Series,
+        name: Option<&str>,
+        publish: impl FnOnce(&Path, &Series) -> Result<(), ProjectError>,
+    ) -> Result<PathBuf, ProjectError> {
         let dir = self.directory(&series.id)?;
         let bytes = encode(series)?;
         let used = usage(&self.root)?;
@@ -90,12 +100,12 @@ impl RecoveryStore {
         if target.exists() {
             return Err(invalid("recovery destination exists"));
         }
+        let mut obsolete = Vec::new();
         if name.is_none() {
             let mut autosaves: Vec<_> = files.into_iter().filter(|(_, _, named)| !named).collect();
             autosaves.sort_by_key(|(_, seq, _)| std::cmp::Reverse(*seq));
-            // Prune before publication so a process interruption cannot leave
-            // three completed snapshots. Never discard the newest validated
-            // autosave in favour of a newer but corrupt archive.
+            // Determine retention without changing any previous snapshot.
+            // Never favour a newer corrupt archive over a validated fallback.
             let keep = autosaves
                 .iter()
                 .find_map(|(path, _, _)| {
@@ -107,11 +117,18 @@ impl RecoveryStore {
                 .or_else(|| autosaves.first().map(|(path, _, _)| path.clone()));
             for (old, _, _) in autosaves {
                 if Some(&old) != keep.as_ref() {
-                    fs::remove_file(old)?;
+                    obsolete.push(old);
                 }
             }
         }
-        save_atomic(&target, series)?;
+        // Publication must succeed before rotation can discard any fallback.
+        // Interruption here can leave extra completed archives, which the next
+        // successful write safely prunes. A cleanup error may leave the newly
+        // published snapshot alongside older files, never remove the candidate.
+        publish(&target, series)?;
+        for old in obsolete {
+            fs::remove_file(old)?;
+        }
         Ok(target)
     }
     /// Returns the newest fully validated archive, falling back past corruption.
@@ -334,6 +351,52 @@ mod tests {
         assert_eq!(archives(&dir.path().join("family")).unwrap().len(), 2);
         fs::write(newest, b"later corruption").unwrap();
         assert_eq!(store.latest("family").unwrap().unwrap().path, good);
+    }
+    #[test]
+    fn failed_publication_keeps_both_fallbacks_and_named_revision() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = RecoveryStore::new(dir.path(), 1024 * 1024);
+        let first = store.autosave(&series()).unwrap();
+        let mut second_series = series();
+        second_series.name = "Second draft".into();
+        let second = store.autosave(&second_series).unwrap();
+        let named = store.save_revision(&second_series, "approved").unwrap();
+        let original: Vec<_> = [&first, &second, &named]
+            .into_iter()
+            .map(|path| (path.clone(), fs::read(path).unwrap()))
+            .collect();
+        let error = store.write_with(&series(), None, |_, _| {
+            Err(std::io::Error::other("simulated storage write failure").into())
+        });
+        assert!(error.is_err());
+        for (path, bytes) in &original {
+            assert_eq!(&fs::read(path).unwrap(), bytes);
+        }
+        assert_eq!(archives(&dir.path().join("family")).unwrap().len(), 3);
+        // A later corruption of both newest alternatives still has a fallback.
+        fs::write(&second, b"corrupted after failed save").unwrap();
+        fs::write(&named, b"corrupted revision").unwrap();
+        assert_eq!(store.latest("family").unwrap().unwrap().path, first);
+    }
+    #[test]
+    fn interrupted_rotation_is_finished_by_next_successful_publication() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = RecoveryStore::new(dir.path(), 1024 * 1024);
+        store.autosave(&series()).unwrap();
+        let previous = store.autosave(&series()).unwrap();
+        // Simulate death after atomic publication but before removing obsolete
+        // files. The third complete archive is a recoverable state.
+        let extra = dir.path().join("family/autosave-00000000000000000003.koeta");
+        let mut interrupted = series();
+        interrupted.name = "Published before interruption".into();
+        save_atomic(&extra, &interrupted).unwrap();
+        assert_eq!(store.latest("family").unwrap().unwrap().path, extra);
+        let newest = store.autosave(&series()).unwrap();
+        assert!(!previous.exists());
+        assert!(extra.exists());
+        assert_eq!(archives(&dir.path().join("family")).unwrap().len(), 2);
+        fs::write(newest, b"corrupt").unwrap();
+        assert_eq!(store.latest("family").unwrap().unwrap().path, extra);
     }
     #[test]
     fn quota_and_validation_failure_preserve_all_previous_bytes() {

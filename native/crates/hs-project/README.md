@@ -80,3 +80,16 @@ missing resources, invalid IDs/nonfinite samples and failure preservation.
 Schema-v2 tests cover version-1 migration, opaque asset/caption round trips with
 untouched audio, corrupt assets, invalid cross-type paths and invalid disabled
 caption settings that cannot overwrite the previous project.
+
+## Recovery rotation and interrupted saves
+
+`RecoveryStore` publishes a validated atomic snapshot before pruning older
+unnamed autosaves. A failed publication preserves every previous archive,
+including the second valid fallback and immutable named revisions. A successful
+rotation retains the new snapshot plus the newest validated previous autosave;
+newer corrupt files cannot replace that fallback. If a process stops after
+publication, extra completed archives are safe and the next successful autosave
+finishes rotation. A pruning I/O error may report failure after publication,
+leaving the new snapshot and extra old files intact. Quota checks conservatively
+include the candidate before pruning; no valid archive is deleted to make space.
+This protects process-interruption recovery, not physical power-loss durability.

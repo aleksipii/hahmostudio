@@ -273,6 +273,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
         let can_edit = !app.review.locked && !crate::timeline_ui::scene_pending(ctx) && app.script == app.production.script && app.pipeline_error.is_none() && app.workflow.pending_timing.is_none() && app.export.is_none() && app.voice.recorder.is_none();
         let mut clip_handled = false;
         let mut dropped = None;
+        let group_selected = crate::timeline_ui::group_selected_lines(ctx, &app.script);
         for (i, (name, items)) in rows.iter().enumerate() {
             let y = lane.top() + i as f32 * row_h;
             painter.text(egui::pos2(rect.left() + 4.0, y + row_h * 0.5), egui::Align2::LEFT_CENTER, name, egui::FontId::proportional(13.0), ui.visuals().text_color());
@@ -315,6 +316,9 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                     hit.on_hover_text("Liikerata muuttaa vain liikettä; puherata repliikin ajoitusta. Raahaa korttia tai keston oikeaa reunaa. Pudotus näyttää tarkistetun luonnoksen.");
                 }
                 painter.rect_filled(r, 4.0, *color);
+                if line.is_some_and(|line| group_selected.contains(&line)) {
+                    painter.rect_stroke(r, 4.0, Stroke::new(2.0_f32, ACCENT), egui::StrokeKind::Inside);
+                }
                 if line.is_some() {painter.line_segment([egui::pos2(r.right()-4.0,r.top()+3.0),egui::pos2(r.right()-4.0,r.bottom()-3.0)],Stroke::new(1.0_f32, Color32::WHITE));}
                 if let Some(drag) = app.workflow.timeline_drag.as_ref().filter(|drag| Some(drag.line) == *line && (drag.motion == name.starts_with("Liike · "))) {
                     let mut ghost = r;

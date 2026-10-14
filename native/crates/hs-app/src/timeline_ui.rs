@@ -135,10 +135,51 @@ struct ScenePending {
 }
 #[derive(Default, Clone)]
 struct GroupSelection {
+    source: String,
     text: String,
     delta: f64,
     error: Option<String>,
 }
+impl GroupSelection {
+    /// Line numbers are meaningful only for the screenplay that was selected.
+    /// Never silently retarget a selection after insertion, deletion or undo.
+    fn bind_source(&mut self, source: &str) {
+        if self.source != source {
+            self.source = source.into();
+            self.text.clear();
+            self.error = None;
+        }
+    }
+    fn set_lines(&mut self, lines: impl IntoIterator<Item = usize>) {
+        self.text = lines
+            .into_iter()
+            .filter(|line| *line > 0)
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .map(|line| line.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        self.error = None;
+    }
+}
+/// Snapshot once before painting the timeline, then test membership per clip.
+/// Stale source selections are never displayed. The stored screenplay is cloned
+/// once per snapshot rather than once for every visible clip.
+pub fn group_selected_lines(
+    ctx: &egui::Context,
+    script: &str,
+) -> std::collections::BTreeSet<usize> {
+    ctx.data(|data| data.get_temp::<GroupSelection>(group_selection_id()))
+        .filter(|selection| selection.source == script)
+        .and_then(|selection| selected_lines(&selection.text).ok())
+        .map(|lines| lines.into_iter().collect())
+        .unwrap_or_default()
+}
+#[cfg(test)]
+fn group_line_selected(ctx: &egui::Context, script: &str, line: usize) -> bool {
+    group_selected_lines(ctx, script).contains(&line)
+}
+
 fn scene_drag_id() -> egui::Id {
     egui::Id::new("koeta-scene-drag")
 }
@@ -279,6 +320,9 @@ fn selected_lines(text: &str) -> Result<Vec<usize>, String> {
     Ok(selected.into_iter().collect())
 }
 pub fn toggle_group_line(ctx: &egui::Context, line: usize) {
+    if line == 0 {
+        return;
+    }
     let mut selection = ctx
         .data(|d| d.get_temp::<GroupSelection>(group_selection_id()))
         .unwrap_or_default();
@@ -286,6 +330,11 @@ pub fn toggle_group_line(ctx: &egui::Context, line: usize) {
     if let Some(index) = lines.iter().position(|selected| *selected == line) {
         lines.remove(index);
     } else {
+        if lines.len() >= 1000 {
+            selection.error = Some("Valitse enintään 1000 riviä.".into());
+            ctx.data_mut(|d| d.insert_temp(group_selection_id(), selection));
+            return;
+        }
         lines.push(line);
         lines.sort_unstable();
     }
@@ -303,7 +352,37 @@ pub fn group_controls(app: &mut StudioApp, ui: &mut egui::Ui) {
     let mut selected = ctx
         .data(|d| d.get_temp::<GroupSelection>(group_selection_id()))
         .unwrap_or_default();
-    ui.horizontal(|ui| {
+    selected.bind_source(&app.script);
+    // The existing checked plan identifies the authored actor; do not reparse per frame.
+    let actor = app
+        .workflow
+        .line
+        .and_then(|line| {
+            app.production
+                .plan
+                .as_ref()
+                .and_then(|plan| plan.beats.iter().find(|beat| beat.line == line))
+        })
+        .and_then(|beat| beat.speaker.clone());
+    ui.horizontal_wrapped(|ui| {
+        if let Some(actor) = actor.as_deref() {
+            if ui.add_enabled(app.script == app.production.script && app.pipeline_error.is_none(),
+                egui::Button::new(format!("Valitse hahmo: {actor}")))
+                .on_hover_text("Valitse hahmon kaikki toimintorivit ryhmään. Ajoitus muuttuu vasta luonnoksen tarkistuksen ja hyväksymisen jälkeen.")
+                .clicked() {
+                let lines: Vec<_> = app.production.plan.as_ref().into_iter()
+                    .flat_map(|plan| plan.beats.iter()).filter(|beat| beat.speaker.as_deref()
+                    .is_some_and(|name| name.eq_ignore_ascii_case(actor)))
+                    .map(|beat| beat.line).collect();
+                if lines.len() <= 1000 { selected.set_lines(lines); }
+                else { selected.error = Some("Valitse enintään 1000 riviä.".into()); }
+            }
+        }
+        if ui.add_enabled(!selected.text.is_empty(), egui::Button::new("Tyhjennä valinta")).clicked() {
+            selected.set_lines(std::iter::empty());
+        }
+        let count = selected_lines(&selected.text).map_or(0, |lines| lines.len());
+        ui.label(format!("{count} valittua riviä"));
         ui.label("Ryhmä · rivit");
         ui.add(egui::TextEdit::singleline(&mut selected.text).desired_width(105.0).hint_text("3,5-7"));
         ui.add(egui::DragValue::new(&mut selected.delta).speed(0.1).range(-59.5..=59.5).prefix("Siirto ").suffix(" s"));
@@ -401,4 +480,60 @@ fn scene_confirmation(app: &mut StudioApp, ctx: &egui::Context) {
             d.remove::<ScenePending>(scene_pending_id());
         }
     });
+}
+
+#[cfg(test)]
+mod group_selection_tests {
+    use super::*;
+
+    #[test]
+    fn source_changes_invalidate_selection_but_keep_shift_preference() {
+        let mut selection = GroupSelection::default();
+        selection.bind_source("Kalle: Hello.");
+        selection.set_lines([3, 1, 3]);
+        selection.delta = 1.25;
+        selection.bind_source("Kalle: Hello.");
+        assert_eq!(selection.text, "1,3");
+        selection.error = Some("old error".into());
+        selection.bind_source("# inserted row\nKalle: Hello.");
+        assert!(selection.text.is_empty());
+        assert!(selection.error.is_none());
+        assert_eq!(selection.delta, 1.25);
+        // Undo to the original screenplay does not resurrect invalid row numbers.
+        selection.bind_source("Kalle: Hello.");
+        assert!(selection.text.is_empty());
+    }
+
+    #[test]
+    fn highlights_match_only_bound_source_and_toggle_without_duplicates() {
+        let ctx = egui::Context::default();
+        let mut selection = GroupSelection::default();
+        selection.bind_source("source");
+        selection.set_lines([4, 2, 4, 0]);
+        ctx.data_mut(|data| data.insert_temp(group_selection_id(), selection));
+        assert!(group_line_selected(&ctx, "source", 2));
+        assert_eq!(
+            group_selected_lines(&ctx, "source"),
+            [2, 4].into_iter().collect()
+        );
+        assert!(group_selected_lines(&ctx, "changed").is_empty());
+        assert!(!group_line_selected(&ctx, "changed", 2));
+        toggle_group_line(&ctx, 2);
+        assert!(!group_line_selected(&ctx, "source", 2));
+        assert!(group_line_selected(&ctx, "source", 4));
+        toggle_group_line(&ctx, 2);
+        let selection = ctx
+            .data(|data| data.get_temp::<GroupSelection>(group_selection_id()))
+            .unwrap();
+        assert_eq!(selection.text, "2,4");
+    }
+
+    #[test]
+    fn explicit_selection_rejects_reversed_empty_and_excessive_ranges() {
+        assert_eq!(selected_lines("7,3-5,4").unwrap(), vec![3, 4, 5, 7]);
+        for text in ["", "0", "9-3", "1-1001", "x"] {
+            assert!(selected_lines(text).is_err(), "{text}");
+        }
+        assert_eq!(selected_lines("1-1000").unwrap().len(), 1000);
+    }
 }

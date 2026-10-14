@@ -19,6 +19,7 @@ vanhan lähdekoodin; toimitetut hahmo-, tausta- ja esimerkkiaineistot säilyvät
   Vanhan `.sarja` v1 tuonti sekä `.hahmo`-kirjoitus ja historia säilyttävät alkuperäiset aineistot.
 - 2D-rigin ja natiivin 3D-luurangon avainruudut, tarkistetut ryhmäsiirrot sekä
   kamera-/taustakorttien ajoitus; kommentit, tehtävät ja paikallinen hyväksyntä/lukitus.
+  Aikajanalla hahmon rivit voi valita yhdessä ja valitut palikat korostuvat.
 - Mikrofoni-/kameraesitystyökalut, kuva- ja tasoeditori, rajattu PSD-tuonti,
   leikkausasetukset, taustaäänet, englanninkieliset tekstitykset ja MP4-vienti.
 - [Ohjelmistopohjainen 3D-renderpassien PSD-vienti](native/RENDER-PASSES.md):
@@ -52,6 +53,7 @@ paketointia ja kuvaketyökalua; erillinen Codex-kiintiötyökalu käyttää Node
 - [Jäljellä olevat ominaisuuspuutteet](native/PARITEETTI.md).
 - [Mac-paketointi](native/packaging/README.md), [DMG-julkaisun tarkistuslista](native/packaging/RELEASE-CHECKLIST.md).
 - [Codex/Claude-työohjeet](AGENTS.md), [yhteinen handoff](TIIMI.md).
+- [Ammattitason kehitysvaiheet ja agenttien työnjako](docs/tiimi/AMMATTITASO.md).
 
 Sovellus on kehitysversio. Oikean Macin, Kokoro-kuuntelun, kamera-/mikrofonilaitteiden,
 Finder-avausten ja allekirjoitetun/notarisoidun itsenäisen DMG:n hyväksyntä on kesken.

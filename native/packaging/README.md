@@ -86,3 +86,40 @@ The existing ICNS, iconset and original logo are retained in
 `native/packaging/icons/` after removal of the Electron shell. Pass
 `--icon native/packaging/icons/Hahmostudio.icns` when packaging from the repository root.
 The optional `scripts/create-app-icon.py` tool needs Pillow only for regeneration.
+
+## Private-use acceptance and repeatable measurements
+
+Complete the feature work first, then test the actual release app on your Mac.
+For this personal-use phase, Developer ID signing and notarization are separate
+public-distribution tasks. Keep the operating system's protection settings.
+The device, Finder, real Kokoro and standalone MP4 checks in
+[RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) still require real Mac runs.
+
+A stdlib-only, read-only sampler can measure an already running release app;
+it does not launch the app or request microphone/camera access:
+
+```sh
+python3 native/packaging/measure_macos.py \
+  --pid 12345 --label playback --seconds 60 --interval 1 \
+  --commit EXACT_SOURCE_SHA --notes '1920x1080; production pilot; real Kokoro' \
+  --app /Applications/Koeta.app --dmg /path/to/Koeta.dmg \
+  --output /path/to/playback-measurement.json
+```
+
+Find the app's PID in Activity Monitor. Collect separate `idle`, `playback`,
+`minimized`, `synthesis` and `export` reports while performing those workloads.
+Record the scene, resolution, audio mode and device conditions in `--notes`.
+No output file is overwritten. If the app exits or its PID changes, the saved
+partial report has `status: incomplete` and the command exits with code 2.
+
+CPU uses the change in the process's accumulated CPU time over the measurement
+window, relative to one CPU core (therefore values may exceed 100%). Memory is
+sampled resident memory, **not** a guaranteed allocation peak. The report
+measures the selected PID only: FFmpeg child-process usage needs a separate
+measurement while it runs. Bundle sizes are logical file bytes, with symlinks
+excluded, and separate MacOS/Resources/Frameworks totals; the downloaded Kokoro
+model is outside the app and must be counted separately. Energy is explicitly
+`unmeasured`; use Instruments Energy Log on the same Mac instead of deriving an
+energy figure from CPU. Startup latency, GPU frame times and actual sound/image
+quality need their own checks. Python parser and mock tests on Linux do not
+constitute a Mac measurement or acceptance.
