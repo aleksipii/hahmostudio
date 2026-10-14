@@ -31,10 +31,13 @@ impl CharacterMesh {
         self.indices.len() / 3
     }
     pub fn bounds(&self) -> (Vec3, Vec3) {
-        self.vertices.iter().fold((Vec3::splat(f32::MAX), Vec3::splat(f32::MIN)), |(lo, hi), v| {
-            let p = Vec3::from(v.position);
-            (lo.min(p), hi.max(p))
-        })
+        self.vertices.iter().fold(
+            (Vec3::splat(f32::MAX), Vec3::splat(f32::MIN)),
+            |(lo, hi), v| {
+                let p = Vec3::from(v.position);
+                (lo.min(p), hi.max(p))
+            },
+        )
     }
 }
 
@@ -109,12 +112,16 @@ impl MeshBuilder {
 
     /// Nelikulmio kärkikohtaisilla väreillä (liukuvärit taustoihin).
     pub fn quad(&mut self, corners: [Vec3; 4], colors: [[u8; 3]; 4], shade: f32) {
-        let n = (corners[1] - corners[0]).cross(corners[3] - corners[0]).normalize_or_zero();
+        let n = (corners[1] - corners[0])
+            .cross(corners[3] - corners[0])
+            .normalize_or_zero();
         let base = self.mesh.vertices.len() as u32;
         for (p, c) in corners.iter().zip(colors) {
             self.push(*p, n, srgb_to_linear(c), [0, 0], 1.0, shade);
         }
-        self.mesh.indices.extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
+        self.mesh
+            .indices
+            .extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
     }
 
     pub fn sphere(&mut self, center: Vec3, radii: Vec3, color: [u8; 3]) {
@@ -125,7 +132,15 @@ impl MeshBuilder {
         self.mesh
     }
 
-    pub fn push(&mut self, p: Vec3, n: Vec3, color: [f32; 4], bones: [u32; 2], weight: f32, shade: f32) -> u32 {
+    pub fn push(
+        &mut self,
+        p: Vec3,
+        n: Vec3,
+        color: [f32; 4],
+        bones: [u32; 2],
+        weight: f32,
+        shade: f32,
+    ) -> u32 {
         self.mesh.vertices.push(Vertex {
             position: p.to_array(),
             normal: n.normalize_or_zero().to_array(),
@@ -139,7 +154,16 @@ impl MeshBuilder {
 
     /// Ellipsoidi: `radii` paikallisessa koordinaatistossa, `rot` kääntää sen.
     #[allow(clippy::too_many_arguments)]
-    pub fn ellipsoid(&mut self, center: Vec3, radii: Vec3, rot: Quat, color: [u8; 3], bind: Bind, rings: u32, segments: u32) {
+    pub fn ellipsoid(
+        &mut self,
+        center: Vec3,
+        radii: Vec3,
+        rot: Quat,
+        color: [u8; 3],
+        bind: Bind,
+        rings: u32,
+        segments: u32,
+    ) {
         let c = srgb_to_linear(color);
         let base = self.mesh.vertices.len() as u32;
         for r in 0..=rings {
@@ -148,7 +172,11 @@ impl MeshBuilder {
             for s in 0..=segments {
                 let u = s as f32 / segments as f32;
                 let phi = u * TAU;
-                let unit = Vec3::new(theta.sin() * phi.cos(), theta.cos(), theta.sin() * phi.sin());
+                let unit = Vec3::new(
+                    theta.sin() * phi.cos(),
+                    theta.cos(),
+                    theta.sin() * phi.sin(),
+                );
                 let p = center + rot * (unit * radii);
                 let n = rot * (unit / radii);
                 self.push(p, n, c, [bind.a as u32, bind.b as u32], 1.0, 1.0);
@@ -159,7 +187,9 @@ impl MeshBuilder {
             for s in 0..segments {
                 let i0 = base + r * row + s;
                 let i1 = i0 + row;
-                self.mesh.indices.extend_from_slice(&[i0, i0 + 1, i1, i1, i0 + 1, i1 + 1]);
+                self.mesh
+                    .indices
+                    .extend_from_slice(&[i0, i0 + 1, i1, i1, i0 + 1, i1 + 1]);
             }
         }
     }
@@ -168,7 +198,17 @@ impl MeshBuilder {
     /// `bind.b`:stä (vanhempi) `bind.a`:han ensimmäisen neljänneksen aikana,
     /// jolloin nivel taipuu pehmeästi.
     #[allow(clippy::too_many_arguments)]
-    pub fn capsule(&mut self, a: Vec3, b: Vec3, ra: f32, rb: f32, color: [u8; 3], bind: Bind, segments: u32, blend_start: bool) {
+    pub fn capsule(
+        &mut self,
+        a: Vec3,
+        b: Vec3,
+        ra: f32,
+        rb: f32,
+        color: [u8; 3],
+        bind: Bind,
+        segments: u32,
+        blend_start: bool,
+    ) {
         let c = srgb_to_linear(color);
         let axis = b - a;
         let len = axis.length().max(1e-5);
@@ -194,7 +234,11 @@ impl MeshBuilder {
         }
         for (z, r, nz) in &rings {
             let s = (z / len).clamp(0.0, 1.0);
-            let w = if blend_start { 0.5 + 0.5 * (s / 0.3).clamp(0.0, 1.0) } else { 1.0 };
+            let w = if blend_start {
+                0.5 + 0.5 * (s / 0.3).clamp(0.0, 1.0)
+            } else {
+                1.0
+            };
             for k in 0..=segments {
                 let phi = k as f32 / segments as f32 * TAU;
                 let radial = side * phi.cos() + up * phi.sin();
@@ -208,7 +252,9 @@ impl MeshBuilder {
             for s in 0..segments {
                 let i0 = base + r * row + s;
                 let i1 = i0 + row;
-                self.mesh.indices.extend_from_slice(&[i0, i1, i0 + 1, i1, i1 + 1, i0 + 1]);
+                self.mesh
+                    .indices
+                    .extend_from_slice(&[i0, i1, i0 + 1, i1, i1 + 1, i0 + 1]);
             }
         }
     }
@@ -220,11 +266,268 @@ impl MeshBuilder {
         }
     }
 
-    fn unshaded_ellipsoid(&mut self, center: Vec3, radii: Vec3, rot: Quat, color: [u8; 3], bind: Bind) {
+    fn unshaded_ellipsoid(
+        &mut self,
+        center: Vec3,
+        radii: Vec3,
+        rot: Quat,
+        color: [u8; 3],
+        bind: Bind,
+    ) {
         let start = self.mesh.vertices.len();
         self.ellipsoid(center, radii, rot, color, bind, 8, 12);
         for v in &mut self.mesh.vertices[start..] {
             v.shade = 0.0;
+        }
+    }
+}
+
+/// A continuous tailored shirt, built once in bind pose. Ring widths form the
+/// shoulders/waist instead of overlapping outlined primitive volumes.
+fn tailored_torso(
+    b: &mut MeshBuilder,
+    h: &Humanoid,
+    p: &CharacterParams,
+    pelvis: Vec3,
+    chest: Vec3,
+    neck: Vec3,
+    radius: f32,
+) {
+    let height = h.proportions.height;
+    let belly = p.extras.belly.clamp(0.0, 1.0);
+    let bottom = pelvis.y + height * 0.018;
+    let shoulder = chest.y + height * 0.024;
+    let top = neck.y - height * 0.009;
+    let shoulder_width = h.proportions.shoulder_width * 0.49;
+    let profile = [
+        (bottom, radius * 0.96, radius * 0.79, 0.0),
+        (bottom + height * 0.015, radius * 1.0, radius * 0.83, 0.0),
+        (
+            pelvis.y + (chest.y - pelvis.y) * 0.35,
+            radius * (0.96 + belly * 0.07),
+            radius * (0.83 + belly * 0.18),
+            radius * belly * 0.08,
+        ),
+        (
+            pelvis.y + (chest.y - pelvis.y) * 0.72,
+            radius * 1.03,
+            radius * (0.89 + belly * 0.10),
+            radius * belly * 0.05,
+        ),
+        (chest.y, shoulder_width * 0.92, radius * 0.90, 0.0),
+        (shoulder, shoulder_width, radius * 0.79, 0.0),
+        (
+            shoulder + (top - shoulder) * 0.60,
+            shoulder_width * 0.75,
+            radius * 0.59,
+            0.0,
+        ),
+        (top, height * 0.031, height * 0.030, 0.0),
+    ];
+    let base = b.mesh.vertices.len() as u32;
+    let segments = 24;
+    for (r, &(y, width, depth, z)) in profile.iter().enumerate() {
+        let previous = profile[r.saturating_sub(1)];
+        let next = profile[(r + 1).min(profile.len() - 1)];
+        let dy = (next.0 - previous.0).max(1e-5);
+        let dw = (next.1 - previous.1) / dy;
+        let dd = (next.2 - previous.2) / dy;
+        let upper = y >= chest.y;
+        let bones = if upper {
+            [h.chest as u32, h.spine as u32]
+        } else {
+            [h.spine as u32, h.pelvis as u32]
+        };
+        let weight = if upper {
+            ((y - chest.y) / (top - chest.y).max(1e-5)).clamp(0.0, 1.0)
+        } else {
+            ((y - bottom) / (chest.y - bottom).max(1e-5)).clamp(0.0, 1.0)
+        };
+        for k in 0..=segments {
+            let angle = k as f32 / segments as f32 * TAU;
+            let (sn, cs) = angle.sin_cos();
+            let normal = Vec3::new(
+                cs / width,
+                -(dw * cs * cs / width + dd * sn * sn / depth),
+                sn / depth,
+            );
+            b.push(
+                Vec3::new(pelvis.x + width * cs, y, pelvis.z + z + depth * sn),
+                normal,
+                srgb_to_linear(p.top),
+                bones,
+                weight,
+                1.0,
+            );
+        }
+    }
+    for r in 0..profile.len() as u32 - 1 {
+        for k in 0..segments {
+            let a = base + r * (segments + 1) + k;
+            let c = a + segments + 1;
+            b.mesh
+                .indices
+                .extend_from_slice(&[a, c, a + 1, a + 1, c, c + 1]);
+        }
+    }
+    // Close both rings with their own flat normals. The neck and trouser
+    // surfaces cover these disks in ordinary views; closed surfaces also
+    // remain well-defined for ray tracing from below or behind the actor.
+    for (r, up, joint) in [
+        (0usize, false, h.pelvis),
+        (profile.len() - 1, true, h.chest),
+    ] {
+        let (y, width, depth, z) = profile[r];
+        let normal = if up { Vec3::Y } else { Vec3::NEG_Y };
+        let bones = [joint as u32; 2];
+        let color = srgb_to_linear(p.top);
+        let center = b.push(
+            Vec3::new(pelvis.x, y, pelvis.z + z),
+            normal,
+            color,
+            bones,
+            1.0,
+            1.0,
+        );
+        let edge = b.mesh.vertices.len() as u32;
+        for k in 0..=segments {
+            let angle = k as f32 / segments as f32 * TAU;
+            let (sn, cs) = angle.sin_cos();
+            b.push(
+                Vec3::new(pelvis.x + width * cs, y, pelvis.z + z + depth * sn),
+                normal,
+                color,
+                bones,
+                1.0,
+                1.0,
+            );
+        }
+        for k in 0..segments {
+            let (a, c) = (edge + k, edge + k + 1);
+            let triangle = if up { [center, c, a] } else { [center, a, c] };
+            b.mesh.indices.extend_from_slice(&triangle);
+        }
+    }
+}
+
+/// Continuous, gently flared skirt. Hem joints influence the lower edge,
+/// while the waist remains on the pelvis; no overlapping diaper-like lobes.
+fn flared_skirt(b: &mut MeshBuilder, h: &Humanoid, p: &CharacterParams, pelvis: Vec3, radius: f32) {
+    let height = h.proportions.height;
+    let top = pelvis.y + height * 0.025;
+    let bottom = pelvis.y - height * 0.115;
+    let segments = 24u32;
+    let rings = 6u32;
+    let base = b.mesh.vertices.len() as u32;
+    for r in 0..=rings {
+        let t = r as f32 / rings as f32;
+        let width = h.proportions.hip_width * (0.61 + t * 0.18);
+        let depth = radius * (0.80 + t * 0.22);
+        for k in 0..=segments {
+            let phi = k as f32 / segments as f32 * TAU;
+            let (sn, cs) = phi.sin_cos();
+            let hem = if sn >= 0.0 { h.hem_front } else { h.hem_back };
+            let normal = Vec3::new(
+                cs / width,
+                (h.proportions.hip_width * 0.18 * cs * cs / width
+                    + radius * 0.22 * sn * sn / depth)
+                    / (top - bottom),
+                sn / depth,
+            );
+            b.push(
+                Vec3::new(
+                    pelvis.x + width * cs,
+                    top + (bottom - top) * t,
+                    pelvis.z + depth * sn,
+                ),
+                normal,
+                srgb_to_linear(p.top),
+                [hem as u32, h.pelvis as u32],
+                t * 0.65,
+                1.0,
+            );
+        }
+    }
+    for r in 0..rings {
+        for k in 0..segments {
+            let a = base + r * (segments + 1) + k;
+            let c = a + segments + 1;
+            b.mesh
+                .indices
+                .extend_from_slice(&[a, a + 1, c, a + 1, c + 1, c]);
+        }
+    }
+    for (r, up) in [(0u32, true), (rings, false)] {
+        let t = r as f32 / rings as f32;
+        let y = top + (bottom - top) * t;
+        let normal = if up { Vec3::Y } else { Vec3::NEG_Y };
+        let center = b.push(
+            Vec3::new(pelvis.x, y, pelvis.z),
+            normal,
+            srgb_to_linear(p.top),
+            [h.pelvis as u32; 2],
+            1.0,
+            1.0,
+        );
+        for k in 0..segments {
+            let old_a = b.mesh.vertices[(base + r * (segments + 1) + k) as usize];
+            let old_c = b.mesh.vertices[(base + r * (segments + 1) + k + 1) as usize];
+            let a = b.push(
+                Vec3::from(old_a.position),
+                normal,
+                old_a.color,
+                old_a.bones,
+                old_a.weight,
+                1.0,
+            );
+            let c = b.push(
+                Vec3::from(old_c.position),
+                normal,
+                old_c.color,
+                old_c.bones,
+                old_c.weight,
+                1.0,
+            );
+            let triangle = if up { [center, c, a] } else { [center, a, c] };
+            b.mesh.indices.extend_from_slice(&triangle);
+        }
+    }
+}
+
+/// Scalp-following open hair shell with a higher forehead and lower nape.
+/// Unlike a full ellipsoid it never creates a second ball through the face.
+fn scalp(b: &mut MeshBuilder, center: Vec3, radii: Vec3, hh: f32, color: [u8; 3], head: usize) {
+    let base = b.mesh.vertices.len() as u32;
+    let (rings, segments) = (12u32, 28u32);
+    for r in 0..=rings {
+        for k in 0..=segments {
+            let phi = k as f32 / segments as f32 * TAU;
+            let front = (phi.sin() + 1.0) * 0.5;
+            let limit = 1.83 - 0.72 * front + 0.055 * phi.cos();
+            let theta = (0.015 + r as f32 / rings as f32 * (limit - 0.015)).min(PI);
+            let unit = Vec3::new(
+                theta.sin() * phi.cos(),
+                theta.cos(),
+                theta.sin() * phi.sin(),
+            );
+            let p = center + unit * (radii + Vec3::splat(hh * 0.018));
+            b.push(
+                p,
+                unit / radii,
+                srgb_to_linear(color),
+                [head as u32; 2],
+                1.0,
+                1.0,
+            );
+        }
+    }
+    for r in 0..rings {
+        for k in 0..segments {
+            let a = base + r * (segments + 1) + k;
+            let c = a + segments + 1;
+            b.mesh
+                .indices
+                .extend_from_slice(&[a, a + 1, c, c, a + 1, c + 1]);
         }
     }
 }
@@ -245,22 +548,47 @@ fn mouth(b: &mut MeshBuilder, h: &Humanoid, head_c: Vec3, head_r: Vec3, y: f32, 
     let mh = hh * 0.011;
     // Ontelo: keskipiste + reunakehä. Ylä-/alapuolisko seuraa ylähuulta/leukaa,
     // sivut suupieliä (paino cos²).
-    let center = b.push(Vec3::new(0.0, y, surface(0.0, y)), n, cavity, [r.lip_upper as u32, h.jaw as u32], 0.5, 0.0);
+    let center = b.push(
+        Vec3::new(0.0, y, surface(0.0, y)),
+        n,
+        cavity,
+        [r.lip_upper as u32, h.jaw as u32],
+        0.5,
+        0.0,
+    );
     let segments = 24;
     let ring: Vec<u32> = (0..segments)
         .map(|k| {
             let a = k as f32 / segments as f32 * TAU;
             let (x, yy) = (a.cos() * mw, y + a.sin() * mh);
-            let corner = if a.cos() >= 0.0 { r.corner_left } else { r.corner_right };
+            let corner = if a.cos() >= 0.0 {
+                r.corner_left
+            } else {
+                r.corner_right
+            };
             let lip = if a.sin() >= 0.0 { r.lip_upper } else { h.jaw };
-            b.push(Vec3::new(x, yy, surface(x, yy)), n, cavity, [corner as u32, lip as u32], a.cos().powi(2), 0.0)
+            b.push(
+                Vec3::new(x, yy, surface(x, yy)),
+                n,
+                cavity,
+                [corner as u32, lip as u32],
+                a.cos().powi(2),
+                0.0,
+            )
         })
         .collect();
     for k in 0..segments {
-        b.mesh.indices.extend_from_slice(&[center, ring[k], ring[(k + 1) % segments]]);
+        b.mesh
+            .indices
+            .extend_from_slice(&[center, ring[k], ring[(k + 1) % segments]]);
     }
     // Hampaat (yläreuna ylähuulessa, alareuna hammasluussa) ja kieli (leuka → kielen kärki).
-    let strip = |b: &mut MeshBuilder, half_w: f32, z_off: f32, top: usize, bottom: usize, color: [u8; 3]| {
+    let strip = |b: &mut MeshBuilder,
+                 half_w: f32,
+                 z_off: f32,
+                 top: usize,
+                 bottom: usize,
+                 color: [u8; 3]| {
         let c = srgb_to_linear(color);
         let base = b.mesh.vertices.len() as u32;
         let cols = 6;
@@ -268,21 +596,42 @@ fn mouth(b: &mut MeshBuilder, h: &Humanoid, head_c: Vec3, head_r: Vec3, y: f32, 
             let x = -half_w + 2.0 * half_w * k as f32 / cols as f32;
             let z = surface(x, y) + z_off;
             b.push(Vec3::new(x, y, z), n, c, [top as u32, top as u32], 1.0, 0.0);
-            b.push(Vec3::new(x, y, z), n, c, [bottom as u32, bottom as u32], 1.0, 0.0);
+            b.push(
+                Vec3::new(x, y, z),
+                n,
+                c,
+                [bottom as u32, bottom as u32],
+                1.0,
+                0.0,
+            );
         }
         for k in 0..cols as u32 {
-            let (t0, b0, t1, b1) = (base + 2 * k, base + 2 * k + 1, base + 2 * k + 2, base + 2 * k + 3);
+            let (t0, b0, t1, b1) = (
+                base + 2 * k,
+                base + 2 * k + 1,
+                base + 2 * k + 2,
+                base + 2 * k + 3,
+            );
             b.mesh.indices.extend_from_slice(&[t0, b0, t1, t1, b0, b1]);
         }
     };
-    strip(b, mw * 0.62, hh * 0.002, r.lip_upper, r.teeth, [0xf6, 0xf4, 0xee]);
+    strip(
+        b,
+        mw * 0.62,
+        hh * 0.002,
+        r.lip_upper,
+        r.teeth,
+        [0xf6, 0xf4, 0xee],
+    );
     strip(b, mw * 0.5, hh * 0.001, h.jaw, r.tongue, [0xd8, 0x5a, 0x66]);
 }
 
 /// Rakentaa verkon luurangon ympärille. Kaikki muodot ovat suljettuja ja
 /// ääriviivattomia; vain kasvojen yksityiskohdat ovat tummia.
 pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
-    let mut b = Builder { mesh: CharacterMesh::default() };
+    let mut b = Builder {
+        mesh: CharacterMesh::default(),
+    };
     let bind = h.skeleton.bind_positions();
     let j = |i: usize| bind[i];
     let height = h.proportions.height;
@@ -298,29 +647,49 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
     let chest = j(h.chest);
     let neck = j(h.neck);
     let torso_r = height * 0.085 * wide * if hoodie { 1.1 } else { 1.0 };
-    b.ellipsoid(pelvis + Vec3::Y * height * 0.01, Vec3::new(h.proportions.hip_width * 0.62, height * 0.07, height * 0.065 * wide), Quat::IDENTITY, if dress { p.top } else { p.bottom }, Bind::one(h.pelvis), 12, 18);
-    b.capsule(pelvis + Vec3::Y * height * 0.03, chest, torso_r * 0.92, torso_r, p.top, Bind { a: h.spine, b: h.pelvis }, 18, true);
-    b.ellipsoid(chest + Vec3::Y * height * 0.03, Vec3::new(h.proportions.shoulder_width * 0.52, (neck.y - chest.y) * 0.75, torso_r * 0.95), Quat::IDENTITY, p.top, Bind { a: h.chest, b: h.spine }, 12, 18);
-    let belly = p.extras.belly.clamp(0.0, 1.0);
-    if belly > 0.05 {
-        // Vatsa: eteen pullistuva ellipsoidi vyötärön kohdalla.
-        let c = pelvis.lerp(chest, 0.55) + Vec3::Z * torso_r * (0.25 + belly * 0.35);
-        let r = Vec3::new(torso_r * (0.95 + belly * 0.25), (chest.y - pelvis.y) * (0.45 + belly * 0.1), torso_r * (0.7 + belly * 0.35));
-        b.ellipsoid(c, r, Quat::IDENTITY, p.top, Bind { a: h.spine, b: h.pelvis }, 12, 18);
+    if !dress {
+        b.ellipsoid(
+            pelvis + Vec3::Y * height * 0.01,
+            Vec3::new(
+                h.proportions.hip_width * 0.62,
+                height * 0.07,
+                height * 0.065 * wide,
+            ),
+            Quat::IDENTITY,
+            if dress { p.top } else { p.bottom },
+            Bind::one(h.pelvis),
+            12,
+            18,
+        );
     }
+    tailored_torso(&mut b, h, p, pelvis, chest, neck, torso_r);
     if hoodie {
-        b.ellipsoid(neck + Vec3::new(0.0, -height * 0.005, -torso_r * 0.55), Vec3::new(torso_r * 0.7, height * 0.03, torso_r * 0.4), Quat::IDENTITY, mix(p.top, [0, 0, 0], 0.15), Bind::one(h.chest), 8, 14);
+        b.ellipsoid(
+            neck + Vec3::new(0.0, -height * 0.005, -torso_r * 0.55),
+            Vec3::new(torso_r * 0.7, height * 0.03, torso_r * 0.4),
+            Quat::IDENTITY,
+            mix(p.top, [0, 0, 0], 0.15),
+            Bind::one(h.chest),
+            8,
+            14,
+        );
     }
-    b.capsule(neck - Vec3::Y * height * 0.01, j(h.head) + Vec3::Y * hh * 0.1, height * 0.028, height * 0.026, skin, Bind { a: h.neck, b: h.chest }, 12, true);
+    b.capsule(
+        neck - Vec3::Y * height * 0.01,
+        j(h.head) + Vec3::Y * hh * 0.1,
+        height * 0.028,
+        height * 0.026,
+        skin,
+        Bind {
+            a: h.neck,
+            b: h.chest,
+        },
+        12,
+        true,
+    );
 
-    // Helma: vartalon alareuna tai mekko, sidottu helmaniveliin, jotta se heiluu.
-    let hem_len = if dress { height * 0.16 } else { height * 0.035 };
-    let hem_top = pelvis.y + height * 0.05;
-    let hem_r = if dress { h.proportions.hip_width * 0.75 } else { torso_r * 1.02 };
-    for (joint, z) in [(h.hem_front, 1.0f32), (h.hem_back, -1.0)] {
-        let center = Vec3::new(0.0, hem_top - hem_len * 0.5, z * hem_r * 0.35);
-        let radii = Vec3::new(hem_r * 1.05, hem_len * 0.5 + height * 0.01, hem_r * 0.7);
-        b.ellipsoid(center, radii, Quat::IDENTITY, p.top, Bind { a: joint, b: h.pelvis }, 8, 16);
+    if dress {
+        flared_skirt(&mut b, h, p, pelvis, torso_r);
     }
 
     // Kädet.
@@ -332,36 +701,124 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
         let wrist = j(arm.hand);
         let r_up = height * 0.032 * wide;
         let r_fore = height * 0.026 * wide;
-        b.ellipsoid(shoulder, Vec3::splat(r_up * 1.08), Quat::IDENTITY, p.top, Bind { a: arm.upper, b: h.chest }, 8, 12);
+        // The sleeve starts slightly below the joint so its rounded cap
+        // tucks into the shirt instead of rising as a separate shoulder ball.
+        let sleeve_start = shoulder - Vec3::Y * r_up * 0.78;
         let sleeve = p.sleeve.clamp(0.0, 1.0);
         if sleeve > 0.15 && sleeve < 0.5 {
             // Lyhythiha päättyy olkavarteen; loppuosa on ihoa (ei päällekkäisiä pintoja).
             let cut = shoulder.lerp(elbow, (sleeve * 1.8).min(0.95));
-            b.capsule(shoulder, cut, r_up * 1.06, r_up * 1.04, p.top, Bind { a: arm.upper, b: h.chest }, 12, true);
-            b.capsule(cut, elbow, r_up * 0.94, r_fore * 1.05, skin, Bind::one(arm.upper), 12, false);
+            b.capsule(
+                sleeve_start,
+                cut,
+                r_up * 1.06,
+                r_up * 1.04,
+                p.top,
+                Bind {
+                    a: arm.upper,
+                    b: h.chest,
+                },
+                12,
+                true,
+            );
+            b.capsule(
+                cut,
+                elbow,
+                r_up * 0.94,
+                r_fore * 1.05,
+                skin,
+                Bind::one(arm.upper),
+                12,
+                false,
+            );
         } else {
             let upper_color = if sleeve > 0.15 { p.top } else { skin };
-            b.capsule(shoulder, elbow, r_up, r_fore * 1.05, upper_color, Bind { a: arm.upper, b: h.chest }, 12, true);
+            b.capsule(
+                sleeve_start,
+                elbow,
+                r_up,
+                r_fore * 1.05,
+                upper_color,
+                Bind {
+                    a: arm.upper,
+                    b: h.chest,
+                },
+                12,
+                true,
+            );
         }
         let fore_color = if sleeve > 0.75 { p.top } else { skin };
-        b.capsule(elbow, wrist, r_fore, r_fore * 0.8, fore_color, Bind { a: arm.fore, b: arm.upper }, 12, true);
+        b.capsule(
+            elbow,
+            wrist,
+            r_fore,
+            r_fore * 0.8,
+            fore_color,
+            Bind {
+                a: arm.fore,
+                b: arm.upper,
+            },
+            12,
+            true,
+        );
         if hoodie || sleeve > 0.75 {
-            b.capsule(wrist + Vec3::Y * height * 0.03, wrist + Vec3::Y * height * 0.012, r_fore * 0.95, r_fore * 0.92, mix(p.top, [0, 0, 0], 0.12), Bind::one(arm.fore), 12, false);
+            b.capsule(
+                wrist + Vec3::Y * height * 0.03,
+                wrist + Vec3::Y * height * 0.012,
+                r_fore * 0.95,
+                r_fore * 0.92,
+                mix(p.top, [0, 0, 0], 0.12),
+                Bind::one(arm.fore),
+                12,
+                false,
+            );
         }
         // Kämmen: litteä ellipsoidi, kämmenpuoli kohti kehoa.
         let palm_len = arm.hand_len * 0.48;
         let palm_center = wrist + Vec3::new(-s * arm.hand_len * 0.02, -palm_len * 0.55, 0.0);
-        b.ellipsoid(palm_center, Vec3::new(arm.hand_len * 0.14, palm_len * 0.6, arm.hand_len * 0.24), Quat::IDENTITY, skin, Bind { a: arm.hand, b: arm.fore }, 8, 12);
+        b.ellipsoid(
+            palm_center,
+            Vec3::new(arm.hand_len * 0.14, palm_len * 0.6, arm.hand_len * 0.24),
+            Quat::IDENTITY,
+            skin,
+            Bind {
+                a: arm.hand,
+                b: arm.fore,
+            },
+            8,
+            12,
+        );
         // Viisi sormea, kolme falanksia kussakin.
         for (k, f) in arm.fingers.iter().enumerate() {
-            let radius = arm.hand_len * if k == 0 { 0.075 } else { 0.058 } * if k == 4 { 0.85 } else { 1.0 };
+            let radius =
+                arm.hand_len * if k == 0 { 0.075 } else { 0.058 } * if k == 4 { 0.85 } else { 1.0 };
             let parent_of_first = arm.hand;
             for seg in 0..3 {
                 let a = j(f.joints[seg]);
-                let end = if seg < 2 { j(f.joints[seg + 1]) } else { j(f.joints[2]) + f.tip };
-                let parent = if seg == 0 { parent_of_first } else { f.joints[seg - 1] };
+                let end = if seg < 2 {
+                    j(f.joints[seg + 1])
+                } else {
+                    j(f.joints[2]) + f.tip
+                };
+                let parent = if seg == 0 {
+                    parent_of_first
+                } else {
+                    f.joints[seg - 1]
+                };
                 let r = radius * (1.0 - seg as f32 * 0.1);
-                b.capsule(a, end, r, r * 0.92, skin, Bind { a: f.joints[seg], b: parent }, 8, true);
+                b.capsule(
+                    a,
+                    end,
+                    r,
+                    r * 0.92,
+                    skin,
+                    Bind {
+                        a: f.joints[seg],
+                        b: parent,
+                    },
+                    8,
+                    true,
+                );
             }
         }
     }
@@ -375,26 +832,103 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
         let r_thigh = height * 0.045 * wide;
         let r_shin = height * 0.034 * wide;
         let lower_color = if dress { skin } else { p.bottom };
-        b.capsule(hip, knee, r_thigh, r_shin * 1.08, if dress { skin } else { p.bottom }, Bind { a: leg.thigh, b: h.pelvis }, 14, true);
+        b.capsule(
+            hip,
+            knee,
+            r_thigh,
+            r_shin * 1.08,
+            if dress { skin } else { p.bottom },
+            Bind {
+                a: leg.thigh,
+                b: h.pelvis,
+            },
+            14,
+            true,
+        );
         let trouser = p.trouser.clamp(0.0, 1.0);
-        let shin_color = if dress || trouser < 0.6 { skin } else { lower_color };
-        b.capsule(knee, ankle, r_shin, r_shin * 0.8, shin_color, Bind { a: leg.shin, b: leg.thigh }, 14, true);
+        let shin_color = if dress || trouser < 0.6 {
+            skin
+        } else {
+            lower_color
+        };
+        b.capsule(
+            knee,
+            ankle,
+            r_shin,
+            r_shin * 0.8,
+            shin_color,
+            Bind {
+                a: leg.shin,
+                b: leg.thigh,
+            },
+            14,
+            true,
+        );
         if !dress && trouser < 0.6 {
-            b.capsule(knee + Vec3::Y * height * 0.02, knee - Vec3::Y * height * 0.03, r_shin * 1.12, r_shin * 1.05, p.bottom, Bind::one(leg.thigh), 14, false);
+            b.capsule(
+                knee + Vec3::Y * height * 0.02,
+                knee - Vec3::Y * height * 0.03,
+                r_shin * 1.12,
+                r_shin * 1.05,
+                p.bottom,
+                Bind::one(leg.thigh),
+                14,
+                false,
+            );
         }
         // Kenkä: pitkänomainen ellipsoidi eteenpäin, pohja maassa.
-        let shoe_center = Vec3::new(ankle.x, leg.ankle_height * 0.75, ankle.z + leg.foot_len * 0.25);
-        b.ellipsoid(shoe_center, Vec3::new(r_shin * 1.15, leg.ankle_height * 0.8, leg.foot_len * 0.55), Quat::IDENTITY, p.shoes, Bind::one(leg.foot), 10, 16);
-        b.ellipsoid(Vec3::new(ankle.x, leg.ankle_height * 0.22, ankle.z + leg.foot_len * 0.25), Vec3::new(r_shin * 1.22, leg.ankle_height * 0.25, leg.foot_len * 0.6), Quat::IDENTITY, mix(p.shoes, [255, 255, 255], 0.55), Bind::one(leg.foot), 6, 16);
+        let shoe_center = Vec3::new(
+            ankle.x,
+            leg.ankle_height * 0.75,
+            ankle.z + leg.foot_len * 0.25,
+        );
+        b.ellipsoid(
+            shoe_center,
+            Vec3::new(r_shin * 1.15, leg.ankle_height * 0.8, leg.foot_len * 0.55),
+            Quat::IDENTITY,
+            p.shoes,
+            Bind::one(leg.foot),
+            10,
+            16,
+        );
+        b.ellipsoid(
+            Vec3::new(
+                ankle.x,
+                leg.ankle_height * 0.22,
+                ankle.z + leg.foot_len * 0.25,
+            ),
+            Vec3::new(r_shin * 1.22, leg.ankle_height * 0.25, leg.foot_len * 0.6),
+            Quat::IDENTITY,
+            mix(p.shoes, [255, 255, 255], 0.55),
+            Bind::one(leg.foot),
+            6,
+            16,
+        );
     }
 
     // Pää ja kasvot (kasvot katsovat +Z:aan).
     let head_base = j(h.head);
     let head_c = head_base + Vec3::Y * hh * 0.55;
     let head_r = Vec3::new(hh * 0.46, hh * 0.52, hh * 0.46);
-    b.ellipsoid(head_c, head_r, Quat::IDENTITY, skin, Bind::one(h.head), 18, 28);
+    b.ellipsoid(
+        head_c,
+        head_r,
+        Quat::IDENTITY,
+        skin,
+        Bind::one(h.head),
+        18,
+        28,
+    );
     for s in [-1.0f32, 1.0] {
-        b.ellipsoid(head_c + Vec3::new(s * head_r.x * 0.98, -hh * 0.02, 0.0), Vec3::new(hh * 0.06, hh * 0.1, hh * 0.07), Quat::IDENTITY, mix(skin, [0, 0, 0], 0.06), Bind::one(h.head), 6, 10);
+        b.ellipsoid(
+            head_c + Vec3::new(s * head_r.x * 0.98, -hh * 0.02, 0.0),
+            Vec3::new(hh * 0.06, hh * 0.1, hh * 0.07),
+            Quat::IDENTITY,
+            mix(skin, [0, 0, 0], 0.06),
+            Bind::one(h.head),
+            6,
+            10,
+        );
     }
     let f = &p.face;
     let eye_y = head_c.y + hh * 0.02;
@@ -408,64 +942,183 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
         };
         let x = s * eye_dx;
         let z = surface(x, eye_y);
-        let normal = Vec3::new(x / head_r.x.powi(2), (eye_y - head_c.y) / head_r.y.powi(2), (z - head_c.z) / head_r.z.powi(2)).normalize();
+        let normal = Vec3::new(
+            x / head_r.x.powi(2),
+            (eye_y - head_c.y) / head_r.y.powi(2),
+            (z - head_c.z) / head_r.z.powi(2),
+        )
+        .normalize();
         let face_rot = Quat::from_rotation_arc(Vec3::Z, normal);
-        b.unshaded_ellipsoid(Vec3::new(x, eye_y, z - eye_r * 0.25), Vec3::new(eye_r * 0.82, eye_r, eye_r * 0.45), face_rot, [0xfb, 0xfb, 0xf8], Bind::one(h.head));
         let details = b.mesh.vertices.len();
-        // Isoissa sarjakuvasilmissä pupilli on pienempi suhteessa valkuaiseen.
-        let pupil = 1.0 / f.eye_size.clamp(0.5, 1.8).max(1.0).powf(0.6);
-        b.unshaded_ellipsoid(Vec3::new(x * (1.0 - 0.04 * pupil), eye_y - eye_r * 0.12, z - eye_r * 0.02), Vec3::new(eye_r * 0.5 * pupil, eye_r * 0.62 * pupil, eye_r * 0.3), face_rot, f.eye_color, Bind::one(h.head));
-        b.unshaded_ellipsoid(Vec3::new(x + eye_r * 0.15 * pupil, eye_y + eye_r * 0.18 * pupil, z + eye_r * 0.06), Vec3::splat(eye_r * 0.14 * pupil), face_rot, [255, 255, 255], Bind::one(h.head));
+        b.unshaded_ellipsoid(
+            Vec3::new(x, eye_y, z - eye_r * 0.04),
+            Vec3::new(eye_r * 0.92, eye_r * 0.91, eye_r * 0.24),
+            face_rot,
+            [0xfb, 0xfb, 0xf8],
+            Bind::one(h.head),
+        );
+        // Centered irises, a separate pupil and a restrained catchlight.
+        let eye_center = Vec3::new(x, eye_y, z - eye_r * 0.04);
+        b.unshaded_ellipsoid(
+            eye_center + normal * eye_r * 0.22,
+            Vec3::new(eye_r * 0.57, eye_r * 0.64, eye_r * 0.06),
+            face_rot,
+            f.eye_color,
+            Bind::one(h.head),
+        );
+        b.unshaded_ellipsoid(
+            eye_center + normal * eye_r * 0.275,
+            Vec3::new(eye_r * 0.27, eye_r * 0.32, eye_r * 0.025),
+            face_rot,
+            [24, 27, 31],
+            Bind::one(h.head),
+        );
+        b.unshaded_ellipsoid(
+            eye_center + face_rot * Vec3::new(-eye_r * 0.14, eye_r * 0.19, eye_r * 0.305),
+            Vec3::splat(eye_r * 0.09),
+            face_rot,
+            [255, 255, 255],
+            Bind::one(h.head),
+        );
         // Kulmakarvat hiusten värillä.
         let brow_y = eye_y + eye_r * 1.45;
         let brow_z = surface(x, brow_y);
-        b.unshaded_ellipsoid(Vec3::new(x, brow_y, brow_z - hh * 0.005), Vec3::new(eye_r * 0.85, eye_r * 0.14 * f.brow_thickness.clamp(0.3, 2.5), eye_r * 0.2), face_rot * Quat::from_rotation_z(s * 0.08), mix(p.hair, dark, 0.35), Bind::one(h.head));
+        b.unshaded_ellipsoid(
+            Vec3::new(x, brow_y, brow_z - hh * 0.005),
+            Vec3::new(
+                eye_r * 0.85,
+                eye_r * 0.14 * f.brow_thickness.clamp(0.3, 2.5),
+                eye_r * 0.2,
+            ),
+            face_rot * Quat::from_rotation_z(s * 0.08),
+            mix(p.hair, dark, 0.35),
+            Bind::one(h.head),
+        );
         if f.cheeks {
             let cy = eye_y - eye_r * 1.6;
             let cx = s * eye_dx * 1.25;
-            b.unshaded_ellipsoid(Vec3::new(cx, cy, surface(cx, cy) - hh * 0.012), Vec3::new(eye_r * 0.6, eye_r * 0.32, eye_r * 0.2), face_rot, mix(skin, [0xe8, 0x6a, 0x6a], 0.35), Bind::one(h.head));
+            b.unshaded_ellipsoid(
+                Vec3::new(cx, cy, surface(cx, cy) - hh * 0.012),
+                Vec3::new(eye_r * 0.6, eye_r * 0.32, eye_r * 0.2),
+                face_rot,
+                mix(skin, [0xe8, 0x6a, 0x6a], 0.35),
+                Bind::one(h.head),
+            );
         }
         b.no_outline(details);
         if p.extras.glasses {
             // Pyöreät sankalasit: kehä kapseleista silmän ympärillä, silta nenän yli.
-            let ring_r = eye_r * 1.15;
+            let ring_r = eye_r * 1.11;
             let rz = z + eye_r * 0.3;
-            let wire = hh * 0.008;
+            let wire = hh * 0.0045;
             let pts: Vec<Vec3> = (0..=16)
                 .map(|k| {
                     let a = k as f32 / 16.0 * TAU;
-                    Vec3::new(x, eye_y, rz) + face_rot * Vec3::new(a.cos() * ring_r, a.sin() * ring_r * 0.9, 0.0)
+                    Vec3::new(x, eye_y, rz)
+                        + face_rot * Vec3::new(a.cos() * ring_r, a.sin() * ring_r * 0.9, 0.0)
                 })
                 .collect();
             for w in pts.windows(2) {
-                b.capsule(w[0], w[1], wire, wire, [0x22, 0x1e, 0x22], Bind::one(h.head), 6, false);
+                b.capsule(
+                    w[0],
+                    w[1],
+                    wire,
+                    wire,
+                    [0x22, 0x1e, 0x22],
+                    Bind::one(h.head),
+                    6,
+                    false,
+                );
             }
             if s > 0.0 {
                 let inner = eye_dx - ring_r;
-                b.capsule(Vec3::new(-inner, eye_y + eye_r * 0.2, rz + hh * 0.01), Vec3::new(inner, eye_y + eye_r * 0.2, rz + hh * 0.01), wire, wire, [0x22, 0x1e, 0x22], Bind::one(h.head), 6, false);
+                b.capsule(
+                    Vec3::new(-inner, eye_y + eye_r * 0.2, rz + hh * 0.01),
+                    Vec3::new(inner, eye_y + eye_r * 0.2, rz + hh * 0.01),
+                    wire,
+                    wire,
+                    [0x22, 0x1e, 0x22],
+                    Bind::one(h.head),
+                    6,
+                    false,
+                );
             }
         }
     }
     // Nenä ja suu.
     let nose_y = eye_y - hh * 0.1;
     let nose_z = head_c.z + head_r.z * (1.0 - ((nose_y - head_c.y) / head_r.y).powi(2)).sqrt();
-    b.ellipsoid(Vec3::new(0.0, nose_y, nose_z), Vec3::new(hh * 0.035, hh * 0.04, hh * 0.04) * f.nose_size.clamp(0.4, 2.0), Quat::IDENTITY, mix(skin, [0xb0, 0x60, 0x50], 0.12), Bind::one(h.head), 6, 10);
-    mouth(&mut b, h, head_c, head_r, j(h.jaw).y, hh * 0.11 * f.mouth_width.clamp(0.4, 2.0));
+    b.ellipsoid(
+        Vec3::new(0.0, nose_y, nose_z),
+        Vec3::new(hh * 0.035, hh * 0.04, hh * 0.04) * f.nose_size.clamp(0.4, 2.0),
+        Quat::IDENTITY,
+        mix(skin, [0xb0, 0x60, 0x50], 0.12),
+        Bind::one(h.head),
+        6,
+        10,
+    );
+    mouth(
+        &mut b,
+        h,
+        head_c,
+        head_r,
+        j(h.jaw).y,
+        hh * 0.11 * f.mouth_width.clamp(0.4, 2.0),
+    );
 
     // Päähine.
     let hat = p.extras.hat_color;
     match p.extras.hat {
         HatStyle::None => {}
         HatStyle::Beanie => {
-            let top = head_c + Vec3::new(0.0, hh * 0.16, -hh * 0.03);
-            b.ellipsoid(top, Vec3::new(head_r.x * 1.13, head_r.y * 0.8, head_r.z * 1.13), Quat::from_rotation_x(-0.12), hat, Bind::one(h.head), 14, 24);
-            // Käänne ja tupsu.
-            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.2, -hh * 0.01), Vec3::new(head_r.x * 1.17, hh * 0.08, head_r.z * 1.17), Quat::from_rotation_x(-0.18), mix(hat, [0, 0, 0], 0.18), Bind::one(h.head), 6, 28);
-            b.ellipsoid(head_c + Vec3::new(0.0, head_r.y * 1.02, -hh * 0.06), Vec3::splat(hh * 0.1), Quat::IDENTITY, [0xd8, 0x3a, 0x34], Bind::one(h.head), 8, 12);
+            scalp(
+                &mut b,
+                head_c + Vec3::Y * hh * 0.065,
+                head_r * 1.05,
+                hh,
+                hat,
+                h.head,
+            );
+            // A narrow cuff above the brows; a full low ellipsoid used to
+            // obscure both eyebrows and resemble a second hair helmet.
+            b.ellipsoid(
+                head_c + Vec3::new(0.0, hh * 0.30, 0.0),
+                Vec3::new(head_r.x * 0.96, hh * 0.035, head_r.z * 0.96),
+                Quat::IDENTITY,
+                mix(hat, [0, 0, 0], 0.12),
+                Bind::one(h.head),
+                6,
+                28,
+            );
+            b.ellipsoid(
+                head_c + Vec3::new(0.0, head_r.y * 1.06 + hh * 0.045, -hh * 0.035),
+                Vec3::splat(hh * 0.065),
+                Quat::IDENTITY,
+                [0xd8, 0x3a, 0x34],
+                Bind::one(h.head),
+                8,
+                12,
+            );
         }
         HatStyle::Cap => {
-            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.18, -hh * 0.02), Vec3::new(head_r.x * 1.1, head_r.y * 0.62, head_r.z * 1.1), Quat::from_rotation_x(-0.1), hat, Bind::one(h.head), 12, 24);
-            b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.27, head_r.z * 0.98), Vec3::new(head_r.x * 0.72, hh * 0.025, head_r.z * 0.55), Quat::from_rotation_x(0.12), mix(hat, [0, 0, 0], 0.12), Bind::one(h.head), 6, 20);
+            b.ellipsoid(
+                head_c + Vec3::new(0.0, hh * 0.18, -hh * 0.02),
+                Vec3::new(head_r.x * 1.1, head_r.y * 0.62, head_r.z * 1.1),
+                Quat::from_rotation_x(-0.1),
+                hat,
+                Bind::one(h.head),
+                12,
+                24,
+            );
+            b.ellipsoid(
+                head_c + Vec3::new(0.0, hh * 0.27, head_r.z * 0.98),
+                Vec3::new(head_r.x * 0.72, hh * 0.025, head_r.z * 0.55),
+                Quat::from_rotation_x(0.12),
+                mix(hat, [0, 0, 0], 0.12),
+                Bind::one(h.head),
+                6,
+                20,
+            );
         }
     }
 
@@ -475,32 +1128,178 @@ pub fn build(p: &CharacterParams, h: &Humanoid) -> CharacterMesh {
         HairStyle::Short | HairStyle::Bob | HairStyle::Ponytail => {
             // Päähine peittää päälaen: hiuskupu ja otsatukka jätetään pois, ettei niitä näy läpi.
             if p.extras.hat == HatStyle::None {
-                let cap = Vec3::new(head_r.x * 1.07, head_r.y * 0.78, head_r.z * 1.07);
-                b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.13, -hh * 0.04), cap, Quat::from_rotation_x(-0.18), p.hair, Bind::one(h.head), 14, 24);
-                // Otsatukka.
-                b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.3, head_r.z * 0.62), Vec3::new(head_r.x * 0.86, hh * 0.13, hh * 0.16), Quat::from_rotation_x(0.35), p.hair, Bind::one(h.head), 8, 16);
+                scalp(&mut b, head_c, head_r, hh, p.hair, h.head);
+                // An asymmetric swept lock follows the brow instead of a
+                // horizontal sausage-shaped fringe.
+                b.ellipsoid(
+                    head_c + Vec3::new(-hh * 0.09, hh * 0.32, hh * 0.32),
+                    Vec3::new(hh * 0.24, hh * 0.085, hh * 0.065),
+                    Quat::from_rotation_z(-0.22) * Quat::from_rotation_x(0.30),
+                    p.hair,
+                    Bind::one(h.head),
+                    8,
+                    16,
+                );
             } else {
-                // Hiukset näkyvät päähineen alta sivuilta ja takaa.
-                b.ellipsoid(head_c + Vec3::new(0.0, hh * 0.02, -hh * 0.06), Vec3::new(head_r.x * 1.04, head_r.y * 0.62, head_r.z * 1.0), Quat::from_rotation_x(-0.35), p.hair, Bind::one(h.head), 12, 22);
+                scalp(&mut b, head_c, head_r, hh, p.hair, h.head);
             }
             if p.hair_style == HairStyle::Bob {
                 let back = h.hair[0];
                 for s in [-1.0f32, 1.0] {
-                    b.ellipsoid(head_c + Vec3::new(s * head_r.x * 0.88, -hh * 0.08, -hh * 0.06), Vec3::new(hh * 0.13, hh * 0.32, hh * 0.32), Quat::IDENTITY, p.hair, Bind { a: back, b: h.head }, 10, 14);
+                    b.ellipsoid(
+                        head_c + Vec3::new(s * head_r.x * 0.88, -hh * 0.08, -hh * 0.06),
+                        Vec3::new(hh * 0.125, hh * 0.30, hh * 0.25),
+                        Quat::IDENTITY,
+                        p.hair,
+                        Bind { a: back, b: h.head },
+                        10,
+                        14,
+                    );
                 }
-                b.ellipsoid(head_c + Vec3::new(0.0, -hh * 0.06, -head_r.z * 0.72), Vec3::new(head_r.x * 0.98, hh * 0.34, hh * 0.2), Quat::IDENTITY, p.hair, Bind { a: back, b: h.head }, 10, 18);
+                b.ellipsoid(
+                    head_c + Vec3::new(0.0, -hh * 0.06, -head_r.z * 0.72),
+                    Vec3::new(head_r.x * 0.98, hh * 0.34, hh * 0.2),
+                    Quat::IDENTITY,
+                    p.hair,
+                    Bind { a: back, b: h.head },
+                    10,
+                    18,
+                );
             }
             if p.hair_style == HairStyle::Ponytail {
                 if let [h0, h1] = h.hair[..] {
                     let a = j(h0);
                     let m = j(h1);
                     let end = m + (m - a).normalize() * h.proportions.hair_length * 0.5;
-                    b.ellipsoid(a, Vec3::splat(hh * 0.09), Quat::IDENTITY, mix(p.hair, [0xff, 0x40, 0x60], 0.6), Bind::one(h.head), 8, 12);
-                    b.capsule(a, m, hh * 0.1, hh * 0.09, p.hair, Bind { a: h0, b: h.head }, 12, true);
-                    b.capsule(m, end, hh * 0.09, hh * 0.03, p.hair, Bind { a: h1, b: h0 }, 12, true);
+                    b.ellipsoid(
+                        a,
+                        Vec3::splat(hh * 0.09),
+                        Quat::IDENTITY,
+                        mix(p.hair, [0xff, 0x40, 0x60], 0.6),
+                        Bind::one(h.head),
+                        8,
+                        12,
+                    );
+                    b.capsule(
+                        a,
+                        m,
+                        hh * 0.1,
+                        hh * 0.09,
+                        p.hair,
+                        Bind { a: h0, b: h.head },
+                        12,
+                        true,
+                    );
+                    b.capsule(
+                        m,
+                        end,
+                        hh * 0.09,
+                        hh * 0.03,
+                        p.hair,
+                        Bind { a: h1, b: h0 },
+                        12,
+                        true,
+                    );
                 }
             }
         }
     }
     b.mesh
+}
+
+#[cfg(test)]
+mod design_tests {
+    use super::*;
+
+    #[test]
+    fn designed_meshes_keep_valid_skinning_and_finite_surface_data() {
+        for p in CharacterParams::presets() {
+            let h = Humanoid::new(p.proportions());
+            let mesh = build(&p, &h);
+            assert!(mesh.vertices.len() < 40_000, "{} mesh budget", p.name);
+            for v in &mesh.vertices {
+                assert!(v
+                    .position
+                    .iter()
+                    .chain(&v.normal)
+                    .chain(&v.color)
+                    .all(|x| x.is_finite()));
+                assert!((Vec3::from(v.normal).length() - 1.0).abs() < 1e-4);
+                assert!((0.0..=1.0).contains(&v.weight));
+                assert!(v
+                    .bones
+                    .iter()
+                    .all(|bone| (*bone as usize) < h.skeleton.len()));
+            }
+            assert!(mesh
+                .indices
+                .iter()
+                .all(|i| (*i as usize) < mesh.vertices.len()));
+        }
+    }
+
+    #[test]
+    fn tailored_shirt_endcaps_face_outward_and_follow_rig() {
+        let p = CharacterParams::kalle();
+        let h = Humanoid::new(p.proportions());
+        let bind = h.skeleton.bind_positions();
+        let mut b = MeshBuilder::new();
+        tailored_torso(
+            &mut b,
+            &h,
+            &p,
+            bind[h.pelvis],
+            bind[h.chest],
+            bind[h.neck],
+            p.height * 0.085,
+        );
+        let caps = &b.mesh.indices[b.mesh.indices.len() - 2 * 24 * 3..];
+        for triangle in caps.chunks_exact(3) {
+            let a = b.mesh.vertices[triangle[0] as usize];
+            let c = b.mesh.vertices[triangle[1] as usize];
+            let d = b.mesh.vertices[triangle[2] as usize];
+            let cross = (Vec3::from(c.position) - Vec3::from(a.position))
+                .cross(Vec3::from(d.position) - Vec3::from(a.position));
+            assert!(cross.dot(Vec3::from(a.normal)) > 0.0);
+            assert!(a.bones[0] == h.pelvis as u32 || a.bones[0] == h.chest as u32);
+        }
+    }
+
+    #[test]
+    fn flared_skirt_has_outward_faces_and_anchored_waist() {
+        let p = CharacterParams::ronja();
+        let h = Humanoid::new(p.proportions());
+        let pelvis = h.skeleton.bind_positions()[h.pelvis];
+        let mut b = MeshBuilder::new();
+        flared_skirt(&mut b, &h, &p, pelvis, p.height * 0.085);
+        for v in &b.mesh.vertices[..25] {
+            assert_eq!(v.weight, 0.0);
+            assert_eq!(v.bones[1], h.pelvis as u32);
+        }
+        for tri in b.mesh.indices.chunks_exact(3) {
+            let a = b.mesh.vertices[tri[0] as usize];
+            let c = b.mesh.vertices[tri[1] as usize];
+            let d = b.mesh.vertices[tri[2] as usize];
+            let cross = (Vec3::from(c.position) - Vec3::from(a.position))
+                .cross(Vec3::from(d.position) - Vec3::from(a.position));
+            assert!(cross.dot(Vec3::from(a.normal)) > 0.0);
+        }
+        let top_width = b.mesh.vertices[0].position[0];
+        let bottom_width = b.mesh.vertices[6 * 25].position[0];
+        assert!(bottom_width > top_width);
+    }
+
+    #[test]
+    fn scalp_exposes_forehead_and_covers_nape_without_eye_occlusion() {
+        let mut b = MeshBuilder::new();
+        let center = Vec3::ZERO;
+        let radii = Vec3::new(0.46, 0.52, 0.46);
+        scalp(&mut b, center, radii, 1.0, [70, 42, 31], 0);
+        // Front center: angular limit keeps its edge above the eye line.
+        let front_edge = Vec3::from(b.mesh.vertices[12 * 29 + 7].position);
+        let back_edge = Vec3::from(b.mesh.vertices[12 * 29 + 21].position);
+        assert!(front_edge.y > 0.20, "forehead edge {front_edge:?}");
+        assert!(back_edge.y < 0.0, "nape edge {back_edge:?}");
+        assert_eq!(b.mesh.indices.len(), 12 * 28 * 6);
+    }
 }

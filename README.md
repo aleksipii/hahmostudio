@@ -12,6 +12,7 @@ vanhan lähdekoodin; toimitetut hahmo-, tausta- ja esimerkkiaineistot säilyvät
 ## Mitä sovellus tekee
 
 - Parametriset 3D-hahmot, sääntöpohjaiset liikkeet, lavasteet, esineet ja kuvakulmat.
+- [Hahmoperheen muotoilu](native/CHARACTER-DESIGN.md): yhtenäiset vaatesiluetit, muotoillut hiukset ja selkeämmät kasvot; todellinen renderöity katselmuskuva kehittäjän työkaluna.
 - [Näyttelytyylit](native/ACTING-STYLES.md): pehmeä 3D, vapaan ylävartalon stop motion 12/15 asentoa/s ja pehmeät suun ilmesiirtymät. Tyyli tallentuu jaksoon.
 - Paikallinen Kokoro-puhe ja pysyvät hahmoäänet; oma äänitys tai tuotu ääni on ensisijainen.
 - Äänen kestoon sidotut repliikit ja huulisynkka, hahmokohtainen päällekkäinen ajoitus, puheen ja liikkeen erilliset alut/kestot,
