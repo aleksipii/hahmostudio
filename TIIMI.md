@@ -1761,3 +1761,96 @@ Avoinna / seuraava konkreettinen tehtävä:
   Mac/Metal/kamera/mikrofoni/Finder/VoiceOver, itsenäinen DMG, keveysmittaukset.
   Aiempi CDN403 ei ole poistunut pelkällä koodimuutoksella. Ei uusia malli/
   turvallisuus-/julkaisuhyväksynnän väitteitä.
+
+## Codex handoff — 14.10.2026: renderpassiasetukset, tasoeditori ja lattialle lasku
+
+Työkalu Codex, haara `work`, yhteinen kohde `main`.
+Tarkistettu toteutuscommit `cabb624cfa344d2f6252f8a9fd4db88952f7bd3d`;
+lähtömain `7c40dd77115bc19d625428efbadf8485d8858e53`.
+Tämä handoff on erillinen dokumentaatiocommit.
+
+Omistettu työ: root aov_ui/render_settings, app/project/history/integration,
+hs-render ray options, docs/pilot; legacy_hahmo-agent contacts+object_contacts;
+doors_stairs-agent collision+static_collision; image_editor-agent hs-image PSD writer.
+Aiemman käyttäjän valtuuttaman agenttijaon integraatio, ei Git-mutaatioita agenteilta.
+Kaikki34 toteutuscommitin tiedostoa ovat tarkoituksellisia source/test/docs muutoksia;
+ei käyttäjän ääniä, malleja tai yksityisiä aineistoja stageen.
+
+Toteutettu:
+- Vienti: AO-näytteet0–64, säde, voimakkuus ja syvyyskartan near/far.
+  Depth-rajojen muutos ei enää leikkaa geometriaa tai muuta diffuse/specular-passeja.
+  RenderSettings on validoitu≤4KiB projektiaineisto; tallennus/avaus/tarkistus/kumous.
+- Renderöi tasoiksi: frozenFrameBuilder scene→cancelableCPUraytrace→kuusi suoraa
+  canonicalDocument-tasoa, MultiplyAO/ScreenSpecular ja hiddenDepth/Normal.
+  Ei ylimääräistä PSD-lähdeblobia muistissa. Taustatyö; vaihtunut jakso/kuvarevisio,
+  lukitus tai peruutus estää vanhan kuvan korvaamisen. Yhteinen Undo/Redo.
+- Kuva→Vie PSD kirjoittaa aidosti muokatut tasot, rasterimaskit, unicode-nimet,
+  opacity/visibility, kahdeksanblendtilaa ja nestedryhmät. PureRust PackBits,
+  PSD-ID/offset-normalisointi missä originaalista puuttui32bitID, ei vanhojen
+  lähdetavujen kopiointia tuloksena. Cancelable atomicwriter säilyttää vanhan
+  kohteen ennen viimeistä commitia; Written tarkoittaa tapahtunutta tallennusta.
+- Floor Place: sivuttaissiirto pois alustalta, oikea polvien koukistus/spinebend,
+  maailmaan ankkuroidut nilkat+varpaat, käsiote lattiaan, vapautus ja standingrecovery.
+  Far/unreachable targetsfail. Currentmug floorgripY=0.137m actualmesh bounds.
+- Static environment collision: cached renderedtriangleBVH, FK torso/head/legs
+  conservative capsules, floorcontact3mmtolerance, continuousaxis-hull sweeps
+  ja closedsolid-start checks. RiviError, ei automaattista teleporttia/väistöä.
+  CollisionPlan build Cinematographyssa contact/scenery jälkeen, runtimeFrameBuilder
+  tarkistus ja posekeyeditin uudelleenvalidointi. Stalepose/cache torjutaan.
+- Autosaven content_hash bookkeeping ei enää luo käyttäjän muutosta peittävää
+  undo-tilaa. Palautuksen jälkeen canonicalReview tilapäivitys ei katkaise Redoa.
+- Englanninkielinen production-pilot.en.txt ja portable production_pilot example.
+  TEST-audio nimetty rehellisesti; ei hyväksytyn Kokoro-jakson väitettä.
+
+Todennus (Linux, Rust1.99):
+- Final cargo test --locked --workspace -j2:359passed,0failed,1ignored (aitoKokoro),
+  exit0 /tmp/koeta-layers-final-workspace.log. cargo clippy --locked --workspace
+  --all-targets -j2 exit0 /tmp/koeta-layers-final-clippy.log (tyylivaroituksia).
+- hs-app17testiä läpi /tmp/koeta-aov-undo-tests-ready.log; rendererCPU-only6tests
+  /tmp/koeta-aov-settings-ray-tests.log. AOV→editedPSD→nativeSeries reopen,
+  AO-strength/depth independent fromgeometry ja autosave/undo-regressio mukana.
+- hs-image23tests: externalpsd0.3 decoder+ownimporter, pixels/masks/blends/groups/
+  unicode/opacity/visibility/reorder, cancel preserve oldtarget/tempcleanup.
+  Agentin scoped ajo ja lopullinen /tmp/koeta-layers-final-workspace.log.
+- Contacts12tests, floorPose3001samples1ms, ankle/toe/handFK≤2mm,
+  jointstep<2.5cm, actualfloorbottom/release/recovery, koeta reopen+FrameBuilder.
+  Collision6tests: actualApartment couch, thinwall sweeps, floor+lowobstacle,
+  closedsolid/clearcorridor, invalidqueries/stalepose. Finalworkspace sisältää.
+- Final app+CLI build exit0 /tmp/koeta-layers-build-ready.log. Viimeinen senjälkeinen
+  sourcemuutos runtimeen ei koskenut (vain validitestihash); esimerkki kääntyi
+  ja ajettiin erikseen /tmp/koeta-production-pilot-portable2.log.
+- Oikea GUI Xvfb:115/Vulkanlavapipe:1080x1920 frame315 floorPlace-pilotista
+  renderöitiin ja avautui Kuva-editoriin6tasona. /tmp/koeta-layers-controls.png,
+  -running.png,-result.png. AO-sliderdrag8→27 nähty -setting-drag.png;
+  asetukset/tasot olivat myös oikeassa autosave.koeta:ssa.
+- Finalbinary freshsession: renderpassit→globalUndo palautti alkuperäisen
+  512x512Taso1-dokumentin, Redo palautti6tasoAOV:n. Kuvat
+  /tmp/koeta-layers-undo-rendered.png,-undo-after-ready.png,-redo-ready.png.
+  OS-PSD-tiedostodialogi ei ollut tämän tarkistuksen kohde; domainAtomicSave testattu.
+- Oikea CPU/FFmpeg pilotMP4:23.000s,690frames160x90,H.264+AAC+mov_text(eng),
+  /tmp/koeta-production-pilot-test-speech.mp4 ja -video.log. TestEngine tones,
+  EI aito englanniksi puhuva Kokoro.8repliikkiä ja179visemia ajoitettu.
+- Portable example loi /tmp/koeta-production-pilot-test.koeta:8säilytettyäTEST
+  puheresurssia+tekstitykset+6editAOVtasoa+asetukset; ilmanmoottoria avaus ja
+  täsmälleen samat mixedPCM-samples tarkistettu. Lähde mukana commitissa.
+- git diff --check pass. Quotahelper unavailable, prosenttia ei päätelty.
+
+Väliaikaiset virheet ratkaistu: generatedELF-linkcache täytti32GB levyä
+(omia vanhoja/inactive testbinaareja poistettu, assets/models säilyivät), transient
+pose_changed UI-scope, staleCollisionPlan-testit revalidate poseeditin jälkeen,
+invalidcar-chair test hyväksyy nyt aikaisemman rivivirheen preflightissa,
+reviewtestin oikea64hexhash. Lopullinen workspace ylläpassed. Ympäristömallin
+virheellistä läpäisyä ei sallittu vain vanhan testin onnistumiseksi.
+
+Rajat/jatko:
+- Collision on conservative staticbodyproxy, ei tarkka mesh/cloth/finger,
+  actor–actor tai yleinen rigidbody/gravity/avoidance physics. Dynaamisilla
+  ovilla/esineillä omat kontaktitarkistukset. AutoPose starts inside carseat voi
+  nyt fail oikein: tarvitaan toteutettu istuma-asento, ei collisionbypass.
+- Floor pickupin erillinen kumartuminen puuttuu; tämä vaihe toteutti laskemisen.
+- Aito Kokoro-CDN403/kuuntelu, Mac/Metal/laitteet/Finder/VoiceOver/DMG ja
+  release-keveysmittaukset edelleen myöhemmässä hyväksyntävaiheessa. Testipilotti
+  ei korvaa oikeaa englanninkielistä puhetta eikä Mac-koetta.
+- Seuraava konkreettinen nativefeature: floorpickup samalla ankkuroitujen jalkojen
+  sopimuksella ja actor–actor reittikontaktien tarkistus. Mielivaltaisten kehojen
+  täydellisen fysiikan väitettä ei anneta.
