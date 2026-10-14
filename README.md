@@ -12,6 +12,7 @@ vanhan lähdekoodin; toimitetut hahmo-, tausta- ja esimerkkiaineistot säilyvät
 ## Mitä sovellus tekee
 
 - Parametriset 3D-hahmot, sääntöpohjaiset liikkeet, lavasteet, esineet ja kuvakulmat.
+- [Yhteinen sarja- ja studiotoimeksianto](docs/suunnitelmat/JUST-ONE-STOP-SARJA-JA-RUST-STUDIO.md): satiirinen Just One Stop, hahmot, maailma, Kilsat, pilotti, tutkimukset ja pääagentin työohje yhdessä tiedostossa.
 - [Käsikirjoitusstudion tutkimus](docs/suunnitelmat/KASIKIRJOITUSSTUDIO-TUTKIMUS-20261014.md): uusi Rust-studio, Kokoron ajoitus, huulisynkka, kasvorigi ja 30–60 sekunnin sarjatuotanto; lähteet ja toteutusvaiheet.
 - [Hahmoperheen muotoilu](native/CHARACTER-DESIGN.md): yhtenäiset vaatesiluetit, muotoillut hiukset ja selkeämmät kasvot; todellinen renderöity katselmuskuva kehittäjän työkaluna.
 - [Näyttelytyylit](native/ACTING-STYLES.md): pehmeä 3D, vapaan ylävartalon stop motion 12/15 asentoa/s ja pehmeät suun ilmesiirtymät. Tyyli tallentuu jaksoon.
