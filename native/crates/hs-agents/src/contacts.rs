@@ -24,8 +24,16 @@ struct Hold {
     relative: Vec3,
     offset: Vec3,
 }
+#[derive(Clone, Copy, PartialEq)]
+enum ActionKind {
+    PickUp,
+    Give,
+    Place,
+    Drop,
+}
 #[derive(Clone)]
 struct Action {
+    kind: ActionKind,
     object: usize,
     actor: usize,
     hand: Side,
@@ -61,6 +69,57 @@ pub struct ObjectFrame {
     pub grips: Vec<GripSample>,
     pub mesh: Arc<hs_character::CharacterMesh>,
     pub stand: Option<Arc<hs_character::CharacterMesh>>,
+}
+fn mesh_bounds(mesh: &hs_character::CharacterMesh, point: Vec3) -> (Vec3, Vec3) {
+    let mut min = Vec3::splat(f32::INFINITY);
+    let mut max = Vec3::splat(f32::NEG_INFINITY);
+    for vertex in &mesh.vertices {
+        let v = Vec3::from_array(vertex.position) + point;
+        min = min.min(v);
+        max = max.max(v);
+    }
+    (min, max)
+}
+fn box_overlap(amin: Vec3, amax: Vec3, bmin: Vec3, bmax: Vec3) -> bool {
+    // touching is support, penetration beyond 2 mm is collision
+    (amax.min(bmax) - amin.max(bmin)).min_element() > 0.002
+}
+// Only physically rendered floor and this object's rendered stand are supports.
+fn support_point(object: &Object, requested: Vec3) -> Result<Vec3, String> {
+    if !requested.is_finite() || requested.abs().max_element() > 5.0 {
+        return Err("Esineen tukipiste on rajojen ulkopuolella".into());
+    }
+    let mut min = Vec3::splat(f32::INFINITY);
+    let mut max = Vec3::splat(f32::NEG_INFINITY);
+    for vertex in &object.mesh.vertices {
+        let v = Vec3::from_array(vertex.position);
+        min = min.min(v);
+        max = max.max(v);
+    }
+    let mut height = 0.0;
+    if object.stand.is_some() {
+        let left = object.point.x - 0.13;
+        let right = object.point.x + 0.13;
+        let back = object.point.z + 0.05 - 0.13;
+        let front = object.point.z + 0.05 + 0.13;
+        let overlaps = requested.x + max.x > left
+            && requested.x + min.x < right
+            && requested.z + max.z > back
+            && requested.z + min.z < front;
+        let fits = requested.x + min.x >= left - 0.001
+            && requested.x + max.x <= right + 0.001
+            && requested.z + min.z >= back - 0.001
+            && requested.z + max.z <= front + 0.001;
+        if overlaps && !fits {
+            return Err(
+                "Esineen tukipiste jää alustan reunalle; osittaista tukikontaktia ei tueta".into(),
+            );
+        }
+        if fits {
+            height = object.point.y + min.y;
+        }
+    }
+    Ok(Vec3::new(requested.x, height - min.y, requested.z))
 }
 fn ease(x: f32) -> f32 {
     let x = x.clamp(0.0, 1.0);
@@ -203,13 +262,17 @@ impl ContactPlan {
             "{} · {}{}",
             self.objects[action.object].id,
             hand_name(action.hand),
-            action
-                .receiver
-                .map_or(" · nosto".into(), |(index, hand)| format!(
-                    " → {} / {}",
-                    self.characters[index].params.name,
-                    hand_name(hand)
-                ))
+            match action.kind {
+                ActionKind::Place => " · lasku".into(),
+                ActionKind::Drop => " · pudotus".into(),
+                _ => action
+                    .receiver
+                    .map_or(" · nosto".into(), |(index, hand)| format!(
+                        " → {} / {}",
+                        self.characters[index].params.name,
+                        hand_name(hand)
+                    )),
+            }
         ))
     }
     pub fn evaluate(
@@ -249,8 +312,13 @@ impl ContactPlan {
                 .filter(|a| a.object == index && a.start <= time)
             {
                 if time >= action.start + action.duration {
-                    hold = Some(action.hold);
-                    point = root_point(&frames[action.hold.actor], action.hold.relative);
+                    if matches!(action.kind, ActionKind::Place | ActionKind::Drop) {
+                        hold = None;
+                        point = action.to;
+                    } else {
+                        hold = Some(action.hold);
+                        point = root_point(&frames[action.hold.actor], action.hold.relative);
+                    }
                 } else {
                     active = Some(action);
                     break;
@@ -260,7 +328,48 @@ impl ContactPlan {
             let mut owner = hold.map(|h: Hold| h.actor);
             if let Some(action) = active {
                 let u = ((time - action.start) / action.duration).clamp(0.0, 1.0);
-                if let Some((receiver, hand)) = action.receiver {
+                if matches!(action.kind, ActionKind::Place | ActionKind::Drop) {
+                    let release = if action.kind == ActionKind::Place {
+                        0.75
+                    } else {
+                        0.2
+                    };
+                    if action.kind == ActionKind::Place {
+                        point = action.from.lerp(action.to, ease(u / release));
+                    } else {
+                        let fall = ((u - release).max(0.0) * action.duration).powi(2) * 4.905;
+                        point = action.from - Vec3::Y * fall.min(action.from.y - action.to.y);
+                    }
+                    let weight = if u <= release {
+                        1.0
+                    } else {
+                        1.0 - ease((u - release) / (1.0 - release))
+                    };
+                    let target = if action.kind == ActionKind::Drop {
+                        action.from
+                    } else {
+                        point
+                    };
+                    grips.push(apply_hand(
+                        p,
+                        frames,
+                        action.actor,
+                        action.hand,
+                        target + action.hold.offset,
+                        weight,
+                    ));
+                    hs_motion::hands::curl_fingers(
+                        &p.cast[action.actor].character.humanoid,
+                        &mut frames[action.actor].pose,
+                        action.hand,
+                        0.22 + 0.43 * weight,
+                    );
+                    owner = if u < release {
+                        Some(action.actor)
+                    } else {
+                        None
+                    };
+                } else if let Some((receiver, hand)) = action.receiver {
                     point = if u < 0.5 {
                         action.from.lerp(action.to - Vec3::Y * 0.05, ease(u * 2.0))
                     } else {
@@ -341,6 +450,48 @@ impl ContactPlan {
                 mesh: object.mesh.clone(),
                 stand: object.stand.clone(),
             });
+        }
+        // Conservative axis-aligned collision proof for rendered contact stands
+        // and other declared props. Humanoid/environment mesh collisions are not
+        // claimed by this bounded solver.
+        for object in &result {
+            let (min, max) = mesh_bounds(&object.mesh, object.point);
+            if min.y < -0.002 {
+                return Err(format!("Esine {} läpäisee lattian", object.id));
+            }
+            for support in &self.objects {
+                if support.stand.is_none() || support.start > time {
+                    continue;
+                }
+                let bottom = support.point.y + mesh_bounds(&support.mesh, Vec3::ZERO).0.y;
+                let center = support.point + Vec3::Z * 0.05;
+                for (center, half) in [
+                    (
+                        Vec3::new(center.x, bottom - 0.01, center.z),
+                        Vec3::new(0.13, 0.01, 0.13),
+                    ),
+                    (
+                        Vec3::new(center.x, (bottom - 0.02) * 0.5, center.z),
+                        Vec3::new(0.055, (bottom - 0.02) * 0.5, 0.055),
+                    ),
+                ] {
+                    if box_overlap(min, max, center - half, center + half) {
+                        return Err(format!(
+                            "Esine {} törmää esineen {} alustaan",
+                            object.id, support.id
+                        ));
+                    }
+                }
+            }
+        }
+        for (i, a) in result.iter().enumerate() {
+            for b in result.iter().skip(i + 1) {
+                let (amin, amax) = mesh_bounds(&a.mesh, a.point);
+                let (bmin, bmax) = mesh_bounds(&b.mesh, b.point);
+                if box_overlap(amin, amax, bmin, bmax) {
+                    return Err(format!("Esineet {} ja {} törmäävät", a.id, b.id));
+                }
+            }
         }
         for object in &result {
             if let Some(owner) = object.owner {
@@ -454,6 +605,7 @@ impl ContactPlan {
             }
         }
         let mut holds = vec![None; plan.objects.len()];
+        let mut resting: Vec<Vec3> = plan.objects.iter().map(|o| o.point).collect();
         let mut ends = vec![0.0f32; plan.objects.len()];
         for event in &tl.events {
             let EventKind::ObjectContact { character, contact } = &event.kind else {
@@ -467,7 +619,10 @@ impl ContactPlan {
                     .ok_or_else(|| format!("Rivi {line}: kontaktilla täytyy olla nimetty hahmo"))?,
             )?;
             let id = match contact {
-                ObjectContact::PickUp { object } | ObjectContact::Give { object, .. } => object,
+                ObjectContact::PickUp { object }
+                | ObjectContact::Give { object, .. }
+                | ObjectContact::Place { object, .. }
+                | ObjectContact::Drop { object } => object,
             };
             let index = plan
                 .objects
@@ -488,7 +643,7 @@ impl ContactPlan {
                     if holds[index].is_some() {
                         return Err(format!("Rivi {line}: esine on jo hahmon kädessä"));
                     }
-                    let point = plan.objects[index].point;
+                    let point = resting[index];
                     let hand = Side::BOTH
                         .into_iter()
                         .filter(|h| hand_free(p, giver, *h, start, &holds))
@@ -505,6 +660,7 @@ impl ContactPlan {
                     let relative = final_frames[giver].pose.root_rot.inverse()
                         * (to - final_frames[giver].pose.root_pos);
                     Action {
+                        kind: ActionKind::PickUp,
                         object: index,
                         actor: giver,
                         hand,
@@ -561,6 +717,7 @@ impl ContactPlan {
                     let relative = final_frames[receiver].pose.root_rot.inverse()
                         * (to - final_frames[receiver].pose.root_pos);
                     Action {
+                        kind: ActionKind::Give,
                         object: index,
                         actor: giver,
                         hand: previous.hand,
@@ -578,7 +735,97 @@ impl ContactPlan {
                         line,
                     }
                 }
+                ObjectContact::Place { .. } | ObjectContact::Drop { .. } => {
+                    let target = match contact {
+                        ObjectContact::Place { target, .. } => *target,
+                        _ => None,
+                    };
+                    let previous = holds[index]
+                        .ok_or_else(|| format!("Rivi {line}: esine täytyy ensin ottaa käteen"))?;
+                    if previous.actor != giver {
+                        return Err(format!("Rivi {line}: esine ei kuulu laskijalle"));
+                    }
+                    let from = root_point(&initial[giver], previous.relative);
+                    let object = &plan.objects[index];
+                    let min_y = object
+                        .mesh
+                        .vertices
+                        .iter()
+                        .map(|v| v.position[1])
+                        .fold(f32::INFINITY, f32::min);
+                    let is_drop = matches!(contact, ObjectContact::Drop { .. });
+                    let requested = if is_drop {
+                        Vec3::new(from.x, 0.0, from.z)
+                    } else {
+                        target
+                            .map(|v| Vec3::from_array(v.map(|c| c as f32 / 1000.0)))
+                            .unwrap_or(object.point)
+                    };
+                    let supported = support_point(object, requested)?;
+                    if !is_drop && target.is_some() && (requested.y - supported.y).abs() > 0.002 {
+                        return Err(format!(
+                            "Rivi {line}: esineen laskupaikka ei vastaa todellista alustaa"
+                        ));
+                    }
+                    if from.y + min_y < supported.y + min_y - 0.002 {
+                        return Err(format!("Rivi {line}: alusta on esineen yläpuolella"));
+                    }
+                    if is_drop
+                        && duration * 0.8 + 0.001 < ((from.y - supported.y).max(0.0) / 4.905).sqrt()
+                    {
+                        return Err(format!("Rivi {line}: pudotuksen kesto ei riitä lattiaan tai alustaan laskeutumiseen"));
+                    }
+                    Action {
+                        kind: if is_drop {
+                            ActionKind::Drop
+                        } else {
+                            ActionKind::Place
+                        },
+                        object: index,
+                        actor: giver,
+                        hand: previous.hand,
+                        receiver: None,
+                        start,
+                        duration,
+                        from,
+                        to: supported,
+                        hold: previous,
+                        line,
+                    }
+                }
             };
+            if matches!(candidate.kind, ActionKind::Place | ActionKind::Drop) {
+                // Swept AABB rejection prevents thin stands being skipped by
+                // fast falls between sampled frames. This is conservative.
+                let (from_min, from_max) = mesh_bounds(&plan.objects[index].mesh, candidate.from);
+                let (to_min, to_max) = mesh_bounds(&plan.objects[index].mesh, candidate.to);
+                let swept_min = from_min.min(to_min);
+                let swept_max = from_max.max(to_max);
+                for support in &plan.objects {
+                    if support.stand.is_none() || support.start > start {
+                        continue;
+                    }
+                    let bottom = support.point.y + mesh_bounds(&support.mesh, Vec3::ZERO).0.y;
+                    let center = support.point + Vec3::Z * 0.05;
+                    for (center, half) in [
+                        (
+                            Vec3::new(center.x, bottom - 0.01, center.z),
+                            Vec3::new(0.13, 0.01, 0.13),
+                        ),
+                        (
+                            Vec3::new(center.x, (bottom - 0.02) * 0.5, center.z),
+                            Vec3::new(0.055, (bottom - 0.02) * 0.5, 0.055),
+                        ),
+                    ] {
+                        if box_overlap(swept_min, swept_max, center - half, center + half) {
+                            return Err(format!(
+                                "Rivi {line}: esineen liikerata törmää alustaan {}",
+                                support.id
+                            ));
+                        }
+                    }
+                }
+            }
             for who in [Some(giver), candidate.receiver.map(|(r, _)| r)]
                 .into_iter()
                 .flatten()
@@ -607,7 +854,12 @@ impl ContactPlan {
                     ));
                 }
             }
-            holds[index] = Some(candidate.hold);
+            if matches!(candidate.kind, ActionKind::Place | ActionKind::Drop) {
+                holds[index] = None;
+                resting[index] = candidate.to;
+            } else {
+                holds[index] = Some(candidate.hold);
+            }
             ends[index] = start + duration;
             plan.actions.push(candidate);
             for sample in 0..=20 {

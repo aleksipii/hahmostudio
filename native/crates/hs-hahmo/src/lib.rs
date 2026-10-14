@@ -1,15 +1,16 @@
-//! Olemassa olevien `.hahmo`-projektien luku ja 2D-leikehahmon renderöinti.
+//! Olemassa olevien `.hahmo`-projektien häviötön luku, kirjoitus, historia ja 2D-renderöinti.
 //!
-//! Tämä on ensimmäinen pariteettiaskel: natiivisovellus avaa nykyiset
+//! Natiivisovellus avaa ja säilyttää nykyiset
 //! projektit (muodot v1–v5) ja piirtää PSD-tasoihin perustuvan rigin
 //! animaation samoin säännöin kuin `lib/animation-transform.ts` ja
 //! `lib/psd-render.ts`. Tuotantokokoonpanoja (`presentations`), Cutout3D:tä,
 //! taustakuvia ja ei-normaaleja sekoitustiloja ei vielä piirretä; ne on
 //! kirjattu pariteettilistaan (`native/PARITEETTI.md`).
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::io::Read;
+mod archive;
+pub use archive::PortableHistory;
 use tiny_skia::{Pixmap, PixmapPaint, Transform};
 
 pub const MAX_ARCHIVE_BYTES: u64 = 128 * 1024 * 1024;
@@ -29,13 +30,13 @@ pub enum HahmoError {
     Invalid(String),
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Layer {
     pub key: String,
@@ -70,7 +71,7 @@ fn yes() -> bool {
     true
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Document {
     #[serde(default)]
     pub name: String,
@@ -80,7 +81,7 @@ pub struct Document {
     pub layers: Vec<Layer>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Part {
     pub key: String,
@@ -89,18 +90,18 @@ pub struct Part {
     pub parent_key: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Rig {
     pub parts: Vec<Part>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Bezier {
     pub cp1: Point,
     pub cp2: Point,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Keyframe {
     pub frame: f64,
@@ -114,13 +115,13 @@ pub struct Keyframe {
     pub bezier_curve: Option<Bezier>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Track {
     pub key: String,
     pub frames: Vec<Keyframe>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Animation {
     pub fps: f64,
     pub duration: f64,
@@ -129,7 +130,7 @@ pub struct Animation {
     pub tracks: Vec<Track>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Scene {
     pub width: f64,
     pub height: f64,
@@ -144,7 +145,7 @@ fn default_bg() -> String {
     "#253341".into()
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct ProjectJson {
     format: String,
     version: u32,
@@ -155,6 +156,10 @@ struct ProjectJson {
 
 /// Avattu projekti: metatiedot ja puretut tasokuvat.
 pub struct Project {
+    metadata: serde_json::Value,
+    resources: std::collections::BTreeMap<String, Vec<u8>>,
+    original: Vec<u8>,
+    dirty: bool,
     pub version: u32,
     pub document: Document,
     pub animation: Option<Animation>,
@@ -302,21 +307,14 @@ impl Project {
         if bytes.len() as u64 > MAX_ARCHIVE_BYTES {
             return Err(HahmoError::TooLarge("yli 128 MiB".into()));
         }
-        let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|e| HahmoError::Archive(e.to_string()))?;
-        let mut read = |name: &str, limit: u64| -> Result<Vec<u8>, HahmoError> {
-            let file = zip.by_name(name).map_err(|e| HahmoError::Invalid(format!("{name}: {e}")))?;
-            if file.size() > limit {
-                return Err(HahmoError::TooLarge(name.to_string()));
-            }
-            let mut buf = Vec::with_capacity(file.size() as usize);
-            file.take(limit + 1).read_to_end(&mut buf).map_err(|e| HahmoError::Archive(e.to_string()))?;
-            if buf.len() as u64 > limit {
-                return Err(HahmoError::TooLarge(name.to_string()));
-            }
-            Ok(buf)
+        let resources = archive::unpack(bytes)?;
+        let json = resources.get("project.json").ok_or_else(|| HahmoError::Invalid("project.json puuttuu".into()))?;
+        let metadata: serde_json::Value = serde_json::from_slice(json).map_err(|e| HahmoError::Invalid(e.to_string()))?;
+        archive::validate_metadata(&metadata, &resources)?;
+        let read = |name: &str, _limit: u64| -> Result<Vec<u8>, HahmoError> {
+            resources.get(name).cloned().ok_or_else(|| HahmoError::Invalid(format!("{name}: resurssi puuttuu")))
         };
-        let json = read("project.json", 64 * 1024 * 1024)?;
-        let data: ProjectJson = serde_json::from_slice(&json).map_err(|e| HahmoError::Invalid(e.to_string()))?;
+        let data: ProjectJson = serde_json::from_slice(json).map_err(|e| HahmoError::Invalid(e.to_string()))?;
         if data.format != "hahmostudio-project" || !(1..=5).contains(&data.version) {
             return Err(HahmoError::Format);
         }
@@ -346,7 +344,9 @@ impl Project {
             let pixmap = Pixmap::decode_png(&png).map_err(|e| HahmoError::Invalid(format!("{path}: {e}")))?;
             images.insert(path.clone(), pixmap);
         }
-        Ok(Project { version: data.version, document: data.document, animation: data.animation, scene: data.scene, images })
+        let project = Project { metadata, resources, original: bytes.to_vec(), dirty: false, version: data.version, document: data.document, animation: data.animation, scene: data.scene, images };
+        project.history()?;
+        Ok(project)
     }
 
     pub fn frame_count(&self) -> u32 {

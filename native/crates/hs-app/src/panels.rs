@@ -14,7 +14,7 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
             ui.menu_button("Tiedosto", |ui| {
                 crate::project_ui::menu(app, ui);
                 ui.separator();
-                if ui.button("Uusi käsikirjoitus").clicked() {
+                if ui.add_enabled(!app.review.locked, egui::Button::new("Uusi käsikirjoitus")).clicked() {
                     app.script_assist=Default::default();
                     app.script = EXAMPLE.into();
                     app.script_path = None;
@@ -23,7 +23,7 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     app.run_pipeline();
                     ui.close_menu();
                 }
-                if ui.button("Avaa käsikirjoitus…").clicked() {
+                if ui.add_enabled(!app.review.locked, egui::Button::new("Avaa käsikirjoitus…")).clicked() {
                     ui.close_menu();
                     if let Some(p) = rfd::FileDialog::new().add_filter("Käsikirjoitus", &["txt", "md"]).pick_file() {
                         app.open_script(p);
@@ -36,7 +36,7 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     }
                 }
                 ui.separator();
-                if ui.button("Avaa 2D-projekti (.hahmo)…").clicked() {
+                if ui.add_enabled(!app.review.locked, egui::Button::new("Avaa 2D-projekti (.hahmo)…")).clicked() {
                     ui.close_menu();
                     if let Some(p) = rfd::FileDialog::new().add_filter("Hahmostudio", &["hahmo"]).pick_file() {
                         app.open_hahmo(p);
@@ -61,6 +61,10 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
                     if let Some(p) = rfd::FileDialog::new().set_file_name("ruutu.png").save_file() {
                         start_export(app, RenderRequest::Still { frame: app.frame(), path: p });
                     }
+                }
+                if ui.add_enabled(can_export && app.legacy.is_none(),egui::Button::new("Vie nykyinen 3D-ruutu PSD-passeina…")).clicked() {
+                    ui.close_menu();
+                    if let Some(path)=rfd::FileDialog::new().add_filter("Photoshop", &["psd"]).set_file_name("render-passes.psd").save_file() { start_psd_export(app,path); }
                 }
                 ui.separator();
                 if ui.button("Lopeta").clicked() {
@@ -95,6 +99,10 @@ pub fn menu_bar(app: &mut StudioApp, ctx: &egui::Context) {
 }
 
 pub fn start_export(app: &mut StudioApp, request: RenderRequest) {
+    if app.legacy.is_some() { app.status = "Vanhan 2D-jakson videovienti ei vielä käytä natiivia 3D-putkea. Tallenna .hahmo tai .koeta.".into(); return; }
+    let snapshot = match crate::review_integration::capture_content(app, &[]) { Ok(s) => s, Err(e) => {app.status=e;return;} };
+    if let Err(e) = crate::review_integration::export_guard(&mut app.review, &snapshot) { app.status=e;return; }
+    if let Err(e) = hs_agents::agents::render::validate_pose_tracks(&app.production) {app.status=e;return;}
     if app.voice.recorder.is_some() || app.export.is_some() {
         app.status = "Lopeta äänitys tai nykyinen vienti ennen uutta vientiä.".into();
         return;
@@ -113,6 +121,7 @@ pub fn start_export(app: &mut StudioApp, request: RenderRequest) {
         own_audio: app.production.own_audio.clone(),
         saved_speech: app.production.saved_speech.clone(),
         accepted_notices: app.production.accepted_notices.clone(),
+        pose_tracks: app.production.pose_tracks.clone(),
     };
     app.export = Some(ExportJob::start(app.script.clone(), app.production.cast_params.clone(), voice, request, backend, (app.production.width, app.production.height)));
     app.status = "Vienti käynnissä…".into();
@@ -148,10 +157,14 @@ fn track_label(track: TrackKind) -> &'static str {
 
 fn event_text(kind: &EventKind) -> String {
     match kind {
+        EventKind::SceneryObject { object } => format!("Lavaste {object:?}"),
+        EventKind::Scenery { character, action } => format!("{}: {action:?}", character.as_deref().unwrap_or("Hahmo")),
         EventKind::WorldObject { object } => format!("Esine {}", object.id),
         EventKind::ObjectContact { character, contact } => match contact {
             hs_core::ObjectContact::PickUp { object } => format!("{}: Nosto · {object}",character.as_deref().unwrap_or("Hahmo")),
             hs_core::ObjectContact::Give { object, recipient } => format!("{object} -> {recipient}"),
+            hs_core::ObjectContact::Place {object,..} => format!("Laske · {object}"),
+            hs_core::ObjectContact::Drop {object} => format!("Pudota · {object}"),
         },
         EventKind::Dialogue { speaker, text } => match speaker {
             Some(s) => format!("{s}: {text}"),
@@ -189,6 +202,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                 }
             }
         });
+        crate::timeline_ui::group_controls(app, ui);
         let Some(tl) = app.production.timeline.clone() else { return };
         let episode_duration = tl.duration.seconds().max(0.1) as f32;
         let duration = (episode_duration + 2.0).min(60.0);
@@ -206,15 +220,15 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                         let name = &member.character.params.name;
                         let items = tl.on_track(track).filter(|e| match &e.kind {
                             EventKind::Dialogue { speaker, .. } | EventKind::Motion { character: speaker, .. }
-                            | EventKind::ObjectContact { character: speaker, .. }
+                            | EventKind::ObjectContact { character: speaker, .. } | EventKind::Scenery { character: speaker, .. }
                             =>
                                 speaker.as_ref().map_or(index == 0, |s| s.eq_ignore_ascii_case(name)),
                             _ => false,
-                        }).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. }) || !tl.events.iter().any(|other| other.start == e.start && other.source.line == e.source.line && matches!(other.kind, EventKind::ObjectContact { .. }))).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color, Some(e.source.line))).collect();
+                        }).filter(|e| !matches!(e.kind, EventKind::Motion { motion: hs_core::MotionKind::Wait, .. }) || !tl.events.iter().any(|other| other.start == e.start && other.source.line == e.source.line && matches!(other.kind, EventKind::ObjectContact { .. } | EventKind::Scenery { .. }))).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color, Some(e.source.line))).collect();
                         rows.push((format!("{} · {name}", track_label(track)), items));
                     }
                 } else {
-                    let items = tl.on_track(track).filter(|e| !matches!(e.kind, EventKind::WorldObject { .. })).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color, None)).collect();
+                    let items = tl.on_track(track).filter(|e| matches!(e.kind, EventKind::Background { .. })).map(|e| (e.start.seconds() as f32, e.end().seconds() as f32, event_text(&e.kind), color, app.production.plan.as_ref().and_then(|p| p.scene_events.iter().find(|cue| cue.line == e.source.line && cue.background.is_some()).map(|cue| cue.line)))).collect();
                     rows.push((track_label(track).to_string(), items));
                 }
             }
@@ -234,7 +248,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                             ShotKind::LowAngle => Color32::from_rgb(0x5a, 0x8a, 0x4a),
                             ShotKind::HighAngle => Color32::from_rgb(0x4a, 0x8a, 0x6a),
                         };
-                        (s.start, s.end, format!("{}{}", s.kind.finnish(), if s.tracking { " · seuranta" } else { "" }), c, None)
+                        (s.start, s.end, format!("{}{}", s.kind.finnish(), if s.tracking { " · seuranta" } else { "" }), c, app.production.plan.as_ref().and_then(|p| p.scene_events.iter().find(|cue| cue.camera.is_some() && (cue.at as f32-s.start).abs()<0.001).map(|cue|cue.line)))
                     })
                     .collect();
                 rows.insert(2, ("Kamera".to_string(), items));
@@ -256,7 +270,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
             painter.text(egui::pos2(x + 2.0, rect.top()), egui::Align2::LEFT_TOP, format!("{s:.0}s"), egui::FontId::proportional(11.0), ui.visuals().weak_text_color());
             s += step;
         }
-        let can_edit = app.script == app.production.script && app.pipeline_error.is_none() && app.workflow.pending_timing.is_none() && app.export.is_none() && app.voice.recorder.is_none();
+        let can_edit = !app.review.locked && !crate::timeline_ui::scene_pending(ctx) && app.script == app.production.script && app.pipeline_error.is_none() && app.workflow.pending_timing.is_none() && app.export.is_none() && app.voice.recorder.is_none();
         let mut clip_handled = false;
         let mut dropped = None;
         for (i, (name, items)) in rows.iter().enumerate() {
@@ -266,7 +280,18 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                 let r = egui::Rect::from_min_max(egui::pos2(x_of(*a) + 1.0, y + 3.0), egui::pos2(x_of(*b) - 1.0, y + row_h - 3.0));
                 if let Some(line) = line.filter(|_| can_edit) {
                     let hit = ui.interact(r, ui.id().with(("timing-clip", i, clip_index)), egui::Sense::click_and_drag());
-                    if hit.clicked() { app.select_line(line); app.time = *a; clip_handled = true; }
+                    hit.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, text));
+                    if hit.clicked() && ctx.input(|i| i.modifiers.command || i.modifiers.ctrl) { crate::timeline_ui::toggle_group_line(ctx,line); clip_handled=true; }
+                    let scene_kind = if name == "Kamera" {Some(crate::timeline_ui::SceneKind::Camera)} else if name == "Tausta" {Some(crate::timeline_ui::SceneKind::Background)} else {None};
+                    if let Some(kind)=scene_kind {
+                        let interaction=crate::timeline_ui::handle_scene_drag(app,ctx,&hit,kind,line,*a,lane.width()/duration);
+                        clip_handled |= interaction.handled;
+                        if let Some(start)=interaction.preview_start {
+                            let ghost=r.translate(egui::vec2((start-*a)/duration*lane.width(),0.0));
+                            painter.rect_stroke(ghost,4.0,Stroke::new(2.0,ACCENT),egui::StrokeKind::Inside);
+                        }
+                    } else {
+                    if hit.clicked() && !ctx.input(|i|i.modifiers.command||i.modifiers.ctrl) { app.select_line(line); app.time = *a; clip_handled = true; }
                     if hit.drag_started() {
                         app.select_line(line); app.playing = false;
                         let pointer_start = ctx.input(|input| input.pointer.press_origin()).map_or(r.left(), |p| p.x);
@@ -285,6 +310,7 @@ pub fn timeline(app: &mut StudioApp, ctx: &egui::Context) {
                             }
                         }
                         if hit.drag_stopped() { dropped = app.workflow.timeline_drag.take(); }
+                    }
                     }
                     hit.on_hover_text("Liikerata muuttaa vain liikettä; puherata repliikin ajoitusta. Raahaa korttia tai keston oikeaa reunaa. Pudotus näyttää tarkistetun luonnoksen.");
                 }
@@ -327,13 +353,16 @@ pub fn script_panel(app: &mut StudioApp, ctx: &egui::Context) {
             ui.selectable_value(&mut app.left_tab, LeftTab::Image, "Kuva");
             ui.selectable_value(&mut app.left_tab, LeftTab::Edit, "Leikkaus");
             ui.selectable_value(&mut app.left_tab, LeftTab::Export, "Vienti");
+            ui.selectable_value(&mut app.left_tab, LeftTab::Rig, "Avainruudut");
+            ui.selectable_value(&mut app.left_tab, LeftTab::Review, "Tarkistus");
         });
         ui.separator();
+        ui.set_enabled(!app.review.locked || app.left_tab == LeftTab::Review);
         match app.left_tab {
             LeftTab::Script => script_tab(app, ui),
             LeftTab::Voice => crate::voice_ui::voice_tab(app, ui),
             LeftTab::Performance => crate::voice_ui::performance_tab(app, ui),
-            LeftTab::Image | LeftTab::Edit | LeftTab::Export => { ui.label("Työtila avautuu keskialueelle."); },
+            LeftTab::Image | LeftTab::Edit | LeftTab::Export | LeftTab::Rig | LeftTab::Review => { ui.label("Työtila avautuu keskialueelle."); },
         }
     });
 }
@@ -383,6 +412,7 @@ fn color_row(ui: &mut egui::Ui, label: &str, c: &mut [u8; 3]) -> bool {
 
 pub fn cast_panel(app: &mut StudioApp, ctx: &egui::Context) {
     egui::SidePanel::right("hahmot").resizable(true).default_width(300.0).min_width(240.0).max_width(400.0).show(ctx, |ui| {
+        ui.set_enabled(!app.review.locked);
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.heading("Hahmot");
             app.ensure_cast_params();
@@ -516,7 +546,7 @@ pub fn stage(app: &mut StudioApp, ctx: &egui::Context, frame: &eframe::Frame) {
                     legacy.frame = f;
                 }
             }
-            ui.label(egui::RichText::new(format!("{} (2D, vain katselu)", legacy.name)).weak());
+            ui.label(egui::RichText::new(format!("{} (2D, muokkaa Avainruudut-välilehdellä)", legacy.name)).weak());
             let avail = ui.available_size();
             if let Some(t) = &legacy.texture {
                 let a = t.size()[0] as f32 / t.size()[1] as f32;
@@ -557,4 +587,15 @@ pub fn dialogs(app: &mut StudioApp, ctx: &egui::Context) {
             ui.label("Kaikki käsittely tapahtuu paikallisesti.");
         });
     }
+}
+
+/// Freeze the same posed scene as viewport/video; AOV export uses software only.
+pub fn start_psd_export(app:&mut StudioApp,path:std::path::PathBuf) {
+    if app.export.is_some()||app.voice.recorder.is_some()||app.legacy.is_some() {app.status="Lopeta nykyinen vienti/äänitys ja valitse natiivi 3D-jakso.".into();return;}
+    let snapshot=match crate::review_integration::capture_content(app,&[]){Ok(s)=>s,Err(e)=>{app.status=e;return;}};
+    if let Err(e)=crate::review_integration::export_guard(&mut app.review,&snapshot){app.status=e;return;}
+    if app.script!=app.production.script||app.pipeline_error.is_some()||!hs_agents::audit::inspect(&app.production).allowed(){app.status="Korjaa tuotannon virheet ennen PSD-vientiä.".into();return;}
+    let frame=app.frame();
+    let scene=app.viewport.builder.scene(&app.production,frame,app.production.width,app.production.height);
+    match scene {Some(scene)=>{app.export=Some(ExportJob::start_psd(scene,path));app.status="Ohjelmistosäteenseuranta: AO ja PSD-renderpassit…".into();},None=>{app.status=app.viewport.builder.last_error.clone().unwrap_or("3D-kohtaus puuttuu".into());}}
 }

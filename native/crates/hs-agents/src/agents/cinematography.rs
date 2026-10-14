@@ -101,7 +101,7 @@ impl CameraTrack {
         };
         for e in beats {
             let EventKind::Motion { motion: mk, character } = &e.kind else { continue };
-            let row_events: Vec<_> = tl.events.iter().filter(|event| event.source.line==e.source.line && !matches!(event.kind,EventKind::Background{..} | EventKind::WorldObject{..})).collect();
+            let row_events: Vec<_> = tl.events.iter().filter(|event| event.source.line==e.source.line && !matches!(event.kind,EventKind::Background{..} | EventKind::WorldObject{..} | EventKind::SceneryObject{..})).collect();
             let scene_start=row_events.iter().map(|event|event.start).min().unwrap_or(e.start);
             let scene_end=row_events.iter().map(|event|event.end()).max().unwrap_or(e.end());
             let (start, end) = (scene_start.seconds() as f32, scene_end.seconds() as f32);
@@ -154,6 +154,20 @@ impl CameraTrack {
                 dialogue_run = 0;
             }
         }
+        // Explicit standalone cuts own the global camera until the next authored cut.
+        let mut cuts:Vec<_>=tl.events.iter().filter(|event|matches!(event.kind,EventKind::Camera{..})).collect();
+        cuts.sort_by_key(|event|event.start);
+        for event in &cuts {
+            if tl.events.iter().any(|motion|motion.source.line==event.source.line && matches!(motion.kind,EventKind::Motion{..})) {continue;}
+            let EventKind::Camera{hint}=event.kind else{continue};
+            let start=event.start.seconds() as f32;
+            let end=cuts.iter().find(|next|next.start>event.start).map_or(tl.duration.seconds() as f32,|next|next.start.seconds() as f32);
+            if end<=start {continue;}
+            let subject=tl.events.iter().filter(|e|e.start<=event.start && event.start<e.end()).find_map(|e|match &e.kind {EventKind::Dialogue{speaker:Some(name),..}|EventKind::Motion{character:Some(name),..}=>Some(subject_of(Some(name))),_=>None}).or_else(||speakers.iter().rev().find(|(at,_)|*at<=start).map(|(_,actor)|*actor)).unwrap_or(0);
+            let kind=match hint{CameraHint::Wide=>ShotKind::Wide,CameraHint::Medium=>ShotKind::Medium,CameraHint::CloseUp=>ShotKind::CloseUp,CameraHint::Insert=>ShotKind::Insert,CameraHint::TwoShot=>ShotKind::TwoShot,CameraHint::OverShoulder=>ShotKind::OverShoulder,CameraHint::LowAngle=>ShotKind::LowAngle,CameraHint::HighAngle=>ShotKind::HighAngle};
+            shots.push(Shot{start,end,kind,subject,partner:partner_of(subject,start),angle:0.,tracking:true,authored:true});
+        }
+        shots.sort_by(|a,b|a.start.total_cmp(&b.start));
         // Authored cuts (including repeated kinds and subsecond shots) are
         // editorial boundaries. Never absorb them or the shot preceding them.
         let authored: Vec<f32> = tl.events.iter().filter_map(|event| match event.kind {
@@ -425,6 +439,11 @@ impl StudioAgent for CinematographyAgent {
         p.contacts = None;
         match crate::contacts::ContactPlan::build(p) {
             Ok(plan) => p.contacts = plan,
+            Err(message) => { p.camera = None; return Err(AgentError::Failed { agent: "cinematography", message }); }
+        }
+        p.scenery = None;
+        match crate::scenery::SceneryPlan::build(p) {
+            Ok(plan) => p.scenery = plan,
             Err(message) => { p.camera = None; return Err(AgentError::Failed { agent: "cinematography", message }); }
         }
         Ok(AgentReport::new(summary))

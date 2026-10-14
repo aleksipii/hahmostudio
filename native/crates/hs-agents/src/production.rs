@@ -124,6 +124,9 @@ pub struct Production {
     pub motion: Vec<Arc<PreparedMotion>>,
     pub camera: Option<Arc<CameraTrack>>,
     pub contacts: Option<Arc<crate::contacts::ContactPlan>>,
+    pub scenery: Option<Arc<crate::scenery::SceneryPlan>>,
+    /// Authored native joint/root transforms, kept separate from derived motion.
+    pub pose_tracks: hs_motion::pose_edit::PoseTracks,
     pub diagnostics: Vec<Diagnostic>,
     pub output: Option<String>,
 }
@@ -163,6 +166,8 @@ impl Production {
             motion: Vec::new(),
             camera: None,
             contacts: None,
+            scenery: None,
+            pose_tracks: Default::default(),
             diagnostics: Vec::new(),
             output: None,
         }

@@ -4,12 +4,31 @@ mod psd;
 use std::io::Cursor;
 pub const MAX_BYTES: usize = 128 * 1024 * 1024;
 pub const MAX_PIXELS: usize = 16_000_000;
+/// Supported separable PSD blend modes. Unknown modes are rejected on import.
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum BlendMode {
+    #[default]
+    Normal,
+    Multiply,
+    Screen,
+    Overlay,
+    Darken,
+    Lighten,
+    Difference,
+    Exclusion,
+}
+fn opaque() -> u8 {
+    255
+}
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Layer {
     pub id: u64,
     pub name: String,
     pub visible: bool,
     pub opacity: u8,
+    #[serde(default)]
+    pub blend_mode: BlendMode,
     pub rgba: Vec<u8>,
     pub mask: Option<Vec<u8>>,
     #[serde(default)]
@@ -21,6 +40,14 @@ pub struct Layer {
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Group {
+    #[serde(default)]
+    pub blend_mode: BlendMode,
+    #[serde(default = "opaque")]
+    pub opacity: u8,
+    #[serde(default)]
+    pub isolated: bool,
+    #[serde(default)]
+    pub mask: Option<Vec<u8>>,
     pub id: u64,
     pub name: String,
     pub parent_id: Option<u64>,
@@ -78,6 +105,15 @@ impl Document {
             return Err("Alkuperäinen PSD ylittää 100 MiB".into());
         }
         for g in &self.groups {
+            if g.mask.as_ref().is_some_and(|m| m.len() != n)
+                || (!g.isolated
+                    && (g.opacity != 255 || g.mask.is_some() || g.blend_mode != BlendMode::Normal))
+            {
+                return Err("Virheellinen ryhmämaski tai läpikulkevan ryhmän sekoitus".into());
+            }
+            total = total
+                .checked_add(g.mask.as_ref().map_or(0, Vec::len))
+                .ok_or("Kokoraja")?;
             if g.id == 0 || g.id >= self.next_id || !ids.insert(g.id) || g.name.len() > 4096 {
                 return Err("Virheellinen ryhmä".into());
             }
@@ -104,7 +140,23 @@ impl Document {
         {
             let mut id = parent;
             let mut seen = std::collections::HashSet::new();
+            let mut isolated_depth = 0usize;
             while let Some(p) = id {
+                if seen.len() >= 20 {
+                    return Err("Ryhmähierarkia ylittää 20 tasoa".into());
+                }
+                let group = self
+                    .groups
+                    .iter()
+                    .find(|g| g.id == p)
+                    .ok_or("Puuttuva ryhmä")?;
+                isolated_depth += usize::from(group.isolated);
+                if n.checked_mul(4)
+                    .and_then(|b| b.checked_mul(isolated_depth + 1))
+                    .map_or(true, |b| b > MAX_BYTES)
+                {
+                    return Err("Ryhmien renderöintipuskurit ylittävät 128 MiB".into());
+                }
                 if !seen.insert(p) {
                     return Err("Ryhmähierarkian sykli".into());
                 }
@@ -114,6 +166,22 @@ impl Document {
                     .find(|g| g.id == p)
                     .ok_or("Puuttuva ryhmä")?
                     .parent_id;
+            }
+        }
+        // A group occupies one contiguous span in the ordered layer stack.
+        // Interleaving unrelated layers cannot be rendered as an isolated subtree.
+        for g in &self.groups {
+            let mut seen_member = false;
+            let mut ended = false;
+            for l in &self.layers {
+                if self.is_descendant(l.parent_id, g.id) {
+                    if ended {
+                        return Err("Ryhmän tasot eivät ole yhtenäisessä järjestyksessä".into());
+                    }
+                    seen_member = true;
+                } else if seen_member {
+                    ended = true;
+                }
             }
         }
         if total > MAX_BYTES {
@@ -128,7 +196,12 @@ impl Document {
             .iter()
             .map(|l| l.rgba.len() + l.mask.as_ref().map_or(0, Vec::len))
             .sum::<usize>()
-            + self.source_psd.as_ref().map_or(0, Vec::len);
+            + self.source_psd.as_ref().map_or(0, Vec::len)
+            + self
+                .groups
+                .iter()
+                .map(|g| g.mask.as_ref().map_or(0, Vec::len))
+                .sum::<usize>();
         if self.layers.len() + self.groups.len() >= 1000
             || used + n * 4 > MAX_BYTES
             || name.len() > 4096
@@ -143,6 +216,7 @@ impl Document {
             name,
             visible: true,
             opacity: 255,
+            blend_mode: BlendMode::Normal,
             rgba: vec![0; n * 4],
             mask: None,
             parent_id: None,
@@ -180,7 +254,13 @@ impl Document {
             .iter()
             .map(|l| l.rgba.len() + l.mask.as_ref().map_or(0, Vec::len))
             .sum();
-        let used = used + self.source_psd.as_ref().map_or(0, Vec::len);
+        let used = used
+            + self.source_psd.as_ref().map_or(0, Vec::len)
+            + self
+                .groups
+                .iter()
+                .map(|g| g.mask.as_ref().map_or(0, Vec::len))
+                .sum::<usize>();
         let l = self.layers.get_mut(index).ok_or("Taso puuttuu")?;
         if l.mask.is_none() && used + n > MAX_BYTES {
             return Err("Maski ylittää dokumentin 128 MiB resurssirajan".into());
@@ -241,46 +321,73 @@ impl Document {
             }
         }
     }
-    fn group_visible(&self, mut parent: Option<u64>) -> bool {
+    fn is_descendant(&self, mut parent: Option<u64>, ancestor: u64) -> bool {
         for _ in 0..=self.groups.len() {
-            match parent {
-                None => return true,
-                Some(id) => match self.groups.iter().find(|g| g.id == id) {
-                    Some(g) if g.visible => parent = g.parent_id,
-                    _ => return false,
-                },
+            let Some(id) = parent else {
+                return false;
+            };
+            if id == ancestor {
+                return true;
             }
+            parent = self
+                .groups
+                .iter()
+                .find(|g| g.id == id)
+                .and_then(|g| g.parent_id);
         }
         false
     }
     pub fn import_psd(bytes: &[u8]) -> Result<Self> {
         psd::import(bytes)
     }
+    fn composite_scope(&self, parent: Option<u64>, out: &mut [u8], depth: usize) {
+        if depth > 20 {
+            return;
+        }
+        let mut drawn_groups = std::collections::HashSet::new();
+        for l in &self.layers {
+            if l.parent_id == parent {
+                if l.visible {
+                    blend_raster(out, &l.rgba, l.opacity, l.mask.as_deref(), l.blend_mode);
+                }
+                continue;
+            }
+            let mut child = l.parent_id;
+            for _ in 0..=self.groups.len() {
+                let Some(id) = child else {
+                    break;
+                };
+                let Some(g) = self.groups.iter().find(|g| g.id == id) else {
+                    break;
+                };
+                if g.parent_id == parent {
+                    if drawn_groups.insert(id) && g.visible {
+                        if g.isolated {
+                            let mut isolated = vec![0; out.len()];
+                            self.composite_scope(Some(id), &mut isolated, depth + 1);
+                            blend_raster(
+                                out,
+                                &isolated,
+                                g.opacity,
+                                g.mask.as_deref(),
+                                g.blend_mode,
+                            );
+                        } else {
+                            self.composite_scope(Some(id), out, depth + 1);
+                        }
+                    }
+                    break;
+                }
+                child = g.parent_id;
+            }
+        }
+    }
     pub fn composite(&self) -> Vec<u8> {
         let mut out = vec![0u8; self.width as usize * self.height as usize * 4];
-        for l in self
-            .layers
-            .iter()
-            .filter(|l| l.visible && self.group_visible(l.parent_id))
-        {
-            for (n, (src, dst)) in l
-                .rgba
-                .chunks_exact(4)
-                .zip(out.chunks_exact_mut(4))
-                .enumerate()
-            {
-                let a = src[3] as f32 / 255.0 * l.opacity as f32 / 255.0
-                    * l.mask.as_ref().map_or(1.0, |m| m[n] as f32 / 255.0);
-                let da = dst[3] as f32 / 255.0;
-                let oa = a + da * (1.0 - a);
-                if oa > 0.0 {
-                    for c in 0..3 {
-                        dst[c] = ((src[c] as f32 * a + dst[c] as f32 * da * (1.0 - a)) / oa).round()
-                            as u8;
-                    }
-                }
-                dst[3] = (oa * 255.0).round() as u8;
-            }
+        // Public fields may have been edited directly; invalid group trees must not
+        // recurse or allocate unbounded buffers in the preview.
+        if self.validate().is_ok() {
+            self.composite_scope(None, &mut out, 0);
         }
         out
     }
@@ -294,6 +401,12 @@ impl Document {
             if let Some(m) = l.mask.take() {
                 blobs.push(m);
                 l.mask = Some(vec![]);
+            }
+        }
+        for g in &mut meta.groups {
+            if let Some(m) = g.mask.take() {
+                blobs.push(m);
+                g.mask = Some(vec![]);
             }
         }
         let source = meta.source_psd.take();
@@ -347,6 +460,12 @@ impl Document {
             if l.mask.is_some() {
                 let n = len(bytes, &mut c)?;
                 l.mask = Some(take(bytes, &mut c, n)?.to_vec());
+            }
+        }
+        for g in &mut d.groups {
+            if g.mask.is_some() {
+                let n = len(bytes, &mut c)?;
+                g.mask = Some(take(bytes, &mut c, n)?.to_vec());
             }
         }
         if d.source_psd.is_some() {
@@ -407,6 +526,44 @@ impl Document {
         Ok(out)
     }
 }
+fn blend_raster(out: &mut [u8], rgba: &[u8], opacity: u8, mask: Option<&[u8]>, mode: BlendMode) {
+    for (i, (src, dst)) in rgba
+        .chunks_exact(4)
+        .zip(out.chunks_exact_mut(4))
+        .enumerate()
+    {
+        let sa = src[3] as f32 / 255.0 * opacity as f32 / 255.0
+            * mask.map_or(1.0, |m| m[i] as f32 / 255.0);
+        let da = dst[3] as f32 / 255.0;
+        let oa = sa + da * (1.0 - sa);
+        if oa > 0.0 {
+            for c in 0..3 {
+                let s = src[c] as f32 / 255.0;
+                let d = dst[c] as f32 / 255.0;
+                let b = match mode {
+                    BlendMode::Normal => s,
+                    BlendMode::Multiply => s * d,
+                    BlendMode::Screen => s + d - s * d,
+                    BlendMode::Overlay => {
+                        if d <= 0.5 {
+                            2.0 * s * d
+                        } else {
+                            1.0 - 2.0 * (1.0 - s) * (1.0 - d)
+                        }
+                    }
+                    BlendMode::Darken => s.min(d),
+                    BlendMode::Lighten => s.max(d),
+                    BlendMode::Difference => (s - d).abs(),
+                    BlendMode::Exclusion => s + d - 2.0 * s * d,
+                };
+                // Source-over with separable blending, including transparent backdrop.
+                let premul = sa * (1.0 - da) * s + sa * da * b + (1.0 - sa) * da * d;
+                dst[c] = (255.0 * premul / oa).round().clamp(0.0, 255.0) as u8;
+            }
+        }
+        dst[3] = (oa * 255.0).round() as u8;
+    }
+}
 fn document_footprint(d: &Document) -> usize {
     std::mem::size_of::<Document>()
         + d.layers.len() * std::mem::size_of::<Layer>()
@@ -416,7 +573,10 @@ fn document_footprint(d: &Document) -> usize {
             .iter()
             .map(|l| l.rgba.len() + l.mask.as_ref().map_or(0, Vec::len) + l.name.len())
             .sum::<usize>()
-        + d.groups.iter().map(|g| g.name.len()).sum::<usize>()
+        + d.groups
+            .iter()
+            .map(|g| g.name.len() + g.mask.as_ref().map_or(0, Vec::len))
+            .sum::<usize>()
 }
 #[derive(Default)]
 pub struct History {
@@ -558,5 +718,56 @@ mod tests {
             h.checkpoint(&d).unwrap();
         }
         assert!(h.checkpoint(&d).is_err());
+    }
+    #[test]
+    fn invalid_group_nesting_order_and_mask_size_cannot_render_or_save() {
+        let mut d = Document::new(1, 1).unwrap();
+        let second = d.add_layer("middle".into()).unwrap();
+        d.add_layer("top".into()).unwrap();
+        let group_id = d.next_id;
+        d.next_id += 1;
+        d.groups.push(Group {
+            id: group_id,
+            name: "group".into(),
+            parent_id: None,
+            visible: true,
+            source_psd_id: None,
+            blend_mode: BlendMode::Normal,
+            opacity: 255,
+            isolated: true,
+            mask: None,
+        });
+        d.layers[0].parent_id = Some(group_id);
+        d.layers[2].parent_id = Some(group_id);
+        assert!(d.validate().unwrap_err().contains("järjestyksessä"));
+        assert!(d.encode().is_err());
+        d.layers
+            .iter_mut()
+            .find(|l| l.id == second)
+            .unwrap()
+            .parent_id = Some(group_id);
+        assert!(d.validate().is_ok());
+        d.groups[0].mask = Some(vec![]);
+        assert!(d.validate().unwrap_err().contains("ryhmämaski"));
+        d.groups[0].mask = None;
+        for _ in 0..20 {
+            let id = d.next_id;
+            d.next_id += 1;
+            let parent = d.groups.last().unwrap().id;
+            d.groups.push(Group {
+                id,
+                name: "nested".into(),
+                parent_id: Some(parent),
+                visible: true,
+                source_psd_id: None,
+                blend_mode: BlendMode::Normal,
+                opacity: 255,
+                isolated: true,
+                mask: None,
+            });
+        }
+        d.layers[0].parent_id = Some(d.groups.last().unwrap().id);
+        assert!(d.validate().unwrap_err().contains("20 tasoa"));
+        assert_eq!(d.composite(), vec![0; 4]);
     }
 }

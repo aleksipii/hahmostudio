@@ -8,6 +8,8 @@
 - Käytä olemassa olevaa eristettyä pilvicheckoutia. Uusi worktree edellyttää käyttäjän nimenomaista pyyntöä.
 - Koeta tuottaa ensisijaisesti englanninkielisiä jaksoja: käsikirjoitus → hahmokohtainen Kokoro tai oma ääni → ajoitus/huulisynkka → 3D-animaatio → `.koeta`-sarja → englanninkieliset tekstitykset → MP4. Säilytä suomenkielinen käyttöliittymä ja FI-tuki.
 
+- Nykyinen prioriteetti (14.10.2026): toteuta ominaisuudet ensin; oikean Macin hyväksyntä ja keveysmittaukset sen jälkeen. Käyttäjä tekee sovellusta alustavasti itselleen; allekirjoitus/notarisaatio ei ole tämän vaiheen valmistumisehto. Älä merkitse laitetestejä tehdyiksi Linuxin perusteella.
+
 ## Komennot
 
 Työhakemisto `native/`:

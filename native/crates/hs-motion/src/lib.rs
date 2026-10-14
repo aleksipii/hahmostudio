@@ -27,3 +27,9 @@ pub mod skeleton;
 pub use humanoid::{Humanoid, MouthRig, Proportions, Side};
 pub use procedural::{CharacterFrame, ProceduralMotion, PropFrame};
 pub use skeleton::{Joint, JointWorld, Pose, Skeleton};
+
+pub mod scenery;
+
+pub mod pose_edit;
+
+pub mod layers;

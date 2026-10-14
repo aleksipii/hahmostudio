@@ -4,6 +4,12 @@
 //! Testikäyttö: `hahmostudio --kuvakaappaus kuva.png [--aika 5.0] [käsikirjoitus.txt]`
 //! piirtää ikkunan, tallentaa kuvakaappauksen ja sulkeutuu. `--välilehti ääni|esitys` avaa vasemman paneelin välilehden.
 
+mod rig_workspace;
+mod rig_ui;
+mod pose_ui;
+mod review_ui;
+mod review_integration;
+
 mod app;
 mod camera_ui;
 mod export_job;

@@ -29,9 +29,9 @@ impl StudioAgent for ProceduralMotionAgent {
                 let mut m = c.character.motion();
                 m.lead = c.lead;
                 m.start = Vec3::new(c.start_x, 0.0, 0.0);
-                Arc::new(m.prepare(tl))
+                m.prepare(tl).with_layers(tl).map(Arc::new).map_err(|message|AgentError::Failed {agent:"procedural-motion",message})
             })
-            .collect();
+            .collect::<Result<Vec<_>,_>>()?;
         Ok(AgentReport::new(format!("{} hahmoa, {} ruutua", p.motion.len(), tl.frame_count())))
     }
 }

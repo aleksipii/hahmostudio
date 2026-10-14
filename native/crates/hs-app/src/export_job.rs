@@ -22,6 +22,7 @@ pub struct ExportVoice {
     pub saved_speech: std::collections::HashMap<String, hs_project::AudioBinding>,
     pub own_audio: std::collections::HashMap<String, Arc<hs_voice::Audio>>,
     pub accepted_notices: std::collections::BTreeSet<String>,
+    pub pose_tracks: hs_motion::pose_edit::PoseTracks,
 }
 
 pub struct ExportJob {
@@ -57,6 +58,7 @@ impl ExportJob {
             p.caption_settings = voice.caption_settings;
             p.caption_overrides = voice.caption_overrides;
             p.accepted_notices = voice.accepted_notices;
+            p.pose_tracks = voice.pose_tracks;
             p.width = size.0;
             p.height = size.1;
             p.backend = backend;
@@ -83,5 +85,18 @@ impl ExportJob {
 
     pub fn progress(&self) -> f32 {
         self.done.load(Ordering::Relaxed) as f32 / self.total.load(Ordering::Relaxed).max(1) as f32
+    }
+}
+
+impl ExportJob {
+    pub fn start_psd(scene: hs_render::RenderScene, path: std::path::PathBuf) -> Self {
+        let done=Arc::new(AtomicU32::new(0));let total=Arc::new(AtomicU32::new(1));let cancel=Arc::new(AtomicBool::new(false));let (tx,rx)=mpsc::channel();
+        let label=path.display().to_string();let progress=done.clone();let signal=cancel.clone();
+        std::thread::spawn(move || {
+            let result=hs_render::raytrace::render_cancelable(&scene,Default::default(),&signal)
+                .and_then(|buffers| if signal.load(Ordering::Relaxed) { Err(hs_render::RenderError::Export("PSD-vienti peruttu".into())) } else { hs_render::psd_exporter::save_atomic(&buffers,&path) });
+            let message=match result {Ok(())=>{progress.store(1,Ordering::Relaxed);format!("PSD valmis: {}",path.display())},Err(e)=>format!("PSD-vienti keskeytyi: {e}")};let _=tx.send(message);
+        });
+        Self{done,total,cancel,label,rx}
     }
 }

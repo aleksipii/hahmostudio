@@ -11,7 +11,7 @@ fn different_actors_share_a_clock_without_shortening_actions() {
 #[test]
 fn conflicting_actor_and_unknown_timing_are_rejected() {
     for source in [
-        "KALLE: [at 0s] [wave 4s]\nKALLE: [at 1s] [nod 2s]",
+        "KALLE: [at 0s] [wave 4s]\nKALLE: [at 1s] [wave 2s]",
         "KALLE: [at NaNs] [wait 2s]",
         "[at 1s]\nKALLE: [wait 2s]",
     ] {
@@ -77,4 +77,15 @@ fn leading_gap_does_not_apply_a_written_camera_before_its_start() {
     );
     assert!(camera.shot_at(2.5).unwrap().authored);
     assert!(hs_agents::audit::inspect(&p).allowed());
+}
+
+#[test]
+fn one_actor_disjoint_body_channels_run_together() {
+    let mut p=Production::new("KALLE: [at 0s] [wave 4s]\nKALLE: [at 1s] [nod 2s]");
+    Pipeline::default().run(&mut p).unwrap();
+    assert!(hs_agents::audit::inspect(&p).allowed());
+    assert_eq!(p.timeline.as_ref().unwrap().duration.seconds(),4.0);
+    let frame=p.motion[0].evaluate(p.timeline.as_ref().unwrap(),1.5);
+    let h=&p.cast[0].character.humanoid;
+    assert!(frame.pose.local[h.arm(hs_motion::Side::Left).upper].angle_between(h.rest_pose().local[h.arm(hs_motion::Side::Left).upper])>0.1);
 }

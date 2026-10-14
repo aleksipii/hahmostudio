@@ -63,8 +63,8 @@ fn handoff_cannot_move_before_pickup() {
     let source = include_str!("../../../examples/object-handoff.en.txt");
     let mut p = Production::new(source);
     Pipeline::default().run(&mut p).unwrap();
-    assert!(hs_agents::timing_edit::checked_retime(&p, source, 6, 0.0).is_err());
-    assert!(hs_agents::timing_edit::checked_retime(&p, source, 6, 3.0).is_ok());
+    assert!(hs_agents::timing_edit::checked_motion_start(&p, source, 6, 0.0).is_err());
+    assert!(hs_agents::timing_edit::checked_motion_start(&p, source, 6, 3.0).is_ok());
     assert_eq!(p.script, source);
 }
 
@@ -98,7 +98,7 @@ fn resize_retains_speech_and_updates_action_duration() {
 }
 
 #[test]
-fn resize_cannot_truncate_own_recording_or_cross_next_actor_action() {
+fn resize_preserves_own_recording_and_independent_actor_action() {
     let source = "KALLE: Recorded line. [at 0s] [wait 5s]\nKALLE: [at 5s] [nod 2s]";
     let mut p = Production::new(source);
     Pipeline::default().run(&mut p).unwrap();
@@ -112,7 +112,9 @@ fn resize_cannot_truncate_own_recording_or_cross_next_actor_action() {
     Pipeline::default().run(&mut p).unwrap();
     let error = hs_agents::timing_edit::checked_duration(&p, source, 1, 2.0).unwrap_err();
     assert!(error.contains("4.300"), "{error}");
-    assert!(hs_agents::timing_edit::checked_duration(&p, source, 1, 6.0).is_err());
+    let resized=hs_agents::timing_edit::checked_duration(&p, source, 1, 6.0).unwrap();
+    assert!(resized.contains("[motion duration 5.000000s]"));
+    assert!(resized.contains("[at 5s] [nod 2s]"));
     assert!(hs_agents::timing_edit::checked_duration(&p, source, 1, 4.5).is_ok());
     assert_eq!(p.script, source);
 }
@@ -168,7 +170,7 @@ fn independent_motion_preserves_speech_clock_audio_and_project_reopen() {
 }
 #[test]
 fn independent_motion_guards_order_overlap_and_real_speech() {
-    let source = "KALLE: Long line. [at 0s] [wave 5s]\nKALLE: Next. [at 5s] [nod 2s]";
+    let source = "KALLE: Long line. [at 0s] [wave 5s]\nKALLE: Next. [at 5s] [wave 2s]";
     let mut p = Production::new(source);
     Pipeline::default().run(&mut p).unwrap();
     p.own_audio.insert(

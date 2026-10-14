@@ -22,3 +22,8 @@ serde_json.workspace = true
 tempfile = "3"
 wgpu = { workspace = true, optional = true }
 pollster = { workspace = true, optional = true }
+
+psd = "0.3"
+
+[dev-dependencies]
+hs-image.workspace = true

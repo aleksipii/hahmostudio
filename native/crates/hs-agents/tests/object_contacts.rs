@@ -148,3 +148,141 @@ fn audio_mix_edits_reuse_the_checked_contact_resources() {
         .iter()
         .any(|s| s.abs() > 0.001));
 }
+fn samples(p: &Production, time: f32) -> Vec<hs_agents::contacts::ObjectFrame> {
+    let mut frames = p
+        .motion
+        .iter()
+        .map(|m| m.evaluate(p.timeline.as_ref().unwrap(), time))
+        .collect::<Vec<_>>();
+    p.contacts
+        .as_ref()
+        .unwrap()
+        .evaluate(p, time, &mut frames)
+        .unwrap()
+}
+#[test]
+fn place_releases_on_actual_stand_and_can_pick_up_again() {
+    let source="[object cup mug on stand at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]\nKALLE: [place cup back 2s]\nKALLE: [pick up cup 2s]";
+    let p = ready(source);
+    assert_eq!(samples(&p, 2.1)[0].owner, Some(0));
+    assert_eq!(samples(&p, 3.6)[0].owner, None);
+    assert_eq!(samples(&p, 4.0)[0].owner, None);
+    assert_eq!(samples(&p, 5.1)[0].owner, Some(0));
+    let settled = samples(&p, 4.0);
+    let bottom = settled[0].point.y
+        + settled[0]
+            .mesh
+            .vertices
+            .iter()
+            .map(|v| v.position[1])
+            .fold(f32::INFINITY, f32::min);
+    let top = settled[0]
+        .stand
+        .as_ref()
+        .unwrap()
+        .vertices
+        .iter()
+        .map(|v| v.position[1])
+        .fold(f32::NEG_INFINITY, f32::max);
+    assert!((bottom - top).abs() < 0.002);
+    for tick in 0..=600 {
+        for object in samples(&p, tick as f32 / 100.0) {
+            for grip in object.grips {
+                if grip.weight >= 0.999 {
+                    assert!(grip.actual.distance(grip.expected) < 0.002);
+                }
+            }
+        }
+    }
+    for boundary in [2.0, 3.5, 4.0] {
+        assert!(
+            samples(&p, boundary - 0.0001)[0]
+                .point
+                .distance(samples(&p, boundary + 0.0001)[0].point)
+                < 0.001
+        );
+    }
+    let episode =
+        hs_agents::project::capture_checked(&p, "place".into(), 1, "Place".into()).unwrap();
+    let mut restored = hs_agents::project::restore_checked(&episode).unwrap();
+    Pipeline::default().run(&mut restored).unwrap();
+    assert_eq!(samples(&restored, 4.0)[0].owner, None);
+    assert!(samples(&restored, 4.0)[0].point.distance(settled[0].point) < 0.0001);
+}
+#[test]
+fn drop_has_gravity_releases_and_lands_without_penetration() {
+    let p=ready("[object cup mug on stand at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]\nKALLE: [drop cup 2s]\nKALLE: [pick up cup 2s]");
+    let released = samples(&p, 2.4);
+    assert_eq!(released[0].owner, None);
+    let fallen = samples(&p, 2.5);
+    assert!((released[0].point.y - fallen[0].point.y - 4.905 * 0.1f32.powi(2)).abs() < 0.001);
+    let landed = samples(&p, 4.0);
+    assert_eq!(landed[0].owner, None);
+    assert!((landed[0].point.y - 1.22).abs() < 0.002);
+    assert_eq!(samples(&p, 5.1)[0].owner, Some(0));
+    for tick in 200..=400 {
+        let now = samples(&p, tick as f32 / 100.0);
+        assert!(now[0].point.y >= 1.22 - 0.002);
+    }
+    for boundary in [2.4, 4.0] {
+        assert!(
+            samples(&p, boundary - 0.0001)[0]
+                .point
+                .distance(samples(&p, boundary + 0.0001)[0].point)
+                < 0.001
+        );
+    }
+}
+#[test]
+fn unsupported_floating_place_wrong_owner_and_stand_edge_fail() {
+    for command in [
+        "[place cup at -0.25 2.0 0.20 2s]",
+        "[place cup at -0.13 1.22 0.20 2s]",
+    ] {
+        let source=format!("[object cup mug on stand at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]\nKALLE: {command}");
+        let mut p = Production::new(source);
+        assert!(Pipeline::default().run(&mut p).is_err(), "{command}");
+    }
+    for command in ["[place cup back 2s]", "[drop cup 2s]"] {
+        let source = format!("[object cup mug on stand at -0.25 1.22 0.20]\nKALLE: {command}");
+        let mut p = Production::new(source);
+        assert!(Pipeline::default().run(&mut p).is_err());
+    }
+}
+#[test]
+fn drop_outside_a_stand_lands_on_the_real_floor() {
+    let p =
+        ready("[object cup mug at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]\nKALLE: [drop cup 2s]");
+    let landed = samples(&p, 4.0);
+    assert_eq!(landed[0].owner, None);
+    assert!(landed[0].stand.is_none());
+    let bottom = landed[0].point.y
+        + landed[0]
+            .mesh
+            .vertices
+            .iter()
+            .map(|v| v.position[1])
+            .fold(f32::INFINITY, f32::min);
+    assert!(bottom.abs() < 0.002);
+    for tick in 240..=400 {
+        let object = samples(&p, tick as f32 / 100.0).remove(0);
+        let min_y = object
+            .mesh
+            .vertices
+            .iter()
+            .map(|v| v.position[1])
+            .fold(f32::INFINITY, f32::min);
+        assert!(object.point.y + min_y >= -0.002);
+    }
+}
+#[test]
+fn release_rejects_foreign_owners_and_swept_foreign_stand_collisions() {
+    let sources=[
+        "[object cup mug on stand at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]\nMAIJA: [drop cup 2s]",
+        "[object cup mug at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]\n[object lower mug on stand at -0.25 0.6 0.20]\nMAIJA: [at 0s] [wait 4s]\nKALLE: [at 2s] [drop cup 2s]",
+    ];
+    for source in sources {
+        let mut p = Production::new(source);
+        assert!(Pipeline::default().run(&mut p).is_err(), "{source}");
+    }
+}

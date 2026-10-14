@@ -4,6 +4,7 @@ use eframe::egui;
 use hs_core::Tick;
 pub fn show(app: &mut StudioApp, ctx: &egui::Context) {
     egui::CentralPanel::default().show(ctx, |ui| {
+        ui.set_enabled(!app.review.locked);
         egui::ScrollArea::vertical().show(ui, |ui| {
             crate::library_ui::show(app, ui);
             crate::workflow_ui::scenes(app, ui);
@@ -73,12 +74,14 @@ pub fn export(app:&mut StudioApp,ctx:&egui::Context) {
         let missing=app.production.voice_lines.iter().filter(|line|line.speech.is_none()).count();
         ui.label(format!("{:.2} s · {} × {} · {} fps",app.duration(),app.production.width,app.production.height,app.production.fps.0));
         if missing>0 {ui.colored_label(egui::Color32::YELLOW,format!("{missing} repliikiltä puuttuu valmis ääni."));}
+        ui.add_enabled_ui(!app.review.locked, |ui| {
         ui.checkbox(&mut app.production.allow_silent_export,"Salli luonnos, jossa puuttuvat repliikit jäävät hiljaisiksi");
         ui.checkbox(&mut app.production.caption_settings.enabled,"Tekstitykset käytössä");
         ui.checkbox(&mut app.production.caption_settings.burn_in,"Polta tekstitykset videoon");
             ui.label("Kun tekstitykset ovat käytössä, MP4 sisältää myös valittavan englanninkielisen tekstitysraidan.");
         ui.horizontal(|ui|for (label,size) in [("Pystyvideo",(1080,1920)),("YouTube",(1920,1080)),("Neliö",(1080,1080))] {
             if ui.button(label).clicked(){app.production.width=size.0;app.production.height=size.1;app.production.fps=hs_core::Fps::EXPORT;app.pipeline.mark_dirty(hs_agents::Slot::Audio);app.run_pipeline();}
+        });
         });
         ui.label("MP4: H.264 + AAC, 30 fps, enintään 60 sekuntia ja 128 MiB. Aiempi tiedosto säilyy, jos vienti epäonnistuu.");
         let proof=hs_agents::audit::inspect(&app.production);

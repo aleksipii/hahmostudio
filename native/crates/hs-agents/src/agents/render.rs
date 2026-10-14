@@ -21,6 +21,63 @@ pub fn gaze_weight(time: f32, start: f32, end: f32) -> f32 {
     smooth((time - start) / blend) * smooth((end - time) / blend)
 }
 
+/// Validate authored pose bindings and cross-domain ownership before rendering.
+pub fn validate_pose_tracks(p: &Production) -> Result<(), String> {
+    if p.pose_tracks.tracks.is_empty() { return Ok(()); }
+    let actors: Vec<_> = p
+        .cast
+        .iter()
+        .map(|member| {
+            (
+                member.character.params.name.as_str(),
+                &member.character.humanoid.skeleton,
+            )
+        })
+        .collect();
+    p.pose_tracks.validate(&actors)?;
+    if p.pose_tracks.tracks.is_empty() {
+        return Ok(());
+    }
+    let timeline = p
+        .timeline
+        .as_ref()
+        .ok_or("3D-avainruudut tarvitsevat valmiin aikajanan")?;
+    p.pose_tracks
+        .validate_duration(timeline.duration.seconds())?;
+    for (index, member) in p.cast.iter().enumerate() {
+        let name = &member.character.params.name;
+        if !p.pose_tracks.has_actor(name) {
+            continue;
+        }
+        if p.contacts
+            .as_ref()
+            .is_some_and(|plan| plan.uses_actor(index))
+            || p.scenery
+                .as_ref()
+                .is_some_and(|plan| plan.uses_actor(index))
+        {
+            return Err(format!(
+                "3D-avainruudut ja toteutettu kontakti eivät voi ohjata samaa hahmoa: {name}"
+            ));
+        }
+        if timeline.events.iter().any(|event| match &event.kind {
+            EventKind::Motion {
+                character,
+                motion: hs_core::MotionKind::PhoneTap,
+            } => character
+                .as_ref()
+                .map_or(member.lead, |actor| actor.eq_ignore_ascii_case(name)),
+            EventKind::Phone {character,view} if *view != hs_core::PhoneView::Hidden => character.as_ref().map_or(member.lead,|actor|actor.eq_ignore_ascii_case(name)),
+            _ => false,
+        }) {
+            return Err(format!(
+                "3D-avainruudut ja puhelinkontakti eivät voi ohjata samaa hahmoa: {name}"
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// Rakentaa ruudun kohtauksen tuotannon tilasta. Lavasteverkot pidetään välimuistissa.
 #[derive(Default)]
 pub struct FrameBuilder {
@@ -36,6 +93,7 @@ impl FrameBuilder {
         self.last_error = None;
         let tl = p.timeline.as_ref()?;
         let camera = p.camera.as_ref()?;
+        if let Err(error)=validate_pose_tracks(p) {self.last_error=Some(error);return None;}
         if self.held_owners.len() != p.cast.len() || !self.held_owners.iter().zip(&p.cast).all(|(a, b)| Arc::ptr_eq(a, &b.character)) {
             self.held.clear();
             self.held_owners = p.cast.iter().map(|c| c.character.clone()).collect();
@@ -43,9 +101,12 @@ impl FrameBuilder {
         let t = frame as f32 / p.fps.0 as f32;
         let env_id = camera.background_at(t).to_string();
         let env = self.environments.entry(env_id.clone()).or_insert_with(|| Arc::new(environment::build(&env_id))).clone();
-        let (cam, lights, _) = camera.camera_at(t, width as f32 / height as f32);
+        let (mut cam, lights, _) = camera.camera_at(t, width as f32 / height as f32);
         let mut items = vec![DrawItem::rigid(env)];
         let mut frames: Vec<_> = p.motion.iter().map(|m| m.evaluate(tl, t)).collect();
+        if frames.len()!=p.cast.len(){self.last_error=Some("Hahmojen liikeresurssit ovat vanhentuneet".into());return None;}
+        let original_roots:Vec<_>=frames.iter().map(|frame|frame.root).collect();
+        if let Some(scenery)=&p.scenery {if let Err(error)=scenery.apply_roots(p,&mut frames,t){self.last_error=Some(error);return None;}}
         // Keskustelu: puhuja ja kumppani kääntyvät hieman toisiaan kohti (sitcom-lavastus),
         // kun kumpikaan ei liiku eikä ole erikseen käännetty.
         let turns: Vec<f32> = {
@@ -69,7 +130,7 @@ impl FrameBuilder {
                             EventKind::Motion { character, motion: hs_core::MotionKind::TurnLeft | hs_core::MotionKind::TurnRight | hs_core::MotionKind::WalkBackward } => match character { Some(name) => name.eq_ignore_ascii_case(&p.cast[a].character.params.name), None => p.cast[a].lead },
                             _ => false,
                         });
-                        let contact = p.contacts.as_ref().is_some_and(|plan| plan.uses_actor(a));
+                        let contact = p.contacts.as_ref().is_some_and(|plan| plan.uses_actor(a)) || p.scenery.as_ref().is_some_and(|plan| plan.uses_actor(a));
                         let still = !contact && !authored_turn && !seated && !authored_view && !authored_look && fa.velocity.length() < 0.05 && fa.yaw.abs() < 0.2;
                         let dx = fb.root.x - fa.root.x;
                         if still && dx.abs() > 0.05 {
@@ -81,12 +142,77 @@ impl FrameBuilder {
             turns
         };
         for (f, turn) in frames.iter_mut().zip(&turns) { if *turn != 0.0 { f.pose.root_rot = glam::Quat::from_rotation_y(*turn) * f.pose.root_rot; } }
+        for (member, frame) in p.cast.iter().zip(&mut frames) {
+            if !p.pose_tracks.has_actor(&member.character.params.name) { continue; }
+            if let Err(error) = p.pose_tracks.apply_frame(
+                &member.character.params.name,
+                &member.character.humanoid.skeleton,
+                frame,
+                t as f64,
+            ) {
+                self.last_error = Some(error);
+                return None;
+            }
+        }
         if let Some(plan) = &p.contacts {
-            if !plan.matches(p) { return None; }
+            if !plan.matches(p) {self.last_error=Some("Esinekontaktin resurssit ovat vanhentuneet".into()); return None; }
             let objects=match plan.evaluate(p,t,&mut frames) {Ok(objects)=>objects,Err(error)=>{self.last_error=Some(error);return None;}};
             for object in objects {
                 if let Some(stand)=&object.stand {items.push(DrawItem::rigid(stand.clone()));}
-                items.push(DrawItem { mesh: object.mesh.clone(), skin: vec![crate::contacts::ContactPlan::transform(&object)], outline: true });
+                items.push(DrawItem { mesh: object.mesh.clone(), skin: vec![crate::contacts::ContactPlan::transform(&object)], outline: true, ray_visible: true });
+            }
+        }
+        if let Some(scenery) = &p.scenery {
+            if let Err(error) = scenery.apply_contacts(p, &mut frames, t) {
+                self.last_error = Some(error);
+                return None;
+            }
+            for (mesh, transform) in scenery.meshes(t) {
+                items.push(DrawItem {
+                    mesh,
+                    skin: vec![transform],
+                    outline: true,
+                    ray_visible: true,
+                });
+            }
+        }
+        // The camera was planned against procedural roots. Follow authored root
+        // movement and stairs while preserving the shot's framing and direction.
+        if let Some(shot) = camera.shot_at(t) {
+            let indices: Vec<usize> = match shot.kind {
+                ShotKind::Wide => (0..frames.len()).collect(),
+                ShotKind::TwoShot => std::iter::once(shot.subject)
+                    .chain(shot.partner)
+                    .filter(|index| *index < frames.len())
+                    .collect(),
+                _ => std::iter::once(shot.subject)
+                    .filter(|index| *index < frames.len())
+                    .collect(),
+            };
+            if !indices.is_empty() {
+                let delta = indices
+                    .iter()
+                    .map(|index| frames[*index].root - original_roots[*index])
+                    .sum::<Vec3>()
+                    / indices.len() as f32;
+                cam.eye += delta;
+                cam.target += delta;
+                if indices.len() > 1 {
+                    let spread = |roots: &[Vec3]| {
+                        let xs: Vec<_> = indices.iter().map(|index| roots[*index].x).collect();
+                        xs.iter().copied().fold(f32::NEG_INFINITY, f32::max)
+                            - xs.iter().copied().fold(f32::INFINITY, f32::min)
+                    };
+                    let roots: Vec<_> = frames.iter().map(|frame| frame.root).collect();
+                    let margin = p
+                        .cast
+                        .iter()
+                        .map(|member| member.character.params.height)
+                        .fold(0.1_f32, f32::max);
+                    let zoom =
+                        ((spread(&roots) + margin) / (spread(&original_roots) + margin)).max(1.0);
+                    cam.eye = cam.target + (cam.eye - cam.target) * zoom;
+                }
             }
         }
         let positions:Vec<_>=frames.iter().map(|f|f.root).collect();
@@ -136,7 +262,7 @@ impl FrameBuilder {
             let skeleton = &member.character.humanoid.skeleton;
             let shadow_floor = environment::floor_color(&env_id);
             let scale = 1.0 / (1.0 + f.root.y * 2.5);
-            items.push(DrawItem::rigid(Arc::new(props::contact_shadow(Vec3::new(f.root.x, 0.0, f.root.z), member.character.humanoid.proportions.height * 0.22 * scale, shadow_floor))));
+            items.push(DrawItem::rigid(Arc::new(props::contact_shadow(Vec3::new(f.root.x, 0.0, f.root.z), member.character.humanoid.proportions.height * 0.22 * scale, shadow_floor))).raster_only());
             if let Some(chair) = motion.chair_at(t) { items.push(DrawItem::rigid(Arc::new(props::chair(&chair)))); }
             // Esine oikeassa kädessä: viimeisin [esine ...] -ohje tälle hahmolle.
             let lead = std::ptr::eq(member, &p.cast[0]);
@@ -175,7 +301,7 @@ impl FrameBuilder {
                     }
                 };
                 if let Some(mesh) = mesh {
-                    items.push(DrawItem { mesh, skin: vec![skin[arm.hand]], outline: true });
+                    items.push(DrawItem { mesh, skin: vec![skin[arm.hand]], outline: true, ray_visible: true });
                 }
             }
             items.push(DrawItem::skinned(member.mesh.clone(), skin).with_outline(member.character.params.extras.outline));
@@ -219,7 +345,7 @@ pub struct RustRenderAgent {
 
 impl RustRenderAgent {
     pub fn render_frame(&mut self, p: &Production, renderer: &mut dyn Renderer, frame: u32) -> Result<hs_render::Image, AgentError> {
-        let scene = self.frames.scene(p, frame, p.width, p.height).ok_or(AgentError::Missing { agent: "render", slot: Slot::Camera })?;
+        let scene = self.frames.scene(p, frame, p.width, p.height).ok_or_else(|| self.frames.last_error.as_ref().map_or(AgentError::Missing { agent:"render",slot:Slot::Camera },fail))?;
         let mut image = renderer.render(&scene).map_err(|e| AgentError::Failed { agent: "render", message: e.to_string() })?;
         hs_subtitle::burn_captions(&mut image, p.fps.frame_to_tick(frame), &crate::captions::cues(p), &p.caption_settings).map_err(fail)?;
         Ok(image)
@@ -255,6 +381,7 @@ impl StudioAgent for RustRenderAgent {
         }
         let proof=crate::audit::inspect(p);
         if !proof.allowed() {return Err(fail(proof.diagnostics.iter().filter(|d|d.severity==hs_core::Severity::Error).map(|d|format!("Rivi {}: {}",d.line,d.message)).collect::<Vec<_>>().join("\n")));}
+        validate_pose_tracks(p).map_err(fail)?;
         let total = p.frame_count();
         let mut renderer = make_renderer(p.backend)?;
         let backend = renderer.name();
@@ -369,5 +496,73 @@ mod cache_tests {
         crate::Pipeline::default().run(&mut empty).unwrap();
         builder.scene(&empty, 0, 160, 90).unwrap();
         assert!(builder.held.is_empty());
+    }
+}
+
+#[cfg(test)]
+mod authored_pose_tests {
+    use super::*;
+    use hs_motion::pose_edit::{Interpolation, PoseKey};
+    fn ready(source:&str)->Production {let mut p=Production::new(source);crate::Pipeline::default().run(&mut p).unwrap();p}
+    #[test]
+    fn keyed_fk_changes_actual_render_and_survives_project_roundtrip() {
+        let mut p=ready("[camera medium]\nKALLE: [wait 3s]");
+        let mut builder=FrameBuilder::default();
+        let base=builder.scene(&p,30,160,90).unwrap();
+        let root_before=p.motion[0].evaluate(p.timeline.as_ref().unwrap(),1.0).root;
+        let humanoid=&p.cast[0].character.humanoid;
+        let arm=humanoid.arm(Side::Right).upper;
+        let joint=humanoid.skeleton.joints[arm].name.clone();
+        p.pose_tracks.upsert("Kalle",Some(&joint),PoseKey::from_euler_degrees(1.0,[0.0,0.0,75.0],[0.0;3],Interpolation::Linear)).unwrap();
+        p.pose_tracks.upsert("Kalle",None,PoseKey::from_euler_degrees(1.0,[0.0;3],(root_before+Vec3::X).to_array(),Interpolation::Linear)).unwrap();
+        validate_pose_tracks(&p).unwrap();
+        let unchanged=builder.scene(&p,0,160,90).unwrap();
+        let mut original=ready("[camera medium]\nKALLE: [wait 3s]");
+        let original_scene=builder.scene(&original,0,160,90).unwrap();
+        assert_eq!(unchanged.camera,original_scene.camera);
+        assert_eq!(unchanged.items.last().unwrap().skin,original_scene.items.last().unwrap().skin);
+        let keyed=builder.scene(&p,30,160,90).unwrap();
+        assert!((keyed.camera.target-base.camera.target-Vec3::X).length()<0.001);
+        assert_ne!(keyed.items.last().unwrap().skin,base.items.last().unwrap().skin);
+        let mut renderer=CpuRenderer::default();
+        assert_ne!(renderer.render(&keyed).unwrap().rgba,renderer.render(&base).unwrap().rgba);
+        let episode=crate::project::capture_checked(&p,"pose-episode".into(),1,"Pose".into()).unwrap();
+        let series=hs_project::Series{id:"pose-series".into(),name:"Pose".into(),episodes:vec![episode]};
+        let opened=hs_project::decode(&hs_project::encode(&series).unwrap()).unwrap();
+        original=crate::project::restore_checked(&opened.episodes[0]).unwrap();
+        crate::Pipeline::default().run(&mut original).unwrap();
+        assert_eq!(original.pose_tracks,p.pose_tracks);
+        let restored=builder.scene(&original,30,160,90).unwrap();
+        assert_eq!(restored.camera,keyed.camera);
+        assert_eq!(restored.items.last().unwrap().skin,keyed.items.last().unwrap().skin);
+        assert_eq!(renderer.render(&restored).unwrap().rgba,renderer.render(&keyed).unwrap().rgba);
+    }
+    #[test]
+    fn authored_contact_conflict_has_explicit_render_error() {
+        let mut p=ready("[object cup mug on stand at -0.25 1.22 0.20]\nKALLE: [pick up cup 2s]");
+        p.pose_tracks.upsert("Kalle",None,PoseKey::from_euler_degrees(0.0,[0.0;3],[0.0;3],Interpolation::Linear)).unwrap();
+        assert!(validate_pose_tracks(&p).unwrap_err().contains("kontakti"));
+        let mut builder=FrameBuilder::default();assert!(builder.scene(&p,0,160,90).is_none());assert!(builder.last_error.unwrap().contains("kontakti"));
+        let mut agent=RustRenderAgent::default();let error=agent.render_frame(&p,&mut CpuRenderer::default(),0).unwrap_err();assert!(matches!(error,AgentError::Failed{..}));
+        let mut phone=ready("KALLE: [tap phone 2s]");phone.pose_tracks=p.pose_tracks;
+        assert!(validate_pose_tracks(&phone).unwrap_err().contains("puhelin"));
+    }
+}
+
+#[cfg(test)]
+mod psd_scene_tests {
+    #[test]
+    fn posed_studio_scene_exports_readable_aovs() {
+        let mut p=crate::Production::new("[background studio]\nKALLE: [wave 2s]\nMAIJA: [nod 2s] [at 0s]");
+        crate::Pipeline::default().run(&mut p).unwrap();
+        let mut builder=super::FrameBuilder::default();
+        let scene=builder.scene(&p,15,48,48).unwrap();
+        let buffers=hs_render::raytrace::render(&scene,hs_render::raytrace::RayTraceOptions{ao_samples:2,..Default::default()}).unwrap();
+        let bytes=hs_render::psd_exporter::encode(&buffers).unwrap();
+        assert_eq!(&bytes[..4],b"8BPS");
+        assert!(buffers.diffuse.chunks_exact(4).any(|pixel|pixel[3]==255));
+        let moved=builder.scene(&p,35,48,48).unwrap();
+        let moved=hs_render::raytrace::render(&moved,hs_render::raytrace::RayTraceOptions{ao_samples:2,..Default::default()}).unwrap();
+        assert_ne!(buffers.diffuse,moved.diffuse,"render passes must use actual animated bones");
     }
 }

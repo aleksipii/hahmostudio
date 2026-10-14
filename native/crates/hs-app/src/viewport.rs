@@ -22,17 +22,20 @@ struct PreviewKey {
     lips: Vec<hs_agents::production::LipClip>,
     live: Option<hs_agents::LiveOverride>,
     contacts: Option<Arc<hs_agents::contacts::ContactPlan>>,
+    scenery: Option<Arc<hs_agents::scenery::SceneryPlan>>,
+    poses: hs_motion::pose_edit::PoseTracks,
 }
 
 impl PreviewKey {
     fn capture(p: &Production, frame: u32, size: [u32; 2]) -> Self {
         Self { frame, size, fps: p.fps, timeline: p.timeline.clone(), camera: p.camera.clone(),
-            cast: p.cast.clone(), motion: p.motion.clone(), lips: p.lipsync.clone(), live: p.live.clone(), contacts: p.contacts.clone() }
+            cast: p.cast.clone(), motion: p.motion.clone(), lips: p.lipsync.clone(), live: p.live.clone(), contacts: p.contacts.clone(), scenery: p.scenery.clone(), poses: p.pose_tracks.clone() }
     }
 
     fn matches(&self, p: &Production, frame: u32, size: [u32; 2]) -> bool {
         self.frame == frame && self.size == size && self.fps == p.fps
-            && self.timeline == p.timeline && self.live == p.live
+            && self.timeline == p.timeline && self.live == p.live && self.poses == p.pose_tracks
+            && match (&self.scenery, &p.scenery) { (Some(a),Some(b)) => Arc::ptr_eq(a,b), (None,None) => true, _ => false }
             && match (&self.contacts, &p.contacts) { (Some(a), Some(b)) => Arc::ptr_eq(a,b), (None,None) => true, _ => false }
             && match (&self.camera, &p.camera) { (Some(a), Some(b)) => Arc::ptr_eq(a, b), (None, None) => true, _ => false }
             && self.cast.len() == p.cast.len() && self.cast.iter().zip(&p.cast).all(|(a,b)|

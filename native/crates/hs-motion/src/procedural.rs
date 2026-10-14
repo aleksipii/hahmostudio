@@ -72,6 +72,7 @@ pub struct PreparedMotion {
     mouths: std::collections::HashMap<hs_core::EventId, hs_lipsync::VisemeTrack>,
     path: Vec<PathSample>,
     duration: f32,
+    layers: Option<Box<crate::layers::PreparedLayers>>,
 }
 
 fn smoothstep(x: f32) -> f32 {
@@ -134,7 +135,7 @@ impl ProceduralMotion {
         }
     }
 
-    fn applies(&self, e: &TimelineEvent) -> bool {
+    pub(crate) fn applies(&self, e: &TimelineEvent) -> bool {
         match &e.kind {
             EventKind::Motion { character, .. }
             | EventKind::CharacterView { character, .. }
@@ -270,6 +271,7 @@ impl ProceduralMotion {
             mouths,
             path,
             duration,
+            layers:None,
         }
     }
 
@@ -338,7 +340,15 @@ impl PreparedMotion {
         })
     }
 
+    pub fn with_layers(mut self,timeline:&Timeline)->Result<Self,String> {
+        self.layers=Some(Box::new(crate::layers::PreparedLayers::new(self.motion.clone(),timeline)?));
+        Ok(self)
+    }
     pub fn evaluate(&self, timeline: &Timeline, t: f32) -> CharacterFrame {
+        if let Some(layers)=&self.layers {return layers.evaluate(timeline,t);}
+        self.evaluate_base(timeline,t,false)
+    }
+    pub(crate) fn evaluate_base(&self, timeline: &Timeline, t: f32, suppress_speech_arm: bool) -> CharacterFrame {
         let m = &self.motion;
         let h = &m.humanoid;
         let sk = &h.skeleton;
@@ -499,7 +509,7 @@ impl PreparedMotion {
                     let held = timeline.events.iter().filter(|e| e.start.seconds() as f32 <= t)
                         .filter_map(|e| match &e.kind { EventKind::Prop { character, item } if m.speaks(character) => Some((e.start, item)), _ => None })
                         .max_by_key(|(start, _)| *start).is_some_and(|(_, item)| item.is_some());
-                    if phone.is_none() && !held && matches!(motion, None | Some(MotionKind::Wait)) {
+                    if !suppress_speech_arm && phone.is_none() && !held && matches!(motion, None | Some(MotionKind::Wait)) {
                         let w = ramp(tau, e.duration.seconds() as f32, 0.3);
                         let arm = h.arm(Side::Right);
                         pose.local[arm.upper] = Quat::from_rotation_x(-0.12 * w) * pose.local[arm.upper];

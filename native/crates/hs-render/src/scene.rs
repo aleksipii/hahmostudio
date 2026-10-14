@@ -60,20 +60,23 @@ pub struct DrawItem {
     pub skin: Vec<Mat4>,
     /// Piirretäänkö sarjakuvamainen ääriviiva (hahmot ja esineet, ei lavasteet).
     pub outline: bool,
+    /// False for raster-only decorations, such as painted contact shadows.
+    pub ray_visible: bool,
 }
 
 impl DrawItem {
     pub fn rigid(mesh: Arc<CharacterMesh>) -> Self {
-        DrawItem { mesh, skin: Vec::new(), outline: false }
+        DrawItem { mesh, skin: Vec::new(), outline: false, ray_visible: true }
     }
     /// Luilla liikkuva hahmo ääriviivoineen.
     pub fn skinned(mesh: Arc<CharacterMesh>, skin: Vec<Mat4>) -> Self {
-        DrawItem { mesh, skin, outline: true }
+        DrawItem { mesh, skin, outline: true, ray_visible: true }
     }
     pub fn with_outline(mut self, outline: bool) -> Self {
         self.outline = outline;
         self
     }
+    pub fn raster_only(mut self) -> Self { self.ray_visible = false; self }
     pub fn skin_matrix(&self, bone: u32) -> Mat4 {
         self.skin.get(bone as usize).copied().unwrap_or(Mat4::IDENTITY)
     }

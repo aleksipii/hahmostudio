@@ -16,3 +16,7 @@ pub use timeline::{
 };
 
 pub use timeline::{ObjectContact, WorldObject};
+
+pub mod scenery;
+
+pub mod motion_channels;

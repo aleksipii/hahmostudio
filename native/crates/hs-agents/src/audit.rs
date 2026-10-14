@@ -89,6 +89,7 @@ pub fn inspect(p: &Production) -> Report {
     if timeline.events.iter().any(|e| matches!(e.kind, EventKind::WorldObject { .. } | EventKind::ObjectContact { .. })) && !p.contacts.as_ref().is_some_and(|plan| plan.matches(p)) {
         report.diagnostics.push(Diagnostic::error(0, "Tarkistettu esinekontaktisuunnitelma puuttuu tai on vanhentunut."));
     }
+    if timeline.events.iter().any(|e|matches!(e.kind,EventKind::SceneryObject{..}|EventKind::Scenery{..})) && !p.scenery.as_ref().is_some_and(|plan|plan.matches(p)) {report.diagnostics.push(Diagnostic::error(0,"Tarkistettu ovi-/porrassuunnitelma puuttuu tai on vanhentunut."));}
     let durations = crate::agents::voice::timed_seconds(&fresh, &p.voice_lines);
     let expected = hs_script::to_timeline_with(&fresh, &p.script, p.fps, &durations);
     if expected.events != timeline.events
@@ -205,6 +206,7 @@ pub fn inspect(p: &Production) -> Report {
         }
     }
     let lines: Vec<_> = p.script.lines().collect();
+    let background_at=|time:f64|timeline.events.iter().filter(|e|e.start.seconds()<=time).filter_map(|e|match &e.kind{EventKind::Background{id}=>Some((e.start,id.as_str())),_=>None}).max_by_key(|(start,_)|*start).map_or("studio-v1",|(_,id)|id).to_string();
     let mut background = "studio-v1".to_string();
     let mut props = BTreeMap::<String, Option<String>>::new();
     let mut expressions = BTreeMap::<String, Expression>::new();
@@ -236,6 +238,7 @@ pub fn inspect(p: &Production) -> Report {
             || beat.look_at.is_some()
             || beat.phone.is_some()
             || beat.view.is_some()
+            || beat.scenery.is_some()
         {
             report.diagnostics.push(Diagnostic::error(beat.line,"Nimeä repliikin tai toiminnan hahmo: NAME: teksti [ohje]. Kohdetta ei valita arvaamalla."));
         }
@@ -254,9 +257,7 @@ pub fn inspect(p: &Production) -> Report {
                 report.diagnostics.push(Diagnostic::error(beat.line,"Vartalon suunta ja kävely/juoksusuunta ovat ristiriidassa. Sivuaskelia ei ole toteutettu; käytä liikkeen suuntaa tai erillistä katsetavoitetta."));
             }
         }
-        if let Some(bg) = &beat.background {
-            background = bg.clone();
-        }
+        if let Some(event)=timeline.events.iter().find(|event|event.source.line==beat.line && matches!(event.kind,EventKind::Motion{..})) {background=background_at(event.start.seconds());}
         let mut chair_contact = None;
         if chair_background
             .as_ref()
@@ -441,6 +442,7 @@ pub fn inspect(p: &Production) -> Report {
             .unwrap_or(event.end())
             .seconds();
         let sample = (start + (end - start) * 0.5) as f32;
+        background=background_at(sample as f64);
         if p.camera
             .as_ref()
             .is_some_and(|camera| camera.background_at(sample) != background)
@@ -502,7 +504,7 @@ pub fn inspect(p: &Production) -> Report {
                 .to_string(),
             actor: beat.speaker.clone(),
             dialogue: beat.text.clone(),
-            motion: p.contacts.as_ref().and_then(|plan|plan.summary(beat.line)).unwrap_or_else(||beat.motion.finnish_name().into()),
+            motion: p.contacts.as_ref().and_then(|plan|plan.summary(beat.line)).or_else(||p.scenery.as_ref().and_then(|plan|plan.summary(beat.line))).unwrap_or_else(||beat.motion.finnish_name().into()),
             motion_seconds: event.duration.seconds(),
             motion_start_seconds: start,
             motion_end_seconds: event.end().seconds(),

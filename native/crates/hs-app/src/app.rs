@@ -29,6 +29,10 @@ pub struct StudioApp {
     pub history: crate::session_history::SessionHistory,
     pub workflow: crate::workflow_ui::WorkflowState,
     pub image: crate::image_ui::ImageWorkspace,
+    pub rig: crate::rig_ui::RigWorkspace,
+    pub pose: crate::pose_ui::PoseWorkspace,
+    pub review_ui: crate::review_ui::ReviewUi,
+    pub review: hs_project::production_review::ReviewState,
     pub editing: crate::editing_ui::EditingState,
     pub blocks: crate::blocks_ui::BlocksState,
     pub script_assist: crate::script_assist_ui::ScriptAssistState,
@@ -64,6 +68,8 @@ pub enum LeftTab {
     Image,
     Edit,
     Export,
+    Rig,
+    Review,
 }
 
 /// Avattu vanha `.hahmo`-projekti (2D-leikehahmo) esikatselua varten.
@@ -115,6 +121,10 @@ impl StudioApp {
             history: Default::default(),
             workflow: crate::workflow_ui::WorkflowState { preview_scale: 0.75, ..Default::default() },
             image: Default::default(),
+            rig: Default::default(),
+            pose: Default::default(),
+            review_ui: Default::default(),
+            review: Default::default(),
             editing: Default::default(),
             blocks: Default::default(),
             script_assist: Default::default(),
@@ -142,6 +152,8 @@ impl StudioApp {
                 Some("kuva" | "image") => LeftTab::Image,
                 Some("leikkaus" | "edit") => LeftTab::Edit,
                 Some("vienti" | "export") => LeftTab::Export,
+                Some("rig" | "keyframes") => LeftTab::Rig,
+                Some("review") => LeftTab::Review,
                 _ => LeftTab::Script,
             },
             screenshot: options.screenshot,
@@ -234,10 +246,13 @@ impl StudioApp {
     }
 
     pub fn open_hahmo(&mut self, path: PathBuf) {
+        if let Err(e)=crate::review_integration::edit_guard(&self.review) {self.status=e;return;}
         let result = std::fs::read(&path).map_err(|e| e.to_string()).and_then(|b| hs_hahmo::Project::open(&b).map_err(|e| e.to_string()));
         match result {
             Ok(project) => {
                 self.status = format!("Avattu 2D-projekti {} (muoto v{})", path.display(), project.version);
+                self.rig.revision = self.rig.revision.wrapping_add(1);
+                self.rig.invalidate_preview();
                 self.legacy = Some(LegacyProject { name: project.document.name.clone(), project, texture: None, frame: u32::MAX });
                 self.time = 0.0;
             }
@@ -333,11 +348,15 @@ impl eframe::App for StudioApp {
         panels::script_panel(self, ctx);
         if self.workflow.line.is_some() { crate::workflow_ui::inspector(self, ctx); } else { panels::cast_panel(self, ctx); }
         if self.left_tab == LeftTab::Image {
-            egui::CentralPanel::default().show(ctx, |ui| self.image.ui(ui));
+            egui::CentralPanel::default().show(ctx, |ui| { ui.set_enabled(!self.review.locked); self.image.ui(ui); });
         } else if self.left_tab == LeftTab::Export {
             crate::production_ui::export(self,ctx);
         } else if self.left_tab == LeftTab::Edit {
             crate::production_ui::show(self, ctx);
+        } else if self.left_tab == LeftTab::Rig {
+            self.rig_workspace(ctx, frame);
+        } else if self.left_tab == LeftTab::Review {
+            self.review_workspace(ctx);
         } else { panels::stage(self, ctx, frame); }
         panels::dialogs(self, ctx);
         crate::timeline_ui::confirmation(self, ctx);

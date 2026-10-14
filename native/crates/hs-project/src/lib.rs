@@ -4,6 +4,8 @@
 //! before replacing its target. This is not a power-loss durability guarantee.
 pub mod recovery;
 pub mod library;
+pub mod legacy_series;
+pub mod production_review;
 
 use hs_character::CharacterParams;
 use hs_subtitle::{CaptionCue, CaptionSettings};
@@ -235,9 +237,10 @@ fn validate(series: &Series) -> Result<(), ProjectError> {
         let mut asset_ids = BTreeSet::new();
         let mut asset_kinds = BTreeSet::new();
         for asset in &e.assets {
+            if asset.kind == "review" { production_review::ReviewState::decode(&asset.bytes).map_err(invalid)?; }
             if !id_valid(&asset.id)
                 || !asset_ids.insert(&asset.id)
-                || !matches!(asset.kind.as_str(), "image" | "editing" | "recordings" | "library")
+                || !matches!(asset.kind.as_str(), "image" | "editing" | "recordings" | "library" | "legacy" | "review" | "pose")
                 || !asset_kinds.insert(&asset.kind)
                 || asset.bytes.len() > MAX_BYTES
             {

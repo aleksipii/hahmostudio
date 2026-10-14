@@ -22,7 +22,7 @@ hs-character.workspace = true
 hs-render.workspace = true
 hs-hahmo.workspace = true
 hs-agents.workspace = true
-eframe.workspace = true
+eframe = { workspace = true, features = ["accesskit"] }
 egui-wgpu.workspace = true
 wgpu.workspace = true
 serde.workspace = true

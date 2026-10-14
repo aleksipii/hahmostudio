@@ -62,6 +62,7 @@ pub fn overview(app: &mut StudioApp, ctx: &egui::Context) {
 pub fn inspector(app: &mut StudioApp, ctx: &egui::Context) {
     let Some(line) = app.workflow.line else { return };
     egui::SidePanel::right("scene-inspector").resizable(true).default_width(280.0).show(ctx, |ui| {
+        if app.review.locked {ui.disable();}
         egui::ScrollArea::vertical().id_salt("scene-inspector-scroll").show(ui,|ui| {
         ui.heading(format!("Valittu rivi {line}"));
         if ui.button("Näytä hahmosäätimet").clicked() { app.workflow.line = None; }

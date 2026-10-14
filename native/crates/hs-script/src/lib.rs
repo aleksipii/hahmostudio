@@ -116,6 +116,10 @@ pub struct Beat {
     pub object: Option<hs_core::WorldObject>,
     #[serde(default)]
     pub contact: Option<hs_core::ObjectContact>,
+    #[serde(default)]
+    pub scenery_object: Option<hs_core::scenery::ScenerySpec>,
+    #[serde(default)]
+    pub scenery: Option<hs_core::scenery::SceneryAction>,
     pub background: Option<String>,
     pub view: Option<View>,
     pub phone: Option<PhoneView>,
@@ -130,7 +134,12 @@ pub struct Beat {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SceneEvent { pub line:usize, pub at:f64, pub background:Option<String>, pub camera:Option<CameraHint> }
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ScriptPlan {
+    #[serde(default)]
+    pub scene_events: Vec<SceneEvent>,
     pub beats: Vec<Beat>,
     pub diagnostics: Vec<Diagnostic>,
     pub seconds: f64,
@@ -314,6 +323,8 @@ enum Tag {
     MotionAt(f64),
     MotionSeconds(f64),
     Object(hs_core::WorldObject),
+    SceneryObject(hs_core::scenery::ScenerySpec),
+    Scenery(hs_core::scenery::SceneryAction, f64),
     Contact(hs_core::ObjectContact, f64),
     Phone(PhoneView),
     Prop(Option<String>),
@@ -331,7 +342,7 @@ pub fn command_category(tag: &str) -> Option<&'static str> {
     match classify(tag).ok()? {
         Tag::At(_) => Some("timing"),
         Tag::MotionAt(_) | Tag::MotionSeconds(_) => Some("motion-timing"),
-        Tag::Object(_) => Some("object"), Tag::Contact(..) => Some("motion"),
+        Tag::Object(_) | Tag::SceneryObject(_) => Some("object"), Tag::Contact(..) | Tag::Scenery(..) => Some("motion"),
         Tag::Phone(_) => Some("phone"), Tag::Prop(_) => Some("prop"), Tag::View(_) => Some("view"),
         Tag::Background(_) => Some("background"), Tag::Camera(_) => Some("camera"),
         Tag::Expression(_) => Some("expression"), Tag::LookAt(_) => Some("look"), Tag::Motion(..) => Some("motion"),
@@ -348,6 +359,37 @@ fn classify(tag: &str) -> Result<Tag, String> {
         }
     }
     let identifier = |s: &str| !s.is_empty() && s.len() <= 32 && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_');
+    if lower.starts_with("door ") || lower.starts_with("stairs ") {
+        use hs_core::scenery::ScenerySpec;
+        let w:Vec<_>=lower.split_whitespace().collect();
+        let number=|i:usize|w.get(i).ok_or("Puuttuva scenery-mitta")?.parse::<f32>().map_err(|_|"Virheellinen scenery-mitta");
+        let spec=if w[0]=="door" {
+            if w.len()!=13 || w[2]!="at" || w[6]!="size" || w[9]!="yaw" || w[11]!="handle" { return Err("Ovi: [door entry at x y z size width height yaw degrees handle height]".into()); }
+            ScenerySpec::Door{id:w[1].into(),hinge:[number(3)?,number(4)?,number(5)?],width:number(7)?,height:number(8)?,yaw_degrees:number(10)?,handle_height:number(12)?}
+        } else {
+            if w.len()!=16 || w[2]!="at" || w[6]!="width" || w[8]!="rise" || w[10]!="run" || w[12]!="steps" || w[14]!="yaw" { return Err("Portaat: [stairs steps at x y z width w rise h run d steps n yaw degrees]".into()); }
+            ScenerySpec::Stairs{id:w[1].into(),origin:[number(3)?,number(4)?,number(5)?],width:number(7)?,rise:number(9)?,run:number(11)?,steps:w[13].parse::<u8>().map_err(|_|"Virheellinen porrasmäärä")?,yaw_degrees:number(15)?}
+        };spec.validate()?;return Ok(Tag::SceneryObject(spec));
+    }
+    if ["open door ","close door ","climb stairs ","descend stairs "].iter().any(|p|lower.starts_with(p)) {
+        use hs_core::scenery::SceneryAction;
+        let w:Vec<_>=lower.split_whitespace().collect();let duration=w.last().unwrap().strip_suffix('s').ok_or("Anna scenery-toiminnon kesto sekunteina")?.parse::<f64>().map_err(|_|"Virheellinen kesto")?;
+        if !duration.is_finite() || !(1.0..=20.0).contains(&duration) || w.len()<4 || !identifier(w[2]) {return Err("Scenery-toiminto tarvitsee tunnisteen ja 1–20s keston".into());}
+        let action=match w[0] {
+          "open" if w.len()==6 && w[3]=="angle"=>{let angle=w[4].parse::<f32>().map_err(|_|"Virheellinen oven kulma")?;if !angle.is_finite() || !(15.0..=110.0).contains(&angle){return Err("Oven kulma on 15–110 astetta".into());}SceneryAction::OpenDoor{id:w[2].into(),angle_degrees:angle}},
+          "close" if w.len()==4=>SceneryAction::CloseDoor{id:w[2].into()},
+          "climb"|"descend" if w.len()==4=>SceneryAction::ClimbStairs{id:w[2].into(),descending:w[0]=="descend"},
+          _=>return Err("Käytä [open door entry angle 30 2s], [close door entry 2s], [climb stairs steps 4s] tai [descend stairs steps 4s]".into())
+        };return Ok(Tag::Scenery(action,duration));
+    }
+    if lower.starts_with("place ") || lower.starts_with("drop ") {
+        let w:Vec<_>=lower.split_whitespace().collect();let duration=w.last().unwrap().strip_suffix('s').ok_or("Anna kontaktin kesto sekunteina")?.parse::<f64>().map_err(|_|"Virheellinen kontaktin kesto")?;
+        if !duration.is_finite() || !(1.0..=20.0).contains(&duration) || w.len()<3 || !identifier(w[1]) {return Err("Kontakti tarvitsee esinetunnisteen ja 1–20s keston".into());}
+        let contact=if w[0]=="drop" && w.len()==3 {hs_core::ObjectContact::Drop{object:w[1].into()}}
+        else if w[0]=="place" && w.len()==4 && w[2]=="back" {hs_core::ObjectContact::Place{object:w[1].into(),target:None}}
+        else if w[0]=="place" && w.len()==7 && w[2]=="at" {let mut target=[0i32;3];for i in 0..3 {let v=w[i+3].parse::<f32>().map_err(|_|"Virheellinen laskukoordinaatti")?;if !v.is_finite() || v.abs()>5.0 || (i==1 && v<0.0) {return Err("Laskukoordinaatti on tuetun alueen ulkopuolella".into());}target[i]=(v*1000.).round() as i32;}hs_core::ObjectContact::Place{object:w[1].into(),target:Some(target)}}
+        else {return Err("Käytä [place cup back 2s], [place cup at x y z 2s] tai [drop cup 2s]".into());};return Ok(Tag::Contact(contact,duration));
+    }
     if lower.starts_with("object ") {
         let words: Vec<_> = lower.split_whitespace().collect();
         let stand=words.len()==9&&words[3]=="on"&&words[4]=="stand";
@@ -598,6 +640,7 @@ fn set_pending_once<T>(slot: &mut Option<T>, value: T, name: &str) -> Result<(),
 pub fn parse(text: &str) -> ScriptPlan {
     let mut plan = ScriptPlan {
         beats: Vec::new(),
+        scene_events: Vec::new(),
         diagnostics: Vec::new(),
         seconds: 0.0,
     };
@@ -613,6 +656,7 @@ pub fn parse(text: &str) -> ScriptPlan {
         ));
         return plan;
     }
+    let mut pending_scenery_object = None;
     let mut pending_object = None;
     let mut pending_bg: Option<String> = None;
     let mut pending_view: Option<View> = None;
@@ -638,7 +682,16 @@ pub fn parse(text: &str) -> ScriptPlan {
         };
         let spoken = spoken.split_whitespace().collect::<Vec<_>>().join(" ");
 
+        // Explicit global cuts do not create an actor, dialogue or wait beat.
+        if spoken.is_empty() && tags.iter().any(|tag|matches!(classify(tag),Ok(Tag::At(_)))) && tags.iter().all(|tag|matches!(classify(tag),Ok(Tag::At(_) | Tag::Background(_) | Tag::Camera(_)))) {
+            let mut at=None;let mut background=None;let mut camera=None;let mut valid=true;
+            for tag in &tags {let result=match classify(tag).unwrap(){Tag::At(t)=>set_pending_once(&mut at,t,"alkuaika"),Tag::Background(bg)=>set_pending_once(&mut background,bg,"tausta"),Tag::Camera(c)=>set_pending_once(&mut camera,c,"kamera"),_=>unreachable!()};if let Err(e)=result {plan.diagnostics.push(Diagnostic::error(line_no,e));valid=false;}}
+            if camera.is_none() && background.is_none(){plan.diagnostics.push(Diagnostic::error(line_no,"Erillinen [at] tarvitsee kamera- tai taustaohjeen."));valid=false;}
+            if valid {let at=at.unwrap();if plan.scene_events.iter().any(|e|e.at==at && ((camera.is_some() && e.camera.is_some()) || (background.is_some() && e.background.is_some()))){plan.diagnostics.push(Diagnostic::error(line_no,"Samanaikaiset globaalit kamera-/taustaohjeet ovat ristiriidassa."));}else{plan.scene_events.push(SceneEvent{line:line_no,at,background,camera});}}
+            continue;
+        }
         let previous_settings = (
+            pending_scenery_object.clone(),
             pending_object.clone(),
             pending_bg.clone(),
             pending_view,
@@ -649,6 +702,7 @@ pub fn parse(text: &str) -> ScriptPlan {
             pending_look_at.clone(),
             pending_line,
         );
+        let mut scenery = None;
         let mut contact = None;
         let mut at = None;
         let mut motion_at = None;
@@ -658,6 +712,8 @@ pub fn parse(text: &str) -> ScriptPlan {
         let mut line_ok = true;
         for tag in &tags {
             let applied = match classify(tag) {
+                Ok(Tag::SceneryObject(object)) => set_pending_once(&mut pending_scenery_object, object, "scenery"),
+                Ok(Tag::Scenery(action, duration)) => {if motion.is_some() {Err("Scenery-rivillä voi olla vain yksi toiminto".into())} else {scenery=Some(action);motion=Some(MotionKind::Wait);seconds=Some(duration);Ok(())}},
                 Ok(Tag::Object(object)) => set_pending_once(&mut pending_object, object, "esineen sijoitus"),
                 Ok(Tag::Contact(action, duration)) => {
                     if motion.is_some() { Err("Kontaktirivillä voi olla vain yksi toiminto".into()) }
@@ -690,7 +746,7 @@ pub fn parse(text: &str) -> ScriptPlan {
             }
         }
         if !tags.is_empty()
-            && (pending_object.is_some() || pending_bg.is_some()
+            && (pending_scenery_object.is_some() || pending_object.is_some() || pending_bg.is_some()
                 || pending_view.is_some()
                 || pending_phone.is_some()
                 || pending_camera.is_some()
@@ -706,6 +762,7 @@ pub fn parse(text: &str) -> ScriptPlan {
         }
         if !line_ok {
             (
+                pending_scenery_object,
                 pending_object,
                 pending_bg,
                 pending_view,
@@ -750,6 +807,7 @@ pub fn parse(text: &str) -> ScriptPlan {
                 "Yhden rivin kesto on 0,5–20 sekuntia.",
             ));
             (
+                pending_scenery_object,
                 pending_object,
                 pending_bg,
                 pending_view,
@@ -765,9 +823,9 @@ pub fn parse(text: &str) -> ScriptPlan {
         let voice_start = at.unwrap_or(plan.seconds);
         let action_start = motion_at.unwrap_or(voice_start);
         let action_duration = motion_seconds.unwrap_or(seconds);
-        if (contact.is_some() || matches!(motion, MotionKind::Sit | MotionKind::Stand)) && action_duration < 1.0 {
+        if (scenery.is_some() || contact.is_some() || matches!(motion, MotionKind::Sit | MotionKind::Stand)) && action_duration < 1.0 {
             plan.diagnostics.push(Diagnostic::error(line_no, "Kontaktin ja istumis-/nousemisliikkeen vähimmäiskesto on 1s."));
-            (pending_object,pending_bg,pending_view,pending_phone,pending_camera,pending_prop,pending_expression,pending_look_at,pending_line) = previous_settings;
+            (pending_scenery_object,pending_object,pending_bg,pending_view,pending_phone,pending_camera,pending_prop,pending_expression,pending_look_at,pending_line) = previous_settings;
             continue;
         }
         if (voice_start + seconds).max(action_start + action_duration) > MAX_TOTAL_SECONDS + 1e-9 {
@@ -788,6 +846,8 @@ pub fn parse(text: &str) -> ScriptPlan {
             motion_at,
             motion_seconds,
             contact,
+            scenery,
+            scenery_object: pending_scenery_object.take(),
             object: pending_object.take(),
             background: pending_bg.take(),
             view: pending_view.take(),
@@ -798,7 +858,7 @@ pub fn parse(text: &str) -> ScriptPlan {
             look_at: pending_look_at.take(),
         });
     }
-    if pending_object.is_some() || pending_bg.is_some()
+    if pending_scenery_object.is_some() || pending_object.is_some() || pending_bg.is_some()
         || pending_view.is_some()
         || pending_phone.is_some()
         || pending_camera.is_some()
@@ -822,6 +882,7 @@ pub fn parse(text: &str) -> ScriptPlan {
             "Käsikirjoituksesta ei löytynyt animaation rivejä.",
         ));
     }
+    plan.seconds=plan.seconds.max(plan.scene_events.iter().map(|e|e.at).fold(0.,f64::max));
     plan
 }
 
@@ -850,6 +911,8 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
         let md = Tick::from_seconds(beat.motion_seconds.unwrap_or(beat.seconds));
         let state_start = t.min(mt);
         let state_duration = (t + d).max(mt + md) - state_start;
+        if let Some(object) = &beat.scenery_object {timeline.push(state_start,Tick::ZERO,EventKind::SceneryObject{object:object.clone()},span.clone());}
+        if let Some(action) = &beat.scenery {timeline.push(mt,md,EventKind::Scenery{character:beat.speaker.clone(),action:action.clone()},span.clone());}
         if let Some(object) = &beat.object { timeline.push(state_start, Tick::ZERO, hs_core::EventKind::WorldObject { object: object.clone() }, span.clone()); }
         if let Some(contact) = &beat.contact { timeline.push(mt, md, hs_core::EventKind::ObjectContact { character: beat.speaker.clone(), contact: contact.clone() }, span.clone()); }
         if let Some(bg) = &beat.background {
@@ -918,6 +981,13 @@ pub fn to_timeline_with(plan: &ScriptPlan, source: &str, fps: Fps, seconds: &[f6
             span,
         );
         t = (t + d).max(mt + md).max(previous_end);
+    }
+    for scene in &plan.scene_events {
+        let start=Tick::from_seconds(scene.at);
+        t=t.max(start);
+        let span=SourceSpan{line:scene.line,text:lines.get(scene.line.saturating_sub(1)).unwrap_or(&"").trim().to_string()};
+        if let Some(bg)=&scene.background {backgrounds.push((start,bg.clone(),span.clone()));}
+        if let Some(hint)=scene.camera {timeline.push(start,Tick::ZERO,EventKind::Camera{hint},span);}
     }
     backgrounds.sort_by_key(|b| b.0);
     // Tausta on voimassa seuraavaan taustanvaihtoon tai loppuun asti.
@@ -1447,10 +1517,19 @@ pub fn scheduled_starts(plan: &ScriptPlan, seconds: &[f64]) -> Result<Vec<f64>, 
             if overlaps && previous.camera.is_some() && beat.camera.is_some() {
                 return Err(format!("Rivi {}: samanaikaiset kuvakulmaohjeet ovat ristiriidassa", beat.line));
             }
-            if overlaps && (previous.speaker.is_none() || beat.speaker.is_none() || previous.speaker.as_ref().map(|s| s.to_lowercase()) == beat.speaker.as_ref().map(|s| s.to_lowercase())) {
-                return Err(format!("Rivi {}: saman hahmon rivit {} ja {} menevät päällekkäin", beat.line, previous.line, beat.line));
+            if overlaps && (previous.speaker.is_none() || beat.speaker.is_none()) {return Err(format!("Rivi {}: nimeämättömien hahmojen rivejä ei voi kerrostaa",beat.line));}
+            if overlaps && previous.speaker.as_ref().map(|s|s.to_lowercase())==beat.speaker.as_ref().map(|s|s.to_lowercase()) {
+                let voice_overlap=!previous.text.is_empty() && !beat.text.is_empty() && start<starts[j]+seconds.get(j).copied().unwrap_or(previous.seconds) && starts[j]<start+duration;
+                let old_motion_start=previous.motion_at.unwrap_or(starts[j]);
+                let old_motion_duration=previous.motion_seconds.unwrap_or(previous.seconds);
+                let motion_overlap=motion_start<old_motion_start+old_motion_duration && old_motion_start<motion_start+motion_duration;
+                let reserved=previous.contact.is_some()||beat.contact.is_some()||previous.scenery.is_some()||beat.scenery.is_some()||previous.phone.is_some()||beat.phone.is_some();
+                let conflicting_state=(previous.prop.is_some()&&beat.prop.is_some()&&previous.prop!=beat.prop)||(previous.view.is_some()&&beat.view.is_some()&&previous.view!=beat.view)||(previous.expression.is_some()&&beat.expression.is_some()&&previous.expression!=beat.expression)||(previous.look_at.is_some()&&beat.look_at.is_some()&&previous.look_at!=beat.look_at);
+                let head_conflict=(previous.look_at.is_some()&&hs_core::motion_channels::channels(beat.motion)&hs_core::motion_channels::HEAD!=0)||(beat.look_at.is_some()&&hs_core::motion_channels::channels(previous.motion)&hs_core::motion_channels::HEAD!=0);
+                if voice_overlap || (motion_overlap && (reserved || !hs_core::motion_channels::compatible(previous.motion,beat.motion))) || conflicting_state || head_conflict {return Err(format!("Rivi {}: saman hahmon rivit {} ja {} menevät päällekkäin: puhe, liikealue tai tila on ristiriidassa",beat.line,previous.line,beat.line));}
             }
         }
+        if beat.camera.is_some() && plan.scene_events.iter().any(|e|e.camera.is_some() && (e.at-occupied_start).abs()<1e-9) {return Err(format!("Rivi {}: kaksi kameraohjetta samalla alkuajalla",beat.line));}
         starts.push(start); occupied_starts.push(occupied_start); ends.push(occupied_end); end = end.max(occupied_end);
     }
     Ok(starts)
@@ -1470,7 +1549,7 @@ pub fn with_line_duration(row: &str, seconds: f64) -> Result<String, String> {
         let start = offset + relative;
         let end = start + row[start..].find(']').ok_or("Ohjeen sulkeva hakasulku puuttuu")? + 1;
         let tag = &row[start + 1..end - 1];
-        if matches!(classify(tag), Ok(Tag::Motion(..) | Tag::Contact(..))) {
+        if matches!(classify(tag), Ok(Tag::Motion(..) | Tag::Contact(..) | Tag::Scenery(..))) {
             let (command, _) = english::take_duration(tag, tag)?;
             replacement = Some((start, end, format!("[{command} {seconds:.6}s]")));
         }
@@ -1478,7 +1557,7 @@ pub fn with_line_duration(row: &str, seconds: f64) -> Result<String, String> {
     }
     let next = if let Some((start, end, tag)) = replacement { format!("{}{tag}{}", &row[..start], &row[end..]) } else { format!("{row} [wait {seconds:.6}s]") };
     let checked = parse(&next);
-    if !checked.is_assemblable() || checked.beats.len() != 1 || checked.beats[0].motion != original.beats[0].motion || checked.beats[0].text != original.beats[0].text || checked.beats[0].contact != original.beats[0].contact {
+    if !checked.is_assemblable() || checked.beats.len() != 1 || checked.beats[0].motion != original.beats[0].motion || checked.beats[0].text != original.beats[0].text || checked.beats[0].contact != original.beats[0].contact || checked.beats[0].scenery != original.beats[0].scenery {
         return Err("Keston muutos ei säilytä tuettua toimintoa. Kontaktin vähimmäiskesto on 1 sekunti.".into());
     }
     Ok(next)
@@ -1535,4 +1614,26 @@ mod motion_timing_tests {
         assert!(plan.is_assemblable());
         assert_eq!(super::scheduled_starts(&plan,&[3.0,1.0]).unwrap(),vec![0.0,5.0]);
     }
+}
+
+#[cfg(test)]
+mod scenery_and_scene_tests {
+ use super::*;
+ #[test]fn explicit_doors_stairs_place_and_drop_have_typed_events(){
+  for source in ["[door entry at -0.5 0 -0.3 size 0.4 2 yaw 0 handle 1.1]\nKALLE: [open door entry angle 30 2s]", "[stairs steps at 0 0 0.12 width 0.7 rise 0.08 run 0.24 steps 3 yaw 0]\nKALLE: [climb stairs steps 4s]"] {
+   let plan=parse(source);assert!(plan.is_assemblable(),"{:?}",plan.diagnostics);assert!(plan.beats[0].scenery_object.is_some());assert!(plan.beats[0].scenery.is_some());let timeline=to_timeline(&plan,source,Fps::EXPORT);assert!(timeline.events.iter().any(|e|matches!(e.kind,EventKind::SceneryObject{..})));assert!(timeline.events.iter().any(|e|matches!(e.kind,EventKind::Scenery{..})));
+  }
+  let p=parse("KALLE: [place cup at -0.25 1.22 0.2 2s]\nKALLE: [place cup back 2s]\nKALLE: [drop cup 2s]");assert!(p.is_assemblable());assert_eq!(p.beats[0].contact,Some(hs_core::ObjectContact::Place{object:"cup".into(),target:Some([-250,1220,200])}));assert!(matches!(p.beats[2].contact,Some(hs_core::ObjectContact::Drop{..})));
+ }
+ #[test]fn standalone_global_cuts_do_not_add_or_shift_actor_beats(){
+  let source="[at 3s] [shot closeup]\nKALLE: [wait 2s]\n[at 1s] [background park]\nMAIJA: [wait 2s]";
+  let p=parse(source);assert!(p.is_assemblable(),"{:?}",p.diagnostics);assert_eq!(p.beats.len(),2);assert_eq!(p.scene_events.len(),2);assert_eq!(scheduled_starts(&p,&[2.,2.]).unwrap(),vec![0.,2.]);let tl=to_timeline(&p,source,Fps::EXPORT);assert_eq!(tl.events.iter().filter(|e|matches!(e.kind,EventKind::Motion{..})).count(),2);let camera=tl.events.iter().find(|e|matches!(e.kind,EventKind::Camera{..})).unwrap();assert_eq!(camera.start,Tick::from_seconds(3.));assert_eq!(camera.source.line,1);assert_eq!(camera.duration,Tick::ZERO);let bg=tl.events.iter().find(|e|matches!(e.kind,EventKind::Background{..})).unwrap();assert_eq!(bg.start,Tick::from_seconds(1.));assert_eq!(bg.end(),Tick::from_seconds(4.));
+ }
+ #[test]fn invalid_scene_rows_and_dimensions_never_become_motion(){
+  for command in ["[at 1s]","[at 1s] [at 2s] [shot wide]","[door entry at nan 0 0 size 0.8 2 yaw 0 handle 1]","[stairs steps at 0 0 0 width 0.7 rise 0 run 0.2 steps 3 yaw 0]","[open door entry angle 180 2s]","[place cup at 0 nan 0 2s]","[drop cup 0s]"] {let p=parse(&format!("{command}\nKALLE: [wait 2s]"));assert!(!p.is_assemblable(),"{command}");}
+  let p=parse("[at 1s] [shot wide]\n[at 1s] [shot closeup]\nKALLE: [wait 2s]");assert!(!p.is_assemblable());
+ }
+ #[test]fn rejected_scenery_metadata_rolls_back_to_previous_anchor(){
+  let p=parse("[door entry at -0.5 0 -0.3 size 0.4 2 yaw 0 handle 1]\n[stairs steps at 0 0 0 width 0.7 rise 0.08 run 0.24 steps 3 yaw 0] [unknown]\nKALLE: [close door entry 2s]");assert!(matches!(p.beats[0].scenery_object,Some(hs_core::scenery::ScenerySpec::Door{..})));
+ }
 }

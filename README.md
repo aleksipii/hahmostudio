@@ -14,10 +14,15 @@ vanhan lähdekoodin; toimitetut hahmo-, tausta- ja esimerkkiaineistot säilyvät
 - Parametriset 3D-hahmot, sääntöpohjaiset liikkeet, lavasteet, esineet ja kuvakulmat.
 - Paikallinen Kokoro-puhe ja pysyvät hahmoäänet; oma äänitys tai tuotu ääni on ensisijainen.
 - Äänen kestoon sidotut repliikit ja huulisynkka, hahmokohtainen päällekkäinen ajoitus, puheen ja liikkeen erilliset alut/kestot,
-  tarkistettu esineen nosto ja luovutus.
+  esineen nosto/luovutus sekä rajatut lasku-, pudotus-, ovi- ja porraskontaktit.
 - `.koeta`-sarjaprojektit ääniresursseineen, autosave/palautus, sarjan hahmo- ja maailmakirjasto.
+  Vanhan `.sarja` v1 tuonti sekä `.hahmo`-kirjoitus ja historia säilyttävät alkuperäiset aineistot.
+- 2D-rigin ja natiivin 3D-luurangon avainruudut, tarkistetut ryhmäsiirrot sekä
+  kamera-/taustakorttien ajoitus; kommentit, tehtävät ja paikallinen hyväksyntä/lukitus.
 - Mikrofoni-/kameraesitystyökalut, kuva- ja tasoeditori, rajattu PSD-tuonti,
   leikkausasetukset, taustaäänet, englanninkieliset tekstitykset ja MP4-vienti.
+- [Ohjelmistopohjainen 3D-renderpassien PSD-vienti](native/RENDER-PASSES.md):
+  base color, AO, specular, syvyys ja normaalit omiksi kohdistetuiksi tasoiksi.
 
 Tuntematon ohje tai mahdoton kontakti annetaan virheenä. Sovellus ei tulkitse
 mielivaltaista proosaa eikä korvaa kaikkia Photoshopin tai ammattivideoeditorin ominaisuuksia.
@@ -49,7 +54,10 @@ paketointia ja kuvaketyökalua; erillinen Codex-kiintiötyökalu käyttää Node
 Sovellus on kehitysversio. Oikean Macin, Kokoro-kuuntelun, kamera-/mikrofonilaitteiden,
 Finder-avausten ja allekirjoitetun/notarisoidun itsenäisen DMG:n hyväksyntä on kesken.
 Linux-testit eivät todista näitä toimiviksi. Release-version kokoa, muistia ja energiaa
-pitää vielä mitata Macilla. `main` on yhteinen päähaara.
+pitää vielä mitata Macilla. Käyttäjän nykyinen tavoite on henkilökohtainen käyttö:
+ominaisuudet ensin, Mac-hyväksyntä ja keveysmittaukset vasta niiden jälkeen.
+Allekirjoitus/notarisaatio ei ole henkilökohtaisen käytön tämän vaiheen valmistumisehto.
+`main` on yhteinen päähaara.
 
 Vanhojen DEVELOPMENT-dokumenttien ja `docs/tiimi`-muistioiden Electron-/npm-ohjeet
 ovat historiallisia, eivät nykyisiä käynnistys- tai kehitysohjeita.

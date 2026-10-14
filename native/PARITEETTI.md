@@ -14,16 +14,16 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | --- | --- | --- | --- |
 | Käsikirjoituksen perussäännöt | `lib/screenplay.ts` | `hs-script` (samat tagit, rajat, ei arvauksia) | ✅ |
 | Laaja käsikirjoitustunnistin (FI/EN, ilmeet, katseet, kuvakoot, kameraliikkeet, sanasto) | `lib/script-recognizer*.ts`, `lib/episode/`, `script-grammar.ts` | `hs-script`: tarkat EN/FI-tagit, ilmeet ja katseet | 🟡 ei koko TS-sanastoa |
-| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | `hs-edit::script`, `hs-app::blocks_ui`: lähderivien muokkaus/järjestys | 🟡 lähderivien järjestysraahaus, aikajanakorttien tarkistettu aloitusraahaus ja [at]-päällekkäisyys toteutettu; keston reunan raahaus toteutettu; puheen/liikkeen erillinen alku ja kesto toteutettu; Alt-pudotus ja saman hahmon yleinen toimintojen yhdistäminen puuttuvat |
+| Palikkaeditori (lohkot, vapaa ajoitus, Alt-pudotus, raahaus) | `lib/blocks.ts`, `components/` | `hs-edit::script`, `hs-app::blocks_ui`: lähderivien muokkaus/järjestys | 🟡 lähderivien järjestysraahaus, aikajanakorttien tarkistettu aloitusraahaus ja [at]-päällekkäisyys toteutettu; keston reunan raahaus toteutettu; puheen/liikkeen erillinen alku ja kesto toteutettu; kamera-/taustakorttien raahaus ja ryhmäsiirto lisätty; samalle hahmolle erillisten kehokanavien kerrostus; Alt-pudotus ja vapaasti ristiriitaiset toiminnat puuttuvat |
 | Jaksorakentaja ja korjausehdotukset | `lib/episode-builder.ts`, `review-suggestions.ts` | `hs-script` diagnostiikka, `hs-app::script_assist_ui` ohje-ehdotukset | 🟡 rajatun ohjekielen ehdotukset; vanha jaksorakentaja puuttuu |
 | `.hahmo` v1–v5 luku | `lib/project-file.ts` | `hs-hahmo` (perusrakenne, kuvat, rig, raidat) | 🟡 |
-| `.hahmo` kirjoitus, resurssimanifesti, tarkistussummat, historia | `lib/project-file.ts`, `lib/studio/` | — | ❌ |
-| `.sarja`-jaksot | `lib/series-archive.ts` | `hs-project`: erillinen natiivi `.koeta` tallentaa useita jaksoja ja ääniresursseja | 🟡 vanhan `.sarja`-muodon tuonti puuttuu |
-| PSD-tuonti (ID:t, hierarkia, rajat 100 MiB / 16 MP / 1000 tasoa) | `lib/psd-import.ts`, `psd.worker.ts` | `hs-image::psd`: RAW/RLE, RGB/harmaa 8 bit, ID/hierarkia/offsetit | 🟡 maskit, eristetyt ryhmät ja efektit hylätään |
+| `.hahmo` kirjoitus, resurssimanifesti, tarkistussummat, historia | `lib/project-file.ts`, `lib/studio/` | `hs-hahmo::archive`: tarkistettu luku/kirjoitus, SHA256, historia, tuntemattoman metadatan säilytys | 🟡 nykyiset aineistot; vanhat esitystilat eivät kaikki renderöidy |
+| `.sarja`-jaksot | `lib/series-archive.ts` | `hs-project`: erillinen natiivi `.koeta` tallentaa useita jaksoja ja ääniresursseja | 🟡 vanhan `.sarja` v1 tuonti lisätty; jokainen alkuperäinen .hahmo säilyy .koeta-resurssina |
+| PSD-tuonti (ID:t, hierarkia, rajat 100 MiB / 16 MP / 1000 tasoa) | `lib/psd-import.ts`, `psd.worker.ts` | `hs-image::psd`: RAW/RLE, RGB/harmaa 8 bit, ID/hierarkia/offsetit | 🟡 rasterimaskit, eristettyjen ryhmien opacity ja kahdeksan blend-tilaa lisätty; vector maskit ja efektit hylätään |
 | 2D-rigin muunnokset ja easing (linear/smooth/hold/bezier) | `animation-transform.ts`, `animation-model.ts` | `hs-hahmo` (sama kaava) | ✅ |
 | 2D-tasojen piirto | `psd-render.ts` | `hs-hahmo` (normaali sekoitus) | 🟡 ei ryhmäeristystä eikä muita sekoitustiloja |
-| Avainruutueditori, liitokset, nivelet | `components/`, `rig-model.ts` | — | ❌ |
-| Esitys/Production-malli, lukitukset, hyväksynnät | `presentation-*.ts`, `production-*.ts` | — | ❌ |
+| Avainruutueditori, liitokset, nivelet | `components/`, `rig-model.ts` | 2D-rigin nivelsuhteet/avaimet sekä natiivien 3D-luurankojen avainruudut | 🟡 rajattu, kontaktien kanssa saman hahmon avaimet estetään |
+| Esitys/Production-malli, lukitukset, hyväksynnät | `presentation-*.ts`, `production-*.ts` | projektin sisältöön sidottu tarkistus/hyväksyntä ja paikallinen lukitus | 🟡 ei monen käyttäjän palvelinta |
 | MP4-vienti | WebCodecs + työpöydän ExportQueue (FFmpeg/VideoToolbox) | `hs-render::export` (FFmpeg, 30 fps, 60 s, 128 MiB, AAC-ääni) | 🟡 ei VideoToolbox-koetta |
 | PNG-sarja (≤300 ruutua) | `animation-export.ts` | `hs-render::export` | ✅ |
 | Ääniraita: repliikit, tehosteet, musiikki, kaiku | `presentation-audio.ts`, `soundtrack.ts`, `sound-cues.ts` | `hs-agents::voice`, `hs-edit`: repliikit, WAV-musiikki/tehosteet, häivytys ja ducking | 🟡 kaiku puuttuu |
@@ -32,8 +32,8 @@ Merkinnät: ✅ valmis ja testattu · 🟡 osittain · ❌ puuttuu · ➕ uusi n
 | Kamera ja kasvojenseuranta (MediaPipe) | `face-motion.ts` | `hs-camera` (nokhwa-kaappaus, pään kääntö/nyökkäys/kallistus ihonvärin ja CamShiftin avulla) | 🟡 ei kasvopisteitä (silmät, kulmat); kamera testaamatta oikealla laitteella |
 | Palautus: autosave, revisiot, keskeytetty renderöinti | `desktop/`, `lib/studio/recovery*.ts` | `hs-project::recovery`: kaksi autosavea, nimetyt revisiot, palautus kopiona | 🟡 renderöintityön palautus puuttuu |
 | Pilvirenderöinti (opt-in, nollakustannus) | `lib/cloud-render/`, `desktop/cloud-*.mjs` | — | ❌ |
-| Tuotantonäkymät: kommentit, tehtävät, työjono, CSV | `lib/studio/` | — | ❌ |
-| Saavutettavuus: näppäimistö, VoiceOver | React-komponentit | egui; nykyisessä eframe-featurelistassa AccessKit ei käytössä | ❌ VoiceOver puuttuu/todentamatta |
+| Tuotantonäkymät: kommentit, tehtävät, työjono, CSV | `lib/studio/` | lähderiviin sidotut kommentit, tehtävät ja ratkaiseminen | 🟡 työjono/CSV puuttuvat |
+| Saavutettavuus: näppäimistö, VoiceOver | React-komponentit | egui + AccessKit käytössä | 🟡 VoiceOverin oikea Mac-koe tekemättä |
 | Mac-paketointi (DMG, arm64/x64) | `scripts/package-*.mjs` | `native/scripts/package-macos.py`: .app, valinnainen codesign/DMG | 🟡 Linux-fixturet testattu; oikea Mac avoin |
 
 ## Natiivissa jo nyt (uutta tai korvaavaa)
@@ -86,21 +86,30 @@ MP4-työnkulku on testattu oikealla FFmpegillä, simuloiduilla puheäänillä.
 Tästä ei seuraa aitoa Kokoro-, Mac- tai Adobe-pariteettihyväksyntää.
 
 
-## Suositeltu etenemisjärjestys (13.10.2026)
+## Nykyinen järjestys (14.10.2026, omistajan ohje)
 
-1. **Julkaisun hyväksyntä:** aito Kokoro, kokonainen pilotti, Mac/Metal/laitteet,
-   Finder sekä allekirjoitettu/notarisoitu itsenäinen DMG. Mittaa release-koko,
-   CPU/RAM/energia; Linux-testit eivät korvaa näitä.
-2. **Visuaalinen ajoitus:** aikajanakorttien aloitusraahaus, päällekkäisyysluonnos
-   ja ajoitusvirheen lähderivin paikannus toteutettu. Keston reunan raahaus sekä
-   puheen/liikkeen erilliset alkamiset ja kestot toteutettu. Seuraavaksi
-   useiden saman hahmon toimintojen yhteensovitus ja ryhmämuokkaukset.
-3. **Kontaktien laatu:** nosto/luovutus on jo toteutettu käsi-IK:lla ja
-   otetarkistuksilla; ovet, portaat, pudotus ja törmäysratkaisu ovat avoimia.
-4. **Vanhojen aineistojen yhteensopivuus:** `.sarja`-tuonti, `.hahmo`-täysi
-   luku/kirjoitus/historia sekä laajempi PSD. Lähdeaineistoja ei poistettu.
-5. **Tuotannon työkalut:** avainruutu-/rigieditori, kommentit, tehtävät,
-   hyväksynnät/lukitukset ja saavutettavuus. Lisää pilvirenderöinti vain erillisenä
-   käyttäjän valitsemana paikallisesta perustyönkulusta riippumattomana toimintona.
+Ominaisuudet ensin; Mac-hyväksyntä ja keveysmittaukset vasta niiden jälkeen.
+Sovellus on alustavasti henkilökohtaiseen käyttöön, joten notarisaatio ei ole
+ominaisuuksien valmistumisen ehto.
+
+Lisätty koodiin: lasku/pudotus tuetulle alustalle/lattialle, oven kahvakontakti,
+portaat/jalkakontaktit, saman hahmon erillisten kehokanavien kerrostus,
+ryhmäsiirto ja itsenäisten kamera-/taustakorttien raahaus, .sarja v1 tuonti,
+.hahmo kirjoitus/historia, laajempi rasteri-PSD, 2D/3D-avainruudut,
+kommentit/tehtävät/hyväksyntä/lukitus sekä AccessKit.
+
+Uusi [3D-AOV → PSD](RENDER-PASSES.md): ohjelmistosäteenseuranta, base color,
+AO, specular, depth ja world normals omilla tasoillaan.
+
+Yhä rajattu: koko kehon ja mielivaltaisen maailman törmäysfysiikka,
+automatisoitu lattialle kumartuminen/lasku, mikä tahansa rig-retargettaus,
+Photoshopin vector maskit/efektit ja vanhojen esitystilojen täydellinen renderöinti.
+Tukematon tai ulottumaton kontakti annetaan virheenä. Linux-testitulokset ja
+GUI-todennus kirjataan TIIMI.md:hen; pelkkä koodin lisäys ei ole Mac-hyväksyntä.
+
+Viimeiseksi: aito Kokoro-kuuntelu, pilotti, Mac/Metal, laitteet, Finder,
+itsenäinen DMG sekä release-koko/CPU/RAM/energia. Julkista jakelua varten
+allekirjoitus/notarisaatio arvioidaan erikseen. Pilvirenderöinti pysyy erillisenä
+käyttäjän valitsemana paikallisesta tuotannosta riippumattomana toimintona.
 
 Poistettuja ominaisuuksia ei korvattu tekaistuilla Rust-vastineilla.

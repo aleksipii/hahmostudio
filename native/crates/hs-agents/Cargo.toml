@@ -29,3 +29,5 @@ thiserror.workspace = true
 sha2 = "0.10"
 
 tempfile = "3"
+
+hs-hahmo.workspace = true

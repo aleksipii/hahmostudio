@@ -78,8 +78,8 @@ impl StudioApp {
         let (tx, rx) = mpsc::channel();
         let ctx = ctx.clone();
         std::thread::spawn(move || {
-            let result = hs_agents::project::load_series(&path).map_err(|e|e.to_string())
-                .and_then(|s| { validate_workspaces(&s)?; Ok(JobResult::Open(s,if path.is_dir(){PathBuf::new()}else{path})) })
+            let result = load_series_or_legacy(&path)
+                .and_then(|s| { validate_workspaces(&s)?; Ok(JobResult::Open(s,if path.is_dir() || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("sarja")){PathBuf::new()}else{path})) })
                 .map_err(|e| e.to_string());
             let _ = tx.send(result);
             ctx.request_repaint();
@@ -92,6 +92,9 @@ impl StudioApp {
         self.production.script = self.script.clone();
         let old = &self.project.series.episodes[self.project.selected];
         let mut snapshot = hs_agents::project::capture_checked(&self.production,old.id.clone(),old.number,old.name.clone())?;
+        if let Some(legacy) = &self.legacy {
+            snapshot.assets.push(ProjectAsset { id: "legacy-hahmo".into(), kind: "legacy".into(), bytes: legacy.project.encode().map_err(|e| e.to_string())? });
+        }
         snapshot.assets.extend(vec![
             ProjectAsset{id:"image-workspace".into(),kind:"image".into(),bytes:self.image.snapshot()?},
             ProjectAsset{id:"editing-workspace".into(),kind:"editing".into(),bytes:hs_edit::encode_workspace(&self.editing.tracks)?},
@@ -99,19 +102,27 @@ impl StudioApp {
         let bytes = self.library.encode()?;
         for e in &mut self.project.series.episodes { e.assets.retain(|a| a.kind != "library"); e.assets.push(ProjectAsset { id: "series-library".into(), kind: "library".into(), bytes: bytes.clone() }); }
         snapshot.assets.push(ProjectAsset { id: "series-library".into(), kind: "library".into(), bytes });
+        crate::review_integration::attach_review(&mut snapshot,&mut self.review)?;
         self.project.series.episodes[self.project.selected] = snapshot;
         Ok(())
     }
     fn activate_episode(&mut self, index:usize, ctx:&egui::Context) {
         let episode=&self.project.series.episodes[index];
+        let review=match crate::review_integration::restore_review(episode) { Ok(review)=>review,Err(error)=>{self.status=error;return;} };
         let mut image=crate::image_ui::ImageWorkspace::default();
         let mut editing=crate::editing_ui::EditingState::default();
         let mut library=crate::library_ui::SeriesLibrary::default();
+        let mut legacy=None;
         for asset in &episode.assets {
             let result=match asset.kind.as_str() {
                 "image" => image.restore(&asset.bytes),
                 "editing" => hs_edit::decode_workspace(&asset.bytes).map(|tracks| editing.tracks=tracks),
                 "library" => hs_agents::project::validate_library(&asset.bytes).map(|v| library=v),
+                "legacy" => hs_hahmo::Project::open(&asset.bytes).map(|project| {
+                    legacy=Some(crate::app::LegacyProject { name: project.document.name.clone(), project, texture: None, frame: u32::MAX });
+                }).map_err(|e|e.to_string()),
+                "review" => hs_project::production_review::ReviewState::decode(&asset.bytes).map(|_|()),
+                "pose" => hs_motion::pose_edit::PoseTracks::decode(&asset.bytes).map(|_|()),
                 "recordings"=>Ok(()),
                 _ => Err("Tuntematon työtilaresurssi".into()),
             };
@@ -119,10 +130,11 @@ impl StudioApp {
         }
         let mut production=match hs_agents::project::restore_checked(episode){Ok(p)=>p,Err(e)=>{self.status=e;return;}};
         production.soundtrack=editing.tracks.clone();
+        self.review=review;self.rig=Default::default();self.pose=Default::default();self.review_ui=Default::default();
         self.playing=false;
         self.voice.attach_project(&mut production,ctx);
         self.production=production;self.image=image;self.editing=editing;self.library=library;self.workflow.line=None;self.history=Default::default();
-        self.script=self.production.script.clone();self.script_path=None;self.dirty_since=None;self.legacy=None;
+        self.script=self.production.script.clone();self.script_path=None;self.dirty_since=None;self.legacy=legacy;
         self.time=0.0;self.selected_cast=0;self.project.selected=index;self.blocks=Default::default();self.script_assist=Default::default();
         self.pipeline=hs_agents::Pipeline::default();self.run_pipeline();
     }
@@ -174,7 +186,7 @@ pub fn menu(app: &mut StudioApp, ui: &mut egui::Ui) {
             app.project.confirm_replace = true;
             ui.close_menu();
         }
-        if ui.button("Avaa sarjaprojekti (.koeta)…").clicked() {
+        if ui.button("Avaa sarjaprojekti (.koeta / .sarja)…").clicked() {
             app.project.import_directory = false;
             app.project.new_series = false;
             app.project.confirm_replace = true;
@@ -329,7 +341,7 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
                 app.project.series = series;
                 app.project.path = (!path.as_os_str().is_empty()).then_some(path);
                 app.activate_episode(0, ctx);
-                app.status = "Sarjaprojekti avattu; äänet palautettu projektista.".into();
+                app.status = if app.legacy.is_some() { "Vanha sarja avattu 2D-rigityötilaan; animaatiot säilyvät. Tallenna .koeta-muodossa.".into() } else { "Sarjaprojekti avattu; äänet palautettu projektista.".into() };
             }
             Ok(JobResult::Saved(path)) => {
                 app.status = format!(
@@ -391,7 +403,7 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
                     app.status = "Uusi sarjaprojekti luotu.".into();
                 } else if app.project.import_directory {
                     if let Some(path)=rfd::FileDialog::new().pick_folder() {app.open_series(path,ctx);}
-                } else if let Some(path) = app.project.pending_open.take().or_else(|| rfd::FileDialog::new().add_filter("Koeta", &["koeta"]).pick_file()) {
+                } else if let Some(path) = app.project.pending_open.take().or_else(|| rfd::FileDialog::new().add_filter("Koeta ja vanha sarja", &["koeta", "sarja"]).pick_file()) {
                     app.open_series(path, ctx);
                 }
             }
@@ -400,13 +412,62 @@ pub fn update(app: &mut StudioApp, ctx: &egui::Context) {
 }
 
 fn validate_workspaces(series:&Series)->Result<(),String> {
-    for e in &series.episodes { for a in &e.assets {
+    for e in &series.episodes { hs_agents::project::restore_checked(e)?; crate::review_integration::restore_review(e)?; for a in &e.assets {
         match a.kind.as_str() {
             "image"=>{hs_image::Document::decode(&a.bytes)?;},
             "editing"=>{hs_edit::decode_workspace(&a.bytes)?;},
             "library"=>{hs_agents::project::validate_library(&a.bytes)?;},
             "recordings"=>{hs_agents::recording::decode(&a.bytes)?;},
+            "legacy"=>{hs_hahmo::Project::open(&a.bytes).map_err(|e|e.to_string())?;},
+            "review"=>{hs_project::production_review::ReviewState::decode(&a.bytes)?;},
+            "pose"=>{hs_motion::pose_edit::PoseTracks::decode(&a.bytes)?;},
             _=>return Err("Tuntematon työtilaresurssi".into()),
         }
     }} Ok(())
+}
+
+/// Validate every episode before replacing the active series; never guess a native script.
+fn load_series_or_legacy(path: &std::path::Path) -> Result<Series, String> {
+    if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("sarja")) {
+        return hs_agents::project::load_series(path).map_err(|e| e.to_string());
+    }
+    let file=std::fs::File::open(path).map_err(|e|e.to_string())?;
+    if file.metadata().map_err(|e|e.to_string())?.len()>hs_project::MAX_BYTES as u64 { return Err("Vanha sarja ylittää 128 MiB".into()); }
+    use std::io::Read;
+    let mut bytes=Vec::new(); file.take(hs_project::MAX_BYTES as u64+1).read_to_end(&mut bytes).map_err(|e|e.to_string())?;
+    let old=hs_project::legacy_series::decode(&bytes).map_err(|e|e.to_string())?;
+    let mut episodes=Vec::new();
+    for entry in old.episodes {
+        let project=hs_hahmo::Project::open(&entry.bytes).map_err(|e|format!("Jakso {}: {e}",entry.number))?;
+        let mut episode=hs_agents::project::capture(&hs_agents::Production::new(""),entry.id,entry.number,entry.name);
+        episode.script.clear(); episode.cast.clear(); episode.audio.clear(); episode.captions.clear();
+        episode.width=project.document.width as u32; episode.height=project.document.height as u32;
+        episode.fps=project.fps().round().clamp(1.0,60.0) as u32;
+        episode.assets.push(ProjectAsset{id:"legacy-hahmo".into(),kind:"legacy".into(),bytes:entry.bytes});
+        episodes.push(episode);
+    }
+    let series=Series{id:old.id,name:path.file_stem().map_or_else(||"Vanha sarja".into(),|name|name.to_string_lossy().into_owned()),episodes};
+    hs_project::encode(&series).map_err(|e|e.to_string())?;
+    Ok(series)
+}
+
+#[cfg(test)]
+mod legacy_import_tests {
+    use super::*;
+    #[test]
+    fn actual_legacy_series_roundtrip_preserves_all_episode_archives_without_guessing_script() {
+        let source=std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../Esimerkki-viisi-jaksoa.sarja");
+        let series=load_series_or_legacy(&source).unwrap();
+        assert_eq!(series.episodes.len(),5);
+        let original=hs_project::legacy_series::decode(&std::fs::read(source).unwrap()).unwrap();
+        let reopened=hs_project::decode(&hs_project::encode(&series).unwrap()).unwrap();
+        validate_workspaces(&reopened).unwrap();
+        for (episode,old) in reopened.episodes.iter().zip(original.episodes) {
+            assert_eq!(episode.number,old.number);assert_eq!(episode.name,old.name);
+            assert!(episode.script.is_empty()&&episode.cast.is_empty()&&episode.audio.is_empty());
+            let asset=episode.assets.iter().find(|asset|asset.kind=="legacy").unwrap();
+            assert_eq!(asset.bytes,old.bytes);
+            assert_eq!(hs_hahmo::Project::open(&asset.bytes).unwrap().encode().unwrap(),asset.bytes);
+        }
+    }
 }
