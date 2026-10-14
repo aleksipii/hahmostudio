@@ -2041,3 +2041,57 @@ Avoimet/jatko:
   suuremman projektin ja pidemmän muokkausistunnon hyväksyttävä pilotin työnkulku.
 - Aito Kokoro/kuuntelu ja Mac/Metal/Finder/laitteet/VoiceOver/DMG/keveys ovat
   sovitusti viimeisen vaiheen oikeita hyväksyntöjä. Testimoottori/Linux ei korvaa niitä.
+
+
+## Codex — alkuperäiset näyttelytyylit, 14.10.2026
+
+Tavoite: käyttäjän pyytämät agentit stop motionin koomiseen ajoitukseen ja
+pehmeään, tunteita ilmaisevaan 3D-näyttelyyn olemassa olevan Rust-putken päälle.
+Haara work, yhteinen kohde main. Lähdecommit
+`91a51a97d265a009e896cdfd329a203fb83271b0`, pohja
+`e82f43b82bba26acfc98ca9ddf1a6931041c7c5c`.
+
+Omistus ja toteutus:
+- release_readiness: hs-motion/acting_style.rs ja moduulirekisteröinti;
+  smooth/stepped12/stepped15, ankkuroitu pose-näytteistys ja suojatut kanavat.
+- animation_quality: expression.rs ja face.rs; absoluuttinen 180 ms suukulma-
+  ja puheettoman leuan siirtymä, puhevisemien säilytys, rajatut finite-kanavat.
+- editor_workflow: acting_ui.rs ja kaksi alkuperäistä englanninkielistä
+  esimerkkikohtausta ennakointi-/reaktiotauoilla ja katseilla.
+- project_resilience: hs-project/lib.rs, hs-agents/project.rs ja projektitestit;
+  acting-style-resurssi, legacy smooth, tuntematon/oversize/duplicate hylätään.
+- pilot_voice: acting_render.rs; todellinen FrameBuilder/CPU-kuva, kontaktit,
+  ajoitus, seek, oma PCM, projektipalautus ja välimuistin invalidointi.
+- Root: acting.rs, Production/FrameBuilder/collision, appin valikko, historia,
+  preview/export/project-integraatio, CLI, README ja ACTING-STYLES.md.
+  Tyylimuutos käyttää Slot::Motion: Camera ei yksin käynnistä Motionia lukevaa
+  cinematography-vaihetta. GUI löysi tämän ja korjaus varmistettiin samalla
+  jo ajetulla Pipeline-instanssilla; tuore pipeline olisi peittänyt virheen.
+
+Todennus Linux/Rust1.99, lähdekoodi ei muuttunut näiden ajojen jälkeen:
+- cargo test --locked --workspace -j2: 418 passed, 0 failed, 1 ignored
+  (aito Kokoro), exit0 /tmp/koeta-acting-verified-tests.log.
+- App+CLI build exit0 /tmp/koeta-acting-verified-build.log;
+  workspace/all-targets clippy exit0 /tmp/koeta-acting-verified-clippy.log,
+  olemassa olevia tyylivaroituksia. Ei uusia riippuvuuksia.
+- Molemmat uudet käsikirjoitukset CLI check --no-speech hyväksytty.
+- Xvfb:123/Vulkan lavapipe: final GUI tyylinvaihto, undo/redo ja toimiva
+  hahmoesikatselu; /tmp/koeta-acting-ready-selected.png, -undo.png, -redo.png.
+  /tmp/koeta-acting-export-check.png näyttää vientitarkistukset hyväksyttyinä.
+- Todelliset smooth/stepped12-renderit ja rinnakkainen vertailu:
+  /tmp/koeta-acting-comparison.mp4, H264 1280x720, 8.000 s, 240 kuvaa,
+  vasen smooth / oikea stepped12. Hiljainen NoSpeech, ei puhehyväksyntä.
+- git diff --check pass; quotahelper unavailable, prosenttia ei päätelty.
+  Yksi väärin suodatettu testi suoritti 0 testiä eikä ole todennus;
+  lopullinen koko workspace suoritti myös kaikki kuusi acting_render-testiä.
+
+Rajat ja seuraava työ:
+- Stop motion porrastaa vapaan ylävartalon päätä/käsiä. Root/jalat/kamera/ääni
+  ja kontaktit jatkuvat todellisella ajalla. Avainruutuhahmot suojataan;
+  kontakti-/esinejaksojen kädet säilytetään konservatiivisesti jatkuvina.
+- Silmät/kulmakarvat edelleen jäykkää geometriaa; ei täydellistä kasvoriigiä,
+  muovailuvahamateriaalia tai Aardman-/Pixar-elokuvien laatua vastaavaa lupausta.
+- Seuraava konkreettinen laajennus: animoitava silmä-/kulmakarvariigi sekä
+  hahmokohtaiset näyttelyparametrit, sen jälkeen käyttäjän tarkistama puhuva pilotti.
+- Aito Kokoro/kuuntelu ja Mac/Metal/Finder/laitteet/VoiceOver/DMG/keveys ovat
+  erillisiä viimeisen vaiheen hyväksyntöjä. Omat GUI/Xvfb-prosessit suljetaan.
